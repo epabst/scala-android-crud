@@ -1,4 +1,4 @@
-package info.kghost.example.android.scala
+package geeks.futurebalance.android
 
 import android.app.Activity
 import android.os.Bundle
