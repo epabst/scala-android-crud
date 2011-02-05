@@ -5,12 +5,13 @@ import android.widget.{SimpleCursorAdapter, ListAdapter, CursorAdapter}
 import android.app.{AlertDialog, ListActivity}
 import geeks.financial.futurebalance.persistence.EntityPersistence
 import android.view.{View, MenuItem, Menu}
-import android.content.{ContentValues, DialogInterface}
+import android.content.DialogInterface
 
 trait Field[E] {
   def copyToView(fromEntity: E, toEntryView: View)
   def copyToEntity(fromEntryView: View, toEntity: E)
-  def copyToContent(entity: E, values: ContentValues)
+  /** These will be put into a {@link android.content.ContentValues} */
+  def valuesToPersist(entity: E): Map[String, Object]
   val queryFieldNames: List[String]
   val persistedFieldNamesWithView: List[String]
   //These should correspond with parallel entries in viewPersistedFieldNames

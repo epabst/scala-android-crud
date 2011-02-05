@@ -4,8 +4,9 @@ import android.provider.BaseColumns
 import geeks.financial.futurebalance.persistence.EntityPersistence
 import android.database.sqlite.{SQLiteDatabase, SQLiteOpenHelper}
 import android.database.Cursor
-import android.content.ContentValues
 import android.view.View
+import android.content.ContentValues
+import java.lang.Byte
 
 /**
  * EntityPersistence for SQLite.
@@ -20,7 +21,7 @@ abstract class SQLiteEntityPersistence[T] extends EntityPersistence[T] {
     override val viewResourceIds = List.empty[Int]
     val persistedFieldNamesWithView = List.empty[String]
 
-    def copyToContent(entity: T, values: ContentValues) {}
+    def valuesToPersist(entity: T): Map[String, Object] = Map.empty
 
     def copyToEntity(fromEntryView: View, toEntity: T) {}
 
@@ -46,10 +47,32 @@ abstract class SQLiteEntityPersistence[T] extends EntityPersistence[T] {
 
   def data: Cursor = database.query(entityName, fields.flatMap(_.queryFieldNames).toArray, selection, selectionArgs, groupBy, having, orderBy)
 
+  private def toContentValues(values: Map[String, Any]): ContentValues = {
+    val contentValues = new ContentValues()
+    for ((key, value) <- values) value match {
+      case v: Object if (v == null) => contentValues.putNull(key)
+      case v: String => contentValues.put(key, v)
+      case v: Byte => JavaHelper.putByte(contentValues, key, v)
+      case v: Short => JavaHelper.putShort(contentValues, key, v)
+      case v: Int => JavaHelper.putInt(contentValues, key, v)
+      case v: Long => JavaHelper.putLong(contentValues, key, v)
+      case v: Float => JavaHelper.putFloat(contentValues, key, v)
+      case v: Double => JavaHelper.putDouble(contentValues, key, v)
+      case v: Boolean => contentValues.put(key, v)
+      case v: Array[Byte] => JavaHelper.putByteArray(contentValues, key, v)
+      case v => throw new IllegalStateException("Unsupported type for ContentValues: " + v)
+    }
+    contentValues
+  }
+
+  //override during unit testing
+  def insertIntoDatabase(values: Map[String, Any]) {
+    database.insert(entityName, null, toContentValues(values))
+  }
+
   def save(entity: T) {
-    val values: ContentValues = new ContentValues
-    fields.foreach(_.copyToContent(entity, values))
-    database.insert(entityName, null, values)
+    val values: Map[String, Object] = Map.empty ++ fields.flatMap(_.valuesToPersist(entity))
+    insertIntoDatabase(values)
   }
 }
 
