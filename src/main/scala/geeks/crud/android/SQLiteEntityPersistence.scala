@@ -17,17 +17,6 @@ import java.lang.Byte
 
 
 abstract class SQLiteEntityPersistence[T] extends EntityPersistence[T] {
-  val idField = new SimpleSQLiteField[T](BaseColumns._ID) {
-    override val viewResourceIds = List.empty[Int]
-    val persistedFieldNamesWithView = List.empty[String]
-
-    def valuesToPersist(entity: T): Map[String, Object] = Map.empty
-
-    def copyToEntity(fromEntryView: View, toEntity: T) {}
-
-    def copyToView(fromEntity: T, toEntryView: View) {}
-  }
-
   val entityName: String
   val fields: List[Field[T]]
 
@@ -45,7 +34,8 @@ abstract class SQLiteEntityPersistence[T] extends EntityPersistence[T] {
   //may be overridden
   def orderBy: String = null
 
-  def data: Cursor = database.query(entityName, fields.flatMap(_.queryFieldNames).toArray, selection, selectionArgs, groupBy, having, orderBy)
+  def data: Cursor = database.query(entityName, (BaseColumns._ID :: fields.flatMap(_.queryFieldNames)).toArray,
+    selection, selectionArgs, groupBy, having, orderBy)
 
   private def toContentValues(values: Map[String, Any]): ContentValues = {
     val contentValues = new ContentValues()
@@ -71,13 +61,7 @@ abstract class SQLiteEntityPersistence[T] extends EntityPersistence[T] {
   }
 
   def save(entity: T) {
-    val values: Map[String, Object] = Map.empty ++ fields.flatMap(_.valuesToPersist(entity))
+    val values: Map[String, Any] = Map.empty ++ fields.flatMap(_.valuesToPersist(entity))
     insertIntoDatabase(values)
   }
 }
-
-abstract class SimpleSQLiteField[E](val name: String) extends Field[E] {
-  val queryFieldNames = List(name)
-
-}
-

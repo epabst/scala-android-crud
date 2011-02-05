@@ -1,22 +1,11 @@
 package geeks.crud.android
 
 import android.os.Bundle
-import android.widget.{SimpleCursorAdapter, ListAdapter, CursorAdapter}
 import android.app.{AlertDialog, ListActivity}
 import geeks.financial.futurebalance.persistence.EntityPersistence
-import android.view.{View, MenuItem, Menu}
+import android.view.{MenuItem, Menu}
 import android.content.DialogInterface
-
-trait Field[E] {
-  def copyToView(fromEntity: E, toEntryView: View)
-  def copyToEntity(fromEntryView: View, toEntity: E)
-  /** These will be put into a {@link android.content.ContentValues} */
-  def valuesToPersist(entity: E): Map[String, Object]
-  val queryFieldNames: List[String]
-  val persistedFieldNamesWithView: List[String]
-  //These should correspond with parallel entries in viewPersistedFieldNames
-  val viewResourceIds: List[Int]
-}
+import android.widget.{SimpleCursorAdapter, ListAdapter, CursorAdapter}
 
 /**
  * A generic ListActivity for CRUD operations
@@ -88,11 +77,8 @@ trait CrudListActivity[T] extends ListActivity {
   }
 }
 
-trait SQLiteField
-
 trait SQLiteCrud[T] extends CrudListActivity[T] {
   def persistence: SQLiteEntityPersistence[T]
-  val fields: List[Field[T]]
 
   lazy val dataSource: CursorAdapter = new SimpleCursorAdapter(this, rowLayout, persistence.data,
     fields.flatMap(_.persistedFieldNamesWithView).toArray, fields.flatMap(_.viewResourceIds).toArray);
