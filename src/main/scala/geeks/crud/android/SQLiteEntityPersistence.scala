@@ -34,6 +34,7 @@ abstract class SQLiteEntityPersistence[T] extends EntityPersistence[T] {
   //may be overridden
   def orderBy: String = null
 
+  //override during unit testing
   def data: Cursor = database.query(entityName, (BaseColumns._ID :: fields.flatMap(_.queryFieldNames)).toArray,
     selection, selectionArgs, groupBy, having, orderBy)
 

@@ -19,10 +19,10 @@ trait CrudListActivity[T] extends ListActivity {
   val listLayout: Int
   val headerLayout: Int
   val rowLayout: Int
-  val addItemString: Int
-  val cancelItemString: Int
   val entryLayout: Int
+  val addItemString: Int
   val addDialogTitleString: Int
+  val cancelItemString: Int
 
   val fields: List[Field[T]]
 
@@ -77,7 +77,7 @@ trait CrudListActivity[T] extends ListActivity {
   }
 }
 
-trait SQLiteCrud[T] extends CrudListActivity[T] {
+trait SQLiteCrudListActivity[T] extends CrudListActivity[T] {
   def persistence: SQLiteEntityPersistence[T]
 
   lazy val dataSource: CursorAdapter = new SimpleCursorAdapter(this, rowLayout, persistence.data,
