@@ -6,6 +6,7 @@ import geeks.financial.futurebalance.persistence.EntityPersistence
 import android.view.{MenuItem, Menu}
 import android.content.DialogInterface
 import android.widget.{SimpleCursorAdapter, ListAdapter, CursorAdapter}
+import geeks.crud.persistence.IdPk
 
 /**
  * A generic ListActivity for CRUD operations
@@ -77,7 +78,7 @@ trait CrudListActivity[T] extends ListActivity {
   }
 }
 
-trait SQLiteCrudListActivity[T] extends CrudListActivity[T] {
+trait SQLiteCrudListActivity[T <: IdPk] extends CrudListActivity[T] {
   def persistence: SQLiteEntityPersistence[T]
 
   lazy val dataSource: CursorAdapter = new SimpleCursorAdapter(this, rowLayout, persistence.data,

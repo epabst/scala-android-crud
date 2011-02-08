@@ -10,5 +10,5 @@ import java.lang.UnsupportedOperationException
  */
 
 trait IdPk {
-  def id: String = throw new UnsupportedOperationException("todo implement")
+  def id: Long = throw new UnsupportedOperationException("todo implement")
 }

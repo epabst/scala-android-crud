@@ -7,6 +7,7 @@ import android.database.Cursor
 import android.view.View
 import android.content.ContentValues
 import java.lang.Byte
+import geeks.crud.persistence.IdPk
 
 /**
  * EntityPersistence for SQLite.
@@ -16,7 +17,7 @@ import java.lang.Byte
  */
 
 
-abstract class SQLiteEntityPersistence[T] extends EntityPersistence[T] {
+abstract class SQLiteEntityPersistence[T <: IdPk] extends EntityPersistence[T] {
   val entityName: String
   val fields: List[Field[T]]
 
