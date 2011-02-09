@@ -2,11 +2,11 @@ package geeks.crud.android
 
 import android.os.Bundle
 import android.app.{AlertDialog, ListActivity}
-import geeks.financial.futurebalance.persistence.EntityPersistence
 import android.view.{MenuItem, Menu}
-import android.content.DialogInterface
 import android.widget.{SimpleCursorAdapter, ListAdapter, CursorAdapter}
 import geeks.crud.persistence.IdPk
+import android.content.{Context, DialogInterface}
+import geeks.crud.EntityPersistenceComponent
 
 /**
  * A generic ListActivity for CRUD operations
@@ -14,7 +14,7 @@ import geeks.crud.persistence.IdPk
  * Date: 2/3/11
  * Time: 7:06 AM
  */
-trait CrudListActivity[T] extends ListActivity {
+trait CrudListActivity[T] extends ListActivity with EntityPersistenceComponent[T] {
   private val DIALOG_ID = 100
 
   val listLayout: Int
@@ -25,11 +25,11 @@ trait CrudListActivity[T] extends ListActivity {
   val addDialogTitleString: Int
   val cancelItemString: Int
 
-  val fields: List[Field[T]]
+  def fields: List[Field[T]]
 
   def listAdapter: ListAdapter
 
-  def persistence: EntityPersistence[T]
+  def context: Context = this
 
   def refreshAfterSave(entity: T)
 
@@ -78,9 +78,7 @@ trait CrudListActivity[T] extends ListActivity {
   }
 }
 
-trait SQLiteCrudListActivity[T <: IdPk] extends CrudListActivity[T] {
-  def persistence: SQLiteEntityPersistence[T]
-
+trait SQLiteCrudListActivity[T <: IdPk] extends CrudListActivity[T] with SQLiteEntityPersistenceComponent[T] {
   lazy val dataSource: CursorAdapter = new SimpleCursorAdapter(this, rowLayout, persistence.data,
     fields.flatMap(_.persistedFieldNamesWithView).toArray, fields.flatMap(_.viewResourceIds).toArray);
 
