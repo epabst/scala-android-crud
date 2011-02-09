@@ -21,3 +21,4 @@ tm*.lck
 .scala_dependencies
 multiverse.log
 .eprj
+seed.txt
