@@ -1,5 +1,8 @@
 package geeks.crud
 
+import java.util.Date
+import java.text.{ParsePosition, Format, DateFormat, NumberFormat}
+
 /**
  * A value format.
  * @author Eric Pabst (epabst@gmail.com)
@@ -32,5 +35,13 @@ class BasicValueFormat[V](implicit m: Manifest[V]) extends ValueFormat[V] {
     } catch {
       case e: IllegalArgumentException => None
     }
+  }
+}
+
+class TextValueFormat[V](format: Format) extends ValueFormat[V] {
+  def toValue(string: String) = {
+    val position = new ParsePosition(0)
+    val result = format.parseObject(string, position)
+    if (position.getIndex == 0) None else Some(result.asInstanceOf[V])
   }
 }

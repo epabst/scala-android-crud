@@ -4,6 +4,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.Spec
+import java.text.NumberFormat
 
 /**
  * A behavior specification for {@link ValueFormat}.
@@ -25,11 +26,31 @@ class ValueFormatSpec extends Spec with ShouldMatchers {
       itShouldConvertBetweenTypes[Float](2.3f)
       itShouldConvertBetweenTypes[Boolean](true)
     }
+
+    def itShouldConvertBetweenTypes[T](value: T)(implicit m: Manifest[T]) {
+      val format = new BasicValueFormat[T]
+      val string = format.toString(value)
+      format.toValue(string).get should be (value)
+    }
   }
 
-  def itShouldConvertBetweenTypes[T](value: T)(implicit m: Manifest[T]) {
-    val format = new BasicValueFormat[T]
-    val string = format.toString(value)
-    format.toValue(string).get should be (value)
+  describe("TextValueFormat") {
+    it("should convert numbers") {
+      itShouldParseNumbers[Long](123)
+      itShouldParseNumbers[Int](123)
+      itShouldParseNumbers[Short](123)
+      itShouldParseNumbers[Byte](123)
+    }
+
+    it("should return None if unable to parse") {
+      val format = new TextValueFormat[Int](NumberFormat.getIntegerInstance)
+      format.toValue("blah") should be (None)
+    }
+
+    def itShouldParseNumbers[T](value: T)(implicit m: Manifest[T]) {
+      val format = new TextValueFormat[T](NumberFormat.getIntegerInstance)
+      val string = format.toString(value)
+      format.toValue(string).get should be (value)
+    }
   }
 }
