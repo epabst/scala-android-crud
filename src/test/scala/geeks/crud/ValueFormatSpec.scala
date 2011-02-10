@@ -53,4 +53,28 @@ class ValueFormatSpec extends Spec with ShouldMatchers {
       format.toValue(string).get should be (value)
     }
   }
+
+  describe("CurrencyValueFormat") {
+    val format = CurrencyValueFormat
+
+    it("should handle parse various number formats") {
+      format.toValue("$1.00").get should be (1)
+      format.toValue("$1").get should be(1)
+      format.toValue("1.00").get should be(1)
+      format.toValue("1").get should be(1)
+      format.toValue("-1.00").get should be(-1)
+      format.toValue("-1").get should be(-1)
+      format.toValue("($1.00)").get should be(-1)
+      format.toValue("($1)").get should be(-1)
+      //do these later if desired
+      format.toValue("(1.00)") should be(None)
+      format.toValue("(1)") should be(None)
+      format.toValue("-$1.00") should be(None)
+      format.toValue("-$1") should be(None)
+    }
+
+    it("should format correctly") {
+      format.toString(1234.2) should be ("1,234.20")
+    }
+  }
 }

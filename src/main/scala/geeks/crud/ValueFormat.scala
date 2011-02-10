@@ -1,7 +1,6 @@
 package geeks.crud
 
-import java.util.Date
-import java.text.{ParsePosition, Format, DateFormat, NumberFormat}
+import java.text.{ParsePosition, Format, NumberFormat}
 
 /**
  * A value format.
@@ -39,9 +38,32 @@ class BasicValueFormat[V](implicit m: Manifest[V]) extends ValueFormat[V] {
 }
 
 class TextValueFormat[V](format: Format) extends ValueFormat[V] {
+  override def toString(value: V) = format.format(value)
+
   def toValue(string: String) = {
     val position = new ParsePosition(0)
     val result = format.parseObject(string, position)
     if (position.getIndex == 0) None else Some(result.asInstanceOf[V])
   }
 }
+
+class FlexibleValueFormat[V](formats: List[ValueFormat[V]]) extends ValueFormat[V] {
+  override def toString(value: V) = formats.headOption.map(_.toString(value)).getOrElse(super.toString(value))
+
+  def toValue(s: String): Option[V] = {
+    for (format <- formats) {
+      val value = format.toValue(s)
+      if (value.isDefined) return value
+    }
+    None
+  }
+}
+
+private object CurrencyValueFormats {
+  val currencyFormat = NumberFormat.getCurrencyInstance()
+  val editFormat = NumberFormat.getNumberInstance()
+  editFormat.setMinimumFractionDigits(currencyFormat.getMinimumFractionDigits)
+  val amountFormats = List(editFormat, currencyFormat, NumberFormat.getNumberInstance()).map(new TextValueFormat[Number](_))
+}
+
+object CurrencyValueFormat extends FlexibleValueFormat[Number](CurrencyValueFormats.amountFormats)
