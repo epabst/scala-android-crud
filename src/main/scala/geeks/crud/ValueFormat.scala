@@ -1,5 +1,6 @@
 package geeks.crud
 
+import java.util.Date
 import java.text.{ParsePosition, Format, NumberFormat}
 
 /**
@@ -59,11 +60,18 @@ class FlexibleValueFormat[V](formats: List[ValueFormat[V]]) extends ValueFormat[
   }
 }
 
-private object CurrencyValueFormats {
-  val currencyFormat = NumberFormat.getCurrencyInstance()
-  val editFormat = NumberFormat.getNumberInstance()
-  editFormat.setMinimumFractionDigits(currencyFormat.getMinimumFractionDigits)
-  val amountFormats = List(editFormat, currencyFormat, NumberFormat.getNumberInstance()).map(new TextValueFormat[Number](_))
+private object ValueFormats {
+  lazy val currencyFormat = NumberFormat.getCurrencyInstance()
+  lazy val editFormat = {
+    val editFormat = NumberFormat.getNumberInstance()
+    editFormat.setMinimumFractionDigits(currencyFormat.getMinimumFractionDigits)
+    editFormat
+  }
+  lazy val amountFormats = List(editFormat, currencyFormat, NumberFormat.getNumberInstance()).map(new TextValueFormat[Number](_))
+
+  lazy val dateFormats = List(new java.text.SimpleDateFormat("MM/dd/yyyy")).map(new TextValueFormat[Date](_))
 }
 
-object CurrencyValueFormat extends FlexibleValueFormat[Number](CurrencyValueFormats.amountFormats)
+object CurrencyValueFormat extends FlexibleValueFormat[Number](ValueFormats.amountFormats)
+
+object DateValueFormat extends FlexibleValueFormat[Date](ValueFormats.dateFormats)
