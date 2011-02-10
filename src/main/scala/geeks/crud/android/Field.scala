@@ -16,11 +16,11 @@ trait Field[E] {
   def copyToEntity(fromEntryView: View, toEntity: E)
 
   //These should correspond with parallel entries in persistedFieldNamesWithView
-  val viewResourceIds: List[Int]
-  val persistedFieldNamesWithView: List[String]
+  def viewResourceIds: List[Int]
+  def persistedFieldNamesWithView: List[String]
 
   /** The fields (other than those assumed by the EntityPersistence such as the ID) */
-  val queryFieldNames: List[String]
+  def queryFieldNames: List[String]
   /** These will be put into a {@link android.content.ContentValues} */
   def valuesToPersist(entity: E): Map[String, Any]
 }
@@ -36,7 +36,7 @@ trait UnpersistedField[E] extends Field[E] {
 trait ViewField[E,V] extends Field[E] with Logging {
   protected def format: ValueFormat[V]
 
-  val resourceId: Int
+  def resourceId: Int
 
   val viewResourceIds = List(resourceId)
 
@@ -72,14 +72,24 @@ trait ViewField[E,V] extends Field[E] with Logging {
 }
 
 trait PersistedField[E,P] extends Field[E] {
-  val persistedName: String
+  def persistedName: String
   val queryFieldNames = List(persistedName)
   //only include it if viewResourceIds is not empty
   val persistedFieldNamesWithView: List[String] = viewResourceIds.headOption.map(_ => persistedName).toList
 
-  def getPersistedValue(entity: E): P
+  def getValueToPersist(entity: E): P
 
-  def valuesToPersist(entity: E): Map[String,Any] = Map.empty + (persistedName -> getPersistedValue(entity))
+  def valuesToPersist(entity: E): Map[String,Any] = Map.empty + (persistedName -> getValueToPersist(entity))
+}
+
+class HiddenField[E,P](val persistedName: String, getter: E => P) extends PersistedField[E,P] {
+  def viewResourceIds = Nil
+
+  def copyToEntity(fromEntryView: View, toEntity: E) {} //do nothing
+
+  def copyToView(fromEntity: E, toEntryView: View) {} // do nothing
+
+  final def getValueToPersist(entity: E) = getter(entity)
 }
 
 class SimpleField[E,V](val persistedName: String, val resourceId: Int, getter: E => V, setter: E => V => Unit)(implicit m: Manifest[V])
@@ -87,7 +97,7 @@ class SimpleField[E,V](val persistedName: String, val resourceId: Int, getter: E
 
   lazy val format = new BasicValueFormat[V]
 
-  final def getPersistedValue(entity: E) = getter(entity)
+  final def getValueToPersist(entity: E) = getter(entity)
 
   final def getValueForView(entity: E) = getter(entity)
 
