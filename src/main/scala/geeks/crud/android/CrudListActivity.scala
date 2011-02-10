@@ -5,8 +5,9 @@ import android.app.{AlertDialog, ListActivity}
 import android.view.{MenuItem, Menu}
 import android.widget.{SimpleCursorAdapter, ListAdapter, CursorAdapter}
 import geeks.crud.persistence.IdPk
-import android.content.{Context, DialogInterface}
 import geeks.crud.EntityPersistenceComponent
+import android.content.{Context, DialogInterface}
+import android.net.Uri
 
 /**
  * A generic ListActivity for CRUD operations
@@ -16,6 +17,8 @@ import geeks.crud.EntityPersistenceComponent
  */
 trait CrudListActivity[T] extends ListActivity with EntityPersistenceComponent[T] {
   private val DIALOG_ID = 100
+  lazy val contentProviderAuthority = this.getClass.getPackage.toString
+  val defaultContentUri = Uri.parse("content://" + contentProviderAuthority + "/" + persistence.entityName);
 
   val listLayout: Int
   val headerLayout: Int
@@ -35,6 +38,10 @@ trait CrudListActivity[T] extends ListActivity with EntityPersistenceComponent[T
 
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
+
+    // If no data was given in the intent (because we were started
+    // as a MAIN activity), then use our default content provider.
+    if (getIntent.getData() == null) getIntent.setData(defaultContentUri);
 
     val view = getListView();
 		view.setHeaderDividersEnabled(true);

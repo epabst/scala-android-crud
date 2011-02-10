@@ -18,6 +18,8 @@ trait EntityPersistenceComponent[T] {
    */
 
   trait EntityPersistence[T] {
+    val entityName: String
+
     def create: T
 
     def save(entity: T)

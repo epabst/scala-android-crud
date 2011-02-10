@@ -24,7 +24,6 @@ trait SQLiteEntityPersistenceComponent[T <: IdPk] extends EntityPersistenceCompo
   def persistence: SQLiteEntityPersistence[T]
 
   abstract class SQLiteEntityPersistence[T <: IdPk] extends EntityPersistence[T] {
-    val entityName: String
     val fields: List[Field[T]]
 
     //may be overridden
