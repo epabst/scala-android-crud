@@ -1,8 +1,9 @@
 package geeks.crud.android
 
 import android.view.View
-import android.widget.EditText
 import geeks.crud.{BasicValueFormat, ValueFormat}
+import geeks.financial.futurebalance.util.Logging
+import android.widget.{TextView, EditText}
 
 /**
  * A Field that may be editable in a View and/or persisted.
@@ -32,7 +33,7 @@ trait UnpersistedField[E] extends Field[E] {
   def valuesToPersist(entity: E): Map[String, Any] = Map.empty
 }
 
-trait ViewField[E,V] extends Field[E] {
+trait ViewField[E,V] extends Field[E] with Logging {
   protected def format: ValueFormat[V]
 
   val resourceId: Int
@@ -45,14 +46,22 @@ trait ViewField[E,V] extends Field[E] {
 
   def getValueForView(entity: E): V
 
-  def copyToEntity(fromEntryView: View, toEntity: E) = setValueFromView(toEntity, getValue(fieldView(fromEntryView)))
+  def copyToEntity(fromEntryView: View, toEntity: E) {
+    //does a best-effort, doing nothing if unable to parse value
+    getValue(fieldView(fromEntryView)).map(value => setValueFromView(toEntity, value))
+  }
 
   def copyToView(fromEntity: E, toEntryView: View) = setValue(fieldView(toEntryView), getValueForView(fromEntity))
 
-  def getValue(fieldView: View): V = fieldView match {
-    //add more cases as needed
-    case v: EditText => format.toValue(v.getText.toString).get
-    case v => throw new IllegalStateException("Unrecognized view: " + v)
+  def getValue(fieldView: View): Option[V] = {
+    val string = fieldView match {
+      //add more cases as needed
+      case v: TextView => v.getText.toString
+      case v => throw new IllegalStateException("Unrecognized view: " + v)
+    }
+    val value = format.toValue(string)
+    if (value.isEmpty) info("Unable to parse value in " + string + " for " + this)
+    value
   }
 
   def setValue(fieldView: View, value: V) = fieldView match {

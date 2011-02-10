@@ -44,18 +44,18 @@ trait SQLiteEntityPersistenceComponent[T <: IdPk] extends EntityPersistenceCompo
 
     private def toContentValues(values: Map[String, Any]): ContentValues = {
       val contentValues = new ContentValues()
-      for ((key, value) <- values) value match {
+      for ((key, value) <- values) value.asInstanceOf[AnyRef] match {
         case v: Object if (v == null) => contentValues.putNull(key)
         case v: String => contentValues.put(key, v)
-        case v: Byte => JavaHelper.putByte(contentValues, key, v)
-        case v: Short => JavaHelper.putShort(contentValues, key, v)
-        case v: Int => JavaHelper.putInt(contentValues, key, v)
-        case v: Long => JavaHelper.putLong(contentValues, key, v)
-        case v: Float => JavaHelper.putFloat(contentValues, key, v)
-        case v: Double => JavaHelper.putDouble(contentValues, key, v)
-        case v: Boolean => contentValues.put(key, v)
+        case v: java.lang.Byte => JavaHelper.putByte(contentValues, key, v)
+        case v: java.lang.Short => JavaHelper.putShort(contentValues, key, v.shortValue)
+        case v: java.lang.Integer => JavaHelper.putInt(contentValues, key, v.intValue)
+        case v: java.lang.Long => JavaHelper.putLong(contentValues, key, v.longValue)
+        case v: java.lang.Float => JavaHelper.putFloat(contentValues, key, v.floatValue)
+        case v: java.lang.Double => JavaHelper.putDouble(contentValues, key, v.doubleValue)
+        case v: java.lang.Boolean => contentValues.put(key, v.booleanValue)
         case v: Array[Byte] => JavaHelper.putByteArray(contentValues, key, v)
-        case v => throw new IllegalStateException("Unsupported type for ContentValues: " + v)
+        case v => throw new IllegalStateException("Unsupported type for ContentValues: " + v + " of type " + v.getClass)
       }
       contentValues
     }
