@@ -51,7 +51,7 @@ trait ViewField[E,V] extends Field[E] {
 
   def getValue(fieldView: View): V = fieldView match {
     //add more cases as needed
-    case v: EditText => format.toValue(v.getText.toString)
+    case v: EditText => format.toValue(v.getText.toString).get
     case v => throw new IllegalStateException("Unrecognized view: " + v)
   }
 

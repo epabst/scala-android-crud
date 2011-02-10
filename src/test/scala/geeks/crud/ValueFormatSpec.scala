@@ -30,6 +30,6 @@ class ValueFormatSpec extends Spec with ShouldMatchers {
   def itShouldConvertBetweenTypes[T](value: T)(implicit m: Manifest[T]) {
     val format = new BasicValueFormat[T]
     val string = format.toString(value)
-    format.toValue(string) should be (value)
+    format.toValue(string).get should be (value)
   }
 }

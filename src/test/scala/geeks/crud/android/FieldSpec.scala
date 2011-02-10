@@ -20,8 +20,8 @@ class FieldSpec extends Spec with ShouldMatchers {
       val map = scala.collection.mutable.Map[String, Double]()
       val field = new SimpleField[scala.collection.mutable.Map[String,Double],Double]("value", 0, _("value"), e => {v => e.put("value", v)})
       val string = field.format.toString(value)
-      field.format.toValue(string) should be (value)
-      field.setValueFromView(map, field.format.toValue(string))
+      field.format.toValue(string).get should be (value)
+      field.setValueFromView(map, field.format.toValue(string).get)
       map("value") should be (value)
     }
   }
