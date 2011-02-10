@@ -2,6 +2,7 @@ package geeks.crud.android
 
 import android.view.View
 import android.widget.EditText
+import geeks.crud.{BasicValueFormat, ValueFormat}
 
 /**
  * A Field that may be editable in a View and/or persisted.
@@ -32,6 +33,8 @@ trait UnpersistedField[E] extends Field[E] {
 }
 
 trait ViewField[E,V] extends Field[E] {
+  protected def format: ValueFormat[V]
+
   val resourceId: Int
 
   val viewResourceIds = List(resourceId)
@@ -48,19 +51,15 @@ trait ViewField[E,V] extends Field[E] {
 
   def getValue(fieldView: View): V = fieldView match {
     //add more cases as needed
-    case v: EditText => toValue(v.getText.toString)
+    case v: EditText => format.toValue(v.getText.toString)
     case v => throw new IllegalStateException("Unrecognized view: " + v)
   }
 
   def setValue(fieldView: View, value: V) = fieldView match {
     //add more cases as needed
-    case v: EditText => v.setText(toString(value))
+    case v: EditText => v.setText(format.toString(value))
     case v => throw new IllegalStateException("Unrecognized view: " + v)
   }
-
-  def toString(value: V): String = value.toString
-  /** May need to be overridden */
-  def toValue(s: String): V = s.asInstanceOf[V]
 }
 
 trait PersistedField[E,P] extends Field[E] {
@@ -74,8 +73,11 @@ trait PersistedField[E,P] extends Field[E] {
   def valuesToPersist(entity: E): Map[String,Any] = Map.empty + (persistedName -> getPersistedValue(entity))
 }
 
-class SimpleField[E,V](val persistedName: String, val resourceId: Int, getter: E => V, setter: E => V => Unit)
+class SimpleField[E,V](val persistedName: String, val resourceId: Int, getter: E => V, setter: E => V => Unit)(implicit m: Manifest[V])
         extends ViewField[E,V] with PersistedField[E,V] {
+
+  lazy val format = new BasicValueFormat[V]
+
   final def getPersistedValue(entity: E) = getter(entity)
 
   final def getValueForView(entity: E) = getter(entity)
