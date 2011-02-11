@@ -8,7 +8,7 @@ package geeks.crud
  */
 
 trait EntityPersistenceComponent[T] {
-  def persistence: EntityPersistence[T]
+  def persistence: EntityPersistence
 
   /**
    * Persistence support for an entity.
@@ -17,7 +17,7 @@ trait EntityPersistenceComponent[T] {
    * Time: 4:12 PM
    */
 
-  trait EntityPersistence[T] {
+  trait EntityPersistence {
     def create: T
 
     def save(entity: T)

@@ -24,9 +24,9 @@ trait SQLiteEntityPersistenceComponent[T] extends EntityPersistenceComponent[T] 
 
   lazy val database: SQLiteDatabase = databaseSetup.getWritableDatabase
 
-  def persistence: SQLiteEntityPersistence[T]
+  def persistence: SQLiteEntityPersistence
 
-  abstract class SQLiteEntityPersistence[T] extends EntityPersistence[T] {
+  abstract class SQLiteEntityPersistence extends EntityPersistence {
     //may be overridden
     def selection: String = null
     //may be overridden
