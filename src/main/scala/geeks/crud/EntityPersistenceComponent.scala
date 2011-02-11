@@ -18,8 +18,6 @@ trait EntityPersistenceComponent[T] {
    */
 
   trait EntityPersistence {
-    def create: T
-
     def save(entity: T)
   }
 }

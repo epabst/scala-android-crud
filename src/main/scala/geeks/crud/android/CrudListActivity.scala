@@ -18,6 +18,8 @@ trait CrudListActivity[T] extends ListActivity with EntityPersistenceComponent[T
   private val DIALOG_ID = 100
 
   def entityName: String
+  def newInstance: T
+
   def listLayout: Int
   def headerLayout: Int
   def rowLayout: Int
@@ -71,7 +73,7 @@ trait CrudListActivity[T] extends ListActivity with EntityPersistenceComponent[T
     builder.setPositiveButton(addItemString, new DialogInterface.OnClickListener {
       def onClick(dialog: DialogInterface, which: Int) {
         dialog.dismiss
-        val newEntity = persistence.create
+        val newEntity = newInstance
         fields.foreach(_.copyToEntity(entryView, newEntity))
         persistence.save(newEntity)
         refreshAfterSave(newEntity)
