@@ -27,6 +27,8 @@ trait SQLiteEntityPersistenceComponent[T] extends EntityPersistenceComponent[T] 
   lazy val persistence: SQLiteEntityPersistence = new SQLiteEntityPersistence
 
   class SQLiteEntityPersistence extends EntityPersistence {
+    type ID = Long
+
     //may be overridden
     def selection: String = null
     //may be overridden
@@ -64,6 +66,8 @@ trait SQLiteEntityPersistenceComponent[T] extends EntityPersistenceComponent[T] 
     def insertIntoDatabase(values: Map[String, Any]) {
       database.insert(entityName, null, toContentValues(values))
     }
+
+    def find(id: ID) = throw new UnsupportedOperationException("not implemented yet")
 
     def save(entity: T) {
       val values: Map[String, Any] = Map.empty ++ fields.flatMap(_.valuesToPersist(entity))

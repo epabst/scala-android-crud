@@ -15,7 +15,8 @@ import android.net.Uri
  * Time: 7:06 AM
  */
 trait CrudListActivity[T] extends ListActivity with EntityPersistenceComponent[T] {
-  private val DIALOG_ID = 100
+  protected val ADD_DIALOG_ID = 100
+  protected val EDIT_DIALOG_ID = 101
 
   def entityName: String
   def newEntity: T
@@ -56,13 +57,13 @@ trait CrudListActivity[T] extends ListActivity with EntityPersistenceComponent[T
   }
 
   override def onCreateOptionsMenu(menu: Menu): Boolean = {
-    menu.add(0, DIALOG_ID, 1, addItemString)
+    menu.add(0, ADD_DIALOG_ID, 1, addItemString)
     true
   }
 
   override def onMenuItemSelected(featureId: Int, item: MenuItem): Boolean = {
-    if (item.getItemId == DIALOG_ID) {
-      showDialog(DIALOG_ID)
+    if (item.getItemId == ADD_DIALOG_ID) {
+      showDialog(ADD_DIALOG_ID)
     }
     true
   }

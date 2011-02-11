@@ -18,6 +18,10 @@ trait EntityPersistenceComponent[T] {
    */
 
   trait EntityPersistence {
+    type ID
+
     def save(entity: T)
+
+    def find(id: ID): Option[T]
   }
 }
