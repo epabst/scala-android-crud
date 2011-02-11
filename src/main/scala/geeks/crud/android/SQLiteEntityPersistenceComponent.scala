@@ -4,7 +4,6 @@ import android.provider.BaseColumns
 import android.database.sqlite.{SQLiteDatabase, SQLiteOpenHelper}
 import android.database.Cursor
 import java.lang.Byte
-import geeks.crud.persistence.IdPk
 import geeks.crud.EntityPersistenceComponent
 import android.content.{Context, ContentValues}
 
@@ -14,7 +13,11 @@ import android.content.{Context, ContentValues}
  * Date: 2/3/11
  * Time: 6:17 PM
  */
-trait SQLiteEntityPersistenceComponent[T <: IdPk] extends EntityPersistenceComponent[T] {
+trait SQLiteEntityPersistenceComponent[T] extends EntityPersistenceComponent[T] {
+  def entityName: String
+
+  def fields: List[Field[T]]
+
   def context: Context
 
   def databaseSetup: SQLiteOpenHelper
@@ -23,9 +26,7 @@ trait SQLiteEntityPersistenceComponent[T <: IdPk] extends EntityPersistenceCompo
 
   def persistence: SQLiteEntityPersistence[T]
 
-  abstract class SQLiteEntityPersistence[T <: IdPk] extends EntityPersistence[T] {
-    val fields: List[Field[T]]
-
+  abstract class SQLiteEntityPersistence[T] extends EntityPersistence[T] {
     //may be overridden
     def selection: String = null
     //may be overridden

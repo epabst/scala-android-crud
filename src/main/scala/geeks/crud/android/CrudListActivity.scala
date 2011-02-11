@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.app.{AlertDialog, ListActivity}
 import android.view.{MenuItem, Menu}
 import android.widget.{SimpleCursorAdapter, ListAdapter, CursorAdapter}
-import geeks.crud.persistence.IdPk
 import geeks.crud.EntityPersistenceComponent
 import android.content.{Context, DialogInterface}
 import android.net.Uri
@@ -17,16 +16,15 @@ import android.net.Uri
  */
 trait CrudListActivity[T] extends ListActivity with EntityPersistenceComponent[T] {
   private val DIALOG_ID = 100
-  lazy val contentProviderAuthority = this.getClass.getPackage.toString
-  val defaultContentUri = Uri.parse("content://" + contentProviderAuthority + "/" + persistence.entityName);
 
-  val listLayout: Int
-  val headerLayout: Int
-  val rowLayout: Int
-  val entryLayout: Int
-  val addItemString: Int
-  val addDialogTitleString: Int
-  val cancelItemString: Int
+  def entityName: String
+  def listLayout: Int
+  def headerLayout: Int
+  def rowLayout: Int
+  def entryLayout: Int
+  def addItemString: Int
+  def addDialogTitleString: Int
+  def cancelItemString: Int
 
   def fields: List[Field[T]]
 
@@ -35,6 +33,9 @@ trait CrudListActivity[T] extends ListActivity with EntityPersistenceComponent[T
   def context: Context = this
 
   def refreshAfterSave(entity: T)
+
+  lazy val contentProviderAuthority = this.getClass.getPackage.toString
+  lazy val defaultContentUri = Uri.parse("content://" + contentProviderAuthority + "/" + entityName);
 
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
@@ -85,7 +86,7 @@ trait CrudListActivity[T] extends ListActivity with EntityPersistenceComponent[T
   }
 }
 
-trait SQLiteCrudListActivity[T <: IdPk] extends CrudListActivity[T] with SQLiteEntityPersistenceComponent[T] {
+trait SQLiteCrudListActivity[T] extends CrudListActivity[T] with SQLiteEntityPersistenceComponent[T] {
   lazy val dataSource: CursorAdapter = new SimpleCursorAdapter(this, rowLayout, persistence.data,
     fields.flatMap(_.persistedFieldNamesWithView).toArray, fields.flatMap(_.viewResourceIds).toArray);
 

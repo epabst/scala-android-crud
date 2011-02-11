@@ -1,14 +1,13 @@
 package geeks.crud.persistence
 
-import java.lang.UnsupportedOperationException
-
 /**
- * todo A ... 
+ * A trait with a primary key
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 2/2/11
  * Time: 6:49 AM
  */
 
 trait IdPk {
-  def id: Long = throw new UnsupportedOperationException("todo implement")
+  type ID = Long
+  var id: ID = _
 }
