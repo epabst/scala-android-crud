@@ -26,6 +26,8 @@ trait CrudListActivity[T] extends ListActivity with EntityPersistenceComponent[T
   def entryLayout: Int
   def addItemString: Int
   def addDialogTitleString: Int
+  def editItemString: Int
+  def editDialogTitleString: Int
   def cancelItemString: Int
 
   def fields: List[Field[T]]
@@ -65,18 +67,23 @@ trait CrudListActivity[T] extends ListActivity with EntityPersistenceComponent[T
     true
   }
 
-  protected override def onCreateDialog(id: Int) = {
-    val builder = new AlertDialog.Builder(this)
+  /**
+   * Creates an edit dialog in the given Context to edit the entity and save it.
+   * @param entityToEdit an Entity instance to edit or None to add a new one
+   */
+  def createEditDialog(context: Context, entityToEdit: Option[T], afterSave: T => Unit): AlertDialog = {
+    val builder = new AlertDialog.Builder(context)
     val entryView = getLayoutInflater.inflate(entryLayout, null)
+    entityToEdit.map(entity => fields.foreach(_.copyToView(entity, entryView)))
     builder.setView(entryView)
-    builder.setTitle(addDialogTitleString)
-    builder.setPositiveButton(addItemString, new DialogInterface.OnClickListener {
+    builder.setTitle(if (entityToEdit.isDefined) editDialogTitleString else addDialogTitleString)
+    builder.setPositiveButton(if (entityToEdit.isDefined) editItemString else addItemString, new DialogInterface.OnClickListener {
       def onClick(dialog: DialogInterface, which: Int) {
         dialog.dismiss
-        val newEntity = newInstance
-        fields.foreach(_.copyToEntity(entryView, newEntity))
-        persistence.save(newEntity)
-        refreshAfterSave(newEntity)
+        val entity = entityToEdit.getOrElse(newInstance)
+        fields.foreach(_.copyToEntity(entryView, entity))
+        persistence.save(entity)
+        afterSave(entity)
       }
     })
     builder.setNegativeButton(cancelItemString, new DialogInterface.OnClickListener {
@@ -85,6 +92,10 @@ trait CrudListActivity[T] extends ListActivity with EntityPersistenceComponent[T
       }
     })
     builder.create
+  }
+
+  protected override def onCreateDialog(id: Int) = {
+    createEditDialog(this, None, refreshAfterSave)
   }
 }
 
