@@ -13,12 +13,12 @@ import android.content.{Context, ContentValues}
  * Date: 2/3/11
  * Time: 6:17 PM
  */
-trait SQLiteEntityPersistenceComponent extends EntityPersistenceComponent {
+trait SQLiteEntityPersistenceComponent extends EntityPersistenceComponent[Cursor,Cursor,ContentValues] {
   type ID = Long
 
   def entityName: String
 
-  def fields: List[Field]
+  def fields: List[Field[Cursor,ContentValues]]
 
   def context: Context
 
@@ -46,6 +46,8 @@ trait SQLiteEntityPersistenceComponent extends EntityPersistenceComponent {
       selection, selectionArgs, groupBy, having, orderBy)
 
     def find(id: ID) = throw new UnsupportedOperationException("not implemented yet")
+
+    def newWritable = new ContentValues
 
     def save(idOption: Option[ID], contentValues: ContentValues): ID = {
       idOption match {

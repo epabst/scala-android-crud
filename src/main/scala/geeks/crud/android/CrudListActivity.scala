@@ -2,20 +2,22 @@ package geeks.crud.android
 
 import android.os.Bundle
 import android.app.{AlertDialog, ListActivity}
-import android.widget.{SimpleCursorAdapter, ListAdapter, CursorAdapter}
+import android.widget.ListAdapter
 import geeks.crud.EntityPersistenceComponent
 import android.net.Uri
-import android.database.Cursor
 import android.view.{View, MenuItem, Menu}
-import android.content.{ContentValues, Context, DialogInterface}
+import android.content.{Context, DialogInterface}
 
 /**
  * A generic ListActivity for CRUD operations
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 2/3/11
  * Time: 7:06 AM
+ * @param L the type of findAll (e.g. Cursor)
+ * @param R the type to read from (e.g. Cursor)
+ * @param W the type to write to (e.g. ContentValues)
  */
-trait CrudListActivity extends ListActivity with EntityPersistenceComponent {
+trait CrudListActivity[L,R,W] extends ListActivity with EntityPersistenceComponent[L,R,W] {
   protected val ADD_DIALOG_ID = 100
   protected val EDIT_DIALOG_ID = 101
 
@@ -31,7 +33,12 @@ trait CrudListActivity extends ListActivity with EntityPersistenceComponent {
   def editDialogTitleString: Int
   def cancelItemString: Int
 
-  def fields: List[Field]
+  def fields: List[Field[R,W]]
+
+  lazy val viewResourceIds: List[Int] = fields.flatMap(_ match {
+    case viewField: ViewField[R,W] => List(viewField.viewResourceId)
+    case _ => Nil
+  })
 
   def listAdapter: ListAdapter
 
@@ -75,15 +82,15 @@ trait CrudListActivity extends ListActivity with EntityPersistenceComponent {
   def createEditDialog(context: Context, entityId: Option[ID], afterSave: () => Unit): AlertDialog = {
     val builder = new AlertDialog.Builder(context)
     val entryView = getLayoutInflater.inflate(entryLayout, null)
-    entityId.map(persistence.find).map(cursor => fields.foreach(_.readIntoView(cursor, entryView)))
+    entityId.map(persistence.find).map(readable => fields.foreach(_.readIntoView(readable, entryView)))
     builder.setView(entryView)
     builder.setTitle(if (entityId.isDefined) editDialogTitleString else addDialogTitleString)
     builder.setPositiveButton(if (entityId.isDefined) editItemString else addItemString, new DialogInterface.OnClickListener {
       def onClick(dialog: DialogInterface, which: Int) {
         dialog.dismiss
-        val contentValues = new ContentValues()
-        fields.foreach(_.writeFromView(entryView, contentValues))
-        persistence.save(entityId, contentValues)
+        val writable = persistence.newWritable
+        fields.foreach(_.writeFromView(entryView, writable))
+        persistence.save(entityId, writable)
         afterSave()
       }
     })
@@ -100,35 +107,3 @@ trait CrudListActivity extends ListActivity with EntityPersistenceComponent {
   }
 }
                                                      //todo combine into CrudListActivity
-trait CursorCrudListActivity extends CrudListActivity {
-  lazy val viewResourceIds: List[Int] = fields.flatMap(_ match {
-    case viewField: ViewField => List(viewField.viewResourceId)
-    case _ => Nil
-  })
-
-  lazy val dataSource: CursorAdapter = {
-    val cursor = persistence.findAll
-    val adapter = new SimpleCursorAdapter(this, rowLayout, cursor,
-      //provide the field names but making sure that they have the same length as the viewResourceIds.
-      //These aren't actually used by the ViewBinder below.
-      (cursor.getColumnNames.toList ::: cursor.getColumnNames.toList).slice(0, viewResourceIds.size).toArray,
-      viewResourceIds.toArray)
-    adapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
-      def setViewValue(view: View, cursor: Cursor, columnIndex: Int) = {
-        fields.foreach(field => field match {
-          case viewField: ViewField => {
-            viewField.readIntoFieldView(cursor, view)
-            List(viewField)
-          }
-          case _ => Nil
-        })
-        true
-      }
-    })
-    adapter
-  }
-
-  def listAdapter: ListAdapter = dataSource
-
-  override def refreshAfterSave() = dataSource.getCursor.requery
-}
