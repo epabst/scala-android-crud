@@ -13,10 +13,12 @@ import android.content.{Context, ContentValues}
  * Date: 2/3/11
  * Time: 6:17 PM
  */
-trait SQLiteEntityPersistenceComponent[T] extends EntityPersistenceComponent[T] {
+trait SQLiteEntityPersistenceComponent extends EntityPersistenceComponent {
+  type ID = Long
+
   def entityName: String
 
-  def fields: List[Field[T]]
+  def fields: List[Field]
 
   def context: Context
 
@@ -27,51 +29,32 @@ trait SQLiteEntityPersistenceComponent[T] extends EntityPersistenceComponent[T] 
   lazy val persistence: SQLiteEntityPersistence = new SQLiteEntityPersistence
 
   class SQLiteEntityPersistence extends EntityPersistence {
-    type ID = Long
-
-    //may be overridden
+    //may be overridden to affect findAll
     def selection: String = null
-    //may be overridden
+    //may be overridden to affect findAll
     def selectionArgs: Array[String] = Nil.toArray
-    //may be overridden
+    //may be overridden to affect findAll
     def groupBy: String = null
-    //may be overridden
+    //may be overridden to affect findAll
     def having: String = null
-    //may be overridden
+    //may be overridden to affect findAll
     def orderBy: String = null
 
-    //override during unit testing
-    def data: Cursor = database.query(entityName, (BaseColumns._ID :: fields.flatMap(_.queryFieldNames)).toArray,
+    final lazy val queryFieldNames: List[String] = BaseColumns._ID :: fields.flatMap(_.queryFieldNames)
+
+    def findAll: Cursor = database.query(entityName, queryFieldNames.toArray,
       selection, selectionArgs, groupBy, having, orderBy)
-
-    private def toContentValues(values: Map[String, Any]): ContentValues = {
-      val contentValues = new ContentValues()
-      for ((key, value) <- values) value.asInstanceOf[AnyRef] match {
-        case v: Object if (v == null) => contentValues.putNull(key)
-        case v: String => contentValues.put(key, v)
-        case v: java.lang.Byte => JavaHelper.putByte(contentValues, key, v)
-        case v: java.lang.Short => JavaHelper.putShort(contentValues, key, v.shortValue)
-        case v: java.lang.Integer => JavaHelper.putInt(contentValues, key, v.intValue)
-        case v: java.lang.Long => JavaHelper.putLong(contentValues, key, v.longValue)
-        case v: java.lang.Float => JavaHelper.putFloat(contentValues, key, v.floatValue)
-        case v: java.lang.Double => JavaHelper.putDouble(contentValues, key, v.doubleValue)
-        case v: java.lang.Boolean => contentValues.put(key, v.booleanValue)
-        case v: Array[Byte] => JavaHelper.putByteArray(contentValues, key, v)
-        case v => throw new IllegalStateException("Unsupported type for ContentValues: " + v + " of type " + v.getClass)
-      }
-      contentValues
-    }
-
-    //override during unit testing
-    def insertIntoDatabase(values: Map[String, Any]) {
-      database.insert(entityName, null, toContentValues(values))
-    }
 
     def find(id: ID) = throw new UnsupportedOperationException("not implemented yet")
 
-    def save(entity: T) {
-      val values: Map[String, Any] = Map.empty ++ fields.flatMap(_.valuesToPersist(entity))
-      insertIntoDatabase(values)
+    def save(idOption: Option[ID], contentValues: ContentValues): ID = {
+      idOption match {
+        case None => database.insert(entityName, null, contentValues)
+        case Some(id) => {
+          database.update(entityName, contentValues, BaseColumns._ID + "=" + id, null)
+          id
+        }
+      }
     }
   }
 }

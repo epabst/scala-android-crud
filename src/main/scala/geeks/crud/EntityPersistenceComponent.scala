@@ -1,5 +1,8 @@
 package geeks.crud
 
+import _root_.android.content.ContentValues
+import _root_.android.database.Cursor
+
 /**
  * Cake pattern component for EntityPersistence.
  * @author Eric Pabst (epabst@gmail.com)
@@ -7,7 +10,9 @@ package geeks.crud
  * Time: 6:49 AM
  */
 
-trait EntityPersistenceComponent[T] {
+trait EntityPersistenceComponent {
+  type ID
+
   def persistence: EntityPersistence
 
   /**
@@ -18,10 +23,10 @@ trait EntityPersistenceComponent[T] {
    */
 
   trait EntityPersistence {
-    type ID
+    def findAll: Cursor
 
-    def save(entity: T)
+    def find(id: ID): Cursor
 
-    def find(id: ID): Option[T]
+    def save(id: Option[ID], contentValues: ContentValues): ID
   }
 }

@@ -3,103 +3,121 @@ package geeks.crud.android
 import android.view.View
 import geeks.crud.{BasicValueFormat, ValueFormat}
 import geeks.financial.futurebalance.util.Logging
-import android.widget.{TextView, EditText}
+import android.content.ContentValues
+import android.database.Cursor
+import android.widget.SimpleCursorAdapter.ViewBinder
+import android.widget.{DatePicker, SimpleCursorAdapter, TextView, EditText}
+import java.util.{Calendar, Date, GregorianCalendar}
+import PersistedType._
 
 /**
  * A Field that may be editable in a View and/or persisted.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 2/4/11
  * Time: 9:25 PM
+ * @param R the type being read from
+ * @param W the type being written to
  */
-trait Field[E] {
-  def copyToView(fromEntity: E, toEntryView: View)
-  def copyToEntity(fromEntryView: View, toEntity: E)
-
-  //These should correspond with parallel entries in persistedFieldNamesWithView
-  def viewResourceIds: List[Int]
-  def persistedFieldNamesWithView: List[String]
-
-  /** The fields (other than those assumed by the EntityPersistence such as the ID) */
+trait Field {
   def queryFieldNames: List[String]
-  /** These will be put into a {@link android.content.ContentValues} */
-  def valuesToPersist(entity: E): Map[String, Any]
+
+  def readIntoView(cursor: Cursor, entryView: View)
+
+  def writeFromView(entryView: View, contentvalue: ContentValues)
 }
 
-trait UnpersistedField[E] extends Field[E] {
-  val queryFieldNames = Nil
-  val persistedFieldNamesWithView = Nil
+/** The base trait of all displayed fields. If it doesn't extend ViewField it will not be displayed by default. */
+trait ViewField extends Field {
+  def viewResourceId: Int
 
-  def copyToEntity(fromEntryView: View, toEntity: E) {}
-  def valuesToPersist(entity: E): Map[String, Any] = Map.empty
+  def readIntoFieldView(cursor: Cursor, fieldView: View)
+
+  def writeFromFieldView(fieldView: View, contentvalue: ContentValues)
+
+  final def readIntoView(cursor: Cursor, entryView: View) {
+    readIntoFieldView(cursor, entryView.findViewById(viewResourceId))
+  }
+
+  final def writeFromView(entryView: View, contentvalue: ContentValues) {
+    writeFromFieldView(entryView.findViewById(viewResourceId), contentvalue)
+  }
 }
 
-trait ViewField[E,V] extends Field[E] with Logging {
-  protected def format: ValueFormat[V]
+/**
+ * A field that maps directly between View to Cursor column.
+ * @param T the persisted type as found in a Cursor or put into ContentValues
+ * @param cursorGetter gets the right kind of data from a Cursor
+ * @param viewBinder a function that fills the view using a cursor.  For example, _.setText(_.getString)
+ */
+abstract class DirectField[T,V <: View](persistedFieldName: String, val viewResourceId: Int)(implicit persistedType: PersistedType[T])
+        extends ViewField {
+  def queryFieldNames = List(persistedFieldName)
 
-  def resourceId: Int
+  def getViewValue(view: V): Option[T]
 
-  val viewResourceIds = List(resourceId)
+  def setViewValue(view: V, value: T)
 
-  private def fieldView(entryView: View): View = entryView.findViewById(resourceId)
-
-  def setValueFromView(entity: E, valueFromView: V)
-
-  def getValueForView(entity: E): V
-
-  def copyToEntity(fromEntryView: View, toEntity: E) {
+  def writeFromFieldView(fieldView: View, contentValues: ContentValues) {
     //does a best-effort, doing nothing if unable to parse value
-    getValue(fieldView(fromEntryView)).map(value => setValueFromView(toEntity, value))
+    getViewValue(fieldView.asInstanceOf[V]).map(value => persistedType.putValue(contentValues, persistedFieldName, value))
   }
 
-  def copyToView(fromEntity: E, toEntryView: View) = setValue(fieldView(toEntryView), getValueForView(fromEntity))
-
-  def getValue(fieldView: View): Option[V] = {
-    val string = fieldView match {
-      //add more cases as needed
-      case v: TextView => v.getText.toString
-      case v => throw new IllegalStateException("Unrecognized view: " + v)
-    }
-    val value = format.toValue(string)
-    if (value.isEmpty) info("Unable to parse value in " + string + " for " + this)
-    value
-  }
-
-  def setValue(fieldView: View, value: V) = fieldView match {
-    //add more cases as needed
-    case v: EditText => v.setText(format.toString(value))
-    case v => throw new IllegalStateException("Unrecognized view: " + v)
+  def readIntoFieldView(cursor: Cursor, fieldView: View) {
+    setViewValue(fieldView.asInstanceOf[V], persistedType.getValue(cursor, cursor.getColumnIndex(persistedFieldName)))
   }
 }
 
-trait PersistedField[E,P] extends Field[E] {
-  def persistedName: String
-  val queryFieldNames = List(persistedName)
-  //only include it if viewResourceIds is not empty
-  val persistedFieldNamesWithView: List[String] = viewResourceIds.headOption.map(_ => persistedName).toList
+/**
+ * @param T the persisted type as found in a Cursor or put into ContentValues
+ * @param cursorGetter gets the right kind of data from a Cursor
+ * @param viewBinder a function that fills the view using a cursor.  For example, _.setText(_.getString)
+ */
+class SimpleField[T,V <: View](persistedFieldName: String, viewResourceId: Int, viewExtractor: V => T,
+                               viewBinder: V => T => Unit)(implicit persistedType: PersistedType[T])
+        extends DirectField[T,V](persistedFieldName, viewResourceId)(persistedType) {
+  def setViewValue(view: V, value: T) { viewBinder(view)(value) }
 
-  def getValueToPersist(entity: E): P
-
-  def valuesToPersist(entity: E): Map[String,Any] = Map.empty + (persistedName -> getValueToPersist(entity))
+  def getViewValue(view: V) = Option(viewExtractor(view))
 }
 
-class HiddenField[E,P](val persistedName: String, getter: E => P) extends PersistedField[E,P] {
-  def viewResourceIds = Nil
+class StringTextViewField(persistedFieldName: String, viewResourceId: Int)
+        extends SimpleField[String,TextView](persistedFieldName, viewResourceId, _.getText.toString, _.setText)
 
-  def copyToEntity(fromEntryView: View, toEntity: E) {} //do nothing
+class LongDatePickerField(persistedFieldName: String, viewResourceId: Int)
+        extends DirectField[Long,DatePicker](persistedFieldName, viewResourceId) {
+  def setViewValue(view: DatePicker, value: Long) {
+    val calendar = new GregorianCalendar()
+    calendar.setTimeInMillis(value)
+    view.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
+  }
 
-  def copyToView(fromEntity: E, toEntryView: View) {} // do nothing
-
-  final def getValueToPersist(entity: E) = getter(entity)
+  def getViewValue(view: DatePicker): Option[Long] = {
+    Some(new GregorianCalendar(view.getYear, view.getMonth, view.getDayOfMonth).getTimeInMillis)
+  }
 }
 
-class SimpleField[E,V](val persistedName: String, val resourceId: Int, getter: E => V, setter: E => V => Unit)(implicit m: Manifest[V])
-        extends ViewField[E,V] with PersistedField[E,V] {
+class PrimitiveTextViewField[T](persistedFieldName: String, viewResourceId: Int)
+                               (implicit persistedType: PersistedType[T])
+        extends DirectField[T,TextView](persistedFieldName, viewResourceId) {
+  val valueFormat: ValueFormat[T] = new BasicValueFormat[T]()(persistedType.valueManifest)
 
-  lazy val format = new BasicValueFormat[V]
+  def setViewValue(view: TextView, value: T) { view.setText(valueFormat.toString(value)) }
 
-  final def getValueToPersist(entity: E) = getter(entity)
+  def getViewValue(view: TextView) = valueFormat.toValue(view.getText.toString)
+}
 
-  final def getValueForView(entity: E) = getter(entity)
+class ConvertedTextViewField[T](persistedFieldName: String, viewResourceId: Int)
+                               (implicit valueFormat: ValueFormat[T], persistedType: PersistedType[T])
+        extends DirectField[T,TextView](persistedFieldName, viewResourceId) {
+  def setViewValue(view: TextView, value: T) { view.setText(valueFormat.toString(value)) }
 
-  final def setValueFromView(entity: E, valueFromView: V) = setter(entity)(valueFromView)
+  def getViewValue(view: TextView) = valueFormat.toValue(view.getText.toString)
+}
+
+class HiddenField[V](val persistedName: String) extends Field {
+  def queryFieldNames = List(persistedName)
+
+  def writeFromView(entryView: View, contentvalue: ContentValues) {}
+
+  def readIntoView(cursor: Cursor, entryView: View) {}
 }
