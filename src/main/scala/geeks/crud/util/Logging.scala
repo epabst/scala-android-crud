@@ -11,10 +11,12 @@ import android.util.Log
 
 trait Logging {
   def debug(f: => String) {
-    Log.d(this.getClass.getName, f)
+    try Log.d(this.getClass.getName, f)
+    catch { case e: RuntimeException if (e.getMessage == "Stub!") => }
   }
 
   def info(f: => String) {
-    Log.i(this.getClass.getName, f)
+    try Log.i(this.getClass.getName, f)
+    catch { case e: RuntimeException if (e.getMessage == "Stub!") => }
   }
 }
