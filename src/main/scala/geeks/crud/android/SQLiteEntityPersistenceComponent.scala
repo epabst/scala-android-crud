@@ -45,7 +45,8 @@ trait SQLiteEntityPersistenceComponent extends EntityPersistenceComponent[Cursor
     def findAll: Cursor = database.query(entityName, queryFieldNames.toArray,
       selection, selectionArgs, groupBy, having, orderBy)
 
-    def find(id: ID) = throw new UnsupportedOperationException("not implemented yet")
+    def find(id: ID) = database.query(entityName, queryFieldNames.toArray,
+      BaseColumns._ID + "=" + id, Nil.toArray, groupBy, having, orderBy)
 
     def newWritable = new ContentValues
 
