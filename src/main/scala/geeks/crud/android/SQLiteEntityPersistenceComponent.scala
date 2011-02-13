@@ -6,6 +6,7 @@ import android.database.Cursor
 import java.lang.Byte
 import geeks.crud.EntityPersistenceComponent
 import android.content.{Context, ContentValues}
+import geeks.crud.util.Logging
 
 /**
  * EntityPersistence for SQLite.
@@ -28,7 +29,7 @@ trait SQLiteEntityPersistenceComponent extends EntityPersistenceComponent[Cursor
 
   lazy val persistence: SQLiteEntityPersistence = new SQLiteEntityPersistence
 
-  class SQLiteEntityPersistence extends EntityPersistence {
+  class SQLiteEntityPersistence extends EntityPersistence with Logging {
     //may be overridden to affect findAll
     def selection: String = null
     //may be overridden to affect findAll
@@ -52,8 +53,12 @@ trait SQLiteEntityPersistenceComponent extends EntityPersistenceComponent[Cursor
 
     def save(idOption: Option[ID], contentValues: ContentValues): ID = {
       idOption match {
-        case None => database.insert(entityName, null, contentValues)
+        case None => {
+          info("Adding " + entityName + " with " + contentValues)
+          database.insert(entityName, null, contentValues)
+        }
         case Some(id) => {
+          info("Updating " + entityName + " #" + id + " with " + contentValues)
           database.update(entityName, contentValues, BaseColumns._ID + "=" + id, null)
           id
         }

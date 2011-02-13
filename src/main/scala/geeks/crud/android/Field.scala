@@ -2,7 +2,7 @@ package geeks.crud.android
 
 import android.view.View
 import geeks.crud.{BasicValueFormat, ValueFormat}
-import geeks.financial.futurebalance.util.Logging
+import geeks.crud.util.Logging
 import android.widget.SimpleCursorAdapter.ViewBinder
 import android.widget.{DatePicker, SimpleCursorAdapter, TextView, EditText}
 import java.util.{Calendar, Date, GregorianCalendar}
