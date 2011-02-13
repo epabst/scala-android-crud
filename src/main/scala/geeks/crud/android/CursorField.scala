@@ -6,6 +6,7 @@ import android.widget.{TextView, DatePicker}
 import android.database.Cursor
 import java.util.{Calendar, GregorianCalendar}
 import geeks.crud.{BasicValueFormat, ValueFormat}
+import geeks.crud.util.Logging
 
 /**
  * A Field that works with Cursor and ContentValues.
@@ -23,7 +24,7 @@ trait CursorField extends Field[Cursor,ContentValues]
  */
 abstract class DirectField[T,V <: View](persistedFieldName: String, val viewResourceId: Int)
                                        (implicit persistedType: PersistedType[T])
-        extends CursorField with ViewField[Cursor,ContentValues] {
+        extends CursorField with ViewField[Cursor,ContentValues] with Logging {
   def queryFieldNames = List(persistedFieldName)
 
   def getViewValue(view: V): Option[T]
@@ -36,7 +37,9 @@ abstract class DirectField[T,V <: View](persistedFieldName: String, val viewReso
   }
 
   def readIntoFieldView(cursor: Cursor, fieldView: View) {
-    setViewValue(fieldView.asInstanceOf[V], persistedType.getValue(cursor, cursor.getColumnIndex(persistedFieldName)))
+    val value = persistedType.getValue(cursor, cursor.getColumnIndex(persistedFieldName))
+    debug("Setting " + persistedFieldName + " to " + value + " in " + fieldView + " from " + cursor)
+    setViewValue(fieldView.asInstanceOf[V], value)
   }
 }
 
