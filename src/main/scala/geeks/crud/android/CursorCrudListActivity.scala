@@ -22,16 +22,16 @@ trait CursorCrudListActivity extends CrudListActivity[Cursor,Cursor,ContentValue
     val adapter = new SimpleCursorAdapter(this, rowLayout, cursor,
       //provide the field names but making sure that they have the same length as the viewResourceIds.
       //These aren't actually used by the ViewBinder below.
-      (cursor.getColumnNames.toList ::: cursor.getColumnNames.toList).slice(0, viewResourceIds.size).toArray,
+      (cursor.getColumnNames.toList.tail ::: cursor.getColumnNames.toList.tail).slice(0, viewResourceIds.size).toArray,
       viewResourceIds.toArray)
     adapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
       def setViewValue(view: View, cursor: Cursor, columnIndex: Int) = {
-        fields.foreach(field => field match {
-          case viewField: ViewField[Cursor,ContentValues] => {
-            viewField.readIntoFieldView(cursor, view)
-            List(viewField)
+        //todo fix this to really correspond!!!
+        fields.foreach(field => if (field.queryFieldNames.contains(cursor.getColumnName(columnIndex))) {
+          field match {
+            case viewField: ViewField[Cursor,ContentValues] => viewField.readIntoFieldView(cursor, view)
+            case _ =>
           }
-          case _ => Nil
         })
         true
       }
