@@ -18,8 +18,8 @@ import android.content.{Context, DialogInterface}
  * @param W the type to write to (e.g. ContentValues)
  */
 trait CrudListActivity[L,R,W] extends ListActivity with EntityPersistenceComponent[L,R,W] {
-  protected val ADD_DIALOG_ID = 100
-  protected val EDIT_DIALOG_ID = 101
+  val ADD_DIALOG_ID = 100
+  val EDIT_DIALOG_ID = 101
 
   def entityName: String
 
