@@ -9,14 +9,14 @@ import geeks.crud.{BasicValueFormat, ValueFormat}
 import geeks.crud.util.Logging
 
 object CursorField {
-  class CursorAccess[V](val name: String)(implicit val persistedType: PersistedType[V]) extends TypeAccess[Cursor,ContentValues,V] {
+  class CursorAccess[T](val name: String)(implicit val persistedType: PersistedType[T]) extends TypeAccess[Cursor,ContentValues,T] {
     def get(cursor: Cursor) = persistedType.getValue(cursor, cursor.getColumnIndex(name))
 
-    def set(contentValues: ContentValues, value: V) = persistedType.putValue(contentValues, name, value)
+    def set(contentValues: ContentValues, value: T) = persistedType.putValue(contentValues, name, value)
   }
 
-  def persisted[V](name: String)(implicit persistedType: PersistedType[V]): CursorAccess[V] = {
-    new CursorAccess[V](name)(persistedType)
+  def persisted[T](name: String)(implicit persistedType: PersistedType[T]): CursorAccess[T] = {
+    new CursorAccess[T](name)(persistedType)
   }
 }
 
@@ -102,7 +102,7 @@ class ConvertedTextViewField[T](persistedFieldName: String, viewResourceId: Int)
   def getViewValue(view: TextView) = valueFormat.toValue(view.getText.toString)
 }
 
-class HiddenField[V](val persistedName: String) extends CursorField {
+class HiddenField[T](val persistedName: String) extends CursorField {
   def queryFieldNames = List(persistedName)
 
   def writeFromView(entryView: View, contentvalue: ContentValues) {}

@@ -9,27 +9,27 @@ import java.text.{ParsePosition, Format, NumberFormat}
  * Date: 2/4/11
  * Time: 9:25 PM
  */
-trait ValueFormat[V] {
+trait ValueFormat[T] {
   /** May need to be overridden */
-  def toString(value: V): String = value.toString
+  def toString(value: T): String = value.toString
 
-  def toValue(s: String): Option[V]
+  def toValue(s: String): Option[T]
 }
 
-class BasicValueFormat[V]()(implicit m: Manifest[V]) extends ValueFormat[V] {
+class BasicValueFormat[T]()(implicit m: Manifest[T]) extends ValueFormat[T] {
   /** May need to be overridden */
-  def toValue(s: String): Option[V] = {
-    val erasure = m.asInstanceOf[ClassManifest[V]].erasure
+  def toValue(s: String): Option[T] = {
+    val erasure = m.asInstanceOf[ClassManifest[T]].erasure
     try {
       erasure match {
-        case x: Class[_] if (x == classOf[String]) => Some(s.asInstanceOf[V])
-        case x: Class[_] if (x == classOf[Int]) => Some(s.toInt.asInstanceOf[V])
-        case x: Class[_] if (x == classOf[Long]) => Some(s.toLong.asInstanceOf[V])
-        case x: Class[_] if (x == classOf[Short]) => Some(s.toShort.asInstanceOf[V])
-        case x: Class[_] if (x == classOf[Byte]) => Some(s.toByte.asInstanceOf[V])
-        case x: Class[_] if (x == classOf[Double]) => Some(s.toDouble.asInstanceOf[V])
-        case x: Class[_] if (x == classOf[Float]) => Some(s.toFloat.asInstanceOf[V])
-        case x: Class[_] if (x == classOf[Boolean]) => Some(s.toBoolean.asInstanceOf[V])
+        case x: Class[_] if (x == classOf[String]) => Some(s.asInstanceOf[T])
+        case x: Class[_] if (x == classOf[Int]) => Some(s.toInt.asInstanceOf[T])
+        case x: Class[_] if (x == classOf[Long]) => Some(s.toLong.asInstanceOf[T])
+        case x: Class[_] if (x == classOf[Short]) => Some(s.toShort.asInstanceOf[T])
+        case x: Class[_] if (x == classOf[Byte]) => Some(s.toByte.asInstanceOf[T])
+        case x: Class[_] if (x == classOf[Double]) => Some(s.toDouble.asInstanceOf[T])
+        case x: Class[_] if (x == classOf[Float]) => Some(s.toFloat.asInstanceOf[T])
+        case x: Class[_] if (x == classOf[Boolean]) => Some(s.toBoolean.asInstanceOf[T])
         case _ => None
       }
     } catch {
@@ -38,20 +38,20 @@ class BasicValueFormat[V]()(implicit m: Manifest[V]) extends ValueFormat[V] {
   }
 }
 
-class TextValueFormat[V](format: Format) extends ValueFormat[V] {
-  override def toString(value: V) = format.format(value)
+class TextValueFormat[T](format: Format) extends ValueFormat[T] {
+  override def toString(value: T) = format.format(value)
 
   def toValue(string: String) = {
     val position = new ParsePosition(0)
     val result = format.parseObject(string, position)
-    if (position.getIndex == 0) None else Some(result.asInstanceOf[V])
+    if (position.getIndex == 0) None else Some(result.asInstanceOf[T])
   }
 }
 
-class FlexibleValueFormat[V](formats: List[ValueFormat[V]]) extends ValueFormat[V] {
-  override def toString(value: V) = formats.headOption.map(_.toString(value)).getOrElse(super.toString(value))
+class FlexibleValueFormat[T](formats: List[ValueFormat[T]]) extends ValueFormat[T] {
+  override def toString(value: T) = formats.headOption.map(_.toString(value)).getOrElse(super.toString(value))
 
-  def toValue(s: String): Option[V] = {
+  def toValue(s: String): Option[T] = {
     for (format <- formats) {
       val value = format.toValue(s)
       if (value.isDefined) return value
