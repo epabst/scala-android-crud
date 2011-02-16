@@ -8,6 +8,18 @@ import java.util.{Calendar, GregorianCalendar}
 import geeks.crud.{BasicValueFormat, ValueFormat}
 import geeks.crud.util.Logging
 
+object CursorField {
+  class CursorAccess[V](val name: String)(implicit val persistedType: PersistedType[V]) extends TypeAccess[Cursor,ContentValues,V] {
+    def get(cursor: Cursor) = persistedType.getValue(cursor, cursor.getColumnIndex(name))
+
+    def set(contentValues: ContentValues, value: V) = persistedType.putValue(contentValues, name, value)
+  }
+
+  def persisted[V](name: String)(implicit persistedType: PersistedType[V]): CursorAccess[V] = {
+    new CursorAccess[V](name)(persistedType)
+  }
+}
+
 /**
  * A Field that works with Cursor and ContentValues.
  * @author Eric Pabst (epabst@gmail.com)
