@@ -111,29 +111,29 @@ abstract class TypeAccess[R,W,V](implicit readableManifest: ClassManifest[R], _w
 }
 
 object Field {
-  /** Defines read-only access for a field value for a type. */
-  def readOnly[T,V](getter: T => V)
-                   (implicit typeManifest: ClassManifest[T]): TypeGetter[T,V] = {
-    new TypeGetter[T,V] {
-      def get(readable: T) = getter(readable)
+  /** Defines read-only access for a field value for a Readable type. */
+  def readOnly[R,V](getter: R => V)
+                   (implicit typeManifest: ClassManifest[R]): TypeGetter[R,V] = {
+    new TypeGetter[R,V] {
+      def get(readable: R) = getter(readable)
 
       def partialSet(writable: AnyRef, value: V) = false
     }
   }
 
-  /** Defines write-only access for a field value for a type. */
-  def writeOnly[T,V](setter: T => V => Unit)
-                    (implicit typeManifest: ClassManifest[T]): TypeSetter[T,V] = {
-    new TypeSetter[T,V] {
+  /** Defines write-only access for a field value for a Writable type. */
+  def writeOnly[W,V](setter: W => V => Unit)
+                    (implicit typeManifest: ClassManifest[W]): TypeSetter[W,V] = {
+    new TypeSetter[W,V] {
       protected def writableManifest = typeManifest
 
-      def set(writable: T, value: V) = setter(writable)(value)
+      def set(writable: W, value: V) = setter(writable)(value)
 
       def partialGet(readable: AnyRef) = None
     }
   }
 
-  /** Defines a flow for a field value from one type to another type. */
+  /** Defines a flow for a field value from a Readable type to a Writable type. */
   def flow[R,W,V](getter: R => V, setter: W => V => Unit)
                  (implicit readableManifest: ClassManifest[R], writableManifest: ClassManifest[W]): TypeAccess[R,W,V] = {
     new TypeAccess[R,W,V] {
@@ -143,9 +143,9 @@ object Field {
     }
   }
 
-  /** Defines access for a field value for a type. */
-  def access[T,V](getter: T => V, setter: T => V => Unit)
-                 (implicit typeManifest: ClassManifest[T]): TypeAccess[T,T,V] = flow[T,T,V](getter, setter)
+  /** Defines access for a field value for a Mutable type. */
+  def access[M,V](getter: M => V, setter: M => V => Unit)
+                 (implicit typeManifest: ClassManifest[M]): TypeAccess[M,M,V] = flow[M,M,V](getter, setter)
 
   def apply[V](accesses: PartialAccess[V]*): AccessField[V] = new AccessField[V](accesses :_*)
 }
