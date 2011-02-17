@@ -5,9 +5,13 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.Spec
 import java.text.NumberFormat
+import ViewAccess._
+import android.view.View
+import android.widget.TextView
+import android.content.Context
 
 /**
- * A behavior specification for {@link Field} and {@link CursorField}.
+ * A behavior specification for {@link Field}, {@link CursorField}, and {@link ViewAccess}.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 2/9/11
  * Time: 7:59 PM
@@ -34,6 +38,16 @@ class FieldSpec extends Spec with ShouldMatchers {
         access[OtherEntity,String](_.name, _.name_=))
       val intField = Field(access[MyEntity,Int](_.number, _.number_=))
       val readOnlyField = Field(readOnly[MyEntity,Int](_.number))
+    }
+
+    it("should be easily instantiable for a View") {
+      class MyView(context: Context, var status: String) extends View(context)
+
+      val stringField = Field(
+        persisted[String]("name"),
+        viewId[TextView,String](101),
+        viewAccessById[MyView,String](102, _.status, _.status_=),
+        viewId(102)(viewAccess[MyView,String](_.status, _.status_=)))
     }
 
     it("should copy from one to multiple") {
