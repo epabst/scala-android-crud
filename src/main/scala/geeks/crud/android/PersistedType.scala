@@ -27,7 +27,7 @@ private class DirectPersistedType[T <: AnyRef](cursorGetter: Cursor => Int => T,
   }
 }
 
-private class ConvertedPersistedType[T <: AnyVal, R <: AnyRef](implicit refType: PersistedType[R],
+private class CastedPersistedType[T <: AnyVal, R <: AnyRef](implicit refType: PersistedType[R],
                                                                implicit val valueManifest: Manifest[T])
         extends PersistedType[T] {
   def putValue(contentValues: ContentValues, name: String, value: T) {
@@ -46,12 +46,12 @@ object PersistedType {
   implicit val doubleRefType: PersistedType[java.lang.Double] = new DirectPersistedType[java.lang.Double](_.getDouble, _.put)
   implicit val floatRefType: PersistedType[java.lang.Float] = new DirectPersistedType[java.lang.Float](_.getFloat, _.put)
   implicit val blobType: PersistedType[Array[Byte]] = new DirectPersistedType[Array[Byte]](_.getBlob, _.put)
-  implicit val longType: PersistedType[Long] = new ConvertedPersistedType[Long,java.lang.Long]()
-  implicit val intType: PersistedType[Int] = new ConvertedPersistedType[Int,java.lang.Integer]()
-  implicit val shortType: PersistedType[Short] = new ConvertedPersistedType[Short,java.lang.Short]()
-  implicit val byteType: PersistedType[Byte] = new ConvertedPersistedType[Byte,java.lang.Byte]()
-  implicit val doubleType: PersistedType[Double] = new ConvertedPersistedType[Double,java.lang.Double]()
-  implicit val floatType: PersistedType[Float] = new ConvertedPersistedType[Float,java.lang.Float]()
+  implicit val longType: PersistedType[Long] = new CastedPersistedType[Long,java.lang.Long]()
+  implicit val intType: PersistedType[Int] = new CastedPersistedType[Int,java.lang.Integer]()
+  implicit val shortType: PersistedType[Short] = new CastedPersistedType[Short,java.lang.Short]()
+  implicit val byteType: PersistedType[Byte] = new CastedPersistedType[Byte,java.lang.Byte]()
+  implicit val doubleType: PersistedType[Double] = new CastedPersistedType[Double,java.lang.Double]()
+  implicit val floatType: PersistedType[Float] = new CastedPersistedType[Float,java.lang.Float]()
 
   private def getByte(cursor: Cursor)(index: Int): Byte = {
     cursor.getShort(index).asInstanceOf[Byte]
