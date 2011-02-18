@@ -1,14 +1,12 @@
 package geeks.crud.android
 
-import android.view.View
-import geeks.crud.{BasicValueFormat, ValueFormat}
 import geeks.crud.util.Logging
-import android.widget.SimpleCursorAdapter.ViewBinder
-import android.widget.{DatePicker, SimpleCursorAdapter, TextView, EditText}
-import java.util.{Calendar, Date, GregorianCalendar}
-import PersistedType._
 
-class AccessField[T](val accesses: PartialAccess[T]*) {
+trait CopyableField {
+  def copy(from: AnyRef, to: AnyRef): Boolean
+}
+
+class Field[T](val accesses: PartialAccess[T]*) extends CopyableField with Logging {
   def findValue(from: AnyRef): Option[T] = {
     for (access <- accesses) {
       val value = access.partialGet(from)
@@ -23,40 +21,10 @@ class AccessField[T](val accesses: PartialAccess[T]*) {
   }
 
   def copy(from: AnyRef, to: AnyRef): Boolean = {
-    findValue(from).map(value => setValue(to, value)).getOrElse(false)
-  }
-}
-
-/**
- * A Field that may be editable in a View and/or persisted.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 2/4/11
- * Time: 9:25 PM
- * @param R the type being read from such as Cursor
- * @param W the type being written to such as ContentValues
- */
-trait Field[R,W] {
-  def queryFieldNames: List[String]
-
-  def readIntoView(readable: R, entryView: View)
-
-  def writeFromView(entryView: View, writable: W)
-}
-
-/** The base trait of all displayed fields. If it doesn't extend ViewField it will not be displayed by default. */
-trait ViewField[R,W] extends Field[R,W] {
-  def viewResourceId: Int
-
-  def readIntoFieldView(readable: R, fieldView: View)
-
-  def writeFromFieldView(fieldView: View, writable: W)
-
-  final def readIntoView(readable: R, entryView: View) {
-    readIntoFieldView(readable, entryView.findViewById(viewResourceId))
-  }
-
-  final def writeFromView(entryView: View, writable: W) {
-    writeFromFieldView(entryView.findViewById(viewResourceId), writable)
+    findValue(from).map(value => {
+      debug("Copying " + value + " from " + from + " to " + to + " for field " + this)
+      setValue(to, value)
+    }).getOrElse(false)
   }
 }
 
@@ -147,6 +115,6 @@ object Field {
   def access[M,T](getter: M => T, setter: M => T => Unit)
                  (implicit typeManifest: ClassManifest[M]): TypeAccess[M,M,T] = flow[M,M,T](getter, setter)
 
-  def apply[T](accesses: PartialAccess[T]*): AccessField[T] = new AccessField[T](accesses :_*)
+  def apply[T](accesses: PartialAccess[T]*): Field[T] = new Field[T](accesses :_*)
 }
 

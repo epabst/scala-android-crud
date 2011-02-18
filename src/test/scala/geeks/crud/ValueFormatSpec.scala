@@ -17,7 +17,6 @@ import java.text.NumberFormat
 class ValueFormatSpec extends Spec with ShouldMatchers {
   describe("BasicValueFormat") {
     it("should convert between basic types") {
-      itShouldConvertBetweenTypes[String]("hello")
       itShouldConvertBetweenTypes[Long](123)
       itShouldConvertBetweenTypes[Int](123)
       itShouldConvertBetweenTypes[Short](123)
@@ -27,7 +26,7 @@ class ValueFormatSpec extends Spec with ShouldMatchers {
       itShouldConvertBetweenTypes[Boolean](true)
     }
 
-    def itShouldConvertBetweenTypes[T](value: T)(implicit m: Manifest[T]) {
+    def itShouldConvertBetweenTypes[T <: AnyVal](value: T)(implicit m: Manifest[T]) {
       val format = new BasicValueFormat[T]
       val string = format.toString(value)
       format.toValue(string).get should be (value)

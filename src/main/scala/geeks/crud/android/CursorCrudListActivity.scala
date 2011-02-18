@@ -25,16 +25,17 @@ trait CursorCrudListActivity extends CrudListActivity[Cursor,Cursor,ContentValue
       //corresponding column name
       (cursor.getColumnNames.toList.tail ::: cursor.getColumnNames.toList.tail).slice(0, viewResourceIds.size).toArray,
       viewResourceIds.toArray)
-    val fieldByPersistedFieldName: Map[String,Field[Cursor,ContentValues]] = Map() ++ fields.flatMap(f => f.queryFieldNames.map((_,f)))
-    adapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
-      def setViewValue(view: View, cursor: Cursor, columnIndex: Int) = {
-        fieldByPersistedFieldName.get(cursor.getColumnName(columnIndex)).map(_ match {
-          case viewField: ViewField[Cursor,ContentValues] => viewField.readIntoFieldView(cursor, view)
-          case _ =>
-        })
-        true
-      }
-    })
+//todo re-enable by using ResourceCursorAdapter
+//    val fieldByPersistedFieldName: Map[String,Field[Cursor,ContentValues]] = Map() ++ fields.flatMap(f => f.queryFieldNames.map((_,f)))
+//    adapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
+//      def setViewValue(view: View, cursor: Cursor, columnIndex: Int) = {
+//        fieldByPersistedFieldName.get(cursor.getColumnName(columnIndex)).map(_ match {
+//          case viewField: ViewField[Cursor,ContentValues] => viewField.readIntoFieldView(cursor, view)
+//          case _ =>
+//        })
+//        true
+//      }
+//    })
     adapter
   }
 

@@ -2,7 +2,9 @@ package geeks.crud.android
 
 import android.view.View
 import reflect.ClassManifest
-import android.widget.TextView
+import android.widget.{DatePicker, TextView}
+import geeks.crud.{BasicValueFormat, ValueFormat}
+import java.util.{Calendar,GregorianCalendar}
 
 /**
  * Field access for Views.
@@ -43,5 +45,16 @@ object ViewAccess {
     viewId(viewResourceId)(viewAccess(getter,setter))
   }
 
-  implicit val textViewAccess: ViewAccess[TextView,String] = viewAccess[TextView,String](_.getText.toString, _.setText)
+  def formattedTextViewAccess[T](format: ValueFormat[T]): ViewAccess[TextView,T] =
+    //todo deal with v.getText being null and toValue returning None
+    viewAccess[TextView,T](v => format.toValue(v.getText.toString).get, v => value => v.setText(format.toString(value)))
+
+  implicit def primitiveTextViewAccess[T <: AnyVal](implicit m: Manifest[T]): ViewAccess[TextView,T] =
+    formattedTextViewAccess(new BasicValueFormat[T]())
+
+  implicit val stringTextViewAccess: ViewAccess[TextView,String] = viewAccess[TextView,String](_.getText.toString, _.setText)
+
+  implicit val calendarDatePickerAccess: ViewAccess[DatePicker,Calendar] = viewAccess[DatePicker,Calendar](
+    v => new GregorianCalendar(v.getYear, v.getMonth, v.getDayOfMonth),
+    v => calendar => v.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)))
 }

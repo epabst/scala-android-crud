@@ -17,7 +17,7 @@ import android.content.{Context, DialogInterface}
  * @param R the type to read from (e.g. Cursor)
  * @param W the type to write to (e.g. ContentValues)
  */
-trait CrudListActivity[L,R,W] extends ListActivity with EntityPersistenceComponent[L,R,W] {
+trait CrudListActivity[L,R <: AnyRef,W <: AnyRef] extends ListActivity with EntityPersistenceComponent[L,R,W] {
   val ADD_DIALOG_ID = 100
   val EDIT_DIALOG_ID = 101
 
@@ -33,10 +33,11 @@ trait CrudListActivity[L,R,W] extends ListActivity with EntityPersistenceCompone
   def editDialogTitleString: Int
   def cancelItemString: Int
 
-  def fields: List[Field[R,W]]
+  def fields: List[CopyableField]
 
+  //todo eliminate this if possible
   lazy val viewResourceIds: List[Int] = fields.flatMap(_ match {
-    case viewField: ViewField[R,W] => List(viewField.viewResourceId)
+    case viewField: ViewAccessById[_,_] => List(viewField.viewResourceId)
     case _ => Nil
   })
 
@@ -82,14 +83,14 @@ trait CrudListActivity[L,R,W] extends ListActivity with EntityPersistenceCompone
   def createEditDialog(context: Context, entityId: Option[ID], afterSave: () => Unit): AlertDialog = {
     val builder = new AlertDialog.Builder(context)
     val entryView = getLayoutInflater.inflate(entryLayout, null)
-    entityId.map(persistence.find).map(readable => fields.foreach(_.readIntoView(readable, entryView)))
+    entityId.map(persistence.find).map(readable => fields.foreach(_.copy(readable, entryView)))
     builder.setView(entryView)
     builder.setTitle(if (entityId.isDefined) editDialogTitleString else addDialogTitleString)
     builder.setPositiveButton(if (entityId.isDefined) editItemString else addItemString, new DialogInterface.OnClickListener {
       def onClick(dialog: DialogInterface, which: Int) {
         dialog.dismiss
         val writable = persistence.newWritable
-        fields.foreach(_.writeFromView(entryView, writable))
+        fields.foreach(_.copy(entryView, writable))
         persistence.save(entityId, writable)
         afterSave()
       }

@@ -19,7 +19,7 @@ trait SQLiteEntityPersistenceComponent extends EntityPersistenceComponent[Cursor
 
   def entityName: String
 
-  def fields: List[Field[Cursor,ContentValues]]
+  def fields: List[CopyableField]
 
   def context: Context
 
@@ -41,7 +41,10 @@ trait SQLiteEntityPersistenceComponent extends EntityPersistenceComponent[Cursor
     //may be overridden to affect findAll
     def orderBy: String = null
 
-    final lazy val queryFieldNames: List[String] = BaseColumns._ID :: fields.flatMap(_.queryFieldNames)
+    final lazy val queryFieldNames: List[String] = BaseColumns._ID :: fields.flatMap(_ match {
+      case access: CursorAccess[_] => Some(access.name)
+      case _ => None
+    })
 
     def findAll: Cursor = database.query(entityName, queryFieldNames.toArray,
       selection, selectionArgs, groupBy, having, orderBy)

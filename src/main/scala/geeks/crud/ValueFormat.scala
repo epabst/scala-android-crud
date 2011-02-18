@@ -16,7 +16,7 @@ trait ValueFormat[T] {
   def toValue(s: String): Option[T]
 }
 
-class BasicValueFormat[T]()(implicit m: Manifest[T]) extends ValueFormat[T] {
+class BasicValueFormat[T <: AnyVal]()(implicit m: Manifest[T]) extends ValueFormat[T] {
   /** May need to be overridden */
   def toValue(s: String): Option[T] = {
     val erasure = m.asInstanceOf[ClassManifest[T]].erasure
