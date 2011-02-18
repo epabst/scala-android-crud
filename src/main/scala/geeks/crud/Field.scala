@@ -6,7 +6,7 @@ trait CopyableField {
   def copy(from: AnyRef, to: AnyRef): Boolean
 }
 
-class Field[T](val accesses: PartialAccess[T]*) extends CopyableField with Logging {
+final class Field[T](val accesses: PartialAccess[T]*) extends CopyableField with Logging {
   def findValue(from: AnyRef): Option[T] = {
     for (access <- accesses) {
       val value = access.partialGet(from)
