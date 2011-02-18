@@ -107,4 +107,3 @@ trait CrudListActivity[L,R <: AnyRef,W <: AnyRef] extends ListActivity with Enti
     createEditDialog(this, None, refreshAfterSave)
   }
 }
-                                                     //todo combine into CrudListActivity
