@@ -42,7 +42,7 @@ trait SQLiteEntityPersistenceComponent extends EntityPersistenceComponent[Cursor
     def orderBy: String = null
 
     final lazy val queryFieldNames: List[String] = BaseColumns._ID :: fields.flatMap(_ match {
-      case access: CursorAccess[_] => Some(access.name)
+      case fieldAccess: CursorFieldAccess[_] => Some(fieldAccess.name)
       case _ => None
     })
 

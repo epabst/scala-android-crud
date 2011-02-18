@@ -4,18 +4,22 @@ import geeks.crud.util.Logging
 
 /** A trait for {@link Field} for convenience such as when defining a List of heterogeneous Fields. */
 trait CopyableField {
+  /**
+   * Copies this field from <code>from</code> to <code>to</code>.
+   * @returns true if successfullly set a value
+   */
   def copy(from: AnyRef, to: AnyRef): Boolean
 }
 
 /**
- * A Field of a specific type which has any number of Accesses to Cursors, Views, Model objects, etc.
+ * A Field of a specific type which has any number of FieldAccesses to Cursors, Views, Model objects, etc.
  * <p>
  * Example:
  * <pre>
  * import geeks.crud.android._
- * import geeks.crud.android.CursorField._
+ * import geeks.crud.android.CursorFieldAccess._
  * import geeks.crud.android.PersistedType._
- * import geeks.crud.android.ViewAccess._
+ * import geeks.crud.android.ViewFieldAccess._
  * import android.widget.{TextView, ListView}
  *
  * val fields = List(
@@ -27,23 +31,28 @@ trait CopyableField {
  * Usage of implicits make this syntax concise for the simple cases, but allow for very complex situations as well
  * by providing custom implementations for the implicits.
  */
-final class Field[T](val accesses: PartialAccess[T]*) extends CopyableField with Logging {
+final class Field[T](val fieldAccesses: PartialFieldAccess[T]*) extends CopyableField with Logging {
   /**
-   * Finds a value out of <code>from</code> by using the Access that can handle it.
+   * Finds a value out of <code>from</code> by using the FieldAccess that can handle it.
    * @returns Some(value) if successful, otherwise None
    */
   def findValue(from: AnyRef): Option[T] = {
-    for (access <- accesses) {
-      val value = access.partialGet(from)
+    for (fieldAccess <- fieldAccesses) {
+      val value = fieldAccess.partialGet(from)
       if (value.isDefined) return value
     }
     None
   }
 
   /**
-   * Sets a value in <code>to</code> by using all Accesses that can handle it.
+   * Sets a value in <code>to</code> by using all FieldAccesses that can handle it.
    * @return true if any were successful
    */
+  def setValue(to: AnyRef, value: T): Boolean = {
+    fieldAccesses.foldLeft(false)((result, access) => access.partialSet(to, value) || result)
+  }
+
+  //inherited
   def copy(from: AnyRef, to: AnyRef): Boolean = {
     findValue(from).map(value => {
       debug("Copying " + value + " from " + from + " to " + to + " for field " + this)
@@ -53,32 +62,32 @@ final class Field[T](val accesses: PartialAccess[T]*) extends CopyableField with
 }
 
 /**
- * The base trait of all Accesses.  This is based on PartialFunction.
- * @param T the value type that this Access consumes and provides.
+ * The base trait of all FieldAccesses.  This is based on PartialFunction.
+ * @param T the value type that this FieldAccess consumes and provides.
  * @see #partialGet
  * @see #partialSet
  */
-trait PartialAccess[T] {
+trait PartialFieldAccess[T] {
   /**
    * Tries to get the value from <code>readable</code>.
-   * @param readable any kind of Object.  If it is not supported by this Access, this simply returns None.
+   * @param readable any kind of Object.  If it is not supported by this FieldAccess, this simply returns None.
    * @returns Some(value) if successful, otherwise None
    */
   def partialGet(readable: AnyRef): Option[T]
 
   /**
    * Tries to set the value in <code>writable</code>.
-   * @param writable any kind of Object.  If it is not supported by this Access, this simply returns false.
+   * @param writable any kind of Object.  If it is not supported by this FieldAccess, this simply returns false.
    */
   def partialSet(writable: AnyRef, value: T): Boolean
 }
 
 /**
- * {@PartialAccess} support for getting a value if <code>readable</code> is of type R.
+ * {@PartialFieldAccess} support for getting a value if <code>readable</code> is of type R.
  * @param T the value type
  * @param R the Readable type to get the value out of
  */
-abstract class TypeGetter[R,T](implicit readableManifest: ClassManifest[R]) extends PartialAccess[T] {
+abstract class FieldGetter[R,T](implicit readableManifest: ClassManifest[R]) extends PartialFieldAccess[T] {
   /** An abstract method that must be implemented by subtypes. */
   def get(readable: R): T
 
@@ -88,11 +97,11 @@ abstract class TypeGetter[R,T](implicit readableManifest: ClassManifest[R]) exte
 }
 
 /**
- * {@PartialAccess} support for setting a value if <code>writable</code> is of type W.
- * This is a trait so that it can be mixed with TypeGetter.
+ * {@PartialFieldAccess} support for setting a value if <code>writable</code> is of type W.
+ * This is a trait so that it can be mixed with FieldGetter.
  * @param W the Writable type to put the value into
  */
-trait TypeSetter[W,T] extends PartialAccess[T] {
+trait FieldSetter[W,T] extends PartialFieldAccess[T] {
   protected def writableManifest: ClassManifest[W]
 
   /** An abstract method that must be implemented by subtypes. */
@@ -107,35 +116,35 @@ trait TypeSetter[W,T] extends PartialAccess[T] {
 }
 
 /**
- * {@PartialAccess} support for getting and setting a value if <code>readable</code> and <code>writable</code>
+ * {@PartialFieldAccess} support for getting and setting a value if <code>readable</code> and <code>writable</code>
  * are of the types R and W respectively.
  * @param T the value type
  * @param R the Readable type to get the value out of
  * @param W the Writable type to put the value into
  */
-abstract class TypeAccess[R,W,T](implicit readableManifest: ClassManifest[R], _writableManifest: ClassManifest[W])
-        extends TypeGetter[R,T] with TypeSetter[W,T] {
+abstract class FieldAccess[R,W,T](implicit readableManifest: ClassManifest[R], _writableManifest: ClassManifest[W])
+        extends FieldGetter[R,T] with FieldSetter[W,T] {
   protected def writableManifest = _writableManifest
 }
 
 /**
- * Factory methods for basic Accesses.  This should be imported as Field._.
+ * Factory methods for basic FieldAccesses.  This should be imported as Field._.
  */
 object Field {
-  /** Defines read-only access for a field value for a Readable type. */
+  /** Defines read-only fieldAccess for a field value for a Readable type. */
   def readOnly[R,T](getter: R => T)
-                   (implicit typeManifest: ClassManifest[R]): TypeGetter[R,T] = {
-    new TypeGetter[R,T] {
+                   (implicit typeManifest: ClassManifest[R]): FieldGetter[R,T] = {
+    new FieldGetter[R,T] {
       def get(readable: R) = getter(readable)
 
       def partialSet(writable: AnyRef, value: T) = false
     }
   }
 
-  /** Defines write-only access for a field value for a Writable type. */
+  /** Defines write-only fieldAccess for a field value for a Writable type. */
   def writeOnly[W,T](setter: W => T => Unit)
-                    (implicit typeManifest: ClassManifest[W]): TypeSetter[W,T] = {
-    new TypeSetter[W,T] {
+                    (implicit typeManifest: ClassManifest[W]): FieldSetter[W,T] = {
+    new FieldSetter[W,T] {
       protected def writableManifest = typeManifest
 
       def set(writable: W, value: T) = setter(writable)(value)
@@ -153,8 +162,8 @@ object Field {
    * @param T the value type
    */
   def flow[R,W,T](getter: R => T, setter: W => T => Unit)
-                 (implicit readableManifest: ClassManifest[R], writableManifest: ClassManifest[W]): TypeAccess[R,W,T] = {
-    new TypeAccess[R,W,T] {
+                 (implicit readableManifest: ClassManifest[R], writableManifest: ClassManifest[W]): FieldAccess[R,W,T] = {
+    new FieldAccess[R,W,T] {
       def get(readable: R) = getter(readable)
 
       def set(writable: W, value: T) = setter(writable)(value)
@@ -162,16 +171,16 @@ object Field {
   }
 
   /**
-   *  Defines access for a field value using a setter and getter.
+   *  Defines fieldAccess for a field value using a setter and getter.
    * @param M any mutable type
    * @param T the value type
    */
-  def access[M,T](getter: M => T, setter: M => T => Unit)
-                 (implicit typeManifest: ClassManifest[M]): TypeAccess[M,M,T] = flow[M,M,T](getter, setter)
+  def fieldAccess[M,T](getter: M => T, setter: M => T => Unit)
+                 (implicit typeManifest: ClassManifest[M]): FieldAccess[M,M,T] = flow[M,M,T](getter, setter)
 
   /**
    * Allow creating a Field without using "new".
    */
-  def apply[T](accesses: PartialAccess[T]*): Field[T] = new Field[T](accesses :_*)
+  def apply[T](fieldAccesses: PartialFieldAccess[T]*): Field[T] = new Field[T](fieldAccesses :_*)
 }
 

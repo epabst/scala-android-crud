@@ -37,7 +37,7 @@ trait CrudListActivity[L,R <: AnyRef,W <: AnyRef] extends ListActivity with Enti
 
   //todo eliminate this if possible
   lazy val viewResourceIds: List[Int] = fields.flatMap(_ match {
-    case viewField: ViewAccessById[_,_] => List(viewField.viewResourceId)
+    case viewField: ViewFieldAccessById[_,_] => List(viewField.viewResourceId)
     case _ => Nil
   })
 
