@@ -9,7 +9,7 @@ lib_managed
 target
 .#*
 _dump
-tm*.log
+*.log
 tm*.lck
 *.iws
 *.ipr
