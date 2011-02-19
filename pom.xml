@@ -80,6 +80,12 @@
       <version>2.5.2</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.pivotallabs</groupId>
+      <artifactId>robolectric</artifactId>
+      <version>1.0-RC2-SNAPSHOT</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -167,7 +173,8 @@
           <useSystemClassLoader>false</useSystemClassLoader>
           <argLine>-Xmx128m</argLine>
           <includes>
-            <include>**/*Spec.java</include>
+            <include>**/*Spec.class</include>
+            <include>**/*Test.class</include>
           </includes>
         </configuration>
       </plugin>
