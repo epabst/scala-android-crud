@@ -31,7 +31,8 @@ trait CopyableField {
  * Usage of implicits make this syntax concise for the simple cases, but allow for very complex situations as well
  * by providing custom implementations for the implicits.
  */
-final class Field[T](val fieldAccesses: PartialFieldAccess[T]*) extends CopyableField with Logging {
+final class Field[T](fieldAccessArgs: PartialFieldAccess[T]*) extends CopyableField with Logging {
+  val fieldAccesses: List[PartialFieldAccess[T]] = fieldAccessArgs.toList
   /**
    * Finds a value out of <code>from</code> by using the FieldAccess that can handle it.
    * @returns Some(value) if successful, otherwise None

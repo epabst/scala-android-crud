@@ -1,0 +1,45 @@
+package geeks.crud.android
+
+import android.provider.BaseColumns
+import geeks.crud.EntityPersistenceComponent
+import geeks.crud.EntityPersistenceComponent$EntityPersistence
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.scalatest.mock.EasyMockSugar
+import com.xtremelabs.robolectric.RobolectricTestRunner
+import scala.collection.mutable.Map
+import CursorFieldAccess._
+import android.widget.ListAdapter
+import org.scalatest.matchers.ShouldMatchers
+import android.content.{Context, DialogInterface}
+import android.database.Cursor
+import android.database.sqlite.{SQLiteDatabase, SQLiteOpenHelper}
+
+//todo don't depend on futurebalance
+import geeks.financial.futurebalance.android.R
+
+/**
+ * A test for {@link CrudListActivity}.
+ * @author Eric Pabst (epabst@gmail.com)
+ * Date: 2/18/11
+ * Time: 6:22 PM
+ */
+@RunWith(classOf[RobolectricTestRunner])
+class SQLiteEntityPersistenceFunctionalSpec extends EasyMockSugar with ShouldMatchers {
+  @Test
+  def shouldUseCorrectColumnNamesForFindAll {
+    val mockContext = mock[Context]
+    val component = new SQLiteEntityPersistenceComponent with TestingDatabaseComponent {
+      val fields = List(Field(persisted[Long]("age")))
+      def entityName = "Person"
+      def context = mockContext
+    }
+    expecting {
+    }
+    whenExecuting(mockContext) {
+      val result = component.persistence.findAll
+      result.getColumnIndex(BaseColumns._ID) should be (0)
+      result.getColumnIndex("age") should be (1)
+    }
+  }
+}
