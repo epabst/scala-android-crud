@@ -53,6 +53,8 @@ trait CrudListActivity[L,R <: AnyRef,W <: AnyRef] extends ListActivity with Enti
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
 
+    setContentView(geeks.financial.futurebalance.android.R.layout.entity_list)
+
     // If no data was given in the intent (because we were started
     // as a MAIN activity), then use our default content provider.
     if (getIntent.getData() == null) getIntent.setData(defaultContentUri);

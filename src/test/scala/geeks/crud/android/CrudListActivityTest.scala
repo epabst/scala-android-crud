@@ -9,7 +9,7 @@ import com.xtremelabs.robolectric.RobolectricTestRunner
 import scala.collection.mutable.Map
 import CursorFieldAccess._
 import android.widget.ListAdapter
-import android.content.DialogInterface
+import android.content.{Intent, DialogInterface}
 
 //todo don't depend on futurebalance
 import geeks.financial.futurebalance.android.R
@@ -35,15 +35,15 @@ class CrudListActivityTest extends EasyMockSugar {
       def listAdapter = mock[ListAdapter]
 
       val entityName = "MyMap"
-      def listLayout: Int = 1
-      def headerLayout: Int = 2
-      def rowLayout: Int = 3
-      def entryLayout: Int = R.layout.test_entry
-      def addItemString: Int = 5
-      def addDialogTitleString: Int = 6
-      def editItemString: Int = 7
-      def editDialogTitleString: Int = 8
-      def cancelItemString: Int = 9
+      val listLayout = R.layout.entity_list
+      val headerLayout = R.layout.test_row
+      val rowLayout = R.layout.test_row
+      val entryLayout = R.layout.test_entry
+      val addItemString = R.string.add_item
+      val addDialogTitleString = R.string.add_item
+      val editItemString = R.string.edit_item
+      val editDialogTitleString = R.string.edit_item
+      val cancelItemString = R.string.cancel_item
     }
     val entity = Map[String,Long]("age" -> 25)
     expecting {
@@ -51,6 +51,8 @@ class CrudListActivityTest extends EasyMockSugar {
       call(activity.persistence.save(None, entity)).andReturn(entity)
     }
     whenExecuting(activity.persistence) {
+      activity.setIntent(new Intent(Intent.ACTION_MAIN))
+      activity.onCreate(null)
       val dialog = activity.createEditDialog(activity, None, () => {})
       dialog.getButton(DialogInterface.BUTTON_POSITIVE).performClick()
     }
