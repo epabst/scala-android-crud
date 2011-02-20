@@ -21,7 +21,7 @@ import geeks.financial.futurebalance.android.R
  * Time: 6:22 PM
  */
 @RunWith(classOf[RobolectricTestRunner])
-class CrudListActivityTest extends EasyMockSugar {
+class CrudListActivitySpec extends EasyMockSugar {
   @Test
   def shouldAllowAdding {
     val activity = new CrudListActivity[List[Map[String,Long]],Map[String,Long],Map[String,Long]]() {
