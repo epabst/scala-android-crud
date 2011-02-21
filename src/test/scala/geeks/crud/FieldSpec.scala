@@ -1,14 +1,17 @@
-package geeks.crud.android
+package geeks.crud
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.Spec
 import java.text.NumberFormat
-import ViewFieldAccess._
-import android.view.View
-import android.widget.TextView
-import android.content.Context
+import geeks.crud.Field._
+import geeks.crud.android.CursorFieldAccess._
+import geeks.crud.android.ViewFieldAccess._
+import _root_.android.view.View
+import _root_.android.widget.TextView
+import _root_.android.content.Context
+
 
 /**
  * A behavior specification for {@link Field}, {@link CursorFieldAccess}, and {@link ViewFieldAccess}.
@@ -20,9 +23,6 @@ import android.content.Context
 @RunWith(classOf[JUnitRunner])
 class FieldSpec extends Spec with ShouldMatchers {
   describe("Field") {
-    import Field._
-    import CursorFieldAccess._
-
     class MyEntity(var string: String, var number: Int)
     class OtherEntity(var name: String, var boolean: Boolean)
 

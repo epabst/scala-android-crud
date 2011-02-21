@@ -8,12 +8,13 @@ import org.junit.runner.RunWith
 import org.scalatest.mock.EasyMockSugar
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import scala.collection.mutable.Map
-import CursorFieldAccess._
 import android.widget.ListAdapter
 import org.scalatest.matchers.ShouldMatchers
 import android.content.{Context, DialogInterface}
 import android.database.Cursor
 import android.database.sqlite.{SQLiteDatabase, SQLiteOpenHelper}
+import geeks.crud._
+import CursorFieldAccess._
 
 //todo don't depend on futurebalance
 import geeks.financial.futurebalance.android.R

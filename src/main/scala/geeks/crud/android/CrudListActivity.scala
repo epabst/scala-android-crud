@@ -3,10 +3,10 @@ package geeks.crud.android
 import android.os.Bundle
 import android.app.{AlertDialog, ListActivity}
 import android.widget.ListAdapter
-import geeks.crud.EntityPersistenceComponent
 import android.net.Uri
 import android.view.{View, MenuItem, Menu}
 import android.content.{Context, DialogInterface}
+import geeks.crud._
 
 /**
  * A generic ListActivity for CRUD operations

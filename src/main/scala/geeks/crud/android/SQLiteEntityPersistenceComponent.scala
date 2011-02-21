@@ -7,6 +7,7 @@ import java.lang.Byte
 import geeks.crud.EntityPersistenceComponent
 import android.content.{Context, ContentValues}
 import geeks.crud.util.Logging
+import geeks.crud._
 
 /**
  * EntityPersistence for SQLite.

@@ -5,6 +5,7 @@ import reflect.ClassManifest
 import geeks.crud.{BasicValueFormat, ValueFormat}
 import java.util.{Calendar,GregorianCalendar}
 import android.widget.{ArrayAdapter, Spinner, DatePicker, TextView}
+import geeks.crud.{Field,FieldAccess}
 
 /**
  * Field fieldAccess for Views.

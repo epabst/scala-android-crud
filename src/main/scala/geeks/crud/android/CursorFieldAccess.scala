@@ -3,6 +3,7 @@ package geeks.crud.android
 import android.content.ContentValues
 import android.database.Cursor
 import android.provider.BaseColumns
+import geeks.crud._
 
 object CursorFieldAccess {
   def persisted[T](name: String)(implicit persistedType: PersistedType[T]): CursorFieldAccess[T] = {

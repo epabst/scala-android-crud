@@ -1,4 +1,4 @@
-package geeks.crud.android
+package geeks.crud
 
 import geeks.crud.util.Logging
 

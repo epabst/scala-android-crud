@@ -7,9 +7,10 @@ import org.junit.runner.RunWith
 import org.scalatest.mock.EasyMockSugar
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import scala.collection.mutable.Map
-import CursorFieldAccess._
 import android.widget.ListAdapter
 import android.content.{Intent, DialogInterface}
+import geeks.crud._
+import CursorFieldAccess._
 
 //todo don't depend on futurebalance
 import geeks.financial.futurebalance.android.R
