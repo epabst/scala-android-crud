@@ -3,6 +3,7 @@ package geeks.crud.android
 import android.database.Cursor
 import android.content.ContentValues
 import java.util.{GregorianCalendar, Calendar}
+import scala.Enumeration
 
 trait PersistedType[T] {
   def valueManifest: Manifest[T]
@@ -68,6 +69,9 @@ object PersistedType {
     calendar.setTimeInMillis(persisted)
     calendar
   })
+
+  def enumStringType[E <: Ordered[_]](enumeration: Enumeration)(implicit m: Manifest[E]): PersistedType[E] =
+    convertedPersistedType[E,String](_.toString, persisted => enumeration.withName(persisted).asInstanceOf[E])
 
   private def getByte(cursor: Cursor)(index: Int): Byte = {
     cursor.getShort(index).asInstanceOf[Byte]

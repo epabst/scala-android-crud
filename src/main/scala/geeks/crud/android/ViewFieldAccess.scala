@@ -2,9 +2,9 @@ package geeks.crud.android
 
 import android.view.View
 import reflect.ClassManifest
-import android.widget.{DatePicker, TextView}
 import geeks.crud.{BasicValueFormat, ValueFormat}
 import java.util.{Calendar,GregorianCalendar}
+import android.widget.{ArrayAdapter, Spinner, DatePicker, TextView}
 
 /**
  * Field fieldAccess for Views.
@@ -57,4 +57,14 @@ object ViewFieldAccess {
   implicit val calendarDatePickerFieldAccess: ViewFieldAccess[DatePicker,Calendar] = viewFieldAccess[DatePicker,Calendar](
     v => new GregorianCalendar(v.getYear, v.getMonth, v.getDayOfMonth),
     v => calendar => v.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)))
+
+  def enumerationSpinnerFieldAccess[E <: Ordered[_]](enum: Enumeration): ViewFieldAccess[Spinner,E] = {
+    val valueArray: Array[E] = enum.values.toArray.asInstanceOf[Array[E]]
+    viewFieldAccess[Spinner,E](_.getSelectedItem.asInstanceOf[E], spinner => value => {
+      if (spinner.getAdapter == null) {
+        spinner.setAdapter(new ArrayAdapter[E](spinner.getContext, android.R.layout.simple_spinner_item, valueArray))
+      }
+      spinner.setSelection(valueArray.indexOf(value))
+    })
+  }
 }
