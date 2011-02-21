@@ -154,6 +154,14 @@ object Field {
     }
   }
 
+
+  /** Defines a default for a field value, used when copied from {@link Unit}. */
+  def default[T](value: => T): PartialFieldAccess[T] = new PartialFieldAccess[T] {
+    def partialGet(readable: AnyRef) = Some(value)
+
+    def partialSet(writable: AnyRef, value: T) = false
+  }
+
   /**
    * Defines a flow for a field value from a Readable type to a Writable type.
    * The value never actually is taken directly from the Readable and set in the Writable.

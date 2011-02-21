@@ -50,6 +50,18 @@ class FieldSpec extends Spec with ShouldMatchers {
         viewId(102)(viewFieldAccess[MyView,String](_.status, _.status_=)))
     }
 
+    it("should set defaults") {
+      val stringField = Field(
+        fieldAccess[MyEntity,String](_.string, _.string_=), default("Hello"))
+
+      val myEntity1 = new MyEntity("my1", 15)
+      stringField.copy(Unit, myEntity1) should be (true)
+      myEntity1.string should be ("Hello")
+      myEntity1.number should be (15)
+      //shouldn't fail
+      stringField.copy(myEntity1, Unit) should be (false)
+    }
+
     it("should copy from one to multiple") {
       val stringField = Field(
         readOnly[OtherEntity,String](_.name),

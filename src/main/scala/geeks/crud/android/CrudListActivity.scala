@@ -85,7 +85,9 @@ trait CrudListActivity[L,R <: AnyRef,W <: AnyRef] extends ListActivity with Enti
   def createEditDialog(context: Context, entityId: Option[ID], afterSave: () => Unit): AlertDialog = {
     val builder = new AlertDialog.Builder(context)
     val entryView = getLayoutInflater.inflate(entryLayout, null)
-    entityId.map(persistence.find).map(readable => fields.foreach(_.copy(readable, entryView)))
+    //Unit is used to set the default value if no entityId is provided
+    val readable = entityId.map(persistence.find).getOrElse(Unit)
+    fields.foreach(_.copy(readable, entryView))
     builder.setView(entryView)
     builder.setTitle(if (entityId.isDefined) editDialogTitleString else addDialogTitleString)
     builder.setPositiveButton(if (entityId.isDefined) editItemString else addItemString, new DialogInterface.OnClickListener {
