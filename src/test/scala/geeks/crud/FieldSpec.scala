@@ -4,13 +4,8 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.Spec
-import java.text.NumberFormat
 import geeks.crud.Field._
 import geeks.crud.android.CursorFieldAccess._
-import geeks.crud.android.ViewFieldAccess._
-import _root_.android.view.View
-import _root_.android.widget.TextView
-import _root_.android.content.Context
 
 
 /**
@@ -38,16 +33,6 @@ class FieldSpec extends Spec with ShouldMatchers {
         fieldAccess[OtherEntity,String](_.name, _.name_=))
       val intField = Field(fieldAccess[MyEntity,Int](_.number, _.number_=))
       val readOnlyField = Field(readOnly[MyEntity,Int](_.number))
-    }
-
-    it("should be easily instantiable for a View") {
-      class MyView(context: Context, var status: String) extends View(context)
-
-      val stringField = Field(
-        persisted[String]("name"),
-        viewId[TextView,String](101),
-        viewFieldAccessById[MyView,String](102, _.status, _.status_=),
-        viewId(102)(viewFieldAccess[MyView,String](_.status, _.status_=)))
     }
 
     it("should set defaults") {

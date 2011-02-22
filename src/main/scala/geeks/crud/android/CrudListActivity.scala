@@ -35,12 +35,6 @@ trait CrudListActivity[L,R <: AnyRef,W <: AnyRef] extends ListActivity with Enti
 
   def fields: List[CopyableField]
 
-  //todo eliminate this if possible
-  lazy val viewResourceIds: List[Int] = fields.flatMap(_ match {
-    case viewField: ViewFieldAccessById[_,_] => List(viewField.viewResourceId)
-    case _ => Nil
-  })
-
   def listAdapter: ListAdapter
 
   def context: Context = this
@@ -82,7 +76,7 @@ trait CrudListActivity[L,R <: AnyRef,W <: AnyRef] extends ListActivity with Enti
    * Creates an edit dialog in the given Context to edit the entity and save it.
    * @param entityToEdit an Entity instance to edit or None to add a new one
    */
-  def createEditDialog(context: Context, entityId: Option[ID], afterSave: () => Unit): AlertDialog = {
+  def createEditDialog(context: Context, entityId: Option[ID], afterSave: () => Unit = () => {}): AlertDialog = {
     val builder = new AlertDialog.Builder(context)
     val entryView = getLayoutInflater.inflate(entryLayout, null)
     //Unit is used to set the default value if no entityId is provided

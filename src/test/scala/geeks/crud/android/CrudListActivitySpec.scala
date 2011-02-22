@@ -54,7 +54,7 @@ class CrudListActivitySpec extends EasyMockSugar {
     whenExecuting(activity.persistence) {
       activity.setIntent(new Intent(Intent.ACTION_MAIN))
       activity.onCreate(null)
-      val dialog = activity.createEditDialog(activity, None, () => {})
+      val dialog = activity.createEditDialog(activity, None)
       dialog.getButton(DialogInterface.BUTTON_POSITIVE).performClick()
     }
   }

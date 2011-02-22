@@ -88,12 +88,16 @@ trait PartialFieldAccess[T] {
  * @param T the value type
  * @param R the Readable type to get the value out of
  */
-abstract class FieldGetter[R,T](implicit readableManifest: ClassManifest[R]) extends PartialFieldAccess[T] {
+abstract class FieldGetter[R,T](implicit readableManifest: ClassManifest[R]) extends PartialFieldAccess[T] with Logging {
   /** An abstract method that must be implemented by subtypes. */
   def get(readable: R): T
 
   final def partialGet(readable: AnyRef) = {
-    if (readableManifest.erasure.isInstance(readable)) Some(get(readable.asInstanceOf[R])) else None
+    debug("Comparing " + readableManifest.erasure + " with param " + readable)
+    if (readableManifest.erasure.isInstance(readable))
+      Some(get(readable.asInstanceOf[R]))
+    else
+      None
   }
 }
 

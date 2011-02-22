@@ -1,11 +1,10 @@
 package geeks.crud.android
 
-import android.view.View
+import _root_.android.view.View
 import reflect.ClassManifest
-import geeks.crud.{BasicValueFormat, ValueFormat}
 import java.util.{Calendar,GregorianCalendar}
-import android.widget.{ArrayAdapter, Spinner, DatePicker, TextView}
-import geeks.crud.{Field,FieldAccess}
+import _root_.android.widget.{ArrayAdapter, Spinner, DatePicker, TextView}
+import geeks.crud._
 
 /**
  * Field fieldAccess for Views.
@@ -17,15 +16,21 @@ import geeks.crud.{Field,FieldAccess}
 abstract class ViewFieldAccess[V <: View,T](implicit m: ClassManifest[V]) extends FieldAccess[V,V,T]
 
 /** View fieldAccess for a View resource within a given parent View */
-class ViewFieldAccessById[V <: View,T](val viewResourceId: Int)(implicit childViewFieldAccess: ViewFieldAccess[V,T])
-        extends ViewFieldAccess[View,T] {
-  def get(entryView: View) = getFromChildView(entryView.findViewById(viewResourceId).asInstanceOf[V])
+class ViewFieldAccessById[T](val viewResourceId: Int)(childViewFieldAccess: ViewFieldAccess[_,T])
+        extends PartialFieldAccess[T] {
+  def partialGet(readable: AnyRef) = readable match {
+    case entryView: View => Option(entryView.findViewById(viewResourceId)).flatMap(v => partialGetFromChildView(v))
+    case _ => None
+  }
 
-  def set(entryView: View, value: T) = setInChildView(entryView.findViewById(viewResourceId).asInstanceOf[V], value)
+  def partialSet(writable: AnyRef, value: T) = writable match {
+    case entryView: View => partialSetInChildView(entryView.findViewById(viewResourceId), value)
+    case _ => false
+  }
 
-  def getFromChildView(childView: V) = childViewFieldAccess.get(childView)
+  def partialGetFromChildView(childView: View) = childViewFieldAccess.partialGet(childView)
 
-  def setInChildView(childView: V, value: T) = childViewFieldAccess.set(childView, value)
+  def partialSetInChildView(childView: View, value: T) = childViewFieldAccess.partialSet(childView, value)
 }
 
 object ViewFieldAccess {
@@ -37,12 +42,12 @@ object ViewFieldAccess {
     }
   }
 
-  def viewId[V <: View,T](viewResourceId: Int)(implicit childViewFieldAccess: ViewFieldAccess[V,T]): ViewFieldAccessById[V,T] = {
-    new ViewFieldAccessById[V,T](viewResourceId)
+  def viewId[V <: View,T](viewResourceId: Int)(implicit childViewFieldAccess: ViewFieldAccess[V,T]): ViewFieldAccessById[T] = {
+    new ViewFieldAccessById[T](viewResourceId)(childViewFieldAccess)
   }
 
   def viewFieldAccessById[V <: View,T](viewResourceId: Int, getter: V => T, setter: V => T => Unit)
-                                 (implicit m: ClassManifest[V]): ViewFieldAccessById[V,T] = {
+                                 (implicit m: ClassManifest[V]): ViewFieldAccessById[T] = {
     viewId(viewResourceId)(viewFieldAccess(getter,setter))
   }
 
@@ -63,7 +68,7 @@ object ViewFieldAccess {
     val valueArray: Array[E] = enum.values.toArray.asInstanceOf[Array[E]]
     viewFieldAccess[Spinner,E](_.getSelectedItem.asInstanceOf[E], spinner => value => {
       if (spinner.getAdapter == null) {
-        spinner.setAdapter(new ArrayAdapter[E](spinner.getContext, android.R.layout.simple_spinner_item, valueArray))
+        spinner.setAdapter(new ArrayAdapter[E](spinner.getContext, _root_.android.R.layout.simple_spinner_item, valueArray))
       }
       spinner.setSelection(valueArray.indexOf(value))
     })
