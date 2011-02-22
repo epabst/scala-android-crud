@@ -19,4 +19,14 @@ trait Logging {
     try Log.i(this.getClass.getName, f)
     catch { case e: RuntimeException if (e.getMessage == "Stub!") => }
   }
+
+  protected def warn(f: => String) {
+    try Log.w(this.getClass.getName, f)
+    catch { case e: RuntimeException if (e.getMessage == "Stub!") => }
+  }
+
+  protected def error(f: => String) {
+    try Log.e(this.getClass.getName, f)
+    catch { case e: RuntimeException if (e.getMessage == "Stub!") => }
+  }
 }
