@@ -10,7 +10,7 @@ create - creates Entry View in UIContext, copies from Unit to View, allows user 
 read/list - [optional query: creates Query View in UIContext, possibly allows user query input, copies from View to Query]
             (or copies from model to simple Query), find/findAll, create List View, then copy Table format to View, user can close View
     startCriteria(criteria): CriteriaView, query(criteria): data stream, close(CriteriaView)
-    startList(data stream): ListView, close(ListView), startRead(id): EntityView, read(id): Option[data], close(EntityView)
+    startList(criteria): ListView, close(ListView), startRead(id): EntityView, read(id): Option[data], close(EntityView)
 update - (after read/list), create Entry View, copies from Table format to View, allows user input,
              copies from View to Table format, save (update), close Entry View
     startUpdate(id): EntryView, save(id, data), close(EntryView)
