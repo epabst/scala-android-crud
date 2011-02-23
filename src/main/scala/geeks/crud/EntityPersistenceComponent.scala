@@ -25,10 +25,15 @@ trait EntityPersistenceComponent[L,R,W] {
   trait EntityPersistence {
     def findAll: L
 
+    /** Find an entity by ID. */
     def find(id: ID): R
 
     def newWritable: W
 
+    /** Save a created or updated entity. */
     def save(id: Option[ID], writable: W): ID
+
+    /** Delete a list of entities by ID. */
+    def delete(ids: List[ID])
   }
 }

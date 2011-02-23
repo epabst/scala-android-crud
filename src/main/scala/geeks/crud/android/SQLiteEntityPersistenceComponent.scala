@@ -65,5 +65,9 @@ trait SQLiteEntityPersistenceComponent extends EntityPersistenceComponent[Cursor
         }
       }
     }
+
+    def delete(ids: List[ID]) {
+      ids.foreach(id => database.delete(entityName, BaseColumns._ID + "=" + id, Nil.toArray))
+    }
   }
 }
