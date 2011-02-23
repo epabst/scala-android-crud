@@ -16,3 +16,7 @@ update - (after read/list), create Entry View, copies from Table format to View,
     startUpdate(id): EntryView, save(id, data), close(EntryView)
 delete - (after read/list) copies from View to simple value Query, optional prompt, delete, optional support for undo
     startDelete(id or criteria): DeleteView, delete(id or data stream), close(DeleteView)
+
+
+ToDos:
+* Make EntityPersistence.find(ID) return an Option[R] instead of just R.
