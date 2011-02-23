@@ -19,6 +19,7 @@ import android.content.{ContentValues, Context, DialogInterface}
 trait CursorCrudListActivity extends CrudListActivity[Cursor,Cursor,ContentValues] {
   lazy val dataSource: CursorAdapter = {
     val cursor = persistence.findAll
+    startManagingCursor(cursor)
     new ResourceCursorAdapter(this, rowLayout, cursor) {
       def bindView(view: View, context: Context, cursor: Cursor) {
         fields.foreach(_.copy(cursor, view))
