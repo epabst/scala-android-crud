@@ -1,8 +1,9 @@
 package geeks.crud.android
 
+import _root_.android.app.{Activity, AlertDialog, ListActivity}
 import android.os.Bundle
-import android.app.{AlertDialog, ListActivity}
-import android.widget.ListAdapter
+import android.widget.
+ListAdapter
 import android.net.Uri
 import android.view.{View, MenuItem, Menu}
 import android.content.{Context, DialogInterface}
@@ -76,9 +77,9 @@ trait CrudListActivity[L,R <: AnyRef,W <: AnyRef] extends ListActivity with Enti
    * Creates an edit dialog in the given Context to edit the entity and save it.
    * @param entityToEdit an Entity instance to edit or None to add a new one
    */
-  def createEditDialog(context: Context, entityId: Option[ID], afterSave: () => Unit = () => {}): AlertDialog = {
+  def createEditDialog(context: Activity, entityId: Option[ID], afterSave: () => Unit = () => {}): AlertDialog = {
     val builder = new AlertDialog.Builder(context)
-    val entryView = getLayoutInflater.inflate(entryLayout, null)
+    val entryView = context.getLayoutInflater.inflate(entryLayout, null)
     //Unit is used to set the default value if no entityId is provided
     val readable = entityId.map(persistence.find).getOrElse(Unit)
     fields.foreach(_.copy(readable, entryView))
