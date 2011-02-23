@@ -9,12 +9,12 @@ package geeks.crud
  * @param C the criteria for findAll
  */
 
-trait EntityCrudUI[ID,C] {
+trait CrudUI[ID,C] {
   /** Display a UI for a user to fill in data for creating an entity.  It should copy Unit into the UI to populate defaults. */
   def startCreateUI()
 
-  /** Display a UI that shows a (probably scrollable) list of entities. */
-  def displayList(criteria: C)
+  /** Display a UI that shows matching entities (probably as a scrollable list). */
+  def displayResults(criteria: C)
 
   /** Display a UI that shows an entity. */
   def display(id: ID)
