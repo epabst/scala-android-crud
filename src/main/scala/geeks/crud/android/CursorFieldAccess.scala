@@ -16,6 +16,8 @@ object CursorFieldAccess {
       case _ => None
     }))
   }
+
+  def sqliteCriteria[T](name: String) = Field.writeOnly[SQLiteCriteria,T](criteria => value => criteria.selection = name + "=" + value)
 }
 
 class CursorFieldAccess[T](val name: String)(implicit val persistedType: PersistedType[T]) extends FieldAccess[Cursor,ContentValues,T] {

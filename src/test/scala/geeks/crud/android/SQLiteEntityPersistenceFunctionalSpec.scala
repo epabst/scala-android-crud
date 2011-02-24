@@ -49,7 +49,7 @@ class SQLiteEntityPersistenceFunctionalSpec extends EasyMockSugar with ShouldMat
     expecting {
     }
     whenExecuting(mockContext) {
-      val result = component.persistence.findAll
+      val result = component.persistence.findAll(new SQLiteCriteria())
       result.getColumnIndex(BaseColumns._ID) should be (0)
       result.getColumnIndex("age") should be (1)
     }

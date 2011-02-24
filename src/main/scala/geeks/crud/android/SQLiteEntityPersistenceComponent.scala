@@ -19,25 +19,17 @@ trait SQLiteEntityPersistenceComponent {
 
   lazy val database: SQLiteDatabase = databaseSetup.getWritableDatabase
 
-  class SQLiteEntityPersistence(entityConfig: AndroidEntityCrudConfig) extends EntityPersistence[Long,Cursor,Cursor,ContentValues] with Logging {
-    //may be overridden to affect findAll
-    def selection: String = null
-    //may be overridden to affect findAll
-    def selectionArgs: Array[String] = Nil.toArray
-    //may be overridden to affect findAll
-    def groupBy: String = null
-    //may be overridden to affect findAll
-    def having: String = null
-    //may be overridden to affect findAll
-    def orderBy: String = null
+  class SQLiteEntityPersistence(entityConfig: AndroidEntityCrudConfig) extends EntityPersistence[Long,SQLiteCriteria,Cursor,Cursor,ContentValues] with Logging {
 
     final lazy val queryFieldNames: List[String] = CursorFieldAccess.queryFieldNames(entityConfig.fields)
 
-    def findAll: Cursor = database.query(entityConfig.entityName, queryFieldNames.toArray,
-      selection, selectionArgs, groupBy, having, orderBy)
+    def newCriteria = new SQLiteCriteria
+
+    def findAll(criteria: SQLiteCriteria): Cursor = database.query(entityConfig.entityName, queryFieldNames.toArray,
+      criteria.selection, criteria.selectionArgs, criteria.groupBy, criteria.having, criteria.orderBy)
 
     def find(id: Long) = database.query(entityConfig.entityName, queryFieldNames.toArray,
-      BaseColumns._ID + "=" + id, Nil.toArray, groupBy, having, orderBy)
+      BaseColumns._ID + "=" + id, Nil.toArray, null, null, null)
 
     def newWritable = new ContentValues
 
@@ -60,3 +52,6 @@ trait SQLiteEntityPersistenceComponent {
     }
   }
 }
+
+class SQLiteCriteria(var selection: String = null, var selectionArgs: Array[String] = Nil.toArray,
+                     var groupBy: String = null, var having: String = null, var orderBy: String = null)

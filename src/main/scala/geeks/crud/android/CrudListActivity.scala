@@ -15,15 +15,16 @@ import geeks.crud._
  * Date: 2/3/11
  * Time: 7:06 AM
  * @param ID the ID type for the entity such as String or Long.
+ * @param Q the query criteria type
  * @param L the type of findAll (e.g. Cursor)
  * @param R the type to read from (e.g. Cursor)
  * @param W the type to write to (e.g. ContentValues)
  */
-abstract class CrudListActivity[ID,L <: AnyRef,R <: AnyRef,W <: AnyRef](entityConfig: AndroidEntityCrudConfig) extends ListActivity {
+abstract class CrudListActivity[ID,Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](entityConfig: AndroidEntityCrudConfig) extends ListActivity {
   val ADD_DIALOG_ID = 100
   val EDIT_DIALOG_ID = 101
 
-  def persistence: EntityPersistence[ID,L,R,W]
+  def persistence: EntityPersistence[ID,Q,L,R,W]
 
   def listAdapter: ListAdapter
 

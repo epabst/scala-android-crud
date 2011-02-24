@@ -6,13 +6,16 @@ package geeks.crud
  * Date: 2/2/11
  * Time: 4:12 PM
  * @param ID the ID type for the entity such as String or Long.
+ * @param Q the query criteria type
  * @param L the type of findAll (e.g. Cursor)
  * @param R the type to read from (e.g. Cursor)
  * @param W the type to write to (e.g. ContentValues)
  */
 
-trait EntityPersistence[ID,L,R,W] {
-  def findAll: L
+trait EntityPersistence[ID,Q,L,R,W] {
+  def newCriteria: Q
+
+  def findAll(query: Q): L
 
   /** Find an entity by ID. */
   def find(id: ID): R

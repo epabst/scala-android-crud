@@ -38,8 +38,8 @@ class CrudListActivitySpec extends EasyMockSugar {
 
   @Test
   def shouldAllowAdding {
-    val activity = new CrudListActivity[Long,List[Map[String,Long]],Map[String,Long],Map[String,Long]](MyEntityConfig) {
-      val persistence = mock[EntityPersistence[Long,List[Map[String,Long]],Map[String,Long],Map[String,Long]]]
+    val activity = new CrudListActivity[Long,AnyRef,List[Map[String,Long]],Map[String,Long],Map[String,Long]](MyEntityConfig) {
+      val persistence = mock[EntityPersistence[Long,AnyRef,List[Map[String,Long]],Map[String,Long],Map[String,Long]]]
 
       def refreshAfterSave() {}
 

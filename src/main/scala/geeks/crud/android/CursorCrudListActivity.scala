@@ -15,15 +15,17 @@ import geeks.crud.EntityPersistence
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 2/12/11
  * Time: 10:25 PM
+ * @param Q the query criteria type
  */
+abstract class CursorCrudListActivity[Q <: AnyRef](entityConfig: AndroidEntityCrudConfig)
+  extends CrudListActivity[Long,Q,Cursor,Cursor,ContentValues](entityConfig) with SQLiteEntityPersistenceComponent with FBDatabaseComponent {
 
-abstract class CursorCrudListActivity(entityConfig: AndroidEntityCrudConfig)
-  extends CrudListActivity[Long,Cursor,Cursor,ContentValues](entityConfig) with SQLiteEntityPersistenceComponent with FBDatabaseComponent {
-
-  def persistence: EntityPersistence[Long,Cursor,Cursor,ContentValues]
+  def persistence: EntityPersistence[Long,Q,Cursor,Cursor,ContentValues]
 
   lazy val dataSource: CursorAdapter = {
-    val cursor = persistence.findAll
+    val criteria = persistence.newCriteria
+    entityConfig.fields.foreach(_.copy(getIntent, criteria))
+    val cursor = persistence.findAll(criteria)
     startManagingCursor(cursor)
     new ResourceCursorAdapter(this, entityConfig.rowLayout, cursor) {
       def bindView(view: View, context: Context, cursor: Cursor) {

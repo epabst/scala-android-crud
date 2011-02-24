@@ -1,5 +1,6 @@
 package geeks.crud.android
 
+import _root_.android.content.{ContentUris, Intent}
 import _root_.android.view.View
 import reflect.ClassManifest
 import java.util.{Calendar,GregorianCalendar}
@@ -73,4 +74,6 @@ object ViewFieldAccess {
       spinner.setSelection(valueArray.indexOf(value))
     })
   }
+
+  val intentId = Field.readOnly[Intent,Long](intent => ContentUris.parseId(intent.getData))
 }
