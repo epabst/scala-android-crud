@@ -9,6 +9,4 @@ import geeks.crud.EntityCrudConfig
  * Time: 3:31 PM
  */
 
-trait AndroidEntityCrudConfig extends EntityCrudConfig[Int,Int] {
-  type ID = Long
-}
+trait AndroidEntityCrudConfig extends EntityCrudConfig[Long,Int,Int]
