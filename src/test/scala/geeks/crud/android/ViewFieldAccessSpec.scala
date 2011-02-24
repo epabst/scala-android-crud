@@ -77,4 +77,48 @@ class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
       stringField.copy(group, myEntity1) should be (false)
     }
   }
+
+  @Test
+  def itShouldSkipUnparseableValues() {
+    val context = mock[Context]
+    whenExecuting(context) {
+      val field = Field[Int](primitiveTextViewFieldAccess, fieldAccess[MyEntity,Int](_.number, _.number_=))
+      val view = new TextView(context)
+      view.setText("twenty")
+      field.findValue(view) should be (None)
+
+      val entity = new MyEntity("my1", 30)
+      val result = field.copy(view, entity)
+      result should be (false)
+      entity.number should be (30)
+    }
+  }
+
+  @Test
+  def itShouldConvertNullToNone() {
+    val context = mock[Context]
+    whenExecuting(context) {
+      val field = Field(stringTextViewFieldAccess)
+      val view = new TextView(context)
+      view.setText(null)
+      field.findValue(view) should be (None)
+
+      view.setText("")
+      field.findValue(view) should be (None)
+    }
+  }
+
+  @Test
+  def itShouldTrimStrings() {
+    val context = mock[Context]
+    whenExecuting(context) {
+      val field = Field(stringTextViewFieldAccess)
+      val view = new TextView(context)
+      view.setText("  ")
+      field.findValue(view) should be (None)
+
+      view.setText(" hello world ")
+      field.findValue(view) should be (Some("hello world"))
+    }
+  }
 }

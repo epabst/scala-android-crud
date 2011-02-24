@@ -84,18 +84,18 @@ trait PartialFieldAccess[T] {
 }
 
 /**
- * {@PartialFieldAccess} support for getting a value if <code>readable</code> is of type R.
+ * {@PartialFieldAccess} support for getting a value as an Option if <code>readable</code> is of type R.
  * @param T the value type
  * @param R the Readable type to get the value out of
  */
 abstract class FieldGetter[R,T](implicit readableManifest: ClassManifest[R]) extends PartialFieldAccess[T] with Logging {
   /** An abstract method that must be implemented by subtypes. */
-  def get(readable: R): T
+  def get(readable: R): Option[T]
 
   final def partialGet(readable: AnyRef) = {
     debug("Comparing " + readableManifest.erasure + " with param " + readable)
     if (readableManifest.erasure.isInstance(readable))
-      Some(get(readable.asInstanceOf[R]))
+      get(readable.asInstanceOf[R])
     else
       None
   }
@@ -136,8 +136,11 @@ abstract class FieldAccess[R,W,T](implicit readableManifest: ClassManifest[R], _
  * Factory methods for basic FieldAccesses.  This should be imported as Field._.
  */
 object Field {
+  //This is here so that getters can be written more simply by not having to explicitly wrap the result in a "Some".
+  implicit def toSome[T](value: T): Option[T] = Some(value)
+
   /** Defines read-only fieldAccess for a field value for a Readable type. */
-  def readOnly[R,T](getter: R => T)
+  def readOnly[R,T](getter: R => Option[T])
                    (implicit typeManifest: ClassManifest[R]): FieldGetter[R,T] = {
     new FieldGetter[R,T] {
       def get(readable: R) = getter(readable)
@@ -174,7 +177,7 @@ object Field {
    * @param W the Writable type to put the value into
    * @param T the value type
    */
-  def flow[R,W,T](getter: R => T, setter: W => T => Unit)
+  def flow[R,W,T](getter: R => Option[T], setter: W => T => Unit)
                  (implicit readableManifest: ClassManifest[R], writableManifest: ClassManifest[W]): FieldAccess[R,W,T] = {
     new FieldAccess[R,W,T] {
       def get(readable: R) = getter(readable)
@@ -188,7 +191,7 @@ object Field {
    * @param M any mutable type
    * @param T the value type
    */
-  def fieldAccess[M,T](getter: M => T, setter: M => T => Unit)
+  def fieldAccess[M,T](getter: M => Option[T], setter: M => T => Unit)
                  (implicit typeManifest: ClassManifest[M]): FieldAccess[M,M,T] = flow[M,M,T](getter, setter)
 
   /**
