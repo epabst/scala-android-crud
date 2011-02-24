@@ -1,8 +1,7 @@
 package geeks.crud.android
 
 import android.provider.BaseColumns
-import geeks.crud.EntityPersistenceComponent
-import geeks.crud.EntityPersistenceComponent$EntityPersistence
+import geeks.crud.EntityPersistence
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.scalatest.mock.EasyMockSugar
@@ -27,12 +26,24 @@ import geeks.financial.futurebalance.android.R
  */
 @RunWith(classOf[RobolectricTestRunner])
 class SQLiteEntityPersistenceFunctionalSpec extends EasyMockSugar with ShouldMatchers {
+  object TestEntityConfig extends AndroidEntityCrudConfig {
+    def entityName = "Person"
+    val fields = List(Field(persisted[Long]("age")))
+
+    val listLayout = R.layout.entity_list
+    val headerLayout = R.layout.test_row
+    val rowLayout = R.layout.test_row
+    val entryLayout = R.layout.test_entry
+    val addItemString = R.string.add_item
+    val editItemString = R.string.edit_item
+    val cancelItemString = R.string.cancel_item
+  }
+
   @Test
   def shouldUseCorrectColumnNamesForFindAll {
     val mockContext = mock[Context]
     val component = new SQLiteEntityPersistenceComponent with TestingDatabaseComponent {
-      val fields = List(Field(persisted[Long]("age")))
-      def entityName = "Person"
+      val persistence = new SQLiteEntityPersistence(TestEntityConfig)
       def context = mockContext
     }
     expecting {

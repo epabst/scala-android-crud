@@ -1,14 +1,13 @@
 package geeks.crud.android
 
 import android.provider.BaseColumns
-import geeks.crud.EntityPersistenceComponent$EntityPersistence
 import org.junit.Test
 import org.junit.runner.RunWith
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import geeks.crud._
 import CursorFieldAccess._
 import org.scalatest.matchers.ShouldMatchers
-//todo don't depend on futurebalance
+
 /**
  * A specification for {@link CursorFieldAccess}.
  * @author Eric Pabst (epabst@gmail.com)

@@ -1,7 +1,6 @@
 package geeks.crud.android
 
-import geeks.crud.EntityPersistenceComponent
-import geeks.crud.EntityPersistenceComponent$EntityPersistence
+import geeks.crud.EntityPersistence
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.scalatest.mock.EasyMockSugar
@@ -23,28 +22,28 @@ import geeks.financial.futurebalance.android.R
  */
 @RunWith(classOf[RobolectricTestRunner])
 class CrudListActivitySpec extends EasyMockSugar {
+  object MyEntityConfig extends AndroidEntityCrudConfig {
+    val entityName = "MyMap"
+
+    def fields = List(Field(persisted[Long]("age")))
+
+    val listLayout = R.layout.entity_list
+    val headerLayout = R.layout.test_row
+    val rowLayout = R.layout.test_row
+    val entryLayout = R.layout.test_entry
+    val addItemString = R.string.add_item
+    val editItemString = R.string.edit_item
+    val cancelItemString = R.string.cancel_item
+  }
+
   @Test
   def shouldAllowAdding {
-    val activity = new CrudListActivity[List[Map[String,Long]],Map[String,Long],Map[String,Long]]() {
-      type ID = Long
-      val persistence = mock[EntityPersistence]
-
-      def fields = List(Field(persisted[Long]("age")))
+    val activity = new CrudListActivity[Long,List[Map[String,Long]],Map[String,Long],Map[String,Long]](MyEntityConfig) {
+      val persistence = mock[EntityPersistence[Long,List[Map[String,Long]],Map[String,Long],Map[String,Long]]]
 
       def refreshAfterSave() {}
 
       def listAdapter = mock[ListAdapter]
-
-      val entityName = "MyMap"
-      val listLayout = R.layout.entity_list
-      val headerLayout = R.layout.test_row
-      val rowLayout = R.layout.test_row
-      val entryLayout = R.layout.test_entry
-      val addItemString = R.string.add_item
-      val addDialogTitleString = R.string.add_item
-      val editItemString = R.string.edit_item
-      val editDialogTitleString = R.string.edit_item
-      val cancelItemString = R.string.cancel_item
     }
     val entity = Map[String,Long]("age" -> 25)
     expecting {

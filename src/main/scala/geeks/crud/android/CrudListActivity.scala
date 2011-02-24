@@ -14,27 +14,16 @@ import geeks.crud._
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 2/3/11
  * Time: 7:06 AM
+ * @param ID the ID type for the entity such as String or Long.
  * @param L the type of findAll (e.g. Cursor)
  * @param R the type to read from (e.g. Cursor)
  * @param W the type to write to (e.g. ContentValues)
  */
-trait CrudListActivity[L,R <: AnyRef,W <: AnyRef] extends ListActivity with EntityPersistenceComponent[L,R,W] {
+abstract class CrudListActivity[ID,L <: AnyRef,R <: AnyRef,W <: AnyRef](entityConfig: AndroidEntityCrudConfig) extends ListActivity {
   val ADD_DIALOG_ID = 100
   val EDIT_DIALOG_ID = 101
 
-  def entityName: String
-
-  def listLayout: Int
-  def headerLayout: Int
-  def rowLayout: Int
-  def entryLayout: Int
-  def addItemString: Int
-  def addDialogTitleString: Int
-  def editItemString: Int
-  def editDialogTitleString: Int
-  def cancelItemString: Int
-
-  def fields: List[CopyableField]
+  def persistence: EntityPersistence[ID,L,R,W]
 
   def listAdapter: ListAdapter
 
@@ -43,12 +32,12 @@ trait CrudListActivity[L,R <: AnyRef,W <: AnyRef] extends ListActivity with Enti
   def refreshAfterSave()
 
   lazy val contentProviderAuthority = this.getClass.getPackage.toString
-  lazy val defaultContentUri = Uri.parse("content://" + contentProviderAuthority + "/" + entityName);
+  lazy val defaultContentUri = Uri.parse("content://" + contentProviderAuthority + "/" + entityConfig.entityName);
 
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
 
-    setContentView(geeks.financial.futurebalance.android.R.layout.entity_list)
+    setContentView(entityConfig.listLayout)
 
     // If no data was given in the intent (because we were started
     // as a MAIN activity), then use our default content provider.
@@ -56,13 +45,13 @@ trait CrudListActivity[L,R <: AnyRef,W <: AnyRef] extends ListActivity with Enti
 
     val view = getListView();
 		view.setHeaderDividersEnabled(true);
-		view.addHeaderView(getLayoutInflater().inflate(headerLayout, null));
+		view.addHeaderView(getLayoutInflater().inflate(entityConfig.headerLayout, null));
 
     setListAdapter(listAdapter)
   }
 
   override def onCreateOptionsMenu(menu: Menu): Boolean = {
-    menu.add(0, ADD_DIALOG_ID, 1, addItemString)
+    menu.add(0, ADD_DIALOG_ID, 1, entityConfig.addItemString)
     true
   }
 
@@ -79,22 +68,22 @@ trait CrudListActivity[L,R <: AnyRef,W <: AnyRef] extends ListActivity with Enti
    */
   def createEditDialog(context: Activity, entityId: Option[ID], afterSave: () => Unit = () => {}): AlertDialog = {
     val builder = new AlertDialog.Builder(context)
-    val entryView = context.getLayoutInflater.inflate(entryLayout, null)
+    val entryView = context.getLayoutInflater.inflate(entityConfig.entryLayout, null)
     //Unit is used to set the default value if no entityId is provided
     val readable = entityId.map(persistence.find).getOrElse(Unit)
-    fields.foreach(_.copy(readable, entryView))
+    entityConfig.fields.foreach(_.copy(readable, entryView))
     builder.setView(entryView)
-    builder.setTitle(if (entityId.isDefined) editDialogTitleString else addDialogTitleString)
-    builder.setPositiveButton(if (entityId.isDefined) editItemString else addItemString, new DialogInterface.OnClickListener {
+    builder.setTitle(if (entityId.isDefined) entityConfig.editItemString else entityConfig.addItemString)
+    builder.setPositiveButton(if (entityId.isDefined) entityConfig.editItemString else entityConfig.addItemString, new DialogInterface.OnClickListener {
       def onClick(dialog: DialogInterface, which: Int) {
         dialog.dismiss
         val writable = persistence.newWritable
-        fields.foreach(_.copy(entryView, writable))
+        entityConfig.fields.foreach(_.copy(entryView, writable))
         persistence.save(entityId, writable)
         afterSave()
       }
     })
-    builder.setNegativeButton(cancelItemString, new DialogInterface.OnClickListener {
+    builder.setNegativeButton(entityConfig.cancelItemString, new DialogInterface.OnClickListener {
       def onClick(dialog: DialogInterface, which: Int) {
         dialog.cancel
       }

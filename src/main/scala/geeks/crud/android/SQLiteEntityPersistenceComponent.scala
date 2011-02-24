@@ -4,7 +4,6 @@ import android.provider.BaseColumns
 import android.database.sqlite.{SQLiteDatabase, SQLiteOpenHelper}
 import android.database.Cursor
 import java.lang.Byte
-import geeks.crud.EntityPersistenceComponent
 import android.content.{Context, ContentValues}
 import geeks.crud.util.Logging
 import geeks.crud._
@@ -15,22 +14,12 @@ import geeks.crud._
  * Date: 2/3/11
  * Time: 6:17 PM
  */
-trait SQLiteEntityPersistenceComponent extends EntityPersistenceComponent[Cursor,Cursor,ContentValues] {
-  type ID = Long
-
-  def entityName: String
-
-  def fields: List[CopyableField]
-
-  def context: Context
-
+trait SQLiteEntityPersistenceComponent {
   def databaseSetup: SQLiteOpenHelper
 
   lazy val database: SQLiteDatabase = databaseSetup.getWritableDatabase
 
-  lazy val persistence: SQLiteEntityPersistence = new SQLiteEntityPersistence
-
-  class SQLiteEntityPersistence extends EntityPersistence with Logging {
+  class SQLiteEntityPersistence(entityConfig: AndroidEntityCrudConfig) extends EntityPersistence[Long,Cursor,Cursor,ContentValues] with Logging {
     //may be overridden to affect findAll
     def selection: String = null
     //may be overridden to affect findAll
@@ -42,32 +31,32 @@ trait SQLiteEntityPersistenceComponent extends EntityPersistenceComponent[Cursor
     //may be overridden to affect findAll
     def orderBy: String = null
 
-    final lazy val queryFieldNames: List[String] = CursorFieldAccess.queryFieldNames(fields)
+    final lazy val queryFieldNames: List[String] = CursorFieldAccess.queryFieldNames(entityConfig.fields)
 
-    def findAll: Cursor = database.query(entityName, queryFieldNames.toArray,
+    def findAll: Cursor = database.query(entityConfig.entityName, queryFieldNames.toArray,
       selection, selectionArgs, groupBy, having, orderBy)
 
-    def find(id: ID) = database.query(entityName, queryFieldNames.toArray,
+    def find(id: Long) = database.query(entityConfig.entityName, queryFieldNames.toArray,
       BaseColumns._ID + "=" + id, Nil.toArray, groupBy, having, orderBy)
 
     def newWritable = new ContentValues
 
-    def save(idOption: Option[ID], contentValues: ContentValues): ID = {
+    def save(idOption: Option[Long], contentValues: ContentValues): Long = {
       idOption match {
         case None => {
-          info("Adding " + entityName + " with " + contentValues)
-          database.insert(entityName, null, contentValues)
+          info("Adding " + entityConfig.entityName + " with " + contentValues)
+          database.insert(entityConfig.entityName, null, contentValues)
         }
         case Some(id) => {
-          info("Updating " + entityName + " #" + id + " with " + contentValues)
-          database.update(entityName, contentValues, BaseColumns._ID + "=" + id, null)
+          info("Updating " + entityConfig.entityName + " #" + id + " with " + contentValues)
+          database.update(entityConfig.entityName, contentValues, BaseColumns._ID + "=" + id, null)
           id
         }
       }
     }
 
-    def delete(ids: List[ID]) {
-      ids.foreach(id => database.delete(entityName, BaseColumns._ID + "=" + id, Nil.toArray))
+    def delete(ids: List[Long]) {
+      ids.foreach(id => database.delete(entityConfig.entityName, BaseColumns._ID + "=" + id, Nil.toArray))
     }
   }
 }
