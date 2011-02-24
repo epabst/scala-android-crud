@@ -23,4 +23,8 @@ trait EntityCrudConfig[TT,LT] {
   def addItemString: TT
   def editItemString: TT
   def cancelItemString: TT
+
+  def copyFields(from: AnyRef, to: AnyRef) {
+    fields.foreach(_.copy(from, to))
+  }
 }

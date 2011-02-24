@@ -72,14 +72,14 @@ abstract class CrudListActivity[ID,Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyR
     val entryView = context.getLayoutInflater.inflate(entityConfig.entryLayout, null)
     //Unit is used to set the default value if no entityId is provided
     val readable = entityId.map(persistence.find).getOrElse(Unit)
-    entityConfig.fields.foreach(_.copy(readable, entryView))
+    entityConfig.copyFields(readable, entryView)
     builder.setView(entryView)
     builder.setTitle(if (entityId.isDefined) entityConfig.editItemString else entityConfig.addItemString)
     builder.setPositiveButton(if (entityId.isDefined) entityConfig.editItemString else entityConfig.addItemString, new DialogInterface.OnClickListener {
       def onClick(dialog: DialogInterface, which: Int) {
         dialog.dismiss
         val writable = persistence.newWritable
-        entityConfig.fields.foreach(_.copy(entryView, writable))
+        entityConfig.copyFields(entryView, writable)
         persistence.save(entityId, writable)
         afterSave()
       }

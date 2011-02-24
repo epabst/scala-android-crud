@@ -24,12 +24,12 @@ abstract class CursorCrudListActivity[Q <: AnyRef](entityConfig: AndroidEntityCr
 
   lazy val dataSource: CursorAdapter = {
     val criteria = persistence.newCriteria
-    entityConfig.fields.foreach(_.copy(getIntent, criteria))
+    entityConfig.copyFields(getIntent, criteria)
     val cursor = persistence.findAll(criteria)
     startManagingCursor(cursor)
     new ResourceCursorAdapter(this, entityConfig.rowLayout, cursor) {
       def bindView(view: View, context: Context, cursor: Cursor) {
-        entityConfig.fields.foreach(_.copy(cursor, view))
+        entityConfig.copyFields(cursor, view)
       }
     }
   }
