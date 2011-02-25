@@ -7,8 +7,6 @@ import android.net.Uri
 import android.database.Cursor
 import android.view.{View, MenuItem, Menu}
 import android.content.{ContentValues, Context, DialogInterface}
-//todo don't depend on futurebalance
-import geeks.financial.futurebalance.android.FBDatabaseComponent
 import geeks.crud.EntityPersistence
 
 /**
@@ -19,9 +17,9 @@ import geeks.crud.EntityPersistence
  * @param Q the query criteria type
  */
 class CursorCrudListActivity(entityConfig: SQLiteCrudEntityConfig)
-  extends CrudListActivity[Long,SQLiteCriteria,Cursor,Cursor,ContentValues](entityConfig) with SQLiteEntityPersistenceComponent with FBDatabaseComponent {
+  extends CrudListActivity[Long,SQLiteCriteria,Cursor,Cursor,ContentValues](entityConfig) {
 
-  val persistence = new SQLiteEntityPersistence(entityConfig)
+  val persistence = new SQLiteEntityPersistence(entityConfig, this)
 
   lazy val dataSource: CursorAdapter = {
     val criteria = persistence.newCriteria

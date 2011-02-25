@@ -37,19 +37,16 @@ class SQLiteEntityPersistenceFunctionalSpec extends EasyMockSugar with ShouldMat
     val addItemString = R.string.add_item
     val editItemString = R.string.edit_item
     val cancelItemString = R.string.cancel_item
+
+    def getDatabaseSetup(context: Context) = new TestingDatabaseSetup(context)
   }
 
   @Test
   def shouldUseCorrectColumnNamesForFindAll {
     val mockContext = mock[Context]
-    val component = new SQLiteEntityPersistenceComponent with TestingDatabaseComponent {
-      val persistence = new SQLiteEntityPersistence(TestEntityConfig)
-      def context = mockContext
-    }
-    expecting {
-    }
+    val persistence = new SQLiteEntityPersistence(TestEntityConfig, mockContext)
     whenExecuting(mockContext) {
-      val result = component.persistence.findAll(new SQLiteCriteria())
+      val result = persistence.findAll(new SQLiteCriteria())
       result.getColumnIndex(BaseColumns._ID) should be (0)
       result.getColumnIndex("age") should be (1)
     }
