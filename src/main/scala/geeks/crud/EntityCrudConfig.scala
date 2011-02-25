@@ -11,10 +11,17 @@ package geeks.crud
  * @param LT a layout configuration
  */
 
-trait EntityCrudConfig[_ID,TT,LT] {
+trait CrudEntityType[TT] {
+  def entityName: String
+
+  def addItemString: TT
+  def editItemString: TT
+  def cancelItemString: TT
+}
+
+trait EntityCrudConfig[_ID,TT,LT] extends CrudEntityType[TT] {
   //this makes it available for subtypes to use to make it clear that it's an ID
   type ID = _ID
-  def entityName: String
 
   def fields: List[CopyableField]
 
@@ -23,15 +30,11 @@ trait EntityCrudConfig[_ID,TT,LT] {
   def rowLayout: LT
   def entryLayout: LT
 
-  def addItemString: TT
-  def editItemString: TT
-  def cancelItemString: TT
-
   /**
    * Gets the actions that a user can perform from a list of the entities.
    * May be overridden to modify the list of actions.
    */
-  def getListActions(actionFactory: UIActionFactory): List[UIAction] =
+  def getListActions(actionFactory: UIActionFactory[ID,TT]): List[UIAction] =
     List(actionFactory.displayList(this), actionFactory.startCreate(this))
 
   /**
@@ -39,7 +42,7 @@ trait EntityCrudConfig[_ID,TT,LT] {
    * The first one is the one that will be used when the item is clicked on.
    * May be overridden to modify the list of actions.
    */
-  def getEntityActions(actionFactory: UIActionFactory, id: ID): List[UIAction] =
+  def getEntityActions(actionFactory: UIActionFactory[ID,TT], id: ID): List[UIAction] =
     List(actionFactory.display(this, id), actionFactory.startUpdate(this, id), actionFactory.startDelete(this, List(id)))
 
   def copyFields(from: AnyRef, to: AnyRef) {
@@ -58,34 +61,39 @@ trait UIAction {
 /**
  * Represents an action involving a crud entity.
  */
-trait CrudUIAction[ID,TT,LT] extends UIAction {
-  def entityConfig: EntityCrudConfig[ID,TT,LT]
+trait CrudUIAction[TT] extends UIAction {
+  def entityType: CrudEntityType[TT]
 }
 
-trait UIActionFactory {
+trait UIActionFactory[ID,TT] {
+  /**
+   * Gets the current UI.  This can be helpful to get the current android Intent, etc.
+   */
+  def currentUI: AnyRef
+
   /**
    * Gets the action to display a UI for a user to fill in data for creating an entity.
    * It should copy Unit into the UI using entityConfig.copy to populate defaults.
    */
-  def startCreate[ID,TT,LT](entityConfig: EntityCrudConfig[ID,TT,LT]): CrudUIAction[ID,TT,LT]
+  def startCreate(entityType: CrudEntityType[TT]): CrudUIAction[TT]
 
   /**
    * Gets the action to display the list that matches the criteria copied from criteriaSource using entityConfig.copy.
    */
-  def displayList[ID,TT,LT](entityConfig: EntityCrudConfig[ID,TT,LT], criteriaSource: AnyRef = Unit): CrudUIAction[ID,TT,LT]
+  def displayList(entityType: CrudEntityType[TT], criteriaSource: AnyRef = Unit): CrudUIAction[TT]
 
   /**
    * Gets the action to display the entity given the id.
    */
-  def display[ID,TT,LT](entityConfig: EntityCrudConfig[ID,TT,LT], id: ID): CrudUIAction[ID,TT,LT]
+  def display(entityType: CrudEntityType[TT], id: ID): CrudUIAction[TT]
 
   /**
    * Gets the action to display a UI for a user to edit data for an entity given its id.
    */
-  def startUpdate[ID,TT,LT](entityConfig: EntityCrudConfig[ID,TT,LT], id: ID): CrudUIAction[ID,TT,LT]
+  def startUpdate(entityType: CrudEntityType[TT], id: ID): CrudUIAction[TT]
 
   /**
    * Gets the action to display a UI to allow a user to proceed with deleting a list of entities given their ids.
    */
-  def startDelete[ID,TT,LT](entityConfig: EntityCrudConfig[ID,TT,LT], ids: List[ID]): CrudUIAction[ID,TT,LT]
+  def startDelete(entityType: CrudEntityType[TT], ids: List[ID]): CrudUIAction[TT]
 }

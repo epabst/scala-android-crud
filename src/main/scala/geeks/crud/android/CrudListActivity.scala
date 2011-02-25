@@ -1,9 +1,9 @@
 package geeks.crud.android
 
+import _root_.android.widget.{ListView, ListAdapter}
+import android.content.Intent
 import _root_.android.app.{Activity, AlertDialog, ListActivity}
 import android.os.Bundle
-import android.widget.
-ListAdapter
 import android.net.Uri
 import android.view.{View, MenuItem, Menu}
 import android.content.{Context, DialogInterface}
@@ -35,6 +35,32 @@ abstract class CrudListActivity[ID,Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyR
   lazy val contentProviderAuthority = this.getClass.getPackage.toString
   lazy val defaultContentUri = Uri.parse("content://" + contentProviderAuthority + "/" + entityConfig.entityName);
 
+  private val activity: Activity = this
+
+  lazy val actionFactory = new AndroidUIActionFactory {
+    def currentUI = activity
+
+    def startCreate(entityType: CrudEntityType[Int]) =
+      throw new UnsupportedOperationException("not implemented yet")
+
+    def displayList(entityType: CrudEntityType[Int], criteriaSource: AnyRef) = new AndroidCrudUIAction(entityConfig, activity) {
+      def apply() {
+        //todo put the entityConfig's entityName into the URI
+        //todo don't assume it's a CursorCrudListActivity
+        startActivity(new Intent(null, Uri.withAppendedPath(getIntent.getData, entityConfig.entityName), activity, classOf[CursorCrudListActivity]))
+      }
+    }
+
+    /** By default, just startUpdate instead of just displaying. */
+    def display(entityType: CrudEntityType[Int], id: ID) = startUpdate(entityConfig, id)
+
+    def startUpdate(entityType: CrudEntityType[Int], id: ID) =
+      throw new UnsupportedOperationException("not implemented yet")
+
+    def startDelete(entityType: CrudEntityType[Int], ids: List[ID]) =
+      throw new UnsupportedOperationException("not implemented yet")
+  }
+
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
 
@@ -61,6 +87,10 @@ abstract class CrudListActivity[ID,Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyR
       showDialog(ADD_DIALOG_ID)
     }
     true
+  }
+
+  override def onListItemClick(l: ListView, v: View, position: Int, id: Long) {
+    entityConfig.getEntityActions(actionFactory, id).headOption.map(_())
   }
 
   /**
@@ -96,3 +126,5 @@ abstract class CrudListActivity[ID,Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyR
     createEditDialog(this, None, refreshAfterSave)
   }
 }
+
+abstract class AndroidCrudUIAction(val entityType: CrudEntityType[Int], val originalActivity: Activity) extends CrudUIAction[Int]
