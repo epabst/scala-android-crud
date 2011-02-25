@@ -45,7 +45,6 @@ abstract class CrudListActivity[ID,Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyR
 
     def displayList(entityType: CrudEntityType[Int], criteriaSource: AnyRef) = new AndroidCrudUIAction(entityConfig, activity) {
       def apply() {
-        //todo put the entityConfig's entityName into the URI
         //todo don't assume it's a CursorCrudListActivity
         startActivity(new Intent(null, Uri.withAppendedPath(getIntent.getData, entityConfig.entityName), activity, classOf[CursorCrudListActivity]))
       }

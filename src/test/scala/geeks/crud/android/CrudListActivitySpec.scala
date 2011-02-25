@@ -11,7 +11,7 @@ import android.content.{Intent, DialogInterface}
 import geeks.crud._
 import CursorFieldAccess._
 
-//todo don't depend on futurebalance
+//todo don't depend on futurebalance's R
 import geeks.financial.futurebalance.android.R
 
 /**
