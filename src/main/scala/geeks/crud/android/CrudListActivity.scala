@@ -20,7 +20,7 @@ import geeks.crud._
  * @param R the type to read from (e.g. Cursor)
  * @param W the type to write to (e.g. ContentValues)
  */
-abstract class CrudListActivity[ID,Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](entityConfig: AndroidEntityCrudConfig) extends ListActivity {
+abstract class CrudListActivity[ID,Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](entityConfig: AndroidCrudEntityConfig[ID]) extends ListActivity {
   val ADD_DIALOG_ID = 100
   val EDIT_DIALOG_ID = 101
 
@@ -37,7 +37,7 @@ abstract class CrudListActivity[ID,Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyR
 
   private val activity: Activity = this
 
-  lazy val actionFactory = new AndroidUIActionFactory {
+  lazy val actionFactory = new AndroidUIActionFactory[ID] {
     def currentUI = activity
 
     def startCreate(entityType: CrudEntityType[Int]) =
@@ -90,7 +90,7 @@ abstract class CrudListActivity[ID,Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyR
   }
 
   override def onListItemClick(l: ListView, v: View, position: Int, id: Long) {
-    entityConfig.getEntityActions(actionFactory, id).headOption.map(_())
+    entityConfig.getEntityActions(actionFactory, id.asInstanceOf[ID]).headOption.map(_())
   }
 
   /**

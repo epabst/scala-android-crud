@@ -19,7 +19,7 @@ trait CrudEntityType[TT] {
   def cancelItemString: TT
 }
 
-trait EntityCrudConfig[_ID,TT,LT] extends CrudEntityType[TT] {
+trait CrudEntityConfig[_ID,TT,LT] extends CrudEntityType[TT] {
   //this makes it available for subtypes to use to make it clear that it's an ID
   type ID = _ID
 
@@ -65,7 +65,9 @@ trait CrudUIAction[TT] extends UIAction {
   def entityType: CrudEntityType[TT]
 }
 
-trait UIActionFactory[ID,TT] {
+trait UIActionFactory[_ID,TT] {
+  type ID = _ID
+
   /**
    * Gets the current UI.  This can be helpful to get the current android Intent, etc.
    */

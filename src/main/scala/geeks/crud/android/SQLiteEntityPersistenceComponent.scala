@@ -19,7 +19,7 @@ trait SQLiteEntityPersistenceComponent {
 
   lazy val database: SQLiteDatabase = databaseSetup.getWritableDatabase
 
-  class SQLiteEntityPersistence(entityConfig: AndroidEntityCrudConfig) extends EntityPersistence[Long,SQLiteCriteria,Cursor,Cursor,ContentValues] with Logging {
+  class SQLiteEntityPersistence(entityConfig: SQLiteCrudEntityConfig) extends EntityPersistence[Long,SQLiteCriteria,Cursor,Cursor,ContentValues] with Logging {
 
     final lazy val queryFieldNames: List[String] = CursorFieldAccess.queryFieldNames(entityConfig.fields)
 

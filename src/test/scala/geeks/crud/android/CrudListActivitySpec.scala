@@ -22,7 +22,7 @@ import geeks.financial.futurebalance.android.R
  */
 @RunWith(classOf[RobolectricTestRunner])
 class CrudListActivitySpec extends EasyMockSugar {
-  object MyEntityConfig extends AndroidEntityCrudConfig {
+  object MyEntityConfig extends AndroidCrudEntityConfig[Long] {
     val entityName = "MyMap"
 
     def fields = List(Field(persisted[Long]("age")))

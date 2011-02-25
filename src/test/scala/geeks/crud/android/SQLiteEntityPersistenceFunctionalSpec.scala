@@ -26,7 +26,7 @@ import geeks.financial.futurebalance.android.R
  */
 @RunWith(classOf[RobolectricTestRunner])
 class SQLiteEntityPersistenceFunctionalSpec extends EasyMockSugar with ShouldMatchers {
-  object TestEntityConfig extends AndroidEntityCrudConfig {
+  object TestEntityConfig extends SQLiteCrudEntityConfig {
     def entityName = "Person"
     val fields = List(Field(persisted[Long]("age")))
 

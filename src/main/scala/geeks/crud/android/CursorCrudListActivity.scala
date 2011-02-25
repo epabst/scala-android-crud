@@ -18,7 +18,7 @@ import geeks.crud.EntityPersistence
  * Time: 10:25 PM
  * @param Q the query criteria type
  */
-class CursorCrudListActivity(entityConfig: AndroidEntityCrudConfig)
+class CursorCrudListActivity(entityConfig: SQLiteCrudEntityConfig)
   extends CrudListActivity[Long,SQLiteCriteria,Cursor,Cursor,ContentValues](entityConfig) with SQLiteEntityPersistenceComponent with FBDatabaseComponent {
 
   val persistence = new SQLiteEntityPersistence(entityConfig)
