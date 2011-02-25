@@ -1,6 +1,9 @@
 package geeks.crud.android
 
+import _root_.android.app.Activity
+import _root_.android.widget.ResourceCursorAdapter
 import android.provider.BaseColumns
+import android.view.View
 import android.database.sqlite.{SQLiteDatabase, SQLiteOpenHelper}
 import android.database.Cursor
 import java.lang.Byte
@@ -14,7 +17,9 @@ import geeks.crud._
  * Date: 2/3/11
  * Time: 6:17 PM
  */
-class SQLiteEntityPersistence(entityConfig: SQLiteCrudEntityConfig, context: Context) extends EntityPersistence[Long,SQLiteCriteria,Cursor,Cursor,ContentValues] with Logging {
+class SQLiteEntityPersistence(entityConfig: SQLiteCrudEntityConfig, context: Context)
+  extends AndroidEntityPersistence[Long,SQLiteCriteria,Cursor,Cursor,ContentValues] with Logging {
+
   lazy val databaseSetup = entityConfig.getDatabaseSetup(context)
   lazy val database: SQLiteDatabase = databaseSetup.getWritableDatabase
 
@@ -24,6 +29,18 @@ class SQLiteEntityPersistence(entityConfig: SQLiteCrudEntityConfig, context: Con
 
   def findAll(criteria: SQLiteCriteria): Cursor = database.query(entityConfig.entityName, queryFieldNames.toArray,
     criteria.selection, criteria.selectionArgs, criteria.groupBy, criteria.having, criteria.orderBy)
+
+  def createListAdapter(activity: Activity): ResourceCursorAdapter = {
+    val criteria = newCriteria
+    entityConfig.copyFields(activity.getIntent, criteria)
+    val cursor = findAll(criteria)
+    activity.startManagingCursor(cursor)
+    new ResourceCursorAdapter(activity, entityConfig.rowLayout, cursor) {
+      def bindView(view: View, context: Context, cursor: Cursor) {
+        entityConfig.copyFields(cursor, view)
+      }
+    }
+  }
 
   def find(id: Long) = database.query(entityConfig.entityName, queryFieldNames.toArray,
     BaseColumns._ID + "=" + id, Nil.toArray, null, null, null)

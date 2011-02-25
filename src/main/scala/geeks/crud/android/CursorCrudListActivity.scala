@@ -19,21 +19,5 @@ import geeks.crud.EntityPersistence
 class CursorCrudListActivity(entityConfig: SQLiteCrudEntityConfig)
   extends CrudListActivity[Long,SQLiteCriteria,Cursor,Cursor,ContentValues](entityConfig) {
 
-  val persistence = new SQLiteEntityPersistence(entityConfig, this)
-
-  lazy val dataSource: CursorAdapter = {
-    val criteria = persistence.newCriteria
-    entityConfig.copyFields(getIntent, criteria)
-    val cursor = persistence.findAll(criteria)
-    startManagingCursor(cursor)
-    new ResourceCursorAdapter(this, entityConfig.rowLayout, cursor) {
-      def bindView(view: View, context: Context, cursor: Cursor) {
-        entityConfig.copyFields(cursor, view)
-      }
-    }
-  }
-
-  def listAdapter: ListAdapter = dataSource
-
-  override def refreshAfterSave() = dataSource.getCursor.requery
+  override def refreshAfterSave() = getListAdapter.asInstanceOf[CursorAdapter].getCursor.requery
 }

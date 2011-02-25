@@ -1,13 +1,12 @@
 package geeks.crud.android
 
-import geeks.crud.EntityPersistence
+import _root_.android.content.{Context, Intent, DialogInterface}
+import _root_.android.widget.CursorAdapter
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.scalatest.mock.EasyMockSugar
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import scala.collection.mutable.Map
-import android.widget.ListAdapter
-import android.content.{Intent, DialogInterface}
 import geeks.crud._
 import CursorFieldAccess._
 
@@ -22,10 +21,13 @@ import geeks.financial.futurebalance.android.R
  */
 @RunWith(classOf[RobolectricTestRunner])
 class CrudListActivitySpec extends EasyMockSugar {
-  object MyEntityConfig extends AndroidCrudEntityConfig[Long] {
+  val persistence = mock[AndroidEntityPersistence[Long,AnyRef,List[Map[String,Long]],Map[String,Long],Map[String,Long]]]
+  object MyEntityConfig extends AndroidCrudEntityConfig[Long,AnyRef,List[Map[String,Long]],Map[String,Long],Map[String,Long]] {
     val entityName = "MyMap"
 
     def fields = List(Field(persisted[Long]("age")))
+
+    def getEntityPersistence(context: Context) = persistence
 
     val listLayout = R.layout.entity_list
     val headerLayout = R.layout.test_row
@@ -39,18 +41,16 @@ class CrudListActivitySpec extends EasyMockSugar {
   @Test
   def shouldAllowAdding {
     val activity = new CrudListActivity[Long,AnyRef,List[Map[String,Long]],Map[String,Long],Map[String,Long]](MyEntityConfig) {
-      val persistence = mock[EntityPersistence[Long,AnyRef,List[Map[String,Long]],Map[String,Long],Map[String,Long]]]
-
       def refreshAfterSave() {}
-
-      def listAdapter = mock[ListAdapter]
     }
     val entity = Map[String,Long]("age" -> 25)
+    val listAdapter = mock[CursorAdapter]
     expecting {
-      call(activity.persistence.newWritable).andReturn(entity)
-      call(activity.persistence.save(None, entity)).andReturn(entity)
+      call(persistence.createListAdapter(activity)).andReturn(listAdapter)
+      call(persistence.newWritable).andReturn(entity)
+      call(persistence.save(None, entity)).andReturn(entity)
     }
-    whenExecuting(activity.persistence) {
+    whenExecuting(persistence, listAdapter) {
       activity.setIntent(new Intent(Intent.ACTION_MAIN))
       activity.onCreate(null)
       val dialog = activity.createEditDialog(activity, None)

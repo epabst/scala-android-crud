@@ -20,15 +20,13 @@ import geeks.crud._
  * @param R the type to read from (e.g. Cursor)
  * @param W the type to write to (e.g. ContentValues)
  */
-abstract class CrudListActivity[ID,Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](entityConfig: AndroidCrudEntityConfig[ID]) extends ListActivity {
+abstract class CrudListActivity[ID,Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](entityConfig: AndroidCrudEntityConfig[ID,Q,L,R,W]) extends ListActivity {
   val ADD_DIALOG_ID = 100
   val EDIT_DIALOG_ID = 101
 
-  def persistence: EntityPersistence[ID,Q,L,R,W]
-
-  def listAdapter: ListAdapter
-
   def context: Context = this
+
+  val persistence: AndroidEntityPersistence[ID,Q,L,R,W] = entityConfig.getEntityPersistence(context)
 
   def refreshAfterSave()
 
@@ -73,7 +71,7 @@ abstract class CrudListActivity[ID,Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyR
 		view.setHeaderDividersEnabled(true);
 		view.addHeaderView(getLayoutInflater().inflate(entityConfig.headerLayout, null));
 
-    setListAdapter(listAdapter)
+    setListAdapter(persistence.createListAdapter(this))
   }
 
   override def onCreateOptionsMenu(menu: Menu): Boolean = {
