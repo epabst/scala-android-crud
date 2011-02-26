@@ -53,6 +53,9 @@ trait CrudEntityType {
   def addItemString: Int
   def editItemString: Int
   def cancelItemString: Int
+
+  def listActivityClass: Class[_ <: CrudListActivity[_,_,_,_]]
+  def activityClass: Class[_ <: CrudActivity[_,_,_,_]]
 }
 
 /** A Regex that can match a URI string that ends with a numeric id */

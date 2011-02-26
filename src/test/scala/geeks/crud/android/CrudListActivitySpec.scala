@@ -36,6 +36,9 @@ class CrudListActivitySpec extends EasyMockSugar {
     val addItemString = R.string.add_item
     val editItemString = R.string.edit_item
     val cancelItemString = R.string.cancel_item
+
+    def listActivityClass = classOf[CrudListActivity[_,_,_,_]]
+    def activityClass = classOf[CrudActivity[_,_,_,_]]
   }
 
   @Test

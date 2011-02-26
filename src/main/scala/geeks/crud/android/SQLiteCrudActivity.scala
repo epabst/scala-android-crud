@@ -1,11 +1,7 @@
 package geeks.crud.android
 
-import android.os.Bundle
-import android.app.{AlertDialog, ListActivity}
-import android.widget.{ListAdapter, CursorAdapter, ResourceCursorAdapter}
 import android.database.Cursor
-import android.view.{View, MenuItem, Menu}
-import android.content.{ContentValues, Context, DialogInterface}
+import android.content.ContentValues
 
 /**
  * A trait for a ListActivity that uses {@link Cursor} and {@link ContentValues}.

@@ -1,7 +1,6 @@
 package geeks.crud.android
 
 import android.os.Bundle
-import android.app.{AlertDialog, ListActivity}
 import android.widget.{ListAdapter, CursorAdapter, ResourceCursorAdapter}
 import android.database.Cursor
 import android.view.{View, MenuItem, Menu}
