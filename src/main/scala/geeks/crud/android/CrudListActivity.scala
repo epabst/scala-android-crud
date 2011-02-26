@@ -19,44 +19,15 @@ import geeks.crud._
  * @param R the type to read from (e.g. Cursor)
  * @param W the type to write to (e.g. ContentValues)
  */
-abstract class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](entityConfig: CrudEntityConfig[Q,L,R,W]) extends ListActivity {
+abstract class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val entityConfig: CrudEntityConfig[Q,L,R,W])
+  extends ListActivity with CrudContext[Q,L,R,W] {
+
   type ID = Long
   val ADD_DIALOG_ID = 100
   val EDIT_DIALOG_ID = 101
 
-  def context: Context = this
-
-  val persistence: EntityPersistence[Q,L,R,W] = entityConfig.getEntityPersistence(context)
-
-  def refreshAfterSave()
-
   lazy val contentProviderAuthority = this.getClass.getPackage.toString
   lazy val defaultContentUri = Uri.parse("content://" + contentProviderAuthority + "/" + entityConfig.entityName);
-
-  private val activity: Activity = this
-
-  lazy val actionFactory = new UIActionFactory {
-    def currentActivity = activity
-
-    def startCreate(entityType: CrudEntityType) =
-      throw new UnsupportedOperationException("not implemented yet")
-
-    def displayList(entityType: CrudEntityType, criteriaSource: AnyRef) = new CrudUIAction(entityConfig, activity) {
-      def apply() {
-        //todo don't assume it's a SQLiteCrudListActivity
-        startActivity(new Intent(null, Uri.withAppendedPath(getIntent.getData, entityConfig.entityName), activity, classOf[SQLiteCrudListActivity]))
-      }
-    }
-
-    /** By default, just startUpdate instead of just displaying. */
-    def display(entityType: CrudEntityType, id: ID) = startUpdate(entityConfig, id)
-
-    def startUpdate(entityType: CrudEntityType, id: ID) =
-      throw new UnsupportedOperationException("not implemented yet")
-
-    def startDelete(entityType: CrudEntityType, ids: List[ID]) =
-      throw new UnsupportedOperationException("not implemented yet")
-  }
 
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
@@ -89,6 +60,8 @@ abstract class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef]
   override def onListItemClick(l: ListView, v: View, position: Int, id: ID) {
     entityConfig.getEntityActions(actionFactory, id).headOption.map(_())
   }
+
+  def refreshAfterSave()
 
   /**
    * Creates an edit dialog in the given Context to edit the entity and save it.
