@@ -63,6 +63,74 @@ class ActivityUIActionFactorySpec extends EasyMockSugar with ShouldMatchers {
   }
 
   @Test
+  def getDisplayListIntentShouldGetTheRightUri {
+    val intent = new Intent(null, toUri("foo"))
+    //sanity check
+    intent.getData should be (toUri("foo"))
+    getDisplayListIntent(MyEntityType, Unit, new Intent(null, toUri("foo")), context).getData should
+      be (toUri("foo", entityName))
+    getDisplayListIntent(MyEntityType, Unit, new Intent(null, toUri("foo", entityName)), context).getData should
+      be (toUri("foo", entityName))
+    getDisplayListIntent(MyEntityType, Unit, new Intent(null, toUri("foo", entityName, "123")), context).getData should
+      be (toUri("foo", entityName))
+    getDisplayListIntent(MyEntityType, Unit, new Intent(null, toUri("foo", entityName, "123", "bar")), context).getData should
+      be (toUri("foo", entityName))
+    getDisplayListIntent(MyEntityType, Unit, new Intent(null, toUri()), context).getData should
+      be (toUri(entityName))
+  }
+
+  @Test
+  def getDisplayIntentShouldGetTheRightUri {
+    val intent = new Intent(null, toUri("foo"))
+    //sanity check
+    intent.getData should be (toUri("foo"))
+    getDisplayIntent(MyEntityType, 35, new Intent(null, toUri("foo")), context).getData should
+      be (toUri("foo", entityName, "35"))
+    getDisplayIntent(MyEntityType, 34, new Intent(null, toUri("foo", entityName)), context).getData should
+      be (toUri("foo", entityName, "34"))
+    getDisplayIntent(MyEntityType, 34, new Intent(null, toUri("foo", entityName, "123")), context).getData should
+      be (toUri("foo", entityName, "34"))
+    getDisplayIntent(MyEntityType, 34, new Intent(null, toUri("foo", entityName, "123", "bar")), context).getData should
+      be (toUri("foo", entityName, "34"))
+    getDisplayIntent(MyEntityType, 34, new Intent(null, toUri()), context).getData should
+      be (toUri(entityName, "34"))
+  }
+
+  @Test
+  def getUpdateIntentShouldGetTheRightUri {
+    val intent = new Intent(null, toUri("foo"))
+    //sanity check
+    intent.getData should be (toUri("foo"))
+    getUpdateIntent(MyEntityType, 35, new Intent(null, toUri("foo")), context).getData should
+      be (toUri("foo", entityName, "35"))
+    getUpdateIntent(MyEntityType, 34, new Intent(null, toUri("foo", entityName)), context).getData should
+      be (toUri("foo", entityName, "34"))
+    getUpdateIntent(MyEntityType, 34, new Intent(null, toUri("foo", entityName, "123")), context).getData should
+      be (toUri("foo", entityName, "34"))
+    getUpdateIntent(MyEntityType, 34, new Intent(null, toUri("foo", entityName, "123", "bar")), context).getData should
+      be (toUri("foo", entityName, "34"))
+    getUpdateIntent(MyEntityType, 34, new Intent(null, toUri()), context).getData should
+      be (toUri(entityName, "34"))
+  }
+
+  @Test
+  def getDeleteIntentShouldGetTheRightUri {
+    val intent = new Intent(null, toUri("foo"))
+    //sanity check
+    intent.getData should be (toUri("foo"))
+    getDeleteIntent(MyEntityType, List(35), new Intent(null, toUri("foo")), context).getData should
+      be (toUri("foo", entityName, "35"))
+    getDeleteIntent(MyEntityType, List(35, 34), new Intent(null, toUri("foo", entityName)), context).getData should
+      be (toUri("foo", entityName, "35,34"))
+    getDeleteIntent(MyEntityType, List(35), new Intent(null, toUri("foo", entityName, "123")), context).getData should
+      be (toUri("foo", entityName, "35"))
+    getDeleteIntent(MyEntityType, Nil, new Intent(null, toUri("foo", entityName, "123", "bar")), context).getData should
+      be (toUri("foo", entityName, ""))
+    getDeleteIntent(MyEntityType, List(35), new Intent(null, toUri()), context).getData should
+      be (toUri(entityName, "35"))
+  }
+
+  @Test
   def shouldGetTheRightAction {
     if (!isShadowing) {
       getCreateIntent(MyEntityType, new Intent(null, toUri("foo")), context).getAction should be (Intent.ACTION_INSERT)

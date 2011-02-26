@@ -96,36 +96,31 @@ object ActivityUIActionFactory {
   val UpdateActionString = Intent.ACTION_EDIT
   val DeleteActionString = Intent.ACTION_DELETE
 
-  def getCreateIntent(entityType: CrudEntityType, currentIntent: Intent, context: Context): Intent = {
-    val currentUri = currentIntent.getData
-    val index = currentUri.getPathSegments.indexOf(entityType.entityName)
-    val uri = if (index >= 0) {
-      import JavaConversions._
-      toUri(currentUri.getPathSegments.subList(0, index + 1).toList: _*)
-    } else {
-      Uri.withAppendedPath(currentUri, entityType.entityName)
-    }
-    newIntent(CreateActionString, uri, context, entityType.activityClass)
+  def getCreateIntent(entityType: CrudEntityType, currentIntent: Intent, context: Context): Intent =
+    newIntent(CreateActionString, entityType, currentIntent.getData, context, detail = Nil)
+
+  def getDisplayListIntent(entityType: CrudEntityType, criteriaSource: AnyRef, currentIntent: Intent, context: Context): Intent =
+    newIntent(ListActionString, entityType, currentIntent.getData, context, detail = Nil)
+
+  def getDisplayIntent(entityType: CrudEntityType, id: ID, currentIntent: Intent, context: Context): Intent =
+    newIntent(DisplayActionString, entityType, currentIntent.getData, context, detail = List(id.toString))
+
+  def getUpdateIntent(entityType: CrudEntityType, id: ID, currentIntent: Intent, context: Context): Intent =
+    newIntent(UpdateActionString, entityType, currentIntent.getData, context, detail = List(id.toString))
+
+  def getDeleteIntent(entityType: CrudEntityType, ids: List[ID], currentIntent: Intent, context: Context): Intent =
+    newIntent(DeleteActionString, entityType, currentIntent.getData, context, detail = List(ids.mkString(",")))
+
+  private def newIntent(action: String, entityType: CrudEntityType, currentUri: Uri, context: Context, detail: List[String]) = {
+    val entityName = entityType.entityName
+    val newUri = replacePathSegments(currentUri, _.takeWhile(_ != entityName) ::: entityName :: detail)
+    constructIntent(action, newUri, context, entityType.activityClass)
   }
 
-  def getDisplayListIntent(entityType: CrudEntityType, criteriaSource: AnyRef, currentIntent: Intent, context: Context): Intent = {
-    //todo fix
-    currentIntent
-  }
-
-  def getDisplayIntent(entityType: CrudEntityType, id: ID, currentIntent: Intent, context: Context): Intent = {
-    //todo fix
-    currentIntent
-  }
-
-  def getUpdateIntent(entityType: CrudEntityType, id: ID, currentIntent: Intent, context: Context): Intent = {
-    //todo fix
-    currentIntent
-  }
-
-  def getDeleteIntent(entityType: CrudEntityType, ids: List[ID], currentIntent: Intent, context: Context): Intent = {
-    //todo fix
-    currentIntent
+  private def replacePathSegments(uri: Uri, f: List[String] => List[String]): Uri = {
+    import JavaConversions._
+    val path = f(uri.getPathSegments.toList)
+    toUri(path: _*)
   }
 
   def toUri(segments: String*): Uri = {
@@ -133,7 +128,7 @@ object ActivityUIActionFactory {
   }
 
   //this is a workaround because Robolectric doesn't handle the full constructor
-  private def newIntent(action: String, uri: Uri, context: Context, clazz: Class[_]) = {
+  private def constructIntent(action: String, uri: Uri, context: Context, clazz: Class[_]) = {
     val intent = new Intent(action, uri)
     intent.setClass(context, clazz)
     intent
