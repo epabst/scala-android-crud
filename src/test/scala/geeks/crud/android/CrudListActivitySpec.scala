@@ -48,7 +48,7 @@ class CrudListActivitySpec extends EasyMockSugar {
     expecting {
       call(persistence.createListAdapter(activity)).andReturn(listAdapter)
       call(persistence.newWritable).andReturn(entity)
-      call(persistence.save(None, entity)).andReturn(entity)
+      call(persistence.save(None, entity)).andReturn(88)
     }
     whenExecuting(persistence, listAdapter) {
       activity.setIntent(new Intent(Intent.ACTION_MAIN))

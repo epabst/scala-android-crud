@@ -43,8 +43,8 @@ abstract class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef]
 
     def displayList(entityType: CrudEntityType, criteriaSource: AnyRef) = new CrudUIAction(entityConfig, activity) {
       def apply() {
-        //todo don't assume it's a CursorCrudListActivity
-        startActivity(new Intent(null, Uri.withAppendedPath(getIntent.getData, entityConfig.entityName), activity, classOf[CursorCrudListActivity]))
+        //todo don't assume it's a SQLiteCrudListActivity
+        startActivity(new Intent(null, Uri.withAppendedPath(getIntent.getData, entityConfig.entityName), activity, classOf[SQLiteCrudListActivity]))
       }
     }
 
@@ -94,6 +94,7 @@ abstract class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef]
    * Creates an edit dialog in the given Context to edit the entity and save it.
    * @param entityToEdit an Entity instance to edit or None to add a new one
    */
+  //todo replace this with a CrudActivity
   def createEditDialog(context: Activity, entityId: Option[ID], afterSave: () => Unit = () => {}): AlertDialog = {
     val builder = new AlertDialog.Builder(context)
     val entryView = context.getLayoutInflater.inflate(entityConfig.entryLayout, null)
