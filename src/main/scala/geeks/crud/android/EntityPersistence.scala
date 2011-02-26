@@ -1,4 +1,7 @@
-package geeks.crud
+package geeks.crud.android
+
+import android.widget.ListAdapter
+import android.app.Activity
 
 /**
  * Persistence support for an entity.
@@ -16,6 +19,8 @@ trait EntityPersistence[ID,Q,L,R,W] {
   def newCriteria: Q
 
   def findAll(query: Q): L
+
+  def createListAdapter(activity: Activity): ListAdapter
 
   /** Find an entity by ID. */
   def find(id: ID): R

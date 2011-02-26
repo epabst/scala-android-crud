@@ -21,8 +21,8 @@ import geeks.financial.futurebalance.android.R
  */
 @RunWith(classOf[RobolectricTestRunner])
 class CrudListActivitySpec extends EasyMockSugar {
-  val persistence = mock[AndroidEntityPersistence[Long,AnyRef,List[Map[String,Long]],Map[String,Long],Map[String,Long]]]
-  object MyEntityConfig extends AndroidCrudEntityConfig[Long,AnyRef,List[Map[String,Long]],Map[String,Long],Map[String,Long]] {
+  val persistence = mock[EntityPersistence[Long,AnyRef,List[Map[String,Long]],Map[String,Long],Map[String,Long]]]
+  object MyEntityConfig extends CrudEntityConfig[AnyRef,List[Map[String,Long]],Map[String,Long],Map[String,Long]] {
     val entityName = "MyMap"
 
     def fields = List(Field(persisted[Long]("age")))
@@ -40,7 +40,7 @@ class CrudListActivitySpec extends EasyMockSugar {
 
   @Test
   def shouldAllowAdding {
-    val activity = new CrudListActivity[Long,AnyRef,List[Map[String,Long]],Map[String,Long],Map[String,Long]](MyEntityConfig) {
+    val activity = new CrudListActivity[AnyRef,List[Map[String,Long]],Map[String,Long],Map[String,Long]](MyEntityConfig) {
       def refreshAfterSave() {}
     }
     val entity = Map[String,Long]("age" -> 25)

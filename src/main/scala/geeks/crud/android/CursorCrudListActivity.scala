@@ -7,7 +7,6 @@ import android.net.Uri
 import android.database.Cursor
 import android.view.{View, MenuItem, Menu}
 import android.content.{ContentValues, Context, DialogInterface}
-import geeks.crud.EntityPersistence
 
 /**
  * A trait for a ListActivity that uses {@link Cursor} and {@link ContentValues}.
@@ -17,7 +16,7 @@ import geeks.crud.EntityPersistence
  * @param Q the query criteria type
  */
 class CursorCrudListActivity(entityConfig: SQLiteCrudEntityConfig)
-  extends CrudListActivity[Long,SQLiteCriteria,Cursor,Cursor,ContentValues](entityConfig) {
+  extends CrudListActivity[SQLiteCriteria,Cursor,Cursor,ContentValues](entityConfig) {
 
   override def refreshAfterSave() = getListAdapter.asInstanceOf[CursorAdapter].getCursor.requery
 }

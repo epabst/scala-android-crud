@@ -11,10 +11,8 @@ import android.content.{ContentValues, Context}
  * Time: 11:22 PM
  */
 
-trait SQLiteCrudEntityConfig extends AndroidCrudEntityConfig[Long,SQLiteCriteria,Cursor,Cursor,ContentValues] {
+trait SQLiteCrudEntityConfig extends CrudEntityConfig[SQLiteCriteria,Cursor,Cursor,ContentValues] {
   def getEntityPersistence(context: Context) = new SQLiteEntityPersistence(this, context)
 
   def getDatabaseSetup(context: Context): SQLiteOpenHelper
 }
-
-trait SQLiteUIActionFactory extends AndroidUIActionFactory[Long]

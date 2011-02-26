@@ -1,7 +1,6 @@
 package geeks.crud.android
 
 import android.provider.BaseColumns
-import geeks.crud.EntityPersistence
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.scalatest.mock.EasyMockSugar

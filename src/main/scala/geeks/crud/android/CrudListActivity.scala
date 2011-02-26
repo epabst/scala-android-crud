@@ -14,19 +14,19 @@ import geeks.crud._
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 2/3/11
  * Time: 7:06 AM
- * @param ID the ID type for the entity such as String or Long.
  * @param Q the query criteria type
  * @param L the type of findAll (e.g. Cursor)
  * @param R the type to read from (e.g. Cursor)
  * @param W the type to write to (e.g. ContentValues)
  */
-abstract class CrudListActivity[ID,Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](entityConfig: AndroidCrudEntityConfig[ID,Q,L,R,W]) extends ListActivity {
+abstract class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](entityConfig: CrudEntityConfig[Q,L,R,W]) extends ListActivity {
+  type ID = Long
   val ADD_DIALOG_ID = 100
   val EDIT_DIALOG_ID = 101
 
   def context: Context = this
 
-  val persistence: AndroidEntityPersistence[ID,Q,L,R,W] = entityConfig.getEntityPersistence(context)
+  val persistence: EntityPersistence[ID,Q,L,R,W] = entityConfig.getEntityPersistence(context)
 
   def refreshAfterSave()
 
@@ -35,13 +35,13 @@ abstract class CrudListActivity[ID,Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyR
 
   private val activity: Activity = this
 
-  lazy val actionFactory = new AndroidUIActionFactory[ID] {
-    def currentUI = activity
+  lazy val actionFactory = new UIActionFactory {
+    def currentActivity = activity
 
-    def startCreate(entityType: CrudEntityType[Int]) =
+    def startCreate(entityType: CrudEntityType) =
       throw new UnsupportedOperationException("not implemented yet")
 
-    def displayList(entityType: CrudEntityType[Int], criteriaSource: AnyRef) = new AndroidCrudUIAction(entityConfig, activity) {
+    def displayList(entityType: CrudEntityType, criteriaSource: AnyRef) = new CrudUIAction(entityConfig, activity) {
       def apply() {
         //todo don't assume it's a CursorCrudListActivity
         startActivity(new Intent(null, Uri.withAppendedPath(getIntent.getData, entityConfig.entityName), activity, classOf[CursorCrudListActivity]))
@@ -49,12 +49,12 @@ abstract class CrudListActivity[ID,Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyR
     }
 
     /** By default, just startUpdate instead of just displaying. */
-    def display(entityType: CrudEntityType[Int], id: ID) = startUpdate(entityConfig, id)
+    def display(entityType: CrudEntityType, id: ID) = startUpdate(entityConfig, id)
 
-    def startUpdate(entityType: CrudEntityType[Int], id: ID) =
+    def startUpdate(entityType: CrudEntityType, id: ID) =
       throw new UnsupportedOperationException("not implemented yet")
 
-    def startDelete(entityType: CrudEntityType[Int], ids: List[ID]) =
+    def startDelete(entityType: CrudEntityType, ids: List[ID]) =
       throw new UnsupportedOperationException("not implemented yet")
   }
 
@@ -86,8 +86,8 @@ abstract class CrudListActivity[ID,Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyR
     true
   }
 
-  override def onListItemClick(l: ListView, v: View, position: Int, id: Long) {
-    entityConfig.getEntityActions(actionFactory, id.asInstanceOf[ID]).headOption.map(_())
+  override def onListItemClick(l: ListView, v: View, position: Int, id: ID) {
+    entityConfig.getEntityActions(actionFactory, id).headOption.map(_())
   }
 
   /**
@@ -123,5 +123,3 @@ abstract class CrudListActivity[ID,Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyR
     createEditDialog(this, None, refreshAfterSave)
   }
 }
-
-abstract class AndroidCrudUIAction(val entityType: CrudEntityType[Int], val originalActivity: Activity) extends CrudUIAction[Int]
