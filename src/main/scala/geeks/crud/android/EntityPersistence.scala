@@ -15,7 +15,9 @@ import android.app.Activity
  * @param W the type to write to (e.g. ContentValues)
  */
 
-trait EntityPersistence[ID,Q,L,R,W] {
+trait EntityPersistence[Q,L,R,W] {
+  type ID = Long
+
   def newCriteria: Q
 
   def findAll(query: Q): L

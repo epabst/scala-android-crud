@@ -37,13 +37,13 @@ trait CrudEntityConfig[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends 
    * May be overridden to modify the list of actions.
    */
   def getEntityActions(actionFactory: UIActionFactory, id: ID): List[UIAction] =
-    List(actionFactory.display(this, id.asInstanceOf[Long]), actionFactory.startUpdate(this, id), actionFactory.startDelete(this, List(id)))
+    List(actionFactory.display(this, id), actionFactory.startUpdate(this, id), actionFactory.startDelete(this, List(id)))
 
   def copyFields(from: AnyRef, to: AnyRef) {
     fields.foreach(_.copy(from, to))
   }
 
-  def getEntityPersistence(context: Context): EntityPersistence[ID,Q,L,R,W]
+  def getEntityPersistence(context: Context): EntityPersistence[Q,L,R,W]
 }
 
 trait CrudEntityType {

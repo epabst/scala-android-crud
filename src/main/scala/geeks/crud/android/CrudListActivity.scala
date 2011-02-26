@@ -26,7 +26,7 @@ abstract class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef]
 
   def context: Context = this
 
-  val persistence: EntityPersistence[ID,Q,L,R,W] = entityConfig.getEntityPersistence(context)
+  val persistence: EntityPersistence[Q,L,R,W] = entityConfig.getEntityPersistence(context)
 
   def refreshAfterSave()
 

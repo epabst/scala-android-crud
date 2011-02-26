@@ -21,7 +21,7 @@ import geeks.financial.futurebalance.android.R
  */
 @RunWith(classOf[RobolectricTestRunner])
 class CrudListActivitySpec extends EasyMockSugar {
-  val persistence = mock[EntityPersistence[Long,AnyRef,List[Map[String,Long]],Map[String,Long],Map[String,Long]]]
+  val persistence = mock[EntityPersistence[AnyRef,List[Map[String,Long]],Map[String,Long],Map[String,Long]]]
   object MyEntityConfig extends CrudEntityConfig[AnyRef,List[Map[String,Long]],Map[String,Long],Map[String,Long]] {
     val entityName = "MyMap"
 

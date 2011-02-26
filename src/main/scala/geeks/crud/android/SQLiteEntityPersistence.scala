@@ -18,7 +18,7 @@ import geeks.crud._
  * Time: 6:17 PM
  */
 class SQLiteEntityPersistence(entityConfig: SQLiteCrudEntityConfig, context: Context)
-  extends EntityPersistence[Long,SQLiteCriteria,Cursor,Cursor,ContentValues] with Logging {
+  extends EntityPersistence[SQLiteCriteria,Cursor,Cursor,ContentValues] with Logging {
 
   lazy val databaseSetup = entityConfig.getDatabaseSetup(context)
   lazy val database: SQLiteDatabase = databaseSetup.getWritableDatabase
