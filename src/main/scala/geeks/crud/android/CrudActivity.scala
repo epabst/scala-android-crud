@@ -17,13 +17,25 @@ import geeks.crud._
  * @param R the type to read from (e.g. Cursor)
  * @param W the type to write to (e.g. ContentValues)
  */
-abstract class CrudActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val entityConfig: CrudEntityConfig[Q,L,R,W])
+class CrudActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val entityConfig: CrudEntityConfig[Q,L,R,W])
   extends Activity with CrudContext[Q,L,R,W] {
+
+  def id: Long = getIntent.getData.getLastPathSegment.toLong
 
   override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)
 
     setContentView(entityConfig.entryLayout)
+
+    val readable = persistence.find(id)
+    entityConfig.copyFields(readable, this)
+  }
+
+  override def onStop() {
+    val writable = persistence.newWritable
+    entityConfig.copyFields(this, writable)
+    persistence.save(Some(id), writable)
+    persistence.close()
   }
 
   override def onCreateOptionsMenu(menu: Menu): Boolean = {

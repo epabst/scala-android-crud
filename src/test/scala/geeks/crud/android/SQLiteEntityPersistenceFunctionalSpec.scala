@@ -38,6 +38,9 @@ class SQLiteEntityPersistenceFunctionalSpec extends EasyMockSugar with ShouldMat
     val cancelItemString = R.string.cancel_item
 
     def getDatabaseSetup(context: Context) = new TestingDatabaseSetup(context)
+
+    def activityClass = classOf[CrudActivity[_,_,_,_]]
+    def listActivityClass = classOf[CrudListActivity[_,_,_,_]]
   }
 
   @Test

@@ -64,6 +64,10 @@ class SQLiteEntityPersistence(entityConfig: SQLiteCrudEntityConfig, context: Con
   def delete(ids: List[Long]) {
     ids.foreach(id => database.delete(entityConfig.entityName, BaseColumns._ID + "=" + id, Nil.toArray))
   }
+
+  def close() {
+    database.close()
+  }
 }
 
 class SQLiteCriteria(var selection: String = null, var selectionArgs: Array[String] = Nil.toArray,

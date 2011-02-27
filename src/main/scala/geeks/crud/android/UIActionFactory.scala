@@ -128,7 +128,7 @@ object ActivityUIActionFactory {
   }
 
   //this is a workaround because Robolectric doesn't handle the full constructor
-  private def constructIntent(action: String, uri: Uri, context: Context, clazz: Class[_]) = {
+  def constructIntent(action: String, uri: Uri, context: Context, clazz: Class[_]) = {
     val intent = new Intent(action, uri)
     intent.setClass(context, clazz)
     intent

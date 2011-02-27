@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TableLayout
+<LinearLayout
   xmlns:android="http://schemas.android.com/apk/res/android"
   android:layout_width="fill_parent"
-  android:layout_height="wrap_content"
-  android:stretchColumns="1">
+  android:layout_height="fill_parent" android:orientation="vertical">
 
-  <TableRow>
+  <LinearLayout android:layout_width="fill_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal">
     <TextView android:text="Name:" />
     <EditText android:id="@+id/name" />
-  </TableRow>
+  </LinearLayout>
 
-  <TableRow>
+  <LinearLayout android:layout_width="fill_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal">
     <TextView android:text="Age:" />
     <EditText android:id="@+id/age" />
-  </TableRow>
-</TableLayout>
+  </LinearLayout>
+</LinearLayout>

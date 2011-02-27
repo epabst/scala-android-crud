@@ -34,4 +34,6 @@ trait EntityPersistence[Q,L,R,W] {
 
   /** Delete a list of entities by ID. */
   def delete(ids: List[ID])
+
+  def close()
 }

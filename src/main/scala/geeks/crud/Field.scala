@@ -1,6 +1,7 @@
 package geeks.crud
 
 import geeks.crud.util.Logging
+import collection.Map
 
 /** A trait for {@link Field} for convenience such as when defining a List of heterogeneous Fields. */
 trait CopyableField {
@@ -92,8 +93,9 @@ abstract class FieldGetter[R,T](implicit readableManifest: ClassManifest[R]) ext
   /** An abstract method that must be implemented by subtypes. */
   def get(readable: R): Option[T]
 
-  final def partialGet(readable: AnyRef) = {
-    debug("Comparing " + readableManifest.erasure + " with param " + readable)
+  def partialGet(readable: AnyRef) = {
+    debug("Seeing if " + readable + " is an instance of " + readableManifest.erasure + " to get value")
+    if (readable == null) throw new IllegalArgumentException("'readable' may not be null")
     if (readableManifest.erasure.isInstance(readable))
       get(readable.asInstanceOf[R])
     else
@@ -106,13 +108,15 @@ abstract class FieldGetter[R,T](implicit readableManifest: ClassManifest[R]) ext
  * This is a trait so that it can be mixed with FieldGetter.
  * @param W the Writable type to put the value into
  */
-trait FieldSetter[W,T] extends PartialFieldAccess[T] {
+trait FieldSetter[W,T] extends PartialFieldAccess[T] with Logging {
   protected def writableManifest: ClassManifest[W]
 
   /** An abstract method that must be implemented by subtypes. */
   def set(writable: W, value: T)
 
-  final override def partialSet(writable: AnyRef, value: T) = {
+  override def partialSet(writable: AnyRef, value: T) = {
+    debug("Seeing if " + writable + " is an instance of " + writableManifest.erasure + " to set value " + value)
+    if (writable == null) throw new IllegalArgumentException("'writable' may not be null")
     if (writableManifest.erasure.isInstance(writable)) {
       set(writable.asInstanceOf[W], value)
       true
@@ -193,6 +197,9 @@ object Field {
    */
   def fieldAccess[M,T](getter: M => Option[T], setter: M => T => Unit)
                  (implicit typeManifest: ClassManifest[M]): FieldAccess[M,M,T] = flow[M,M,T](getter, setter)
+
+  def mapAccess[T](name: String): FieldAccess[Map[String,_ <: T],collection.mutable.Map[String,_ >: T],T] =
+    flow(_.get(name), m => v => m.put(name, v))
 
   /**
    * Allow creating a Field without using "new".

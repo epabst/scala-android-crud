@@ -1,5 +1,6 @@
 package geeks.crud.android
 
+import _root_.android.app.Activity
 import _root_.android.content.{ContentUris, Intent}
 import _root_.android.view.View
 import reflect.ClassManifest
@@ -21,17 +22,21 @@ class ViewFieldAccessById[T](val viewResourceId: Int)(childViewFieldAccess: View
         extends PartialFieldAccess[T] {
   def partialGet(readable: AnyRef) = readable match {
     case entryView: View => Option(entryView.findViewById(viewResourceId)).flatMap(v => partialGetFromChildView(v))
+    case activity: Activity => Option(activity.findViewById(viewResourceId)).flatMap(v => partialGetFromChildView(v))
     case _ => None
   }
 
   def partialSet(writable: AnyRef, value: T) = writable match {
     case entryView: View => partialSetInChildView(entryView.findViewById(viewResourceId), value)
+    case activity: Activity => partialSetInChildView(activity.findViewById(viewResourceId), value)
     case _ => false
   }
 
-  def partialGetFromChildView(childView: View) = childViewFieldAccess.partialGet(childView)
+  def partialGetFromChildView(childView: View) =
+    if (childView != null) childViewFieldAccess.partialGet(childView) else None
 
-  def partialSetInChildView(childView: View, value: T) = childViewFieldAccess.partialSet(childView, value)
+  def partialSetInChildView(childView: View, value: T) =
+    if (childView != null) childViewFieldAccess.partialSet(childView, value) else false
 }
 
 object ViewFieldAccess {
