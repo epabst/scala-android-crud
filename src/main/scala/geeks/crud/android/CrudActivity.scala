@@ -39,6 +39,8 @@ class CrudActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val entityCo
   }
 
   override def onCreateOptionsMenu(menu: Menu): Boolean = {
+    //todo add revert support
+    //todo add support for crud actions
     //menu.add(0, ADD_DIALOG_ID, 1, entityConfig.addItemString)
     true
   }

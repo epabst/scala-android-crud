@@ -45,7 +45,12 @@ abstract class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef]
     setListAdapter(persistence.createListAdapter(this))
   }
 
+  //todo add support for item actions on long touch on an item
+
   override def onCreateOptionsMenu(menu: Menu): Boolean = {
+    //todo add support for list actions
+    val listActions = entityConfig.getListActions(actionFactory)
+
     menu.add(0, ADD_DIALOG_ID, 1, entityConfig.addItemString)
     true
   }
