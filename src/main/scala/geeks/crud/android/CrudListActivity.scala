@@ -48,17 +48,22 @@ abstract class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef]
   //todo add support for item actions on long touch on an item
 
   override def onCreateOptionsMenu(menu: Menu): Boolean = {
-    //todo add support for list actions
     val listActions = entityConfig.getListActions(actionFactory)
-
-    menu.add(0, ADD_DIALOG_ID, 1, entityConfig.addItemString)
+    for (action <- listActions if (action.title.isDefined || action.icon.isDefined)) {
+      val menuItem = if (action.title.isDefined) {
+        menu.add(0, listActions.indexOf(action), listActions.indexOf(action), action.title.get)
+      } else {
+        menu.add(0, listActions.indexOf(action), listActions.indexOf(action), "")
+      }
+      action.icon.map(icon => menuItem.setIcon(icon))
+    }
     true
   }
 
   override def onMenuItemSelected(featureId: Int, item: MenuItem): Boolean = {
-    if (item.getItemId == ADD_DIALOG_ID) {
-      showDialog(ADD_DIALOG_ID)
-    }
+    val listActions = entityConfig.getListActions(actionFactory)
+    val action = listActions(item.getItemId)
+    action.apply()
     true
   }
 
@@ -96,9 +101,5 @@ abstract class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef]
       }
     })
     builder.create
-  }
-
-  protected override def onCreateDialog(id: Int) = {
-    createEditDialog(this, None, refreshAfterSave)
   }
 }

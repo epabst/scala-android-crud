@@ -4,6 +4,7 @@ import android.app.Activity
 import android.net.Uri
 import android.content.{Context, Intent}
 import collection.JavaConversions
+import geeks.crud.Field
 
 /**
  * A Factory for UIActions.
@@ -53,39 +54,50 @@ trait UIActionFactory {
  * It's equals/hashCode MUST be implemented in order to suppress the action that is already happening.
  */
 trait UIAction {
+  /** The icon to display for this action. */
+  def icon: Option[Int]
+
+  /** The title to display for this action.  If both title and icon are None,
+   * then it won't be displayed as an option, but can still be triggered as a default action.
+   */
+  def title: Option[Int]
+
   def apply()
 }
 
 /**
  * Represents an action involving a crud entity.
  */
-abstract class CrudUIAction(val entityType: CrudEntityType) extends UIAction
+abstract class CrudUIAction(val icon: Option[Int], val title: Option[Int], val entityType: CrudEntityType) extends UIAction
 
 class ActivityUIActionFactory(currentActivity: Activity) extends UIActionFactory {
   def currentIntent = currentActivity.getIntent
 
-  private def toAction(entityType: CrudEntityType, intent: Intent) = new CrudUIAction(entityType) {
-    def apply() {
-      currentActivity.startActivity(intent)
+  private def toAction(icon: Option[Int], title: Option[Int], entityType: CrudEntityType, intent: Intent) =
+    new CrudUIAction(icon, title, entityType) {
+      def apply() {
+        currentActivity.startActivity(intent)
+      }
     }
-  }
 
   import ActivityUIActionFactory._
+  import Field.toSome
 
   def startCreate(entityType: CrudEntityType) =
-    toAction(entityType, getCreateIntent(entityType, currentIntent, currentActivity))
+    toAction(android.R.drawable.ic_menu_add, entityType.addItemString, entityType,
+      getCreateIntent(entityType, currentIntent, currentActivity))
 
   def displayList(entityType: CrudEntityType, criteriaSource: AnyRef) =
-    toAction(entityType, getDisplayListIntent(entityType, criteriaSource, currentIntent, currentActivity))
+    toAction(None, None, entityType, getDisplayListIntent(entityType, criteriaSource, currentIntent, currentActivity))
 
   def display(entityType: CrudEntityType, id: ID) =
-    toAction(entityType, getDisplayIntent(entityType, id, currentIntent, currentActivity))
+    toAction(None, None, entityType, getDisplayIntent(entityType, id, currentIntent, currentActivity))
 
   def startUpdate(entityType: CrudEntityType, id: ID) =
-    toAction(entityType, getUpdateIntent(entityType, id, currentIntent, currentActivity))
+    toAction(android.R.drawable.ic_menu_edit, entityType.editItemString, entityType, getUpdateIntent(entityType, id, currentIntent, currentActivity))
 
   def startDelete(entityType: CrudEntityType, ids: List[ID]) =
-    toAction(entityType, getDeleteIntent(entityType, ids, currentIntent, currentActivity))
+    toAction(android.R.drawable.ic_menu_delete, None, entityType, getDeleteIntent(entityType, ids, currentIntent, currentActivity))
 }
 
 object ActivityUIActionFactory {

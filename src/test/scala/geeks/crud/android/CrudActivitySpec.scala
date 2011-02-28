@@ -23,27 +23,7 @@ import geeks.financial.futurebalance.android.R
  */
 @RunWith(classOf[RobolectricTestRunner])
 class CrudActivitySpec extends EasyMockSugar with ShouldMatchers {
-  val persistence = mock[EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
-  object MyEntityConfig extends CrudEntityConfig[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]] {
-    val entityName = "MyMap"
-
-    def fields = List(
-      Field(persisted[String]("name"), viewId[TextView,String](R.id.name)),
-      Field(persisted[Long]("age"), viewId[TextView,Long](R.id.age)))
-
-    def getEntityPersistence(context: Context) = persistence
-
-    val listLayout = R.layout.entity_list
-    val headerLayout = R.layout.test_row
-    val rowLayout = R.layout.test_row
-    val entryLayout = R.layout.test_entry
-    val addItemString = R.string.add_item
-    val editItemString = R.string.edit_item
-    val cancelItemString = R.string.cancel_item
-
-    def listActivityClass = classOf[CrudListActivity[_,_,_,_]]
-    def activityClass = classOf[CrudActivity[_,_,_,_]]
-  }
+  import ConfigMother._
 
   @Test
   def shouldAllowUpdating {

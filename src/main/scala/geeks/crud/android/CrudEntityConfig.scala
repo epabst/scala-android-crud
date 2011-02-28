@@ -3,6 +3,7 @@ package geeks.crud.android
 import util.matching.Regex
 import android.content.Context
 import geeks.crud.CopyableField
+import android.R
 
 /**
  * An entity configuration that provides all custom information needed to
@@ -50,6 +51,7 @@ trait CrudEntityType {
   //this is the type used for internationalizable strings
   def entityName: String
 
+  //todo replace these with using the standard android icons
   def addItemString: Int
   def editItemString: Int
   def cancelItemString: Int
