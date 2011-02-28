@@ -27,7 +27,9 @@ class CrudActivitySpec extends EasyMockSugar with ShouldMatchers {
 
   @Test
   def shouldAllowUpdating {
-    val activity = new CrudActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](MyEntityConfig)
+    val persistence = mock[EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
+    val entityConfig = new MyEntityConfig(persistence)
+    val activity = new CrudActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityConfig)
     val entity = Map[String,Any]("name" -> "Bob", "age" -> 25)
     val writable = Map[String,Any]()
     expecting {
@@ -38,10 +40,10 @@ class CrudActivitySpec extends EasyMockSugar with ShouldMatchers {
     }
     whenExecuting(persistence) {
       import ActivityUIActionFactory._
-      activity.setIntent(constructIntent(UpdateActionString, toUri(MyEntityConfig.entityName, "101"), activity, MyEntityConfig.activityClass))
+      activity.setIntent(constructIntent(UpdateActionString, toUri(entityConfig.entityName, "101"), activity, entityConfig.activityClass))
       activity.onCreate(null)
       val viewData = Map[String,Any]()
-      MyEntityConfig.copyFields(activity, viewData)
+      entityConfig.copyFields(activity, viewData)
       viewData.get("name") should be (Some("Bob"))
       viewData.get("age") should be (Some(25))
 

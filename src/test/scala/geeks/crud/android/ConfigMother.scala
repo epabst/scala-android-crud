@@ -22,9 +22,7 @@ import geeks.financial.futurebalance.android.R
  */
 
 object ConfigMother extends EasyMockSugar {
-  val persistence = mock[EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
-
-  object MyEntityConfig extends CrudEntityConfig[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]] {
+  class MyEntityConfig(persistence: EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]) extends CrudEntityConfig[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]] {
     val entityName = "MyMap"
 
     def fields = List(
