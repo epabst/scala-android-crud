@@ -20,7 +20,7 @@ import geeks.crud._
 class CrudActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val entityConfig: CrudEntityConfig[Q,L,R,W])
   extends Activity with CrudContext[Q,L,R,W] {
 
-  val longFormat = new BasicValueFormat[Long]()
+  private val longFormat = new BasicValueFormat[Long]()
   def id: Option[Long] = longFormat.toValue(getIntent.getData.getLastPathSegment)
 
   override def onCreate(savedInstanceState: Bundle) {
@@ -36,6 +36,7 @@ class CrudActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val entityCo
     entityConfig.copyFields(this, writable)
     persistence.save(id, writable)
     persistence.close()
+    super.onStop()
   }
 
   override def onCreateOptionsMenu(menu: Menu): Boolean = {
