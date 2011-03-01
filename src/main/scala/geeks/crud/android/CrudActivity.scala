@@ -20,21 +20,21 @@ import geeks.crud._
 class CrudActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val entityConfig: CrudEntityConfig[Q,L,R,W])
   extends Activity with CrudContext[Q,L,R,W] {
 
-  def id: Long = getIntent.getData.getLastPathSegment.toLong
+  val longFormat = new BasicValueFormat[Long]()
+  def id: Option[Long] = longFormat.toValue(getIntent.getData.getLastPathSegment)
 
   override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)
 
     setContentView(entityConfig.entryLayout)
-
-    val readable = persistence.find(id)
-    entityConfig.copyFields(readable, this)
+    val readableOrUnit: AnyRef = id.map(i => persistence.find(i)).getOrElse(Unit)
+    entityConfig.copyFields(readableOrUnit, this)
   }
 
   override def onStop() {
     val writable = persistence.newWritable
     entityConfig.copyFields(this, writable)
-    persistence.save(Some(id), writable)
+    persistence.save(id, writable)
     persistence.close()
   }
 

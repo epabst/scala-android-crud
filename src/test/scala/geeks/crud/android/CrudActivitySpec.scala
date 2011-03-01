@@ -26,6 +26,29 @@ class CrudActivitySpec extends EasyMockSugar with ShouldMatchers {
   import ConfigMother._
 
   @Test
+  def shouldAllowAdding {
+    val persistence = mock[EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
+    val entityConfig = new MyEntityConfig(persistence)
+    val activity = new CrudActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityConfig)
+    val entity = Map[String,Any]("name" -> "Bob", "age" -> 25)
+    val writable = Map[String,Any]("name" -> "Bob", "age" -> 25)
+    expecting {
+      call(persistence.newWritable).andReturn(writable)
+      call(persistence.save(None, writable)).andReturn(101)
+      call(persistence.close())
+    }
+    whenExecuting(persistence) {
+      import ActivityUIActionFactory._
+      activity.setIntent(constructIntent(UpdateActionString, toUri(entityConfig.entityName), activity, entityConfig.activityClass))
+      activity.onCreate(null)
+      val viewData = Map[String,Any]()
+      entityConfig.copyFields(entity, activity)
+
+      activity.onStop()
+    }
+  }
+
+  @Test
   def shouldAllowUpdating {
     val persistence = mock[EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
     val entityConfig = new MyEntityConfig(persistence)
