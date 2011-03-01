@@ -45,6 +45,11 @@ abstract class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef]
     setListAdapter(persistence.createListAdapter(this))
   }
 
+  override def onResume() {
+    super.onResume
+    refreshAfterSave()
+  }
+
   //todo add support for item actions on long touch on an item
 
   override def onCreateOptionsMenu(menu: Menu): Boolean = {

@@ -51,4 +51,41 @@ class CrudListActivitySpec extends EasyMockSugar with ShouldMatchers {
       activity.onMenuItemSelected(0, item0) should be (true)
     }
   }
+
+  @Test
+  def shouldRefreshOnResume {
+    val persistence = mock[EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
+    val entityConfig = new MyEntityConfig(persistence)
+    var refreshCount = 0
+    class MyCrudListActivity extends CrudListActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityConfig) {
+      def refreshAfterSave() {
+        refreshCount = refreshCount + 1
+      }
+
+      //make it public for testing
+      override def onPause() {
+        super.onPause
+      }
+
+      //make it public for testing
+      override def onResume() {
+        super.onResume
+      }
+    }
+    val activity = new MyCrudListActivity
+    val entity = Map[String,Any]("age" -> 25)
+    val listAdapter = mock[CursorAdapter]
+    expecting {
+      call(persistence.createListAdapter(activity)).andReturn(listAdapter)
+    }
+    whenExecuting(persistence, listAdapter) {
+      activity.setIntent(new Intent(Intent.ACTION_MAIN))
+      activity.onCreate(null)
+      activity.onPause()
+      refreshCount should be (0)
+
+      activity.onResume()
+      refreshCount should be (1)
+    }
+  }
 }
