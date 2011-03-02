@@ -167,11 +167,7 @@ object Field {
 
 
   /** Defines a default for a field value, used when copied from {@link Unit}. */
-  def default[T](value: => T): PartialFieldAccess[T] = new PartialFieldAccess[T] {
-    def partialGet(readable: AnyRef) = Some(value)
-
-    def partialSet(writable: AnyRef, value: T) = false
-  }
+  def default[T](value: => T): PartialFieldAccess[T] = readOnly[Unit,T](r => if (r == Unit) Some(value) else None)
 
   /**
    * Defines a flow for a field value from a Readable type to a Writable type.

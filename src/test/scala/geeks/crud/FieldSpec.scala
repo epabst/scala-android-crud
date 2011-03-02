@@ -47,6 +47,12 @@ class FieldSpec extends Spec with ShouldMatchers {
       stringField.copy(myEntity1, Unit) should be (false)
     }
 
+    it("default should only work on Unit") {
+      val stringField = Field(default("Hello"))
+      stringField.findValue(List("bogus list")) should be (None)
+      stringField.findValue(Unit) should be (Some("Hello"))
+    }
+
     it("should copy from one to multiple") {
       val stringField = Field(
         readOnly[OtherEntity,String](_.name),
