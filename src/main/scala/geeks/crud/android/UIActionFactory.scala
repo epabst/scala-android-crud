@@ -109,24 +109,24 @@ object ActivityUIActionFactory {
   val DeleteActionString = Intent.ACTION_DELETE
 
   def getCreateIntent(entityType: CrudEntityType, currentIntent: Intent, context: Context): Intent =
-    newIntent(CreateActionString, entityType, currentIntent.getData, context, detail = Nil)
+    newIntent(CreateActionString, entityType.activityClass, entityType.entityName, detail = Nil, currentIntent.getData, context)
 
   def getDisplayListIntent(entityType: CrudEntityType, criteriaSource: AnyRef, currentIntent: Intent, context: Context): Intent =
-    newIntent(ListActionString, entityType, currentIntent.getData, context, detail = Nil)
+    newIntent(ListActionString, entityType.listActivityClass, entityType.entityName, detail = Nil, currentIntent.getData, context)
 
   def getDisplayIntent(entityType: CrudEntityType, id: ID, currentIntent: Intent, context: Context): Intent =
-    newIntent(DisplayActionString, entityType, currentIntent.getData, context, detail = List(id.toString))
+    newIntent(DisplayActionString, entityType.activityClass, entityType.entityName, detail = List(id.toString), currentIntent.getData, context)
 
   def getUpdateIntent(entityType: CrudEntityType, id: ID, currentIntent: Intent, context: Context): Intent =
-    newIntent(UpdateActionString, entityType, currentIntent.getData, context, detail = List(id.toString))
+    newIntent(UpdateActionString, entityType.activityClass, entityType.entityName, detail = List(id.toString), currentIntent.getData, context)
 
   def getDeleteIntent(entityType: CrudEntityType, ids: List[ID], currentIntent: Intent, context: Context): Intent =
-    newIntent(DeleteActionString, entityType, currentIntent.getData, context, detail = List(ids.mkString(",")))
+    newIntent(DeleteActionString, entityType.activityClass, entityType.entityName, detail = List(ids.mkString(",")), currentIntent.getData, context)
 
-  private def newIntent(action: String, entityType: CrudEntityType, currentUri: Uri, context: Context, detail: List[String]) = {
-    val entityName = entityType.entityName
+  private def newIntent(action: String, activityClass: Class[_ <: Activity],
+                        entityName: String, detail: List[String], currentUri: Uri, context: Context) = {
     val newUri = replacePathSegments(currentUri, _.takeWhile(_ != entityName) ::: entityName :: detail)
-    constructIntent(action, newUri, context, entityType.activityClass)
+    constructIntent(action, newUri, context, activityClass)
   }
 
   private def replacePathSegments(uri: Uri, f: List[String] => List[String]): Uri = {

@@ -7,6 +7,7 @@ import reflect.ClassManifest
 import java.util.{Calendar,GregorianCalendar}
 import _root_.android.widget.{ArrayAdapter, Spinner, DatePicker, TextView}
 import geeks.crud._
+import collection.JavaConversions
 
 /**
  * Field fieldAccess for Views.
@@ -74,6 +75,7 @@ object ViewFieldAccess {
   def enumerationSpinnerFieldAccess[E <: Ordered[_]](enum: Enumeration): ViewFieldAccess[Spinner,E] = {
     val valueArray: Array[E] = enum.values.toArray.asInstanceOf[Array[E]]
     viewFieldAccess[Spinner,E](v => Option(v.getSelectedItem.asInstanceOf[E]), spinner => value => {
+      //don't do it again if already done from a previous time
       if (spinner.getAdapter == null) {
         spinner.setAdapter(new ArrayAdapter[E](spinner.getContext, _root_.android.R.layout.simple_spinner_item, valueArray))
       }
@@ -81,5 +83,13 @@ object ViewFieldAccess {
     })
   }
 
-  val intentId = Field.readOnly[Intent,Long](intent => Some(ContentUris.parseId(intent.getData)))
+  private val longFormat = new BasicValueFormat[Long]()
+
+  import JavaConversions._
+  def intentId(entityName: String): FieldGetter[Intent,Long] = Field.readOnly[Intent,Long] { intent =>
+    intent.getData.getPathSegments.toList.dropWhile(_ != entityName) match {
+      case nameString :: idString :: x => longFormat.toValue(idString)
+      case _ => None
+    }
+  }
 }

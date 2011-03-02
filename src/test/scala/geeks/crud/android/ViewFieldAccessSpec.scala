@@ -9,12 +9,12 @@ import geeks.crud.Field
 import geeks.crud.Field._
 import geeks.crud.android.CursorFieldAccess._
 import geeks.crud.android.ViewFieldAccess._
-import _root_.android.content.Context
 import android.view.{ViewGroup, View}
 import org.scalatest.mock.EasyMockSugar
 import android.widget.{Spinner, LinearLayout, TextView}
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.junit.Test
+import android.content.{Intent, Context}
 
 
 /**
@@ -92,6 +92,25 @@ class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
       result should be (false)
       entity.number should be (30)
     }
+  }
+
+  @Test
+  def itShouldGetTheIdForAnEntityNameFromTheIntent() {
+    val field = Field(intentId("foo"))
+    val intent = new Intent(null, ActivityUIActionFactory.toUri("hello", "1", "foo", "4", "bar", "3"))
+    field.findValue(intent) should be (Some(4))
+
+    val intent2 = new Intent(null, ActivityUIActionFactory.toUri("hello", "1", "foo"))
+    field.findValue(intent2) should be (None)
+
+    val intent3 = new Intent(null, ActivityUIActionFactory.toUri("hello"))
+    field.findValue(intent3) should be (None)
+
+    val intent4 = new Intent(null, ActivityUIActionFactory.toUri())
+    field.findValue(intent4) should be (None)
+
+    val intent5 = new Intent(null, ActivityUIActionFactory.toUri("4"))
+    field.findValue(intent5) should be (None)
   }
 
   @Test
