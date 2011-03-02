@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">scala-android-crud</string>
+  <string name="app_name">scala-android-crud</string>
+  <string name="add_item">Add</string>
+  <string name="edit_item">Edit</string>
+  <string name="cancel_item">Cancel</string>
 </resources>

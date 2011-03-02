@@ -13,8 +13,7 @@ import CursorFieldAccess._
 import com.xtremelabs.robolectric.tester.android.view.TestMenu
 import org.scalatest.matchers.ShouldMatchers
 
-//todo don't depend on futurebalance's R
-import geeks.financial.futurebalance.android.R
+import com.github.scala_android.crud.R
 
 /**
  * A test for {@link CrudListActivity}.

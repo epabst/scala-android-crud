@@ -14,8 +14,7 @@ import android.database.sqlite.{SQLiteDatabase, SQLiteOpenHelper}
 import geeks.crud._
 import CursorFieldAccess._
 
-//todo don't depend on futurebalance's R
-import geeks.financial.futurebalance.android.R
+import com.github.scala_android.crud.R
 
 /**
  * A test for {@link CrudListActivity}.

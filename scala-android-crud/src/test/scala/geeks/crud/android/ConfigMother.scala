@@ -11,8 +11,7 @@ import geeks.crud._
 import ViewFieldAccess._
 import CursorFieldAccess._
 
-//todo don't depend on futurebalance's R
-import geeks.financial.futurebalance.android.R
+import com.github.scala_android.crud.R
 
 /**
  * An object mother pattern for getting CrudEntityConfig instances.

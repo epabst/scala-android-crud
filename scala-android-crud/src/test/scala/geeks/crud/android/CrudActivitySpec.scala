@@ -12,8 +12,7 @@ import ViewFieldAccess._
 import CursorFieldAccess._
 import org.scalatest.matchers.ShouldMatchers
 
-//todo don't depend on futurebalance's R
-import geeks.financial.futurebalance.android.R
+import com.github.scala_android.crud.R
 
 /**
  * A test for {@link CrudListActivity}.
