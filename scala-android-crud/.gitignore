@@ -11,6 +11,7 @@ target
 _dump
 *.log
 tm*.lck
+tmp
 *.iws
 *.ipr
 *.iml
