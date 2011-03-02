@@ -42,8 +42,13 @@ class SQLiteEntityPersistence(entityConfig: SQLiteCrudEntityConfig, context: Con
     }
   }
 
-  def find(id: Long) = database.query(entityConfig.entityName, queryFieldNames.toArray,
-    BaseColumns._ID + "=" + id, Nil.toArray, null, null, null)
+  //todo deal with not finding any match by returning an Option[R]
+  def find(id: Long) = {
+    val cursor = database.query(entityConfig.entityName, queryFieldNames.toArray,
+      BaseColumns._ID + "=" + id, Nil.toArray, null, null, null)
+    cursor.moveToFirst
+    cursor
+  }
 
   def newWritable = new ContentValues
 
