@@ -28,7 +28,7 @@ class CursorFieldAccessSpec extends ShouldMatchers {
   def shouldGetCriteriaCorrectly {
     val field = Field[Long](sqliteCriteria("age"), default(19))
     val criteria = new SQLiteCriteria
-    field.copy(None, criteria)
+    field.copy(Unit, criteria)
     criteria.selection should be ("age=19")
   }
 }
