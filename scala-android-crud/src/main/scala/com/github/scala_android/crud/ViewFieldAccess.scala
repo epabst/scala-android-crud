@@ -83,13 +83,8 @@ object ViewFieldAccess {
     })
   }
 
-  private val longFormat = new BasicValueFormat[Long]()
-
-  import JavaConversions._
-  def intentId(entityName: String): FieldGetter[Intent,Long] = Field.readOnly[Intent,Long] { intent =>
-    intent.getData.getPathSegments.toList.dropWhile(_ != entityName) match {
-      case nameString :: idString :: x => longFormat.toValue(idString)
-      case _ => None
-    }
+  def intentId(entityName: String): FieldGetter[Intent,Long] = {
+    val uriSegment = EntityUriSegment(entityName)
+    Field.readOnly[Intent,Long](intent => uriSegment.findId(intent.getData))
   }
 }

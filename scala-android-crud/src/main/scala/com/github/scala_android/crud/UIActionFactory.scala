@@ -4,7 +4,7 @@ import android.app.Activity
 import android.net.Uri
 import android.content.{Context, Intent}
 import collection.JavaConversions
-import com.github.triangle.Field
+import com.github.triangle.{BasicValueFormat, Field}
 
 /**
  * A Factory for UIActions.
@@ -30,7 +30,7 @@ trait UIActionFactory {
   /**
    * Gets the action to display the list that matches the criteria copied from criteriaSource using entityConfig.copy.
    */
-  def displayList(entityType: CrudEntityType, criteriaSource: AnyRef = Unit): CrudUIAction
+  def displayList(entityType: CrudEntityType, uriContext: Option[EntityUriSegment] = None): CrudUIAction
 
   /**
    * Gets the action to display the entity given the id.
@@ -87,8 +87,8 @@ class ActivityUIActionFactory(currentActivity: Activity) extends UIActionFactory
     toAction(android.R.drawable.ic_menu_add, entityType.addItemString, entityType,
       getCreateIntent(entityType, currentIntent.getData, currentActivity))
 
-  def displayList(entityType: CrudEntityType, criteriaSource: AnyRef) =
-    toAction(None, None, entityType, getDisplayListIntent(entityType, currentIntent.getData, currentActivity))
+  def displayList(entityType: CrudEntityType, uriContext: Option[EntityUriSegment] = None) =
+    toAction(None, None, entityType, getDisplayListIntent(entityType, currentIntent.getData, uriContext, currentActivity))
 
   def display(entityType: CrudEntityType, id: ID) =
     toAction(None, None, entityType, getDisplayIntent(entityType, id, currentIntent.getData, currentActivity))
@@ -111,6 +111,13 @@ object ActivityUIActionFactory {
   def getCreateIntent(entityType: CrudEntityType, baseUri: Uri, context: Context): Intent =
     newIntent(CreateActionString, entityType.activityClass, entityType.entityName, detail = Nil, baseUri, context)
 
+  /**
+   * Gets the intent for displaying a list of the entityType.
+   * @param uriContext an optional EntityUriSegment to specify in the baseUri to provide any necessary context
+   */
+  def getDisplayListIntent(entityType: CrudEntityType, baseUri: Uri, uriContext: Option[EntityUriSegment], context: Context): Intent =
+    getDisplayListIntent(entityType, uriContext.map(_.specifyInUri(baseUri)).getOrElse(baseUri), context)
+
   def getDisplayListIntent(entityType: CrudEntityType, baseUri: Uri, context: Context): Intent =
     newIntent(ListActionString, entityType.listActivityClass, entityType.entityName, detail = Nil, baseUri, context)
 
@@ -123,19 +130,10 @@ object ActivityUIActionFactory {
   def getDeleteIntent(entityType: CrudEntityType, ids: List[ID], baseUri: Uri, context: Context): Intent =
     newIntent(DeleteActionString, entityType.activityClass, entityType.entityName, detail = List(ids.mkString(",")), baseUri, context)
 
-  private def putEntityNameDetail(currentUri: Uri, entityName: String, detail: scala.List[String]): Uri =
-    replacePathSegments(currentUri, _.takeWhile(_ != entityName) ::: entityName :: detail)
-
   private def newIntent(action: String, activityClass: Class[_ <: Activity],
                         entityName: String, detail: List[String], currentUri: Uri, context: Context) = {
-    val newUri = putEntityNameDetail(currentUri, entityName, detail)
+    val newUri = EntityUriSegment(entityName, detail:_*).specifyInUri(currentUri)
     constructIntent(action, newUri, context, activityClass)
-  }
-
-  private def replacePathSegments(uri: Uri, f: List[String] => List[String]): Uri = {
-    import JavaConversions._
-    val path = f(uri.getPathSegments.toList)
-    toUri(path: _*)
   }
 
   def toUri(segments: String*): Uri = {
@@ -147,5 +145,24 @@ object ActivityUIActionFactory {
     val intent = new Intent(action, uri)
     intent.setClass(context, clazz)
     intent
+  }
+}
+
+case class EntityUriSegment(entityName: String, detail: String*) {
+  import JavaConversions._
+  private val longFormat = new BasicValueFormat[Long]()
+
+  def specifyInUri(currentUri: Uri): Uri =
+    replacePathSegments(currentUri, _.takeWhile(_ != entityName) ::: entityName :: detail.toList)
+
+  def findId(currentUri: Uri): Option[Long] =
+    currentUri.getPathSegments.toList.dropWhile(_ != entityName) match {
+      case nameString :: idString :: x => longFormat.toValue(idString)
+      case _ => None
+    }
+
+  private def replacePathSegments(uri: Uri, f: List[String] => List[String]): Uri = {
+    val path = f(uri.getPathSegments.toList)
+    ActivityUIActionFactory.toUri(path: _*)
   }
 }

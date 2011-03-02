@@ -66,6 +66,18 @@ class ActivityUIActionFactorySpec extends EasyMockSugar with ShouldMatchers {
   }
 
   @Test
+  def getDisplayListIntentWithUriContextShouldGetTheRightUri {
+    getDisplayListIntent(MyEntityType, toUri("foo"), None, context).getData should
+      be (toUri("foo", entityName))
+    getDisplayListIntent(MyEntityType, toUri("foo"), Some(EntityUriSegment("bar")), context).getData should
+      be (toUri("foo", "bar", entityName))
+    getDisplayListIntent(MyEntityType, toUri("foo"), Some(EntityUriSegment("bar", "123")), context).getData should
+      be (toUri("foo", "bar", "123", entityName))
+    getDisplayListIntent(MyEntityType, toUri("foo", "bar", "234", entityName), Some(EntityUriSegment("bar", "123")), context).getData should
+      be (toUri("foo", "bar", "123", entityName))
+  }
+
+  @Test
   def getDisplayIntentShouldGetTheRightUri {
     getDisplayIntent(MyEntityType, 35, toUri("foo"), context).getData should
       be (toUri("foo", entityName, "35"))
@@ -116,5 +128,14 @@ class ActivityUIActionFactorySpec extends EasyMockSugar with ShouldMatchers {
       getUpdateIntent(MyEntityType, 45, toUri("foo", entityName), context).getAction should be (Intent.ACTION_EDIT)
       getDeleteIntent(MyEntityType, List(45), toUri("foo", entityName), context).getAction should be (Intent.ACTION_DELETE)
     }
+  }
+
+  @Test
+  def segmentShouldFindId {
+    EntityUriSegment(entityName).findId(toUri("foo")) should be (None)
+    EntityUriSegment(entityName).findId(toUri(entityName)) should be (None)
+    EntityUriSegment(entityName).findId(toUri(entityName, "123")) should be (Some(123))
+    EntityUriSegment(entityName).findId(toUri(entityName, "123", "foo")) should be (Some(123))
+    EntityUriSegment(entityName).findId(toUri(entityName, "blah")) should be (None)
   }
 }

@@ -58,9 +58,3 @@ trait CrudEntityType {
   def listActivityClass: Class[_ <: CrudListActivity[_,_,_,_]]
   def activityClass: Class[_ <: CrudActivity[_,_,_,_]]
 }
-
-/** A Regex that can match a URI string that ends with a numeric id */
-object IdUri extends Regex("(.*?)/?([0-9]+)", "prefix", "id")
-
-/** A Regex that can match a URI string that ends with a string */
-object NameUri extends Regex("(.*?)/?([^/]+)", "prefix", "name")
