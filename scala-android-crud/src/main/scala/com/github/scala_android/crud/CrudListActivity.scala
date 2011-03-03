@@ -1,13 +1,10 @@
 package com.github.scala_android.crud
 
-import _root_.android.widget.{ListView, ListAdapter}
-import android.content.Intent
-import _root_.android.app.{Activity, AlertDialog, ListActivity}
+import _root_.android.widget.ListView
+import _root_.android.app.ListActivity
 import android.os.Bundle
 import android.net.Uri
 import android.view.{View, MenuItem, Menu}
-import android.content.{Context, DialogInterface}
-import com.github.triangle._
 
 /**
  * A generic ListActivity for CRUD operations
@@ -77,34 +74,4 @@ abstract class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef]
   }
 
   def refreshAfterSave()
-
-  /**
-   * Creates an edit dialog in the given Context to edit the entity and save it.
-   * @param entityToEdit an Entity instance to edit or None to add a new one
-   */
-  //todo replace this with a CrudActivity
-  def createEditDialog(context: Activity, entityId: Option[ID], afterSave: () => Unit = () => {}): AlertDialog = {
-    val builder = new AlertDialog.Builder(context)
-    val entryView = context.getLayoutInflater.inflate(entityConfig.entryLayout, null)
-    //Unit is used to set the default value if no entityId is provided
-    val readable = entityId.map(persistence.find).getOrElse(Unit)
-    entityConfig.copyFields(readable, entryView)
-    builder.setView(entryView)
-    builder.setTitle(if (entityId.isDefined) entityConfig.editItemString else entityConfig.addItemString)
-    builder.setPositiveButton(if (entityId.isDefined) entityConfig.editItemString else entityConfig.addItemString, new DialogInterface.OnClickListener {
-      def onClick(dialog: DialogInterface, which: Int) {
-        dialog.dismiss
-        val writable = persistence.newWritable
-        entityConfig.copyFields(entryView, writable)
-        persistence.save(entityId, writable)
-        afterSave()
-      }
-    })
-    builder.setNegativeButton(entityConfig.cancelItemString, new DialogInterface.OnClickListener {
-      def onClick(dialog: DialogInterface, which: Int) {
-        dialog.cancel
-      }
-    })
-    builder.create
-  }
 }
