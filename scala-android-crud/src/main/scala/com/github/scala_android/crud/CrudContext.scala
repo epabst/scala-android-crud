@@ -14,8 +14,11 @@ trait CrudContext[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] { this: Activ
 
   protected val activity: Activity = this
 
+  //available to be overridden for testing
+  def openEntityPersistence(): EntityPersistence[Q,L,R,W] = entityConfig.openEntityPersistence(activity)
+
   def withPersistence[T](f: EntityPersistence[Q,L,R,W] => T): T = {
-    val persistence = entityConfig.openEntityPersistence(activity)
+    val persistence = openEntityPersistence()
     try {
       f(persistence)
     } finally {
