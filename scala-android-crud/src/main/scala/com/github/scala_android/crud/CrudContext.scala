@@ -12,9 +12,7 @@ import android.app.Activity
 trait CrudContext[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] { this: Activity =>
   def entityConfig: CrudEntityConfig[Q,L,R,W]
 
-  private val activity: Activity = this
-
-  val persistence: EntityPersistence[Q,L,R,W] = entityConfig.getEntityPersistence(activity)
+  protected val activity: Activity = this
 
   lazy val actionFactory = new ActivityUIActionFactory(this)
 }

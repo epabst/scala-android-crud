@@ -39,6 +39,7 @@ abstract class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef]
 		view.setHeaderDividersEnabled(true);
 		view.addHeaderView(getLayoutInflater().inflate(entityConfig.headerLayout, null));
 
+    val persistence = entityConfig.openEntityPersistence(activity)
     setListAdapter(persistence.createListAdapter(this))
   }
 

@@ -26,11 +26,14 @@ class CrudActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val entityCo
     super.onCreate(savedInstanceState)
 
     setContentView(entityConfig.entryLayout)
+    val persistence = entityConfig.openEntityPersistence(activity)
     val readableOrUnit: AnyRef = id.map(i => persistence.find(i)).getOrElse(Unit)
     entityConfig.copyFields(readableOrUnit, this)
+    persistence.close
   }
 
   override def onStop() {
+    val persistence = entityConfig.openEntityPersistence(activity)
     val writable = persistence.newWritable
     entityConfig.copyFields(this, writable)
     persistence.save(id, writable)

@@ -23,7 +23,7 @@ object ConfigMother extends EasyMockSugar {
       Field(persisted[String]("name"), viewId[TextView,String](R.id.name)),
       Field(persisted[Long]("age"), viewId[TextView,Long](R.id.age)))
 
-    def getEntityPersistence(context: Context) = persistence
+    def openEntityPersistence(context: Context) = persistence
 
     val listLayout = R.layout.entity_list
     val headerLayout = R.layout.test_row

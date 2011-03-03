@@ -12,7 +12,7 @@ import android.content.{ContentValues, Context}
  */
 
 trait SQLiteCrudEntityConfig extends CrudEntityConfig[SQLiteCriteria,Cursor,Cursor,ContentValues] {
-  def getEntityPersistence(context: Context) = new SQLiteEntityPersistence(this, context)
+  def openEntityPersistence(context: Context) = new SQLiteEntityPersistence(this, context)
 
   def getDatabaseSetup(context: Context): SQLiteOpenHelper
 }

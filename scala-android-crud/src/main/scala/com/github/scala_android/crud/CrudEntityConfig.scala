@@ -43,7 +43,7 @@ trait CrudEntityConfig[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends 
     fields.foreach(_.copy(from, to))
   }
 
-  def getEntityPersistence(context: Context): EntityPersistence[Q,L,R,W]
+  def openEntityPersistence(context: Context): EntityPersistence[Q,L,R,W]
 }
 
 trait CrudEntityType {
