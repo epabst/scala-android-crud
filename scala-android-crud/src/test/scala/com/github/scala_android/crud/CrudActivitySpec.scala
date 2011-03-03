@@ -25,6 +25,7 @@ class CrudActivitySpec extends EasyMockSugar with ShouldMatchers {
     val entity = Map[String,Any]("name" -> "Bob", "age" -> 25)
     val writable = Map[String,Any]("name" -> "Bob", "age" -> 25)
     expecting {
+      call(persistence.close())
       call(persistence.newWritable).andReturn(writable)
       call(persistence.save(None, writable)).andReturn(101)
       call(persistence.close())
@@ -49,6 +50,7 @@ class CrudActivitySpec extends EasyMockSugar with ShouldMatchers {
     val writable = Map[String,Any]()
     expecting {
       call(persistence.find(101)).andReturn(entity)
+      call(persistence.close())
       call(persistence.newWritable).andReturn(writable)
       call(persistence.save(Some(101), writable)).andReturn(101)
       call(persistence.close())
@@ -63,6 +65,38 @@ class CrudActivitySpec extends EasyMockSugar with ShouldMatchers {
       viewData.get("age") should be (Some(25))
 
       activity.onStop()
+    }
+  }
+
+  @Test
+  def withPersistenceShouldClosePersistence {
+    val persistence = mock[EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
+    val entityConfig = new MyEntityConfig(persistence)
+    val activity = new CrudActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityConfig)
+    expecting {
+      call(persistence.findAll(Unit)).andReturn(List[Map[String,Any]]())
+      call(persistence.close)
+    }
+    whenExecuting(persistence) {
+      activity.withPersistence(p => p.findAll(Unit))
+    }
+  }
+
+  @Test
+  def withPersistenceShouldClosePersistenceWithFailure {
+    val persistence = mock[EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
+    val entityConfig = new MyEntityConfig(persistence)
+    val activity = new CrudActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityConfig)
+    expecting {
+      call(persistence.close)
+    }
+    whenExecuting(persistence) {
+      try {
+        activity.withPersistence(p => throw new IllegalArgumentException("intentional"))
+        fail("should have propogated exception")
+      } catch {
+        case e: IllegalArgumentException => "expected"
+      }
     }
   }
 }

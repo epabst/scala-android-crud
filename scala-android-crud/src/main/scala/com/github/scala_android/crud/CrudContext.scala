@@ -14,5 +14,14 @@ trait CrudContext[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] { this: Activ
 
   protected val activity: Activity = this
 
+  def withPersistence[T](f: EntityPersistence[Q,L,R,W] => T): T = {
+    val persistence = entityConfig.openEntityPersistence(activity)
+    try {
+      f(persistence)
+    } finally {
+      persistence.close
+    }
+  }
+
   lazy val actionFactory = new ActivityUIActionFactory(this)
 }
