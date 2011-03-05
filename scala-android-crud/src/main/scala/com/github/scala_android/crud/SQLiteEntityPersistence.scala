@@ -27,8 +27,11 @@ class SQLiteEntityPersistence(entityConfig: SQLiteCrudEntityConfig, context: Con
 
   def newCriteria = new SQLiteCriteria
 
-  def findAll(criteria: SQLiteCriteria): Cursor = database.query(entityConfig.entityName, queryFieldNames.toArray,
-    criteria.selection, criteria.selectionArgs, criteria.groupBy, criteria.having, criteria.orderBy)
+  def findAll(criteria: SQLiteCriteria): Cursor = {
+    debug("Querying " + entityConfig.entityName + " for " + queryFieldNames.mkString(",") + " where " + criteria.selection)
+    database.query(entityConfig.entityName, queryFieldNames.toArray,
+      criteria.selection, criteria.selectionArgs, criteria.groupBy, criteria.having, criteria.orderBy)
+  }
 
   def createListAdapter(activity: Activity): ResourceCursorAdapter = {
     val criteria = newCriteria
