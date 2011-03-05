@@ -32,7 +32,11 @@ class CursorFieldAccess[T](val name: String)(implicit val persistedType: Persist
   override def partialSet(writable: AnyRef, value: T) =
     super.partialSet(writable, value) || mapAccess.partialSet(writable, value)
 
-  def get(cursor: Cursor) = persistedType.getValue(cursor, cursor.getColumnIndex(name))
+  def get(cursor: Cursor) = {
+    val columnIndex = cursor.getColumnIndex(name)
+    if (columnIndex < 0) throw new IllegalArgumentException("column not in Cursor: " + name)
+    persistedType.getValue(cursor, columnIndex)
+  }
 
   def set(contentValues: ContentValues, value: T) = persistedType.putValue(contentValues, name, value)
 }
