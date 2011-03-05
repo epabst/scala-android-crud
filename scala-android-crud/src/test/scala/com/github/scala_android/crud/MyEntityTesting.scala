@@ -1,12 +1,13 @@
 package com.github.scala_android.crud
 
-import _root_.android.content.Context
 import _root_.android.widget.TextView
 import org.scalatest.mock.EasyMockSugar
 import scala.collection.mutable.Map
 import com.github.triangle._
+import Field._
 import ViewFieldAccess._
 import CursorFieldAccess._
+import android.content.{Intent, Context}
 
 /**
  * An object mother pattern for getting CrudEntityConfig instances.
@@ -15,13 +16,15 @@ import CursorFieldAccess._
  * Time: 11:06 PM
  */
 
-object ConfigMother extends EasyMockSugar {
+trait MyEntityTesting extends EasyMockSugar {
   class MyEntityConfig(persistence: EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]) extends CrudEntityConfig[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]] {
     val entityName = "MyMap"
 
     def fields = List(
       Field(persisted[String]("name"), viewId[TextView,String](R.id.name)),
-      Field(persisted[Long]("age"), viewId[TextView,Long](R.id.age)))
+      Field(persisted[Long]("age"), viewId[TextView,Long](R.id.age)),
+      //here to test a non-UI field
+      Field[String](persisted("uri"), readOnly[Intent,String](_.getData.toString)))
 
     def openEntityPersistence(context: Context) = persistence
 

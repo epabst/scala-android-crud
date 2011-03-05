@@ -17,9 +17,7 @@ import org.scalatest.matchers.ShouldMatchers
  * Time: 6:22 PM
  */
 @RunWith(classOf[RobolectricTestRunner])
-class CrudListActivitySpec extends EasyMockSugar with ShouldMatchers {
-  import ConfigMother._
-
+class CrudListActivitySpec extends EasyMockSugar with ShouldMatchers with MyEntityTesting {
   @Test
   def shouldAllowAdding {
     val persistence = mock[EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
