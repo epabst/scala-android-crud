@@ -35,6 +35,7 @@ class CrudActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val entityCo
   override def onStop() {
     withPersistence { persistence =>
       val writable = persistence.newWritable
+      entityConfig.copyFields(getIntent, writable)
       entityConfig.copyFields(this, writable)
       persistence.save(id, writable)
     }
