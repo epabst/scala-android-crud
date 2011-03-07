@@ -8,8 +8,7 @@ import Field._
 import ViewFieldAccess._
 import CursorFieldAccess._
 import android.content.{Intent, Context}
-import android.database.Cursor
-import org.easymock.{IAnswer, EasyMock}
+import org.easymock.IAnswer
 
 /**
  * An object mother pattern for getting CrudEntityConfig instances.
@@ -40,20 +39,6 @@ trait MyEntityTesting extends EasyMockSugar {
 
     def listActivityClass = classOf[CrudListActivity[_,_,_,_]]
     def activityClass = classOf[CrudActivity[_,_,_,_]]
-  }
-
-  def mockCursor(cursorValues: Map[String,Option[Any]]) = {
-    val cursor = mock[Cursor]
-    val cursorColumnNames = cursorValues.keys.toList
-    import EasyMock._
-    call(cursor.getColumnIndex(isA(classOf[String]))).andAnswer(answer(cursorColumnNames.indexOf(getCurrentArguments.apply(0).asInstanceOf[String]))).anyTimes
-    def currentColumnName = cursorColumnNames.apply(getCurrentArguments.apply(0).asInstanceOf[Int])
-    call(cursor.isNull(anyInt)).andAnswer(answer(cursorValues(currentColumnName).isEmpty)).anyTimes
-    call(cursor.getLong(anyInt)).andAnswer(answer(cursorValues(currentColumnName).get.asInstanceOf[Long])).anyTimes
-    call(cursor.getDouble(anyInt)).andAnswer(answer(cursorValues(currentColumnName).get.asInstanceOf[Double])).anyTimes
-    call(cursor.getInt(anyInt)).andAnswer(answer(cursorValues(currentColumnName).get.asInstanceOf[Int])).anyTimes
-    call(cursor.getString(anyInt)).andAnswer(answer(cursorValues(currentColumnName).get.asInstanceOf[String])).anyTimes
-    cursor
   }
 
   def answer[T](result: => T) = new IAnswer[T] {
