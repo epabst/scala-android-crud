@@ -44,8 +44,9 @@ abstract class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef]
   }
 
   override def onResume() {
-    super.onResume
+    verbose("onResume")
     refreshAfterSave()
+    super.onResume
   }
 
   //todo add support for item actions on long touch on an item

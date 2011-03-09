@@ -32,14 +32,14 @@ class CrudActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val entityCo
     }
   }
 
-  override def onStop() {
+  override def onPause() {
     withPersistence { persistence =>
       val writable = persistence.newWritable
       entityConfig.copyFields(getIntent, writable)
       entityConfig.copyFields(this, writable)
       persistence.save(id, writable)
     }
-    super.onStop()
+    super.onPause()
   }
 
   override def onCreateOptionsMenu(menu: Menu): Boolean = {

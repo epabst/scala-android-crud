@@ -40,7 +40,7 @@ class CrudActivitySpec extends EasyMockSugar with ShouldMatchers with MyEntityTe
       activity.onCreate(null)
       val viewData = Map[String,Any]()
       entityConfig.copyFields(entity, activity)
-      activity.onStop()
+      activity.onPause()
     }
   }
 
@@ -67,7 +67,7 @@ class CrudActivitySpec extends EasyMockSugar with ShouldMatchers with MyEntityTe
       viewData.get("name") should be (Some("Bob"))
       viewData.get("age") should be (Some(25))
 
-      activity.onStop()
+      activity.onPause()
     }
   }
 

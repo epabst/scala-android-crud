@@ -1,10 +1,8 @@
 package com.github.scala_android.crud
 
-import android.os.Bundle
-import android.widget.{ListAdapter, CursorAdapter, ResourceCursorAdapter}
+import android.widget.CursorAdapter
 import android.database.Cursor
-import android.view.{View, MenuItem, Menu}
-import android.content.{ContentValues, Context, DialogInterface}
+import android.content.ContentValues
 
 /**
  * A trait for a ListActivity that uses {@link Cursor} and {@link ContentValues}.
