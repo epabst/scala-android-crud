@@ -1,6 +1,5 @@
 package com.github.scala_android.crud
 
-import scala.util.matching.Regex
 import android.content.Context
 import com.github.triangle.CopyableField
 
@@ -47,7 +46,7 @@ trait CrudEntityConfig[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends 
 }
 
 trait CrudEntityType {
-  //this is the type used for internationalizable strings
+  //this is the type used for internationalized strings
   def entityName: String
 
   //todo replace these with using the standard android icons
@@ -57,4 +56,6 @@ trait CrudEntityType {
 
   def listActivityClass: Class[_ <: CrudListActivity[_,_,_,_]]
   def activityClass: Class[_ <: CrudActivity[_,_,_,_]]
+
+  override def toString = entityName
 }

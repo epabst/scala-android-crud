@@ -1,6 +1,7 @@
 package com.github.scala_android.crud
 
 import android.app.Activity
+import monitor.Logging
 
 /**
  * Support for the different Crud Activity's.
@@ -9,10 +10,12 @@ import android.app.Activity
  * Time: 7:01 PM
  */
 
-trait CrudContext[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] { this: Activity =>
+trait CrudContext[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Logging { this: Activity =>
   def entityConfig: CrudEntityConfig[Q,L,R,W]
 
   protected val activity: Activity = this
+
+  override lazy val logTag = classOf[CrudContext[Q,L,R,W]].getName + "(" + entityConfig.entityName + ")"
 
   //available to be overridden for testing
   def openEntityPersistence(): EntityPersistence[Q,L,R,W] = entityConfig.openEntityPersistence(activity)

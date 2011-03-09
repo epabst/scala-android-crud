@@ -4,12 +4,10 @@ import _root_.android.app.Activity
 import _root_.android.widget.ResourceCursorAdapter
 import android.provider.BaseColumns
 import android.view.View
-import android.database.sqlite.{SQLiteDatabase, SQLiteOpenHelper}
+import android.database.sqlite.SQLiteDatabase
 import android.database.Cursor
-import java.lang.Byte
 import android.content.{Context, ContentValues}
 import com.github.scala_android.crud.monitor.Logging
-import com.github.triangle._
 
 /**
  * EntityPersistence for SQLite.
@@ -24,6 +22,8 @@ class SQLiteEntityPersistence(entityConfig: SQLiteCrudEntityConfig, context: Con
   lazy val database: SQLiteDatabase = databaseSetup.getWritableDatabase
 
   lazy val queryFieldNames: List[String] = CursorFieldAccess.queryFieldNames(entityConfig.fields)
+
+  override lazy val logTag = classOf[EntityPersistence].getName + "(" + entityConfig.entityName + ")"
 
   def newCriteria = new SQLiteCriteria
 
@@ -46,7 +46,7 @@ class SQLiteEntityPersistence(entityConfig: SQLiteCrudEntityConfig, context: Con
   }
 
   //todo deal with not finding any match by returning an Option[R]
-  def find(id: Long) = {
+  def find(id: ID) = {
     val cursor = database.query(entityConfig.entityName, queryFieldNames.toArray,
       BaseColumns._ID + "=" + id, Nil.toArray, null, null, null)
     cursor.moveToFirst
@@ -55,7 +55,7 @@ class SQLiteEntityPersistence(entityConfig: SQLiteCrudEntityConfig, context: Con
 
   def newWritable = new ContentValues
 
-  def save(idOption: Option[Long], contentValues: ContentValues): Long = {
+  def save(idOption: Option[ID], contentValues: ContentValues): ID = {
     idOption match {
       case None => {
         info("Adding " + entityConfig.entityName + " with " + contentValues)
@@ -69,7 +69,7 @@ class SQLiteEntityPersistence(entityConfig: SQLiteCrudEntityConfig, context: Con
     }
   }
 
-  def delete(ids: List[Long]) {
+  def delete(ids: List[ID]) {
     ids.foreach(id => database.delete(entityConfig.entityName, BaseColumns._ID + "=" + id, Nil.toArray))
   }
 
