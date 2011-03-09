@@ -1,7 +1,7 @@
 package com.github.triangle
 
-import java.util.Date
 import java.text.{ParsePosition, Format, NumberFormat}
+import java.util.{Calendar, Date}
 
 /**
  * A value format.
@@ -60,18 +60,28 @@ class FlexibleValueFormat[T](formats: List[ValueFormat[T]]) extends ValueFormat[
   }
 }
 
-private object ValueFormats {
+object ValueFormat {
   lazy val currencyFormat = NumberFormat.getCurrencyInstance()
-  lazy val editFormat = {
+  lazy val currencyEditFormat = {
     val editFormat = NumberFormat.getNumberInstance()
     editFormat.setMinimumFractionDigits(currencyFormat.getMinimumFractionDigits)
     editFormat
   }
-  lazy val amountFormats = List(editFormat, currencyFormat, NumberFormat.getNumberInstance()).map(new TextValueFormat[Number](_))
+  lazy val amountFormats = List(currencyEditFormat, currencyFormat, NumberFormat.getNumberInstance()).map(new TextValueFormat[Number](_))
 
   lazy val dateFormats = List(new java.text.SimpleDateFormat("MM/dd/yyyy")).map(new TextValueFormat[Date](_))
+
+  def toCalendarFormat(format: ValueFormat[Date]): ValueFormat[Calendar] = new ValueFormat[Calendar] {
+    override def toString(value: Calendar) = format.toString(value.getTime)
+
+    def toValue(s: String) = format.toValue(s).map { date =>
+      val calendar = Calendar.getInstance
+      calendar.setTime(date)
+      calendar
+    }
+  }
+
+  lazy val currencyValueFormat = new FlexibleValueFormat[Number](amountFormats)
+  lazy val dateValueFormat = new FlexibleValueFormat[Date](dateFormats)
+  lazy val calendarValueFormat = toCalendarFormat(dateValueFormat)
 }
-
-object CurrencyValueFormat extends FlexibleValueFormat[Number](ValueFormats.amountFormats)
-
-object DateValueFormat extends FlexibleValueFormat[Date](ValueFormats.dateFormats)

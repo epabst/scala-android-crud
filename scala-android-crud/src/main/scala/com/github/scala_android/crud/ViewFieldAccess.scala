@@ -1,13 +1,12 @@
 package com.github.scala_android.crud
 
 import _root_.android.app.Activity
-import _root_.android.content.{ContentUris, Intent}
+import _root_.android.content.Intent
 import _root_.android.view.View
 import reflect.ClassManifest
-import java.util.{Calendar,GregorianCalendar}
 import _root_.android.widget.{ArrayAdapter, Spinner, DatePicker, TextView}
 import com.github.triangle._
-import collection.JavaConversions
+import java.util.{Date, Calendar, GregorianCalendar}
 
 /**
  * Field fieldAccess for Views.

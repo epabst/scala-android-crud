@@ -5,6 +5,7 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.Spec
 import java.text.NumberFormat
+import ValueFormat._
 
 /**
  * A behavior specification for {@link ValueFormat}.
@@ -53,8 +54,8 @@ class ValueFormatSpec extends Spec with ShouldMatchers {
     }
   }
 
-  describe("CurrencyValueFormat") {
-    val format = CurrencyValueFormat
+  describe("currencyValueFormat") {
+    val format = currencyValueFormat
 
     it("should handle parse various number formats") {
       format.toValue("$1.00").get should be (1)
