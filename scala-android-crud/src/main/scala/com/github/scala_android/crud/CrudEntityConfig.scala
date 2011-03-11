@@ -49,6 +49,7 @@ trait CrudEntityType {
   //this is the type used for internationalized strings
   def entityName: String
 
+  def listItemsString: Option[Int] = None
   //todo replace these with using the standard android icons
   def addItemString: Int
   def editItemString: Int

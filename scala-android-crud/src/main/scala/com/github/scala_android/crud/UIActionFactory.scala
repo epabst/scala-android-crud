@@ -88,7 +88,7 @@ class ActivityUIActionFactory(currentActivity: Activity) extends UIActionFactory
       getCreateIntent(entityType, currentIntent.getData, currentActivity))
 
   def displayList(entityType: CrudEntityType, uriContext: Option[EntityUriSegment] = None) =
-    toAction(None, None, entityType, getDisplayListIntent(entityType, currentIntent.getData, uriContext, currentActivity))
+    toAction(None, entityType.listItemsString, entityType, getDisplayListIntent(entityType, currentIntent.getData, uriContext, currentActivity))
 
   def display(entityType: CrudEntityType, id: ID) =
     toAction(None, None, entityType, getDisplayIntent(entityType, id, currentIntent.getData, currentActivity))
