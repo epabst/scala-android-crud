@@ -136,6 +136,30 @@ abstract class FieldAccess[R,W,T](implicit readableManifest: ClassManifest[R], _
   protected def writableManifest = _writableManifest
 }
 
+trait FieldAccessVariations[T] extends PartialFieldAccess[T] {
+  def fieldAccesses: List[PartialFieldAccess[T]]
+
+  /**
+   * Gets a value out of <code>readable</code> by using the first FieldAccess that can handle it.
+   * @returns Some(value) if successful, otherwise None
+   */
+  def partialGet(readable: AnyRef): Option[T] = {
+    for (fieldAccess <- fieldAccesses) {
+      val value = fieldAccess.partialGet(readable)
+      if (value.isDefined) return value
+    }
+    None
+  }
+
+  /**
+   * Sets a value in <code>writable</code> by using all FieldAccesses that can handle it.
+   * @return true if any were successful
+   */
+  def partialSet(writable: AnyRef, value: T) = {
+    fieldAccesses.foldLeft(false)((result, access) => access.partialSet(writable, value) || result)
+  }
+}
+
 /**
  * Factory methods for basic FieldAccesses.  This should be imported as Field._.
  */
@@ -197,9 +221,12 @@ object Field {
   def mapAccess[T](name: String): FieldAccess[Map[String,_ <: T],collection.mutable.Map[String,_ >: T],T] =
     flow(_.get(name), m => v => m.put(name, v))
 
+  def variations[T](fieldAccessArgs: PartialFieldAccess[T]*): PartialFieldAccess[T] = new FieldAccessVariations[T] {
+    val fieldAccesses: List[PartialFieldAccess[T]] = fieldAccessArgs.toList
+  }
+
   /**
    * Allow creating a Field without using "new".
    */
   def apply[T](fieldAccesses: PartialFieldAccess[T]*): Field[T] = new Field[T](fieldAccesses :_*)
 }
-

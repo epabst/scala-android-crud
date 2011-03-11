@@ -6,7 +6,7 @@ import _root_.android.view.View
 import reflect.ClassManifest
 import _root_.android.widget.{ArrayAdapter, Spinner, DatePicker, TextView}
 import com.github.triangle._
-import java.util.{Date, Calendar, GregorianCalendar}
+import java.util.{Calendar, GregorianCalendar}
 
 /**
  * Field fieldAccess for Views.
@@ -18,7 +18,7 @@ import java.util.{Date, Calendar, GregorianCalendar}
 abstract class ViewFieldAccess[V <: View,T](implicit m: ClassManifest[V]) extends FieldAccess[V,V,T]
 
 /** View fieldAccess for a View resource within a given parent View */
-class ViewFieldAccessById[T](val viewResourceId: Int)(childViewFieldAccess: ViewFieldAccess[_,T])
+class ViewFieldAccessById[T](val viewResourceId: Int)(childViewFieldAccess: PartialFieldAccess[T])
         extends PartialFieldAccess[T] {
   def partialGet(readable: AnyRef) = readable match {
     case entryView: View => Option(entryView.findViewById(viewResourceId)).flatMap(v => partialGetFromChildView(v))
@@ -50,6 +50,10 @@ object ViewFieldAccess {
 
   def viewId[V <: View,T](viewResourceId: Int)(implicit childViewFieldAccess: ViewFieldAccess[V,T]): ViewFieldAccessById[T] = {
     new ViewFieldAccessById[T](viewResourceId)(childViewFieldAccess)
+  }
+
+  def viewId[T](viewResourceId: Int, childViewAccessVariations: ViewFieldAccess[_,T]*): ViewFieldAccessById[T] = {
+    new ViewFieldAccessById[T](viewResourceId)(Field.variations(childViewAccessVariations: _*))
   }
 
   def viewFieldAccessById[V <: View,T](viewResourceId: Int, getter: V => Option[T], setter: V => T => Unit)
