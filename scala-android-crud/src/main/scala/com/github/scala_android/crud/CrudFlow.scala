@@ -1,5 +1,7 @@
 package com.github.scala_android.crud
 
+import android.app.Activity
+
 /**
  * The flow between Crud Activities and other Activities.
  * <p>
@@ -24,7 +26,24 @@ trait CrudFlow extends ActivityRefConsumer[ActivityRef,ListActivityRef] {
   /**
    * Indicates which activity the application should start with.
    */
-  def startWith: ActivityRefConsumer[Unit,Unit]
+  protected def startWith: ActivityRefConsumer[Unit,Unit]
+
+  val startingPoint: CrudFlowPoint
+}
+
+/**
+ * A point (representing an Activity) in the CrudFlow.
+ */
+abstract class CrudFlowPoint(val crudType: CrudEntityTypeRef) {
+  /**
+   * Gets the available actions.
+   */
+  def getActions(currentActivity: Activity): List[UIAction]
+
+  /**
+   * Gets the available actions when choosing an item from a list.
+   */
+  def getItemActions(itemId: Long, currentActivity: Activity): List[UIAction]
 }
 
 /**
@@ -34,27 +53,27 @@ trait ActivityRefConsumer[R,LR] {
   /**
    * The activity for creating an entity.
    */
-  def create(crudType: CrudEntityType[_,_,_,_]): R
+  protected def create(crudType: CrudEntityType[_,_,_,_]): R
 
   /**
    * The activity for listing entities.
    */
-  def listOf(crudType: CrudEntityType[_,_,_,_]): LR
+  protected def listOf(crudType: CrudEntityType[_,_,_,_]): LR
 
   /**
    * The activity for displaying an entity.
    */
-  def display(crudType: CrudEntityType[_,_,_,_]): R
+  protected def display(crudType: CrudEntityType[_,_,_,_]): R
 
   /**
    * The activity of updating an entity.
    */
-  def update(crudType: CrudEntityType[_,_,_,_]): R
+  protected def update(crudType: CrudEntityType[_,_,_,_]): R
 
   /**
    * The activity of deleting an entity (with confirmation).
    */
-  def delete(crudType: CrudEntityType[_,_,_,_]): R
+  protected def delete(crudType: CrudEntityType[_,_,_,_]): R
 }
 
 /**
