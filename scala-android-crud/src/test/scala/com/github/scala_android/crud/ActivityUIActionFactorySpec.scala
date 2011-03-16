@@ -18,22 +18,8 @@ class ActivityUIActionFactorySpec extends EasyMockSugar with ShouldMatchers {
   //todo determine if shadowing, and run tests on real Android device as well.
   val isShadowing = true
 
-  object MyEntityType extends CrudEntityTypeRef {
-    def entityName = "MyEntity"
-
-    def listActivityClass = classOf[CrudListActivity[_,_,_,_]]
-
-    def addItemString = R.string.add_item
-
-    def editItemString = R.string.edit_item
-
-    def cancelItemString = R.string.cancel_item
-
-    def activityClass = classOf[CrudActivity[_,_,_,_]]
-  }
-
   import ActivityUIActionFactory._
-  import MyEntityType.entityName
+  import MyCrudEntityTypeRef.entityName
 
   val context = null
 
