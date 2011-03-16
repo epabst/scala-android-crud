@@ -14,5 +14,6 @@ import android.content.ContentValues
 class SQLiteCrudListActivity(entityType: SQLiteCrudEntityType)
   extends CrudListActivity[SQLiteCriteria,Cursor,Cursor,ContentValues](entityType) {
 
+  //todo move to CrudEntityType and eliminate this whole class
   override def refreshAfterSave() = getListAdapter.asInstanceOf[CursorAdapter].getCursor.requery
 }
