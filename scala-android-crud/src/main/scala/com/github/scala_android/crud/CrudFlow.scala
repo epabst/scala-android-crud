@@ -34,27 +34,27 @@ trait ActivityRefConsumer[R,LR] {
   /**
    * The activity for creating an entity.
    */
-  def create(crudConfig: CrudEntityConfig[_,_,_,_]): R
+  def create(crudType: CrudEntityType[_,_,_,_]): R
 
   /**
    * The activity for listing entities.
    */
-  def listOf(crudConfig: CrudEntityConfig[_,_,_,_]): LR
+  def listOf(crudType: CrudEntityType[_,_,_,_]): LR
 
   /**
    * The activity for displaying an entity.
    */
-  def display(crudConfig: CrudEntityConfig[_,_,_,_]): R
+  def display(crudType: CrudEntityType[_,_,_,_]): R
 
   /**
    * The activity of updating an entity.
    */
-  def update(crudConfig: CrudEntityConfig[_,_,_,_]): R
+  def update(crudType: CrudEntityType[_,_,_,_]): R
 
   /**
    * The activity of deleting an entity (with confirmation).
    */
-  def delete(crudConfig: CrudEntityConfig[_,_,_,_]): R
+  def delete(crudType: CrudEntityType[_,_,_,_]): R
 }
 
 /**

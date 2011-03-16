@@ -16,7 +16,7 @@ import com.github.triangle.BasicValueFormat
  * @param R the type to read from (e.g. Cursor)
  * @param W the type to write to (e.g. ContentValues)
  */
-class CrudActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val entityConfig: CrudEntityConfig[Q,L,R,W])
+class CrudActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val entityType: CrudEntityType[Q,L,R,W])
   extends Activity with CrudContext[Q,L,R,W] {
 
   private val longFormat = new BasicValueFormat[Long]()
@@ -25,18 +25,18 @@ class CrudActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val entityCo
   override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)
 
-    setContentView(entityConfig.entryLayout)
+    setContentView(entityType.entryLayout)
     withPersistence{ persistence =>
       val readableOrUnit: AnyRef = id.map(i => persistence.find(i)).getOrElse(Unit)
-      entityConfig.copyFields(readableOrUnit, this)
+      entityType.copyFields(readableOrUnit, this)
     }
   }
 
   override def onPause() {
     withPersistence { persistence =>
       val writable = persistence.newWritable
-      entityConfig.copyFields(getIntent, writable)
-      entityConfig.copyFields(this, writable)
+      entityType.copyFields(getIntent, writable)
+      entityType.copyFields(this, writable)
       persistence.save(id, writable)
     }
     super.onPause()
@@ -45,7 +45,7 @@ class CrudActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val entityCo
   override def onCreateOptionsMenu(menu: Menu): Boolean = {
     //todo add revert support
     //todo add support for crud actions
-    //menu.add(0, ADD_DIALOG_ID, 1, entityConfig.addItemString)
+    //menu.add(0, ADD_DIALOG_ID, 1, entityType.addItemString)
     true
   }
 

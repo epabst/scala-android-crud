@@ -21,8 +21,8 @@ class CrudListActivitySpec extends EasyMockSugar with ShouldMatchers with MyEnti
   @Test
   def shouldAllowAdding {
     val persistence = mock[EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
-    val entityConfig = new MyEntityConfig(persistence)
-    val activity = new CrudListActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityConfig) {
+    val entityType = new MyEntityType(persistence)
+    val activity = new CrudListActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityType) {
       def refreshAfterSave() {}
     }
     val entity = Map[String,Any]("age" -> 25)
@@ -47,9 +47,9 @@ class CrudListActivitySpec extends EasyMockSugar with ShouldMatchers with MyEnti
   @Test
   def shouldRefreshOnResume {
     val persistence = mock[EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
-    val entityConfig = new MyEntityConfig(persistence)
+    val entityType = new MyEntityType(persistence)
     var refreshCount = 0
-    class MyCrudListActivity extends CrudListActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityConfig) {
+    class MyCrudListActivity extends CrudListActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityType) {
       def refreshAfterSave() {
         refreshCount = refreshCount + 1
       }

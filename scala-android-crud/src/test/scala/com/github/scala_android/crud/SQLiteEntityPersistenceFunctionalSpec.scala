@@ -18,7 +18,7 @@ import CursorFieldAccess._
  */
 @RunWith(classOf[RobolectricTestRunner])
 class SQLiteEntityPersistenceFunctionalSpec extends EasyMockSugar with ShouldMatchers {
-  object TestEntityConfig extends SQLiteCrudEntityConfig {
+  object TestEntityType extends SQLiteCrudEntityType {
     def entityName = "Person"
     val fields = List(Field(persisted[Long]("age")))
 
@@ -39,7 +39,7 @@ class SQLiteEntityPersistenceFunctionalSpec extends EasyMockSugar with ShouldMat
   @Test
   def shouldUseCorrectColumnNamesForFindAll {
     val mockContext = mock[Context]
-    val persistence = new SQLiteEntityPersistence(TestEntityConfig, mockContext)
+    val persistence = new SQLiteEntityPersistence(TestEntityType, mockContext)
     whenExecuting(mockContext) {
       val result = persistence.findAll(new SQLiteCriteria())
       result.getColumnIndex(BaseColumns._ID) should be (0)

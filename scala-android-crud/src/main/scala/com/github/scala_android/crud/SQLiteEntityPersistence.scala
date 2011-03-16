@@ -15,40 +15,40 @@ import com.github.scala_android.crud.monitor.Logging
  * Date: 2/3/11
  * Time: 6:17 PM
  */
-class SQLiteEntityPersistence(entityConfig: SQLiteCrudEntityConfig, context: Context)
+class SQLiteEntityPersistence(entityType: SQLiteCrudEntityType, context: Context)
   extends EntityPersistence[SQLiteCriteria,Cursor,Cursor,ContentValues] with Logging {
 
-  lazy val databaseSetup = entityConfig.getDatabaseSetup(context)
+  lazy val databaseSetup = entityType.getDatabaseSetup(context)
   lazy val database: SQLiteDatabase = databaseSetup.getWritableDatabase
 
-  lazy val queryFieldNames: List[String] = CursorFieldAccess.queryFieldNames(entityConfig.fields)
+  lazy val queryFieldNames: List[String] = CursorFieldAccess.queryFieldNames(entityType.fields)
 
   override lazy val logTag = classOf[EntityPersistence[SQLiteCriteria,Cursor,Cursor,ContentValues]].getName +
-          "(" + entityConfig.entityName + ")"
+          "(" + entityType.entityName + ")"
 
   def newCriteria = new SQLiteCriteria
 
   def findAll(criteria: SQLiteCriteria): Cursor = {
-    debug("Querying " + entityConfig.entityName + " for " + queryFieldNames.mkString(",") + " where " + criteria.selection)
-    database.query(entityConfig.entityName, queryFieldNames.toArray,
+    debug("Querying " + entityType.entityName + " for " + queryFieldNames.mkString(",") + " where " + criteria.selection)
+    database.query(entityType.entityName, queryFieldNames.toArray,
       criteria.selection, criteria.selectionArgs, criteria.groupBy, criteria.having, criteria.orderBy)
   }
 
   def createListAdapter(activity: Activity): ResourceCursorAdapter = {
     val criteria = newCriteria
-    entityConfig.copyFields(activity.getIntent, criteria)
+    entityType.copyFields(activity.getIntent, criteria)
     val cursor = findAll(criteria)
     activity.startManagingCursor(cursor)
-    new ResourceCursorAdapter(activity, entityConfig.rowLayout, cursor) {
+    new ResourceCursorAdapter(activity, entityType.rowLayout, cursor) {
       def bindView(view: View, context: Context, cursor: Cursor) {
-        entityConfig.copyFields(cursor, view)
+        entityType.copyFields(cursor, view)
       }
     }
   }
 
   //todo deal with not finding any match by returning an Option[R]
   def find(id: ID) = {
-    val cursor = database.query(entityConfig.entityName, queryFieldNames.toArray,
+    val cursor = database.query(entityType.entityName, queryFieldNames.toArray,
       BaseColumns._ID + "=" + id, Nil.toArray, null, null, null)
     cursor.moveToFirst
     cursor
@@ -59,19 +59,19 @@ class SQLiteEntityPersistence(entityConfig: SQLiteCrudEntityConfig, context: Con
   def save(idOption: Option[ID], contentValues: ContentValues): ID = {
     idOption match {
       case None => {
-        info("Adding " + entityConfig.entityName + " with " + contentValues)
-        database.insert(entityConfig.entityName, null, contentValues)
+        info("Adding " + entityType.entityName + " with " + contentValues)
+        database.insert(entityType.entityName, null, contentValues)
       }
       case Some(id) => {
-        info("Updating " + entityConfig.entityName + " #" + id + " with " + contentValues)
-        database.update(entityConfig.entityName, contentValues, BaseColumns._ID + "=" + id, null)
+        info("Updating " + entityType.entityName + " #" + id + " with " + contentValues)
+        database.update(entityType.entityName, contentValues, BaseColumns._ID + "=" + id, null)
         id
       }
     }
   }
 
   def delete(ids: List[ID]) {
-    ids.foreach(id => database.delete(entityConfig.entityName, BaseColumns._ID + "=" + id, Nil.toArray))
+    ids.foreach(id => database.delete(entityType.entityName, BaseColumns._ID + "=" + id, Nil.toArray))
   }
 
   def close() {

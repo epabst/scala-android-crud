@@ -12,7 +12,7 @@ import com.github.triangle.CopyableField
  * @param Int a translatable text identifier
  * @param LT a layout configuration
  */
-trait CrudEntityConfig[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends CrudEntityType {
+trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends CrudEntityTypeRef {
   //this makes it available for subtypes to use to make it clear that it's an ID
   type ID = Long
 
@@ -45,7 +45,7 @@ trait CrudEntityConfig[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends 
   def openEntityPersistence(context: Context): EntityPersistence[Q,L,R,W]
 }
 
-trait CrudEntityType {
+trait CrudEntityTypeRef {
   //this is the type used for internationalized strings
   def entityName: String
 

@@ -10,5 +10,5 @@ import android.content.ContentValues
  * Time: 10:25 PM
  * @param Q the query criteria type
  */
-class SQLiteCrudActivity(entityConfig: SQLiteCrudEntityConfig)
-  extends CrudActivity[SQLiteCriteria,Cursor,Cursor,ContentValues](entityConfig)
+class SQLiteCrudActivity(entityType: SQLiteCrudEntityType)
+  extends CrudActivity[SQLiteCriteria,Cursor,Cursor,ContentValues](entityType)

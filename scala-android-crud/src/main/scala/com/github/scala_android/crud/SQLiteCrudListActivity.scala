@@ -11,8 +11,8 @@ import android.content.ContentValues
  * Time: 10:25 PM
  * @param Q the query criteria type
  */
-class SQLiteCrudListActivity(entityConfig: SQLiteCrudEntityConfig)
-  extends CrudListActivity[SQLiteCriteria,Cursor,Cursor,ContentValues](entityConfig) {
+class SQLiteCrudListActivity(entityType: SQLiteCrudEntityType)
+  extends CrudListActivity[SQLiteCriteria,Cursor,Cursor,ContentValues](entityType) {
 
   override def refreshAfterSave() = getListAdapter.asInstanceOf[CursorAdapter].getCursor.requery
 }

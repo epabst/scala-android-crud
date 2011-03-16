@@ -11,14 +11,14 @@ import android.content.{Intent, Context}
 import org.easymock.IAnswer
 
 /**
- * An object mother pattern for getting CrudEntityConfig instances.
+ * An object mother pattern for getting CrudEntityType instances.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 2/26/11
  * Time: 11:06 PM
  */
 
 trait MyEntityTesting extends EasyMockSugar {
-  class MyEntityConfig(persistence: EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]) extends CrudEntityConfig[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]] {
+  class MyEntityType(persistence: EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]) extends CrudEntityType[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]] {
     val entityName = "MyMap"
 
     def fields = List(

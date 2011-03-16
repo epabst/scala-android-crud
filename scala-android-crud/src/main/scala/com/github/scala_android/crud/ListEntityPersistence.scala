@@ -12,7 +12,7 @@ import android.content.{Intent, Context, ContentValues}
  * Time: 5:05 PM
  */
 
-abstract class ListEntityPersistence[T <: AnyRef,Q <: AnyRef](entityConfig: CrudEntityConfig[Q,List[T],T,ContentValues],
+abstract class ListEntityPersistence[T <: AnyRef,Q <: AnyRef](entityType: CrudEntityType[Q,List[T],T,ContentValues],
                                                               activity: Activity) extends EntityPersistence[Q,List[T],T,ContentValues] {
   protected def getIntent(context: Context): Intent = context match {
     case activity: Activity => activity.getIntent
@@ -20,7 +20,7 @@ abstract class ListEntityPersistence[T <: AnyRef,Q <: AnyRef](entityConfig: Crud
 
   lazy val list = {
     val criteria = newCriteria
-    entityConfig.copyFields(activity.getIntent, criteria)
+    entityType.copyFields(activity.getIntent, criteria)
     findAll(criteria)
   }
 
@@ -45,8 +45,8 @@ abstract class ListEntityPersistence[T <: AnyRef,Q <: AnyRef](entityConfig: Crud
     def getItem(position: Int) = list(position)
 
     def getView(position: Int, convertView: View, parent: ViewGroup): View = {
-      val view = if (convertView == null) activity.getLayoutInflater.inflate(entityConfig.rowLayout, parent, false) else convertView
-      entityConfig.copyFields(list(position), view)
+      val view = if (convertView == null) activity.getLayoutInflater.inflate(entityType.rowLayout, parent, false) else convertView
+      entityType.copyFields(list(position), view)
       view
     }
   }

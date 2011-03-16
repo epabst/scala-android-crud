@@ -11,14 +11,14 @@ import monitor.Logging
  */
 
 trait CrudContext[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Logging { this: Activity =>
-  def entityConfig: CrudEntityConfig[Q,L,R,W]
+  def entityType: CrudEntityType[Q,L,R,W]
 
   protected val activity: Activity = this
 
-  override lazy val logTag = classOf[CrudContext[Q,L,R,W]].getName + "(" + entityConfig.entityName + ")"
+  override lazy val logTag = classOf[CrudContext[Q,L,R,W]].getName + "(" + entityType.entityName + ")"
 
   //available to be overridden for testing
-  def openEntityPersistence(): EntityPersistence[Q,L,R,W] = entityConfig.openEntityPersistence(activity)
+  def openEntityPersistence(): EntityPersistence[Q,L,R,W] = entityType.openEntityPersistence(activity)
 
   def withPersistence[T](f: EntityPersistence[Q,L,R,W] => T): T = {
     val persistence = openEntityPersistence()

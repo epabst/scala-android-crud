@@ -23,29 +23,29 @@ trait UIActionFactory {
 
   /**
    * Gets the action to display a UI for a user to fill in data for creating an entity.
-   * It should copy Unit into the UI using entityConfig.copy to populate defaults.
+   * It should copy Unit into the UI using entityType.copy to populate defaults.
    */
-  def startCreate(entityType: CrudEntityType): CrudUIAction
+  def startCreate(entityType: CrudEntityTypeRef): CrudUIAction
 
   /**
-   * Gets the action to display the list that matches the criteria copied from criteriaSource using entityConfig.copy.
+   * Gets the action to display the list that matches the criteria copied from criteriaSource using entityType.copy.
    */
-  def displayList(entityType: CrudEntityType, uriContext: Option[EntityUriSegment] = None): CrudUIAction
+  def displayList(entityType: CrudEntityTypeRef, uriContext: Option[EntityUriSegment] = None): CrudUIAction
 
   /**
    * Gets the action to display the entity given the id.
    */
-  def display(entityType: CrudEntityType, id: ID): CrudUIAction
+  def display(entityType: CrudEntityTypeRef, id: ID): CrudUIAction
 
   /**
    * Gets the action to display a UI for a user to edit data for an entity given its id.
    */
-  def startUpdate(entityType: CrudEntityType, id: ID): CrudUIAction
+  def startUpdate(entityType: CrudEntityTypeRef, id: ID): CrudUIAction
 
   /**
    * Gets the action to display a UI to allow a user to proceed with deleting a list of entities given their ids.
    */
-  def startDelete(entityType: CrudEntityType, ids: List[ID]): CrudUIAction
+  def startDelete(entityType: CrudEntityTypeRef, ids: List[ID]): CrudUIAction
 }
 
 
@@ -68,12 +68,12 @@ trait UIAction {
 /**
  * Represents an action involving a crud entity.
  */
-abstract class CrudUIAction(val icon: Option[Int], val title: Option[Int], val entityType: CrudEntityType) extends UIAction
+abstract class CrudUIAction(val icon: Option[Int], val title: Option[Int], val entityType: CrudEntityTypeRef) extends UIAction
 
 class ActivityUIActionFactory(currentActivity: Activity) extends UIActionFactory {
   def currentIntent = currentActivity.getIntent
 
-  private def toAction(icon: Option[Int], title: Option[Int], entityType: CrudEntityType, intent: Intent) =
+  private def toAction(icon: Option[Int], title: Option[Int], entityType: CrudEntityTypeRef, intent: Intent) =
     new CrudUIAction(icon, title, entityType) {
       def apply() {
         currentActivity.startActivity(intent)
@@ -83,20 +83,20 @@ class ActivityUIActionFactory(currentActivity: Activity) extends UIActionFactory
   import ActivityUIActionFactory._
   import Field.toSome
 
-  def startCreate(entityType: CrudEntityType) =
+  def startCreate(entityType: CrudEntityTypeRef) =
     toAction(android.R.drawable.ic_menu_add, entityType.addItemString, entityType,
       getCreateIntent(entityType, currentIntent.getData, currentActivity))
 
-  def displayList(entityType: CrudEntityType, uriContext: Option[EntityUriSegment] = None) =
+  def displayList(entityType: CrudEntityTypeRef, uriContext: Option[EntityUriSegment] = None) =
     toAction(None, entityType.listItemsString, entityType, getDisplayListIntent(entityType, currentIntent.getData, uriContext, currentActivity))
 
-  def display(entityType: CrudEntityType, id: ID) =
+  def display(entityType: CrudEntityTypeRef, id: ID) =
     toAction(None, None, entityType, getDisplayIntent(entityType, id, currentIntent.getData, currentActivity))
 
-  def startUpdate(entityType: CrudEntityType, id: ID) =
+  def startUpdate(entityType: CrudEntityTypeRef, id: ID) =
     toAction(android.R.drawable.ic_menu_edit, entityType.editItemString, entityType, getUpdateIntent(entityType, id, currentIntent.getData, currentActivity))
 
-  def startDelete(entityType: CrudEntityType, ids: List[ID]) =
+  def startDelete(entityType: CrudEntityTypeRef, ids: List[ID]) =
     toAction(android.R.drawable.ic_menu_delete, None, entityType, getDeleteIntent(entityType, ids, currentIntent.getData, currentActivity))
 }
 
@@ -108,26 +108,26 @@ object ActivityUIActionFactory {
   val UpdateActionString = Intent.ACTION_EDIT
   val DeleteActionString = Intent.ACTION_DELETE
 
-  def getCreateIntent(entityType: CrudEntityType, baseUri: Uri, context: Context): Intent =
+  def getCreateIntent(entityType: CrudEntityTypeRef, baseUri: Uri, context: Context): Intent =
     newIntent(CreateActionString, entityType.activityClass, entityType.entityName, detail = Nil, baseUri, context)
 
   /**
    * Gets the intent for displaying a list of the entityType.
    * @param uriContext an optional EntityUriSegment to specify in the baseUri to provide any necessary context
    */
-  def getDisplayListIntent(entityType: CrudEntityType, baseUri: Uri, uriContext: Option[EntityUriSegment], context: Context): Intent =
+  def getDisplayListIntent(entityType: CrudEntityTypeRef, baseUri: Uri, uriContext: Option[EntityUriSegment], context: Context): Intent =
     getDisplayListIntent(entityType, uriContext.map(_.specifyInUri(baseUri)).getOrElse(baseUri), context)
 
-  def getDisplayListIntent(entityType: CrudEntityType, baseUri: Uri, context: Context): Intent =
+  def getDisplayListIntent(entityType: CrudEntityTypeRef, baseUri: Uri, context: Context): Intent =
     newIntent(ListActionString, entityType.listActivityClass, entityType.entityName, detail = Nil, baseUri, context)
 
-  def getDisplayIntent(entityType: CrudEntityType, id: ID, baseUri: Uri, context: Context): Intent =
+  def getDisplayIntent(entityType: CrudEntityTypeRef, id: ID, baseUri: Uri, context: Context): Intent =
     newIntent(DisplayActionString, entityType.activityClass, entityType.entityName, detail = List(id.toString), baseUri, context)
 
-  def getUpdateIntent(entityType: CrudEntityType, id: ID, baseUri: Uri, context: Context): Intent =
+  def getUpdateIntent(entityType: CrudEntityTypeRef, id: ID, baseUri: Uri, context: Context): Intent =
     newIntent(UpdateActionString, entityType.activityClass, entityType.entityName, detail = List(id.toString), baseUri, context)
 
-  def getDeleteIntent(entityType: CrudEntityType, ids: List[ID], baseUri: Uri, context: Context): Intent =
+  def getDeleteIntent(entityType: CrudEntityTypeRef, ids: List[ID], baseUri: Uri, context: Context): Intent =
     newIntent(DeleteActionString, entityType.activityClass, entityType.entityName, detail = List(ids.mkString(",")), baseUri, context)
 
   private def newIntent(action: String, activityClass: Class[_ <: Activity],
