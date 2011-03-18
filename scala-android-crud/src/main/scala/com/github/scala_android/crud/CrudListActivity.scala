@@ -16,7 +16,7 @@ import android.view.{View, MenuItem, Menu}
  * @param R the type to read from (e.g. Cursor)
  * @param W the type to write to (e.g. ContentValues)
  */
-abstract class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val entityType: CrudEntityType[Q,L,R,W])
+class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val entityType: CrudEntityType[Q,L,R,W])
   extends ListActivity with CrudContext[Q,L,R,W] {
 
   type ID = Long
@@ -45,7 +45,7 @@ abstract class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef]
 
   override def onResume() {
     verbose("onResume")
-    refreshAfterSave()
+    entityType.refreshAfterSave(getListAdapter)
     super.onResume
   }
 
@@ -74,6 +74,4 @@ abstract class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef]
   override def onListItemClick(l: ListView, v: View, position: Int, id: ID) {
     entityType.getEntityActions(actionFactory, id).headOption.map(_())
   }
-
-  def refreshAfterSave()
 }

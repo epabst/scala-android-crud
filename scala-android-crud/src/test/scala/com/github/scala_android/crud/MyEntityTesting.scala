@@ -1,6 +1,5 @@
 package com.github.scala_android.crud
 
-import _root_.android.widget.TextView
 import org.scalatest.mock.EasyMockSugar
 import scala.collection.mutable.Map
 import com.github.triangle._
@@ -9,6 +8,7 @@ import ViewFieldAccess._
 import CursorFieldAccess._
 import android.content.{Intent, Context}
 import org.easymock.IAnswer
+import android.widget.{ListAdapter, TextView}
 
 /**
  * An object mother pattern for getting CrudEntityType instances.
@@ -20,6 +20,7 @@ import org.easymock.IAnswer
 trait MyEntityTesting extends EasyMockSugar {
   class MyEntityType(persistence: EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]) extends CrudEntityType[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]] {
     val entityName = "MyMap"
+    var refreshCount = 0
 
     def fields = List(
       Field(persisted[String]("name"), viewId[TextView,String](R.id.name)),
@@ -28,6 +29,10 @@ trait MyEntityTesting extends EasyMockSugar {
       Field[String](persisted("uri"), readOnly[Intent,String](_.getData.toString)))
 
     def openEntityPersistence(context: Context) = persistence
+
+    def refreshAfterSave(listAdapter: ListAdapter) {
+      refreshCount += 1
+    }
 
     val listLayout = R.layout.entity_list
     val headerLayout = R.layout.test_row

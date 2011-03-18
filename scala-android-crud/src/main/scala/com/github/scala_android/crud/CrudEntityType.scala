@@ -2,6 +2,7 @@ package com.github.scala_android.crud
 
 import android.content.Context
 import com.github.triangle.CopyableField
+import android.widget.ListAdapter
 
 /**
  * An entity configuration that provides all custom information needed to
@@ -43,6 +44,8 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
   }
 
   def openEntityPersistence(context: Context): EntityPersistence[Q,L,R,W]
+
+  def refreshAfterSave(listAdapter: ListAdapter)
 }
 
 trait CrudEntityTypeRef {

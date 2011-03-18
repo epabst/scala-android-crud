@@ -3,6 +3,7 @@ package com.github.scala_android.crud
 import android.database.sqlite.SQLiteOpenHelper
 import android.database.Cursor
 import android.content.{ContentValues, Context}
+import android.widget.{CursorAdapter, ListAdapter}
 
 /**
  * A CrudEntityType for SQLite.
@@ -13,6 +14,10 @@ import android.content.{ContentValues, Context}
 
 trait SQLiteCrudEntityType extends CrudEntityType[SQLiteCriteria,Cursor,Cursor,ContentValues] {
   def openEntityPersistence(context: Context) = new SQLiteEntityPersistence(this, context)
+
+  def refreshAfterSave(listAdapter: ListAdapter) {
+    listAdapter.asInstanceOf[CursorAdapter].getCursor.requery
+  }
 
   def getDatabaseSetup(context: Context): SQLiteOpenHelper
 }

@@ -1,6 +1,5 @@
 package com.github.scala_android.crud
 
-import android.widget.CursorAdapter
 import android.database.Cursor
 import android.content.ContentValues
 
@@ -12,8 +11,4 @@ import android.content.ContentValues
  * @param Q the query criteria type
  */
 class SQLiteCrudListActivity(entityType: SQLiteCrudEntityType)
-  extends CrudListActivity[SQLiteCriteria,Cursor,Cursor,ContentValues](entityType) {
-
-  //todo move to CrudEntityType and eliminate this whole class
-  override def refreshAfterSave() = getListAdapter.asInstanceOf[CursorAdapter].getCursor.requery
-}
+  extends CrudListActivity[SQLiteCriteria,Cursor,Cursor,ContentValues](entityType)
