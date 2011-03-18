@@ -3,35 +3,6 @@ package com.github.scala_android.crud
 import android.app.Activity
 
 /**
- * The flow between Crud Activities and other Activities.
- * <p>
- * An application should have a CrudFlow object that has:
- * <pre>
- *   startWith listOf(BarEntity)
- *
- *   //a Bar has a list of Foo's
- *   display(BarEntity) hasAddedOptions(listOf(FooEntity))
- *
- *   //these are included by default, so these lines are all optional
- *   listOf(FooEntity) hasItemOptions(display(FooEntity), update(FooEntity), delete(FooEntity)) hasOptions(create(FooEntity))
- *   display(FooEntity) hasOptions(update(FooEntity), delete(FooEntity))
- *   update(FooEntity) hasOptions(delete(FooEntity))
- * </pre>
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 3/11/11
- * Time: 10:01 PM
- */
-
-trait CrudFlow extends ActivityRefConsumer[ActivityRef,ListActivityRef] {
-  /**
-   * Indicates which activity the application should start with.
-   */
-  protected def startWith: ActivityRefConsumer[Unit,Unit]
-
-  val startingPoint: CrudFlowPoint
-}
-
-/**
  * A point (representing an Activity) in the CrudFlow.
  */
 abstract class CrudFlowPoint(val crudType: CrudEntityTypeRef) {
@@ -53,27 +24,27 @@ trait ActivityRefConsumer[R,LR] {
   /**
    * The activity for creating an entity.
    */
-  protected def create(crudType: CrudEntityType[_,_,_,_]): R
+  def create(crudType: CrudEntityType[_,_,_,_]): R
 
   /**
    * The activity for listing entities.
    */
-  protected def listOf(crudType: CrudEntityType[_,_,_,_]): LR
+  def listOf(crudType: CrudEntityType[_,_,_,_]): LR
 
   /**
    * The activity for displaying an entity.
    */
-  protected def display(crudType: CrudEntityType[_,_,_,_]): R
+  def display(crudType: CrudEntityType[_,_,_,_]): R
 
   /**
    * The activity of updating an entity.
    */
-  protected def update(crudType: CrudEntityType[_,_,_,_]): R
+  def update(crudType: CrudEntityType[_,_,_,_]): R
 
   /**
    * The activity of deleting an entity (with confirmation).
    */
-  protected def delete(crudType: CrudEntityType[_,_,_,_]): R
+  def delete(crudType: CrudEntityType[_,_,_,_]): R
 }
 
 /**
@@ -128,4 +99,81 @@ trait ListTransitionBuilder extends TransitionBuilder {
    * Gets the item options, including the defaults.
    */
   def itemOptions: List[ActivityRef]
+}
+
+/**
+ * The flow between Crud Activities and other Activities.
+ * <p>
+ * An application should have a CrudFlow object that has:
+ * <pre>
+ *   startWith listOf(BarEntity)
+ *
+ *   //a Bar has a list of Foo's
+ *   display(BarEntity) hasAddedOptions(listOf(FooEntity))
+ *
+ *   //these are included by default, so these lines are all optional
+ *   listOf(FooEntity) hasItemOptions(display(FooEntity), update(FooEntity), delete(FooEntity)) hasOptions(create(FooEntity))
+ *   display(FooEntity) hasOptions(update(FooEntity), delete(FooEntity))
+ *   update(FooEntity) hasOptions(delete(FooEntity))
+ * </pre>
+ * @author Eric Pabst (epabst@gmail.com)
+ * Date: 3/11/11
+ * Time: 10:01 PM
+ */
+
+trait CrudFlow extends ActivityRefConsumer[ActivityRef,ListActivityRef] {
+  private var _entityTypes: Set[CrudEntityType[_,_,_,_]] = Set[CrudEntityType[_,_,_,_]]()
+  /**
+   * Indicates which activity the application should start with.
+   */
+  protected def startWith: ActivityRefConsumer[Unit,Unit] = {
+    new ActivityRefConsumer[Unit,Unit] {
+      private def addEntityType(crudType: CrudEntityType[_, _, _, _]) {
+        _entityTypes += crudType
+      }
+
+      def listOf(crudType: CrudEntityType[_, _, _, _]) = addEntityType(crudType)
+
+      def delete(crudType: CrudEntityType[_, _, _, _]) = addEntityType(crudType)
+
+      def update(crudType: CrudEntityType[_, _, _, _]) = addEntityType(crudType)
+
+      def display(crudType: CrudEntityType[_, _, _, _]) = addEntityType(crudType)
+
+      def create(crudType: CrudEntityType[_, _, _, _]) = addEntityType(crudType)
+    }
+  }
+
+  class FlowActivityRef(crudType: CrudEntityType[_, _, _, _]) extends ActivityRef {
+    _entityTypes += crudType
+
+    def options = List[ActivityRef]()
+
+    def hasAddedOptions(targets: ActivityRef*) = this
+
+    def hasOptions(targets: ActivityRef*) = this
+  }
+
+  class FlowListActivityRef(crudType: CrudEntityType[_, _, _, _]) extends FlowActivityRef(crudType) with ListActivityRef {
+    def itemOptions = List[ActivityRef]()
+
+    def hasAddedItemOptions(targets: ActivityRef*) = this
+
+    def hasItemOptions(targets: ActivityRef*) = this
+  }
+
+  def delete(crudType: CrudEntityType[_, _, _, _]) = new FlowActivityRef(crudType)
+
+  def update(crudType: CrudEntityType[_, _, _, _]) = new FlowActivityRef(crudType)
+
+  def display(crudType: CrudEntityType[_, _, _, _]) = new FlowActivityRef(crudType)
+
+  def listOf(crudType: CrudEntityType[_, _, _, _]) = new FlowListActivityRef(crudType)
+
+  def create(crudType: CrudEntityType[_, _, _, _]) = new FlowActivityRef(crudType)
+
+//  val startingPoint: CrudFlowPoint
+
+  //once invoked, no more changes may be done
+  lazy val entityTypes: Set[CrudEntityType[_,_,_,_]] = _entityTypes
 }
