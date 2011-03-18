@@ -65,14 +65,14 @@ trait TransitionBuilder {
    * Sets the list of options.  These options are presented to the user upon pressing the menu button.
    * @returns self for chaining.
    */
-  def hasOptions(targets: ActivityRef*): TransitionBuilder
+  def withOptions(targets: ActivityRef*): TransitionBuilder
 
   /**
    * Adds to the list of options.
    * These options are presented to the user upon pressing the menu button in addition to the default options.
    * @returns self for chaining.
    */
-  def hasAddedOptions(targets: ActivityRef*): TransitionBuilder
+  def withAddedOptions(targets: ActivityRef*): TransitionBuilder
 
   /**
    * Gets the options, including the defaults.
@@ -87,13 +87,13 @@ trait ListTransitionBuilder extends TransitionBuilder {
    * The rest are presented when long-clicking on an item in the list.
    * @returns self for chaining.
    */
-  def hasItemOptions(targets: ActivityRef*): ListTransitionBuilder
+  def withItemOptions(targets: ActivityRef*): ListTransitionBuilder
 
   /**
    * Adds to the list of item options.
    * @returns self for chaining.
    */
-  def hasAddedItemOptions(targets: ActivityRef*): ListTransitionBuilder
+  def withAddedItemOptions(targets: ActivityRef*): ListTransitionBuilder
 
   /**
    * Gets the item options, including the defaults.
@@ -109,12 +109,12 @@ trait ListTransitionBuilder extends TransitionBuilder {
  *   startWith listOf(BarEntity)
  *
  *   //a Bar has a list of Foo's
- *   display(BarEntity) hasAddedOptions(listOf(FooEntity))
+ *   display(BarEntity) withAddedOptions(listOf(FooEntity))
  *
  *   //these are included by default, so these lines are all optional
- *   listOf(FooEntity) hasItemOptions(display(FooEntity), update(FooEntity), delete(FooEntity)) hasOptions(create(FooEntity))
- *   display(FooEntity) hasOptions(update(FooEntity), delete(FooEntity))
- *   update(FooEntity) hasOptions(delete(FooEntity))
+ *   listOf(FooEntity) withItemOptions(display(FooEntity), update(FooEntity), delete(FooEntity)) withOptions(create(FooEntity))
+ *   display(FooEntity) withOptions(update(FooEntity), delete(FooEntity))
+ *   update(FooEntity) withOptions(delete(FooEntity))
  * </pre>
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 3/11/11
@@ -149,17 +149,17 @@ trait CrudFlow extends ActivityRefConsumer[ActivityRef,ListActivityRef] {
 
     def options = List[ActivityRef]()
 
-    def hasAddedOptions(targets: ActivityRef*) = this
+    def withAddedOptions(targets: ActivityRef*) = this
 
-    def hasOptions(targets: ActivityRef*) = this
+    def withOptions(targets: ActivityRef*) = this
   }
 
   class FlowListActivityRef(crudType: CrudEntityType[_, _, _, _]) extends FlowActivityRef(crudType) with ListActivityRef {
     def itemOptions = List[ActivityRef]()
 
-    def hasAddedItemOptions(targets: ActivityRef*) = this
+    def withAddedItemOptions(targets: ActivityRef*) = this
 
-    def hasItemOptions(targets: ActivityRef*) = this
+    def withItemOptions(targets: ActivityRef*) = this
   }
 
   def delete(crudType: CrudEntityType[_, _, _, _]) = new FlowActivityRef(crudType)

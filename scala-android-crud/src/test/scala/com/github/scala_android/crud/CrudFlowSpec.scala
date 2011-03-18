@@ -51,8 +51,8 @@ class CrudFlowSpec extends Spec with ShouldMatchers with MyEntityTesting {
     val myEntityType6 = new MyEntityType(entityPersistence)
     object MyCrudFlow extends CrudFlow {
       listOf(myEntityType1).
-              hasItemOptions(create(myEntityType2), display(myEntityType3)).
-              hasOptions(update(myEntityType4), delete(myEntityType5), listOf(myEntityType6))
+              withItemOptions(create(myEntityType2), display(myEntityType3)).
+              withOptions(update(myEntityType4), delete(myEntityType5), listOf(myEntityType6))
     }
     whenExecuting(entityPersistence) {
       MyCrudFlow.entityTypes should be (Set(myEntityType1, myEntityType2, myEntityType3, myEntityType4, myEntityType5, myEntityType6))
