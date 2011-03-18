@@ -8,6 +8,8 @@ import com.github.triangle._
 import Field._
 import CursorFieldAccess._
 import org.scalatest.matchers.ShouldMatchers
+import android.content.Intent
+import android.net.Uri
 
 /**
  * A specification for {@link CursorFieldAccess}.
@@ -19,9 +21,10 @@ import org.scalatest.matchers.ShouldMatchers
 class CursorFieldAccessSpec extends ShouldMatchers {
   @Test
   def shouldGetColumnsForQueryCorrectly {
-    val fields = List(Field(persisted[Long]("age")))
+    val foreign = foreignKey(MyCrudEntityTypeRef)
+    val fields = List(Field(foreign), Field(persisted[Long]("age")))
     val actualFields = CursorFieldAccess.queryFieldNames(fields)
-    actualFields should be (List(BaseColumns._ID, "age"))
+    actualFields should be (List(BaseColumns._ID, foreign.fieldName, "age"))
   }
 
   @Test
@@ -30,5 +33,17 @@ class CursorFieldAccessSpec extends ShouldMatchers {
     val criteria = new SQLiteCriteria
     field.copy(Unit, criteria)
     criteria.selection should be ("age=19")
+  }
+
+  @Test
+  def shouldGetCriteriaCorrectlyForForeignKey {
+    val foreign = foreignKey(MyCrudEntityTypeRef)
+    val field = Field[Long](foreign)
+    val uri = EntityUriSegment(MyCrudEntityTypeRef.entityName, "19").specifyInUri(Uri.EMPTY)
+    //add on extra stuff to make sure it is ignored
+    val intent = new Intent("", Uri.withAppendedPath(uri, "foo/1234"))
+    val criteria = new SQLiteCriteria
+    field.copy(intent, criteria)
+    criteria.selection should be (foreign.fieldName + "=19")
   }
 }

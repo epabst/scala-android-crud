@@ -6,13 +6,18 @@ import android.provider.BaseColumns
 import com.github.triangle._
 
 object CursorFieldAccess {
+  type ID = Long
+
   def persisted[T](name: String)(implicit persistedType: PersistedType[T]): CursorFieldAccess[T] = {
     new CursorFieldAccess[T](name)(persistedType)
   }
 
+  def foreignKey[ID](entityType: CrudEntityTypeRef) = new ForeignKey(entityType)
+
   def queryFieldNames(fields: List[CopyableField]): List[String] = {
     BaseColumns._ID :: fields.map(_.asInstanceOf[Field[_]].fieldAccesses).flatMap(_.flatMap(_ match {
       case fieldAccess: CursorFieldAccess[_] => Some(fieldAccess.name)
+      case foreignKey: ForeignKey => Some(foreignKey.fieldName)
       case _ => None
     }))
   }
@@ -39,4 +44,12 @@ class CursorFieldAccess[T](val name: String)(implicit val persistedType: Persist
   }
 
   def set(contentValues: ContentValues, value: T) = persistedType.putValue(contentValues, name, value)
+}
+
+import CursorFieldAccess._
+import ViewFieldAccess.intentId
+
+class ForeignKey(val entityType: CrudEntityTypeRef) extends FieldAccessVariations[Long] {
+  val fieldName = entityType.entityName.toLowerCase + BaseColumns._ID
+  val fieldAccesses = List[PartialFieldAccess[Long]](persisted(fieldName), intentId(entityType.entityName), sqliteCriteria(fieldName))
 }
