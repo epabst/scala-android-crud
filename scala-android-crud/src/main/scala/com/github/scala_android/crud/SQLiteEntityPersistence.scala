@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.Cursor
 import android.content.{Context, ContentValues}
 import com.github.scala_android.crud.monitor.Logging
+import scala.None
 
 /**
  * EntityPersistence for SQLite.
@@ -46,12 +47,13 @@ class SQLiteEntityPersistence(entityType: SQLiteCrudEntityType, context: Context
     }
   }
 
-  //todo deal with not finding any match by returning an Option[R]
-  def find(id: ID) = {
+  def find(id: ID): Option[Cursor] = {
     val cursor = database.query(entityType.entityName, queryFieldNames.toArray,
       BaseColumns._ID + "=" + id, Nil.toArray, null, null, null)
-    cursor.moveToFirst
-    cursor
+    if (cursor.moveToFirst)
+      Some(cursor)
+    else
+      None
   }
 
   def newWritable = new ContentValues

@@ -27,7 +27,7 @@ class CrudActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val entityTy
 
     setContentView(entityType.entryLayout)
     withPersistence{ persistence =>
-      val readableOrUnit: AnyRef = id.map(i => persistence.find(i)).getOrElse(Unit)
+      val readableOrUnit: AnyRef = id.map(i => persistence.find(i).get).getOrElse(Unit)
       entityType.copyFields(readableOrUnit, this)
     }
   }

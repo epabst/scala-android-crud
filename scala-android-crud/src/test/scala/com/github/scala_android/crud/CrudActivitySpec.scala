@@ -52,7 +52,7 @@ class CrudActivitySpec extends EasyMockSugar with ShouldMatchers with MyEntityTe
     val entity = Map[String,Any]("name" -> "Bob", "age" -> 25)
     val writable = Map[String,Any]()
     expecting {
-      call(persistence.find(101)).andReturn(entity)
+      call(persistence.find(101)).andReturn(Some(entity))
       call(persistence.close())
       call(persistence.newWritable).andReturn(writable)
       call(persistence.save(Some(101), writable)).andReturn(101)

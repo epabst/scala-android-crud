@@ -25,7 +25,7 @@ trait EntityPersistence[Q,L,R,W] {
   def createListAdapter(activity: Activity): ListAdapter
 
   /** Find an entity by ID. */
-  def find(id: ID): R
+  def find(id: ID): Option[R]
 
   def newWritable: W
 

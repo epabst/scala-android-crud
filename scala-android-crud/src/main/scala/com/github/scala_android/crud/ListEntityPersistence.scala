@@ -26,7 +26,7 @@ abstract class ListEntityPersistence[T <: AnyRef,Q <: AnyRef](entityType: CrudEn
 
   def getId(entity: T): ID
 
-  def find(id: ID): T = list.find(entity => id == getId(entity)).get
+  def find(id: ID): Option[T] = list.find(entity => id == getId(entity))
 
   def newWritable = throw new UnsupportedOperationException("write not supported")
 
