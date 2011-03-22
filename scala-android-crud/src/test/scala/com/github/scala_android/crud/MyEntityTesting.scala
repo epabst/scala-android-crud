@@ -22,11 +22,13 @@ trait MyEntityTesting extends EasyMockSugar {
     val entityName = "MyMap"
     var refreshCount = 0
 
-    def fields = List(
+    val fields = List(
       Field(persisted[String]("name"), viewId[TextView,String](R.id.name)),
       Field(persisted[Long]("age"), viewId[TextView,Long](R.id.age)),
       //here to test a non-UI field
       Field[String](persisted("uri"), readOnly[Intent,String](_.getData.toString)))
+
+    val childEntities = Nil
 
     def openEntityPersistence(context: Context) = persistence
 

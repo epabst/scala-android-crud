@@ -21,6 +21,7 @@ class SQLiteEntityPersistenceFunctionalSpec extends EasyMockSugar with ShouldMat
   object TestEntityType extends SQLiteCrudEntityType {
     def entityName = "Person"
     val fields = List(Field(persisted[Long]("age")))
+    val childEntities = Nil
 
     val listLayout = R.layout.entity_list
     val headerLayout = R.layout.test_row

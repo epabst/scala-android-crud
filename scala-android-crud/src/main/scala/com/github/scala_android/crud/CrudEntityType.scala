@@ -19,9 +19,16 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
 
   def fields: List[CopyableField]
 
+  /**
+   * The list of entities that refer to this one.
+   * Those entities should have a foreignKey in their fields list, if persisted.
+   */
+  def childEntities: List[CrudEntityTypeRef]
+
   def headerLayout: Int
   def listLayout: Int
   def rowLayout: Int
+  def displayLayout: Option[Int] = None
   def entryLayout: Int
 
   /**
@@ -45,7 +52,9 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
    * May be overridden to modify the list of actions.
    */
   def getEntityActions(actionFactory: UIActionFactory, id: ID): List[UIAction] =
-    List(actionFactory.display(this, id), actionFactory.startUpdate(this, id), actionFactory.startDelete(this, List(id)))
+    displayLayout.map[UIAction](_ => actionFactory.display(this, id)).toList :::
+            childEntities.map(entity => actionFactory.displayList(entity, Some(EntityUriSegment(entityName, id.toString)))) :::
+            List(actionFactory.startUpdate(this, id), actionFactory.startDelete(this, List(id)))
 
   def copyFields(from: AnyRef, to: AnyRef) {
     fields.foreach(_.copy(from, to))
