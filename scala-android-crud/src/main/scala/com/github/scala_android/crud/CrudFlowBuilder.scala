@@ -18,9 +18,9 @@ abstract class CrudFlowPoint(val crudType: CrudEntityTypeRef) {
 }
 
 /**
- * Something that uses {@link ActivityRef}s.
+ * Something that uses {@link CrudFlowPoint}s.
  */
-trait ActivityRefConsumer[R,LR] {
+trait CrudFlowPointConsumer[R,LR] {
   /**
    * The activity for creating an entity.
    */
@@ -50,12 +50,12 @@ trait ActivityRefConsumer[R,LR] {
 /**
  * A reference to an Activity.
  */
-trait ActivityRef extends TransitionBuilder
+trait CrudFlowPointBuilder extends TransitionBuilder
 
 /**
  * A reference to a ListActivity.
  */
-trait ListActivityRef extends ActivityRef with ListTransitionBuilder
+trait ListCrudFlowPointBuilder extends CrudFlowPointBuilder with ListTransitionBuilder
 
 /**
  * A builder for specifying the available transitions from one Activity to another.
@@ -65,19 +65,19 @@ trait TransitionBuilder {
    * Sets the list of options.  These options are presented to the user upon pressing the menu button.
    * @returns self for chaining.
    */
-  def withOptions(targets: ActivityRef*): TransitionBuilder
+  def withOptions(targets: CrudFlowPointBuilder*): TransitionBuilder
 
   /**
    * Adds to the list of options.
    * These options are presented to the user upon pressing the menu button in addition to the default options.
    * @returns self for chaining.
    */
-  def withAddedOptions(targets: ActivityRef*): TransitionBuilder
+  def withAddedOptions(targets: CrudFlowPointBuilder*): TransitionBuilder
 
   /**
    * Gets the options, including the defaults.
    */
-  def options: List[ActivityRef]
+  def options: List[CrudFlowPointBuilder]
 }
 
 trait ListTransitionBuilder extends TransitionBuilder {
@@ -87,24 +87,24 @@ trait ListTransitionBuilder extends TransitionBuilder {
    * The rest are presented when long-clicking on an item in the list.
    * @returns self for chaining.
    */
-  def withItemOptions(targets: ActivityRef*): ListTransitionBuilder
+  def withItemOptions(targets: CrudFlowPointBuilder*): ListTransitionBuilder
 
   /**
    * Adds to the list of item options.
    * @returns self for chaining.
    */
-  def withAddedItemOptions(targets: ActivityRef*): ListTransitionBuilder
+  def withAddedItemOptions(targets: CrudFlowPointBuilder*): ListTransitionBuilder
 
   /**
    * Gets the item options, including the defaults.
    */
-  def itemOptions: List[ActivityRef]
+  def itemOptions: List[CrudFlowPointBuilder]
 }
 
 /**
  * The flow between Crud Activities and other Activities.
  * <p>
- * An application should have a CrudFlow object that has:
+ * An application should have a CrudFlowBuilder object that has:
  * <pre>
  *   startWith listOf(BarEntity)
  *
@@ -121,13 +121,13 @@ trait ListTransitionBuilder extends TransitionBuilder {
  * Time: 10:01 PM
  */
 
-trait CrudFlow extends ActivityRefConsumer[ActivityRef,ListActivityRef] {
+trait CrudFlowBuilder extends CrudFlowPointConsumer[CrudFlowPointBuilder,ListCrudFlowPointBuilder] {
   private var _entityTypes: Set[CrudEntityType[_,_,_,_]] = Set[CrudEntityType[_,_,_,_]]()
   /**
    * Indicates which activity the application should start with.
    */
-  protected def startWith: ActivityRefConsumer[Unit,Unit] = {
-    new ActivityRefConsumer[Unit,Unit] {
+  protected def startWith: CrudFlowPointConsumer[Unit,Unit] = {
+    new CrudFlowPointConsumer[Unit,Unit] {
       private def addEntityType(crudType: CrudEntityType[_, _, _, _]) {
         _entityTypes += crudType
       }
@@ -144,33 +144,33 @@ trait CrudFlow extends ActivityRefConsumer[ActivityRef,ListActivityRef] {
     }
   }
 
-  class FlowActivityRef(crudType: CrudEntityType[_, _, _, _]) extends ActivityRef {
+  private[crud] class PointBuilder(crudType: CrudEntityType[_, _, _, _]) extends CrudFlowPointBuilder {
     _entityTypes += crudType
 
-    def options = List[ActivityRef]()
+    def options = List[CrudFlowPointBuilder]()
 
-    def withAddedOptions(targets: ActivityRef*) = this
+    def withAddedOptions(targets: CrudFlowPointBuilder*) = this
 
-    def withOptions(targets: ActivityRef*) = this
+    def withOptions(targets: CrudFlowPointBuilder*) = this
   }
 
-  class FlowListActivityRef(crudType: CrudEntityType[_, _, _, _]) extends FlowActivityRef(crudType) with ListActivityRef {
-    def itemOptions = List[ActivityRef]()
+  private[crud] class ListPointBuilder(crudType: CrudEntityType[_, _, _, _]) extends PointBuilder(crudType) with ListCrudFlowPointBuilder {
+    def itemOptions = List[CrudFlowPointBuilder]()
 
-    def withAddedItemOptions(targets: ActivityRef*) = this
+    def withAddedItemOptions(targets: CrudFlowPointBuilder*): ListCrudFlowPointBuilder = this
 
-    def withItemOptions(targets: ActivityRef*) = this
+    def withItemOptions(targets: CrudFlowPointBuilder*): ListCrudFlowPointBuilder = this
   }
 
-  def delete(crudType: CrudEntityType[_, _, _, _]) = new FlowActivityRef(crudType)
+  def delete(crudType: CrudEntityType[_, _, _, _]): CrudFlowPointBuilder = new PointBuilder(crudType)
 
-  def update(crudType: CrudEntityType[_, _, _, _]) = new FlowActivityRef(crudType)
+  def update(crudType: CrudEntityType[_, _, _, _]): CrudFlowPointBuilder = new PointBuilder(crudType)
 
-  def display(crudType: CrudEntityType[_, _, _, _]) = new FlowActivityRef(crudType)
+  def display(crudType: CrudEntityType[_, _, _, _]): CrudFlowPointBuilder = new PointBuilder(crudType)
 
-  def listOf(crudType: CrudEntityType[_, _, _, _]) = new FlowListActivityRef(crudType)
+  def listOf(crudType: CrudEntityType[_, _, _, _]): ListCrudFlowPointBuilder = new ListPointBuilder(crudType)
 
-  def create(crudType: CrudEntityType[_, _, _, _]) = new FlowActivityRef(crudType)
+  def create(crudType: CrudEntityType[_, _, _, _]): CrudFlowPointBuilder = new PointBuilder(crudType)
 
 //  val startingPoint: CrudFlowPoint
 

@@ -7,7 +7,7 @@ import org.scalatest.Spec
 import scala.collection.mutable
 
 /**
- * A test for {@link CrudFlow}.
+ * A test for {@link CrudFlowBuilder}.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 2/18/11
  * Time: 6:22 PM
@@ -22,14 +22,14 @@ class CrudFlowSpec extends Spec with ShouldMatchers with MyEntityTesting {
     shouldIdentifyTheCrudEntityTypeFromStartWith(entityType => _.delete(entityType))
   }
 
-  it("should identify the CrudEntityTypes from direct ActivityRefs") {
+  it("should identify the CrudEntityTypes from direct CrudFlowBuilder methods") {
     val entityPersistence = mock[EntityPersistence[AnyRef,List[mutable.Map[String,Any]],mutable.Map[String,Any],mutable.Map[String,Any]]]
     val myEntityType1 = new MyEntityType(entityPersistence)
     val myEntityType2 = new MyEntityType(entityPersistence)
     val myEntityType3 = new MyEntityType(entityPersistence)
     val myEntityType4 = new MyEntityType(entityPersistence)
     val myEntityType5 = new MyEntityType(entityPersistence)
-    object MyCrudFlow extends CrudFlow {
+    object MyCrudFlow extends CrudFlowBuilder {
       listOf(myEntityType1)
       create(myEntityType2)
       display(myEntityType3)
@@ -49,7 +49,7 @@ class CrudFlowSpec extends Spec with ShouldMatchers with MyEntityTesting {
     val myEntityType4 = new MyEntityType(entityPersistence)
     val myEntityType5 = new MyEntityType(entityPersistence)
     val myEntityType6 = new MyEntityType(entityPersistence)
-    object MyCrudFlow extends CrudFlow {
+    object MyCrudFlow extends CrudFlowBuilder {
       listOf(myEntityType1).
               withItemOptions(create(myEntityType2), display(myEntityType3)).
               withOptions(update(myEntityType4), delete(myEntityType5), listOf(myEntityType6))
@@ -59,10 +59,10 @@ class CrudFlowSpec extends Spec with ShouldMatchers with MyEntityTesting {
     }
   }
 
-  def shouldIdentifyTheCrudEntityTypeFromStartWith(f: CrudEntityType[_,_,_,_] => ActivityRefConsumer[Unit,Unit] => Unit) {
+  def shouldIdentifyTheCrudEntityTypeFromStartWith(f: CrudEntityType[_,_,_,_] => CrudFlowPointConsumer[Unit,Unit] => Unit) {
     val entityPersistence = mock[EntityPersistence[AnyRef,List[mutable.Map[String,Any]],mutable.Map[String,Any],mutable.Map[String,Any]]]
     val myEntityType = new MyEntityType(entityPersistence)
-    object MyCrudFlow extends CrudFlow {
+    object MyCrudFlow extends CrudFlowBuilder {
       f(myEntityType)(startWith)
     }
     whenExecuting(entityPersistence) {
