@@ -18,4 +18,8 @@ object MyCrudEntityTypeRef extends CrudEntityTypeRef {
   def activityClass = classOf[CrudActivity[_,_,_,_]]
 
   def listActivityClass = classOf[CrudListActivity[_,_,_,_]]
+
+  def childEntities = Nil
+
+  def hasDisplayPage = false
 }

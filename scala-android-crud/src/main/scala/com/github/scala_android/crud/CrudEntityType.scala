@@ -14,16 +14,7 @@ import com.github.triangle.{PartialFieldAccess, CopyableField}
  * @param LT a layout configuration
  */
 trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends CrudEntityTypeRef {
-  //this makes it available for subtypes to use to make it clear that it's an ID
-  type ID = Long
-
   def fields: List[CopyableField]
-
-  /**
-   * The list of entities that refer to this one.
-   * Those entities should have a foreignKey in their fields list, if persisted.
-   */
-  def childEntities: List[CrudEntityTypeRef]
 
   def headerLayout: Int
   def listLayout: Int
@@ -31,17 +22,29 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
   def displayLayout: Option[Int] = None
   def entryLayout: Int
 
+  final def hasDisplayPage = displayLayout.isDefined
+
   /**
    * Gets the actions that a user can perform from a list of the entities.
    * May be overridden to modify the list of actions.
    */
   def getListActions(actionFactory: UIActionFactory): List[UIAction] =
-    List(actionFactory.displayList(this), actionFactory.startCreate(this))
+    (foreignKeys match {
+      //exactly one parent w/o a display page
+      case foreignKey :: Nil if !foreignKey.entityType.hasDisplayPage => {
+        val parentEntity = foreignKey.entityType
+        val foreignId = foreignKey.partialGet(actionFactory.currentIntent).get
+        actionFactory.startUpdate(parentEntity, foreignId) :: parentEntity.displayChildEntityLists(actionFactory, foreignId)
+      }
+      case _ => Nil
+    }) ::: actionFactory.startCreate(this) :: Nil
 
-  lazy val parentEntities: List[CrudEntityTypeRef] = fieldAccessFlatMap(_ match {
-    case foreignKey: ForeignKey => Some(foreignKey.entityType)
+  lazy val foreignKeys: List[ForeignKey] = fieldAccessFlatMap(_ match {
+    case foreignKey: ForeignKey => Some(foreignKey)
     case _ => None
   })
+
+  lazy val parentEntities: List[CrudEntityTypeRef] = foreignKeys.map(_.entityType)
 
   def fieldAccessFlatMap[B](f: (PartialFieldAccess[_]) => Traversable[B]): List[B] =
     CursorFieldAccess.fieldAccessFlatMap(fields, f)
@@ -53,7 +56,7 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
    */
   def getEntityActions(actionFactory: UIActionFactory, id: ID): List[UIAction] =
     displayLayout.map[UIAction](_ => actionFactory.display(this, id)).toList :::
-            childEntities.map(entity => actionFactory.displayList(entity, Some(EntityUriSegment(entityName, id.toString)))) :::
+            displayChildEntityLists(actionFactory, id) :::
             List(actionFactory.startUpdate(this, id), actionFactory.startDelete(this, List(id)))
 
   def copyFields(from: AnyRef, to: AnyRef) {
@@ -66,14 +69,28 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
 }
 
 trait CrudEntityTypeRef {
+  //this makes it available for subtypes to use to make it clear that it's an ID
+  type ID = Long
+
   //this is the type used for internationalized strings
   def entityName: String
+
+  def hasDisplayPage: Boolean
 
   def listItemsString: Option[Int] = None
   //todo replace these with using the standard android icons
   def addItemString: Int
   def editItemString: Int
   def cancelItemString: Int
+
+  /**
+   * The list of entities that refer to this one.
+   * Those entities should have a foreignKey in their fields list, if persisted.
+   */
+  def childEntities: List[CrudEntityTypeRef]
+
+  def displayChildEntityLists(actionFactory: UIActionFactory, id: ID): List[UIAction] =
+    childEntities.map(entity => actionFactory.displayList(entity, Some(EntityUriSegment(entityName, id.toString))))
 
   def listActivityClass: Class[_ <: CrudListActivity[_,_,_,_]]
   def activityClass: Class[_ <: CrudActivity[_,_,_,_]]
