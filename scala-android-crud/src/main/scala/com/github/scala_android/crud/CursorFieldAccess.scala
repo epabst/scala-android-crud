@@ -14,12 +14,15 @@ object CursorFieldAccess {
 
   def foreignKey[ID](entityType: CrudEntityTypeRef) = new ForeignKey(entityType)
 
+  def fieldAccessFlatMap[B](fields: List[CopyableField], f: (PartialFieldAccess[_]) => Traversable[B]): List[B] =
+    fields.map(_.asInstanceOf[Field[_]].fieldAccesses).flatMap(_.flatMap(f))
+
   def queryFieldNames(fields: List[CopyableField]): List[String] = {
-    BaseColumns._ID :: fields.map(_.asInstanceOf[Field[_]].fieldAccesses).flatMap(_.flatMap(_ match {
+    BaseColumns._ID :: fieldAccessFlatMap(fields, _ match {
       case fieldAccess: CursorFieldAccess[_] => Some(fieldAccess.name)
       case foreignKey: ForeignKey => Some(foreignKey.fieldName)
       case _ => None
-    }))
+    })
   }
 
   def sqliteCriteria[T](name: String) = Field.writeOnly[SQLiteCriteria,T](criteria => value => criteria.selection = name + "=" + value)

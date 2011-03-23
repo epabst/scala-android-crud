@@ -1,8 +1,8 @@
 package com.github.scala_android.crud
 
 import android.content.Context
-import com.github.triangle.CopyableField
 import android.widget.ListAdapter
+import com.github.triangle.{PartialFieldAccess, CopyableField}
 
 /**
  * An entity configuration that provides all custom information needed to
@@ -30,6 +30,14 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
    */
   def getListActions(actionFactory: UIActionFactory): List[UIAction] =
     List(actionFactory.displayList(this), actionFactory.startCreate(this))
+
+  lazy val parentEntities: List[CrudEntityTypeRef] = fieldAccessFlatMap(_ match {
+    case foreignKey: ForeignKey => Some(foreignKey.entityType)
+    case _ => None
+  })
+
+  def fieldAccessFlatMap[B](f: (PartialFieldAccess[_]) => Traversable[B]): List[B] =
+    CursorFieldAccess.fieldAccessFlatMap(fields, f)
 
   /**
    * Gets the actions that a user can perform from a specific entity instance.
