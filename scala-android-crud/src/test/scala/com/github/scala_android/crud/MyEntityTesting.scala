@@ -22,7 +22,7 @@ trait MyEntityTesting extends EasyMockSugar {
     val entityName = "MyMap"
     var refreshCount = 0
 
-    val fields = List(
+    def fields = List(
       Field(persisted[String]("name"), viewId[TextView,String](R.id.name)),
       Field(persisted[Long]("age"), viewId[TextView,Long](R.id.age)),
       //here to test a non-UI field
