@@ -65,6 +65,12 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
 
   def openEntityPersistence(context: Context): EntityPersistence[Q,L,R,W]
 
+  def withEntityPersistence[T](context: Context, f: EntityPersistence[Q,L,R,W] => T): T = {
+    val persistence = openEntityPersistence(context)
+    try f(persistence)
+    finally persistence.close
+  }
+
   def refreshAfterSave(listAdapter: ListAdapter)
 }
 
