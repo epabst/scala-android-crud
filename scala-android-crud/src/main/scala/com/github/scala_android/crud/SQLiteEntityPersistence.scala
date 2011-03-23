@@ -9,6 +9,7 @@ import android.database.Cursor
 import android.content.{Context, ContentValues}
 import com.github.scala_android.crud.monitor.Logging
 import scala.None
+import collection.mutable.ListBuffer
 
 /**
  * EntityPersistence for SQLite.
@@ -33,6 +34,21 @@ class SQLiteEntityPersistence(entityType: SQLiteCrudEntityType, context: Context
     debug("Querying " + entityType.entityName + " for " + queryFieldNames.mkString(",") + " where " + criteria.selection)
     database.query(entityType.entityName, queryFieldNames.toArray,
       criteria.selection, criteria.selectionArgs, criteria.groupBy, criteria.having, criteria.orderBy)
+  }
+
+  def findAll[T <: AnyRef](criteria: SQLiteCriteria, instantiate: () => T): List[T] = {
+    val cursor = findAll(criteria)
+    cursor.moveToFirst();
+    var results = new ListBuffer[T]()
+    while (cursor.isAfterLast() == false) {
+      val result = instantiate()
+      entityType.copyFields(cursor, result)
+      results += result
+      cursor.moveToNext();
+    }
+    //consider treating this as an Iterator instead of a List, and closing the cursor at the end of the iterator's loop
+    cursor.close();
+    results.result
   }
 
   def createListAdapter(activity: Activity): ResourceCursorAdapter = {
