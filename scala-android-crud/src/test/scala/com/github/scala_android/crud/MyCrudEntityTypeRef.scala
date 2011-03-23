@@ -1,5 +1,7 @@
 package com.github.scala_android.crud
 
+import res.R
+
 /**
  * A simple CrudEntityTypeRef for testing.
  * @author Eric Pabst (epabst@gmail.com)

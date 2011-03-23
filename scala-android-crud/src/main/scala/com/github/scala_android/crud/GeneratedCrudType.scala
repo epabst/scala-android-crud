@@ -1,8 +1,8 @@
 package com.github.scala_android.crud
 
-import com.github.scala_android.crud
 import android.content.{ContentValues, Context}
 import android.widget.ListAdapter
+import res.R
 
 trait GeneratedCrudType[T <: AnyRef,Q <: AnyRef] extends CrudEntityType[Q,List[T],T,ContentValues] {
   def childEntities = Nil
@@ -23,8 +23,7 @@ trait GeneratedCrudType[T <: AnyRef,Q <: AnyRef] extends CrudEntityType[Q,List[T
 
   override def getEntityActions(actionFactory: UIActionFactory, id: ID) = List()
 
-  val listLayout = R.layout.entity_list
-  val cancelItemString = crud.R.string.cancel_item
+  val cancelItemString = R.string.cancel_item
 }
 
 

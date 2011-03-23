@@ -9,6 +9,7 @@ import org.scalatest.matchers.ShouldMatchers
 import android.content.Context
 import com.github.triangle._
 import CursorFieldAccess._
+import res.R
 
 /**
  * A test for {@link CrudListActivity}.

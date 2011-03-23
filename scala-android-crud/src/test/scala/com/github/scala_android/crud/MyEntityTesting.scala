@@ -9,6 +9,7 @@ import CursorFieldAccess._
 import android.content.{Intent, Context}
 import org.easymock.IAnswer
 import android.widget.{ListAdapter, TextView}
+import res.R
 
 /**
  * An object mother pattern for getting CrudEntityType instances.
