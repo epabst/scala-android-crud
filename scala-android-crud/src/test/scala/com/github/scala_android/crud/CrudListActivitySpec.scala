@@ -74,4 +74,12 @@ class CrudListActivitySpec extends EasyMockSugar with ShouldMatchers with MyEnti
       entityType.refreshCount should be (1)
     }
   }
+
+  @Test
+  def shouldIgnoreClicksOnHeader {
+    val persistence = mock[EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
+    val entityType = new MyEntityType(persistence)
+    val activity = new CrudListActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityType)
+    activity.onListItemClick(null, null, -1, -1)
+  }
 }

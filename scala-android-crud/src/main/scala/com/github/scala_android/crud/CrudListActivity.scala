@@ -72,7 +72,10 @@ class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val enti
   }
 
   override def onListItemClick(l: ListView, v: View, position: Int, id: ID) {
-    verbose(entityType + ".onListItemClick(" + position + ")")
-    entityType.getEntityActions(actionFactory, id).headOption.map(_())
+    if (id >= 0) {
+      entityType.getEntityActions(actionFactory, id).headOption.map(_())
+    } else {
+      debug("Ignoring " + entityType + ".onListItemClick(" + id + ")")
+    }
   }
 }
