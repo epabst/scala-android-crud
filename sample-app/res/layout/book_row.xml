@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_height="wrap_content" android:layout_width="fill_parent"
+                android:id="@+id/rowLayout" android:orientation="horizontal">
+  <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="16sp"
+            android:layout_alignParentTop="true"
+            android:id="@+id/publishDate" android:text="Publish Date"/>
+  <TextView android:layout_width="wrap_content" android:layout_alignParentRight="true" android:textSize="16sp"
+            android:layout_height="wrap_content" android:layout_marginRight="25dip"
+            android:layout_alignParentTop="true"
+            android:id="@+id/edition" android:text="Amount" android:digits="0123456789."/>
+  <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="16sp"
+            android:layout_toRightOf="@+id/publishDate" android:layout_toLeftOf="@+id/edition"
+            android:layout_alignParentTop="true" android:paddingLeft="3sp" android:paddingRight="3sp"
+            android:layout_centerHorizontal="true"
+            android:id="@+id/name" android:text="Name"/>
+</RelativeLayout>

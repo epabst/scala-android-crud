@@ -2,7 +2,7 @@ package com.github.scala_android.crud
 
 import android.database.Cursor
 import android.content.ContentValues
-import java.util.{GregorianCalendar, Calendar}
+import java.util.{GregorianCalendar, Calendar, Date}
 import scala.Enumeration
 import android.os.Bundle
 
@@ -125,6 +125,10 @@ object PersistedType {
     val calendar = new GregorianCalendar
     calendar.setTimeInMillis(persisted)
     Some(calendar)
+  })
+
+  implicit lazy val dateLongType: PersistedType[Date] = convertedPersistedType[Date,Long](_.getTime, persisted => {
+    Some(new Date(persisted))
   })
 
   def enumStringType[E <: Ordered[_]](enumeration: Enumeration)(implicit m: Manifest[E]): PersistedType[E] =

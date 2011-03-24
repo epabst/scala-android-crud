@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="fill_parent"
+  android:layout_height="wrap_content"
+  android:stretchColumns="1">
+
+  <TableRow>
+    <TextView android:text="Name:" />
+    <EditText android:id="@+id/name" />
+  </TableRow>
+
+  <TableRow>
+    <TextView android:text="Genre:" />
+    <Spinner android:id="@+id/genre" android:drawSelectorOnTop = "true"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+  </TableRow>
+
+  <TableRow>
+    <TextView android:text="Edition:" />
+    <EditText android:id="@+id/edition" android:digits="01234567890"/>
+  </TableRow>
+
+  <TableRow>
+    <TextView android:text="Publish Date:" />
+    <DatePicker android:id="@+id/publishDate" />
+  </TableRow>
+</TableLayout>

@@ -4,4 +4,6 @@
     <string name="app_name">sample-app</string>
     <string name="add_author">Add Author</string>
     <string name="edit_author">Edit Author</string>
+    <string name="add_book">Add Book</string>
+    <string name="edit_book">Edit Book</string>
 </resources>

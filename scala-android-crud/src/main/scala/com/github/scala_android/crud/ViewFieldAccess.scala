@@ -7,7 +7,7 @@ import reflect.ClassManifest
 import _root_.android.widget.{ArrayAdapter, Spinner, DatePicker, TextView}
 import com.github.triangle._
 import Field._
-import java.util.{Calendar, GregorianCalendar}
+import java.util.{Calendar, Date, GregorianCalendar}
 
 /**
  * Field fieldAccess for Views.
@@ -75,6 +75,14 @@ object ViewFieldAccess extends PlatformTypes {
   }
 
   private def toOption(string: String): Option[String] = if (string == "") None else Some(string)
+
+  implicit val datePickerFieldAccess: ViewFieldAccess[DatePicker,Date] = viewFieldAccess[DatePicker,Date](
+    v => Some(new GregorianCalendar(v.getYear, v.getMonth, v.getDayOfMonth).getTime),
+    v => date => {
+      val calendar = new GregorianCalendar()
+      calendar.setTime(date)
+      v.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
+    })
 
   val calendarDatePicker: ViewFieldAccess[DatePicker,Calendar] = viewFieldAccess[DatePicker,Calendar](
     v => Some(new GregorianCalendar(v.getYear, v.getMonth, v.getDayOfMonth)),
