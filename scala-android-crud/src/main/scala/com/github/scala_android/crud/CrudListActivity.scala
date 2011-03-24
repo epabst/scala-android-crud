@@ -73,7 +73,9 @@ class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val enti
 
   override def onListItemClick(l: ListView, v: View, position: Int, id: ID) {
     if (id >= 0) {
-      entityType.getEntityActions(actionFactory, id).headOption.map(_())
+      entityType.getEntityActions(actionFactory, id).headOption.map(_()).getOrElse {
+        warn("There are no entity actions defined for " + entityType)
+      }
     } else {
       debug("Ignoring " + entityType + ".onListItemClick(" + id + ")")
     }
