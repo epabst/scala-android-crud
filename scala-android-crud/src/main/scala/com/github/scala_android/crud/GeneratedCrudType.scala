@@ -21,7 +21,8 @@ trait GeneratedCrudType[T <: AnyRef,Q <: AnyRef] extends CrudEntityType[Q,List[T
     case _ => Nil
   }
 
-  override def getEntityActions(actionFactory: UIActionFactory, id: ID) = List()
+  override def getEntityActions(actionFactory: UIActionFactory, id: ID) =
+    displayLayout.map[UIAction](_ => actionFactory.display(this, id)).toList
 
   val cancelItemString = R.string.cancel_item
 }
