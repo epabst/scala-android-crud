@@ -19,7 +19,7 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
   def headerLayout: Int
   def listLayout: Int
   def rowLayout: Int
-  def displayLayout: Option[Int] = None
+  def displayLayout: Option[Int]
   def entryLayout: Int
 
   final def hasDisplayPage = displayLayout.isDefined

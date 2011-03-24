@@ -27,6 +27,7 @@ class SQLiteEntityPersistenceFunctionalSpec extends EasyMockSugar with ShouldMat
     val listLayout = R.layout.entity_list
     val headerLayout = R.layout.test_row
     val rowLayout = R.layout.test_row
+    val displayLayout = None
     val entryLayout = R.layout.test_entry
     val addItemString = R.string.add_item
     val editItemString = R.string.edit_item
