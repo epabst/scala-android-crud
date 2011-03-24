@@ -2,4 +2,6 @@
 <resources>
     <string name="hello">Hello sample-app!</string>
     <string name="app_name">sample-app</string>
+    <string name="add_author">Add Author</string>
+    <string name="edit_author">Edit Author</string>
 </resources>
