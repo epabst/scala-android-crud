@@ -6,10 +6,11 @@ import org.junit.runner.RunWith
 import org.scalatest.mock.EasyMockSugar
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.scalatest.matchers.ShouldMatchers
-import android.content.Context
 import com.github.triangle._
 import CursorFieldAccess._
+import Field._
 import res.R
+import android.content.Context
 
 /**
  * A test for {@link CrudListActivity}.
@@ -21,7 +22,7 @@ import res.R
 class SQLiteEntityPersistenceFunctionalSpec extends EasyMockSugar with ShouldMatchers {
   object TestEntityType extends SQLiteCrudEntityType {
     def entityName = "Person"
-    val fields = List(Field(persisted[Long]("age")))
+    val fields = List(Field[Int](persisted("age"), default(21)))
     val childEntities = Nil
 
     val listLayout = R.layout.entity_list
@@ -44,9 +45,28 @@ class SQLiteEntityPersistenceFunctionalSpec extends EasyMockSugar with ShouldMat
     val mockContext = mock[Context]
     val persistence = new SQLiteEntityPersistence(TestEntityType, mockContext)
     whenExecuting(mockContext) {
-      val result = persistence.findAll(new SQLiteCriteria())
+      val result = persistence.findAll(persistence.newCriteria)
       result.getColumnIndex(BaseColumns._ID) should be (0)
       result.getColumnIndex("age") should be (1)
+    }
+  }
+
+  @Test
+  def shouldCloseCursorsWhenClosing {
+    val mockContext = mock[Context]
+    val persistence = new SQLiteEntityPersistence(TestEntityType, mockContext)
+    whenExecuting(mockContext) {
+      val writable = persistence.newWritable
+      TestEntityType.copyFields(Unit, writable)
+      val id = persistence.save(None, writable)
+      val cursors = List(
+        persistence.findAll(persistence.newCriteria),
+        persistence.find(id).get
+      )
+      persistence.close()
+      for (cursor <- cursors) {
+        cursor should be ('closed)
+      }
     }
   }
 }

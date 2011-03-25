@@ -9,7 +9,7 @@ import android.database.Cursor
 import android.content.{Context, ContentValues}
 import com.github.scala_android.crud.monitor.Logging
 import scala.None
-import collection.mutable.ListBuffer
+import collection.mutable.{SynchronizedQueue, ListBuffer}
 
 /**
  * EntityPersistence for SQLite.
@@ -22,6 +22,7 @@ class SQLiteEntityPersistence(entityType: SQLiteCrudEntityType, context: Context
 
   lazy val databaseSetup = entityType.getDatabaseSetup(context)
   lazy val database: SQLiteDatabase = databaseSetup.getWritableDatabase
+  private var cursors = new SynchronizedQueue[Cursor]
 
   lazy val queryFieldNames: List[String] = CursorFieldAccess.queryFieldNames(entityType.fields)
 
@@ -32,8 +33,10 @@ class SQLiteEntityPersistence(entityType: SQLiteCrudEntityType, context: Context
 
   def findAll(criteria: SQLiteCriteria): Cursor = {
     debug("Querying " + entityType.entityName + " for " + queryFieldNames.mkString(",") + " where " + criteria.selection)
-    database.query(entityType.entityName, queryFieldNames.toArray,
+    val cursor = database.query(entityType.entityName, queryFieldNames.toArray,
       criteria.selection, criteria.selectionArgs, criteria.groupBy, criteria.having, criteria.orderBy)
+    cursors += cursor
+    cursor
   }
 
   def findAll[T <: AnyRef](criteria: SQLiteCriteria, instantiate: () => T): List[T] = {
@@ -66,10 +69,13 @@ class SQLiteEntityPersistence(entityType: SQLiteCrudEntityType, context: Context
   def find(id: ID): Option[Cursor] = {
     val cursor = database.query(entityType.entityName, queryFieldNames.toArray,
       BaseColumns._ID + "=" + id, Nil.toArray, null, null, null)
-    if (cursor.moveToFirst)
+    if (cursor.moveToFirst) {
+      cursors += cursor
       Some(cursor)
-    else
+    } else {
+      cursor.close()
       None
+    }
   }
 
   def newWritable = new ContentValues
@@ -93,6 +99,7 @@ class SQLiteEntityPersistence(entityType: SQLiteCrudEntityType, context: Context
   }
 
   def close() {
+    cursors.map(_.close())
     database.close()
   }
 }
