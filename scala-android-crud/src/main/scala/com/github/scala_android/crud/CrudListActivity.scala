@@ -25,6 +25,7 @@ class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val enti
 
   lazy val contentProviderAuthority = this.getClass.getPackage.toString
   lazy val defaultContentUri = Uri.parse("content://" + contentProviderAuthority + "/" + entityType.entityName);
+  private var persistence: Option[EntityPersistence[Q,L,R,W]] = None
 
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
@@ -41,6 +42,14 @@ class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val enti
 
     val persistence = openEntityPersistence()
     setListAdapter(persistence.createListAdapter(this))
+    this.persistence = Some(persistence)
+  }
+
+
+  override def onDestroy {
+    persistence.map(_.close())
+    persistence = None
+    super.onDestroy
   }
 
   override def onResume() {
