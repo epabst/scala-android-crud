@@ -93,15 +93,11 @@ class ActivityUIActionFactorySpec extends EasyMockSugar with ShouldMatchers {
 
   @Test
   def getDeleteIntentShouldGetTheRightUri {
-    getDeleteIntent(MyCrudEntityTypeRef, List(35), toUri("foo"), context).getData should
+    getDeleteIntent(MyCrudEntityTypeRef, 35, toUri("foo"), context).getData should
       be (toUri("foo", entityName, "35"))
-    getDeleteIntent(MyCrudEntityTypeRef, List(35, 34), toUri("foo", entityName), context).getData should
-      be (toUri("foo", entityName, "35,34"))
-    getDeleteIntent(MyCrudEntityTypeRef, List(35), toUri("foo", entityName, "123"), context).getData should
+    getDeleteIntent(MyCrudEntityTypeRef, 35, toUri("foo", entityName, "123"), context).getData should
       be (toUri("foo", entityName, "35"))
-    getDeleteIntent(MyCrudEntityTypeRef, Nil, toUri("foo", entityName, "123", "bar"), context).getData should
-      be (toUri("foo", entityName, ""))
-    getDeleteIntent(MyCrudEntityTypeRef, List(35), toUri(), context).getData should
+    getDeleteIntent(MyCrudEntityTypeRef, 35, toUri(), context).getData should
       be (toUri(entityName, "35"))
   }
 
@@ -112,7 +108,7 @@ class ActivityUIActionFactorySpec extends EasyMockSugar with ShouldMatchers {
       getDisplayListIntent(MyCrudEntityTypeRef, toUri("foo"), context).getAction should be (Intent.ACTION_PICK)
       getDisplayIntent(MyCrudEntityTypeRef, 45, toUri("foo", entityName), context).getAction should be (Intent.ACTION_VIEW)
       getUpdateIntent(MyCrudEntityTypeRef, 45, toUri("foo", entityName), context).getAction should be (Intent.ACTION_EDIT)
-      getDeleteIntent(MyCrudEntityTypeRef, List(45), toUri("foo", entityName), context).getAction should be (Intent.ACTION_DELETE)
+      getDeleteIntent(MyCrudEntityTypeRef, 45, toUri("foo", entityName), context).getAction should be (Intent.ACTION_DELETE)
     }
   }
 

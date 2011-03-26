@@ -3,6 +3,7 @@ package com.github.scala_android.crud
 import android.content.Context
 import android.widget.ListAdapter
 import com.github.triangle.{PartialFieldAccess, CopyableField}
+import ActivityUIActionFactory._
 
 /**
  * An entity configuration that provides all custom information needed to
@@ -28,13 +29,14 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
    * Gets the actions that a user can perform from a list of the entities.
    * May be overridden to modify the list of actions.
    */
-  def getListActions(actionFactory: UIActionFactory): List[UIAction] =
+  def getListActions(actionFactory: UIActionFactory): List[UIAction[Unit]] =
     (foreignKeys match {
       //exactly one parent w/o a display page
       case foreignKey :: Nil if !foreignKey.entityType.hasDisplayPage => {
         val parentEntity = foreignKey.entityType
-        val foreignId = foreignKey.partialGet(actionFactory.currentIntent).get
-        actionFactory.startUpdate(parentEntity, foreignId) :: parentEntity.displayChildEntityLists(actionFactory, foreignId)
+        val getForeignKey = { _: Unit => foreignKey.partialGet(actionFactory.currentIntent).get }
+        adapt(actionFactory.startUpdate(parentEntity), getForeignKey) ::
+                parentEntity.displayChildEntityLists(actionFactory, getForeignKey)
       }
       case _ => Nil
     }) ::: actionFactory.startCreate(this) :: Nil
@@ -54,10 +56,10 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
    * The first one is the one that will be used when the item is clicked on.
    * May be overridden to modify the list of actions.
    */
-  def getEntityActions(actionFactory: UIActionFactory, id: ID): List[UIAction] =
-    displayLayout.map[UIAction](_ => actionFactory.display(this, id)).toList :::
-            displayChildEntityLists(actionFactory, id) :::
-            List(actionFactory.startUpdate(this, id), actionFactory.startDelete(this, List(id)))
+  def getEntityActions(actionFactory: UIActionFactory): List[UIAction[ID]] =
+    displayLayout.map(_ => actionFactory.display(this)).toList :::
+            displayChildEntityLists[ID](actionFactory, id => id) :::
+            List(actionFactory.startUpdate(this), actionFactory.startDelete(this))
 
   def copyFields(from: AnyRef, to: AnyRef) {
     fields.foreach(_.copy(from, to))
@@ -95,8 +97,9 @@ trait CrudEntityTypeRef {
    */
   def childEntities: List[CrudEntityTypeRef]
 
-  def displayChildEntityLists(actionFactory: UIActionFactory, id: ID): List[UIAction] =
-    childEntities.map(entity => actionFactory.displayList(entity, Some(EntityUriSegment(entityName, id.toString))))
+  def displayChildEntityLists[T](actionFactory: UIActionFactory, idGetter: T => ID): List[UIAction[T]] =
+    childEntities.map(entity => adapt(actionFactory.displayList(entity), (value: T) =>
+      Some(EntityUriSegment(entityName, idGetter(value).toString))))
 
   def listActivityClass: Class[_ <: CrudListActivity[_,_,_,_]]
   def activityClass: Class[_ <: CrudActivity[_,_,_,_]]

@@ -76,13 +76,13 @@ class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val enti
   override def onMenuItemSelected(featureId: Int, item: MenuItem): Boolean = {
     val listActions = entityType.getListActions(actionFactory)
     val action = listActions(item.getItemId)
-    action.apply()
+    action.apply(Unit)
     true
   }
 
   override def onListItemClick(l: ListView, v: View, position: Int, id: ID) {
     if (id >= 0) {
-      entityType.getEntityActions(actionFactory, id).headOption.map(_()).getOrElse {
+      entityType.getEntityActions(actionFactory).headOption.map(_(id)).getOrElse {
         warn("There are no entity actions defined for " + entityType)
       }
     } else {
