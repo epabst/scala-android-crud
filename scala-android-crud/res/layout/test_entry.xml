@@ -6,13 +6,17 @@
 
   <LinearLayout android:layout_width="fill_parent" android:layout_height="wrap_content"
                 android:orientation="horizontal">
-    <TextView android:text="Name:" />
-    <EditText android:id="@+id/name" />
+    <TextView android:text="Name:"
+              android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+    <EditText android:id="@+id/name" android:inputType="textCapWords"
+              android:layout_width="wrap_content" android:layout_height="wrap_content"/>
   </LinearLayout>
 
   <LinearLayout android:layout_width="fill_parent" android:layout_height="wrap_content"
                 android:orientation="horizontal">
-    <TextView android:text="Age:" />
-    <EditText android:id="@+id/age" />
+    <TextView android:text="Age:"
+              android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+    <EditText android:id="@+id/age" android:inputType="number"
+              android:layout_width="wrap_content" android:layout_height="wrap_content"/>
   </LinearLayout>
 </LinearLayout>
