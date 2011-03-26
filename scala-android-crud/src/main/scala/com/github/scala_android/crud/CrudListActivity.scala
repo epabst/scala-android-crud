@@ -4,7 +4,9 @@ import _root_.android.widget.ListView
 import _root_.android.app.ListActivity
 import android.os.Bundle
 import android.net.Uri
-import android.view.{View, MenuItem, Menu}
+import android.view.{ContextMenu, View, MenuItem, Menu}
+import android.view.ContextMenu.ContextMenuInfo
+import android.widget.AdapterView.AdapterContextMenuInfo
 
 /**
  * A generic ListActivity for CRUD operations
@@ -39,6 +41,7 @@ class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val enti
     val view = getListView();
 		view.setHeaderDividersEnabled(true);
 		view.addHeaderView(getLayoutInflater().inflate(entityType.headerLayout, null));
+    registerForContextMenu(getListView)
 
     val persistence = openEntityPersistence()
     setListAdapter(persistence.createListAdapter(this))
@@ -58,7 +61,21 @@ class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val enti
     super.onResume
   }
 
-  //todo add support for item actions on long touch on an item
+  override def onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo) {
+    super.onCreateContextMenu(menu, v, menuInfo)
+    val actions = entityType.getEntityActions(actionFactory)
+    for (action <- actions if (action.title.isDefined)) {
+      menu.add(0, actions.indexOf(action), actions.indexOf(action), action.title.get)
+    }
+  }
+
+  override def onContextItemSelected(item: MenuItem) = {
+    val actions = entityType.getEntityActions(actionFactory)
+    val action = actions(item.getItemId)
+    val info = item.getMenuInfo.asInstanceOf[AdapterContextMenuInfo]
+    action.apply(info.id)
+    true
+  }
 
   override def onCreateOptionsMenu(menu: Menu): Boolean = {
     val listActions = entityType.getListActions(actionFactory)

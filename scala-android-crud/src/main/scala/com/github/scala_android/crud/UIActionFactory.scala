@@ -57,8 +57,10 @@ trait UIAction[T] {
   /** The icon to display for this action. */
   def icon: Option[Int]
 
-  /** The title to display for this action.  If both title and icon are None,
-   * then it won't be displayed as an option, but can still be triggered as a default action.
+  /**The title to display for this action.
+   * If the title is None, it won't be displayed in the context menu for an item.
+   * If both title and icon are None,
+   * then it won't be displayed in the main options menu, but can still be triggered as a default action.
    */
   def title: Option[Int]
 
@@ -135,7 +137,8 @@ object ActivityUIActionFactory {
     newIntent(UpdateActionString, entityType.activityClass, entityType.entityName, detail = List(id.toString), baseUri, context)
 
   def getDeleteIntent(entityType: CrudEntityTypeRef, id: ID, baseUri: Uri, context: Context): Intent =
-    newIntent(DeleteActionString, entityType.activityClass, entityType.entityName, detail = List(id.toString), baseUri, context)
+    //todo don't start a new intent - if on the individual entity, go back until you're not.  otherwise, stayhere
+    newIntent(DeleteActionString, entityType.listActivityClass, entityType.entityName, detail = List(id.toString), baseUri, context)
 
   private def newIntent(action: String, activityClass: Class[_ <: Activity],
                         entityName: String, detail: List[String], currentUri: Uri, context: Context) = {
