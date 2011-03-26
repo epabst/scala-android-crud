@@ -99,7 +99,7 @@ class ActivityUIActionFactory(currentActivity: Activity) extends UIActionFactory
     toAction[ID](android.R.drawable.ic_menu_edit, entityType.editItemString, entityType, id => getUpdateIntent(entityType, id, currentIntent.getData, currentActivity))
 
   def startDelete(entityType: CrudEntityTypeRef) =
-    toAction[ID](android.R.drawable.ic_menu_delete, None, entityType, id => getDeleteIntent(entityType, id, currentIntent.getData, currentActivity))
+    toAction[ID](android.R.drawable.ic_menu_delete, entityType.deleteItemString, entityType, id => getDeleteIntent(entityType, id, currentIntent.getData, currentActivity))
 }
 
 object ActivityUIActionFactory {

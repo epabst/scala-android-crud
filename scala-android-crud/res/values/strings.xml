@@ -3,5 +3,6 @@
   <string name="app_name">scala-android-crud</string>
   <string name="add_item">Add</string>
   <string name="edit_item">Edit</string>
+  <string name="delete_item">Delete</string>
   <string name="cancel_item">Cancel</string>
 </resources>

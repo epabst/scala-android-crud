@@ -89,6 +89,7 @@ trait CrudEntityTypeRef {
   //todo replace these with using the standard android icons
   def addItemString: Int
   def editItemString: Int
+  def deleteItemString: Int = res.R.string.delete_item
   def cancelItemString: Int
 
   /**
