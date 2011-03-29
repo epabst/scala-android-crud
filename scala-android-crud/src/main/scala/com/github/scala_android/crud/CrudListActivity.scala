@@ -61,25 +61,29 @@ class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val enti
     super.onResume
   }
 
+  protected def contextMenuActions: List[UIAction[ID]] =
+    entityType.getEntityActions(actionFactory).tail.filter(_.title.isDefined)
+
   override def onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo) {
     super.onCreateContextMenu(menu, v, menuInfo)
-    val actions = entityType.getEntityActions(actionFactory)
-    for (action <- actions if (action.title.isDefined)) {
-      menu.add(0, actions.indexOf(action), actions.indexOf(action), action.title.get)
-    }
+    val actions = contextMenuActions
+    actions.foreach(action => menu.add(0, actions.indexOf(action), actions.indexOf(action), action.title.get))
   }
 
   override def onContextItemSelected(item: MenuItem) = {
-    val actions = entityType.getEntityActions(actionFactory)
+    val actions = contextMenuActions
     val action = actions(item.getItemId)
     val info = item.getMenuInfo.asInstanceOf[AdapterContextMenuInfo]
     action.apply(info.id)
     true
   }
 
+  protected def optionsMenuActions: List[UIAction[Unit]] =
+    entityType.getListActions(actionFactory).filter(action => action.title.isDefined || action.icon.isDefined)
+
   override def onCreateOptionsMenu(menu: Menu): Boolean = {
-    val listActions = entityType.getListActions(actionFactory)
-    for (action <- listActions if (action.title.isDefined || action.icon.isDefined)) {
+    val listActions = optionsMenuActions
+    for (action <- listActions) {
       val menuItem = if (action.title.isDefined) {
         menu.add(0, listActions.indexOf(action), listActions.indexOf(action), action.title.get)
       } else {
@@ -90,8 +94,8 @@ class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val enti
     true
   }
 
-  override def onMenuItemSelected(featureId: Int, item: MenuItem): Boolean = {
-    val listActions = entityType.getListActions(actionFactory)
+  override def onOptionsItemSelected(item: MenuItem): Boolean = {
+    val listActions = optionsMenuActions
     val action = listActions(item.getItemId)
     action.apply(Unit)
     true

@@ -9,6 +9,7 @@ import com.xtremelabs.robolectric.RobolectricTestRunner
 import scala.collection.mutable.Map
 import com.xtremelabs.robolectric.tester.android.view.TestMenu
 import org.scalatest.matchers.ShouldMatchers
+import android.view.{MenuItem, View, ContextMenu}
 
 /**
  * A test for {@link CrudListActivity}.
@@ -38,7 +39,24 @@ class CrudListActivitySpec extends EasyMockSugar with ShouldMatchers with MyEnti
       item0.getTitle.toString should be ("Add")
       menu.size should be (1)
 
-      activity.onMenuItemSelected(0, item0) should be (true)
+      activity.onOptionsItemSelected(item0) should be (true)
+    }
+  }
+
+  @Test
+  def shouldHaveCorrectContextMenu {
+    val persistence = mock[EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
+    val entityType = new MyEntityType(persistence)
+    val activity = new CrudListActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityType)
+    val contextMenu = mock[ContextMenu]
+    val menuItem = mock[MenuItem]
+    val ignoredView: View = null
+    val ignoredMenuInfo: ContextMenu.ContextMenuInfo = null
+    expecting {
+      call(contextMenu.add(0, 0, 0, res.R.string.delete_item)).andReturn(menuItem)
+    }
+    whenExecuting(contextMenu) {
+      activity.onCreateContextMenu(contextMenu, ignoredView, ignoredMenuInfo)
     }
   }
 

@@ -49,7 +49,7 @@ class CrudActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val entityTy
     true
   }
 
-  override def onMenuItemSelected(featureId: Int, item: MenuItem): Boolean = {
+  override def onOptionsItemSelected(item: MenuItem): Boolean = {
 //    if (item.getItemId == ADD_DIALOG_ID) {
 //      showDialog(ADD_DIALOG_ID)
 //    }
