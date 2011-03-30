@@ -3,7 +3,6 @@ package com.github.scala_android.crud
 import android.content.Context
 import android.widget.ListAdapter
 import com.github.triangle.{PartialFieldAccess, CopyableField}
-import ActivityUIActionFactory._
 
 /**
  * An entity configuration that provides all custom information needed to
@@ -29,17 +28,19 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
    * Gets the actions that a user can perform from a list of the entities.
    * May be overridden to modify the list of actions.
    */
-  def getListActions(actionFactory: UIActionFactory): List[UIAction[Unit]] =
+  def getListActions(actionFactory: UIActionFactory): List[UIAction[Unit]] = {
+    val thisEntity = this;
     (foreignKeys match {
       //exactly one parent w/o a display page
       case foreignKey :: Nil if !foreignKey.entityType.hasDisplayPage => {
         val parentEntity = foreignKey.entityType
         val getForeignKey = { _: Unit => foreignKey.partialGet(actionFactory.currentIntent).get }
-        adapt(actionFactory.startUpdate(parentEntity), getForeignKey) ::
-                parentEntity.displayChildEntityLists(actionFactory, getForeignKey)
+        actionFactory.adapt(actionFactory.startUpdate(parentEntity), getForeignKey) ::
+                parentEntity.displayChildEntityLists(actionFactory, getForeignKey, parentEntity.childEntities.filter(_ != thisEntity))
       }
       case _ => Nil
     }) ::: actionFactory.startCreate(this) :: Nil
+  }
 
   lazy val foreignKeys: List[ForeignKey] = fieldAccessFlatMap(_ match {
     case foreignKey: ForeignKey => Some(foreignKey)
@@ -98,8 +99,9 @@ trait CrudEntityTypeRef {
    */
   def childEntities: List[CrudEntityTypeRef]
 
-  def displayChildEntityLists[T](actionFactory: UIActionFactory, idGetter: T => ID): List[UIAction[T]] =
-    childEntities.map(entity => adapt(actionFactory.displayList(entity), (value: T) =>
+  def displayChildEntityLists[T](actionFactory: UIActionFactory, idGetter: T => ID,
+                                 childEntities: List[CrudEntityTypeRef] = childEntities): List[UIAction[T]] =
+    childEntities.map(entity => actionFactory.adapt(actionFactory.displayList(entity), (value: T) =>
       Some(EntityUriSegment(entityName, idGetter(value).toString))))
 
   def listActivityClass: Class[_ <: CrudListActivity[_,_,_,_]]

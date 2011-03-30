@@ -3,7 +3,6 @@ package com.github.scala_android.crud
 import android.content.{ContentValues, Context}
 import android.widget.ListAdapter
 import res.R
-import ActivityUIActionFactory.adapt
 
 trait GeneratedCrudType[T <: AnyRef,Q <: AnyRef] extends CrudEntityType[Q,List[T],T,ContentValues] {
   def childEntities = Nil
@@ -17,7 +16,7 @@ trait GeneratedCrudType[T <: AnyRef,Q <: AnyRef] extends CrudEntityType[Q,List[T
     case foreignKey :: Nil if !foreignKey.entityType.hasDisplayPage => {
       val parentEntity = foreignKey.entityType
       val getForeignKey = { _: Unit => foreignKey.partialGet(actionFactory.currentIntent).get }
-      adapt(actionFactory.startUpdate(parentEntity), getForeignKey) ::
+      actionFactory.adapt(actionFactory.startUpdate(parentEntity), getForeignKey) ::
               parentEntity.displayChildEntityLists(actionFactory, getForeignKey)
     }
     case _ => Nil

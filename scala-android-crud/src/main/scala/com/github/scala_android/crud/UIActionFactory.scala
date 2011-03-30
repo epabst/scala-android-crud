@@ -46,6 +46,12 @@ trait UIActionFactory {
    * Gets the action to display a UI to allow a user to proceed with deleting a list of entities given their ids.
    */
   def startDelete(entityType: CrudEntityTypeRef): UIAction[ID]
+
+  /**
+   * Adapts an action from one type to another.
+   * This is useful when dealing with childEntities and foreignKeys.
+   */
+  def adapt[T,F](uiAction: UIAction[F], f: T => F): UIAction[T]
 }
 
 
@@ -82,6 +88,13 @@ class ActivityUIActionFactory(currentActivity: Activity) extends UIActionFactory
       }
     }
 
+  def adapt[T,F](uiAction: UIAction[F], f: T => F): UIAction[T] = new UIAction[T] {
+    val title = uiAction.title
+    val icon = uiAction.icon
+
+    def apply(value: T) = uiAction(f(value))
+  }
+
   import ActivityUIActionFactory._
   import Field.toSome
 
@@ -109,13 +122,6 @@ object ActivityUIActionFactory {
   val DisplayActionString = Intent.ACTION_VIEW
   val UpdateActionString = Intent.ACTION_EDIT
   val DeleteActionString = Intent.ACTION_DELETE
-
-  def adapt[T,F](uiAction: UIAction[F], f: T => F): UIAction[T] = new UIAction[T] {
-    val title = uiAction.title
-    val icon = uiAction.icon
-
-    def apply(value: T) = uiAction(f(value))
-  }
 
   def getCreateIntent(entityType: CrudEntityTypeRef, baseUri: Uri, context: Context): Intent =
     newIntent(CreateActionString, entityType.activityClass, entityType.entityName, detail = Nil, baseUri, context)
