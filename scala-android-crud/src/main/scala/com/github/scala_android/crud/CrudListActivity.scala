@@ -61,8 +61,10 @@ class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val enti
     super.onResume
   }
 
-  protected def contextMenuActions: List[UIAction[ID]] =
-    entityType.getEntityActions(actionFactory).tail.filter(_.title.isDefined)
+  protected def contextMenuActions: List[UIAction[ID]] = entityType.getEntityActions(actionFactory) match {
+    case _ :: tail => tail.filter(_.title.isDefined)
+    case Nil => Nil
+  }
 
   override def onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo) {
     super.onCreateContextMenu(menu, v, menuInfo)

@@ -61,6 +61,22 @@ class CrudListActivitySpec extends EasyMockSugar with ShouldMatchers with MyEnti
   }
 
   @Test
+  def shouldHandleNoEntityOptions {
+    val persistence = mock[EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
+    val entityType = new MyEntityType(persistence) {
+      override def getEntityActions(actionFactory: UIActionFactory) = Nil
+    }
+    val activity = new CrudListActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityType)
+    val contextMenu = mock[ContextMenu]
+    val ignoredView: View = null
+    val ignoredMenuInfo: ContextMenu.ContextMenuInfo = null
+    whenExecuting(contextMenu) {
+      //shouldn't do anything
+      activity.onCreateContextMenu(contextMenu, ignoredView, ignoredMenuInfo)
+    }
+  }
+
+  @Test
   def shouldRefreshOnResume {
     val persistence = mock[EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
     val entityType = new MyEntityType(persistence)
