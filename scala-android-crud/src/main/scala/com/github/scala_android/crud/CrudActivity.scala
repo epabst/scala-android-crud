@@ -16,7 +16,7 @@ import com.github.triangle.BasicValueFormat
  * @param R the type to read from (e.g. Cursor)
  * @param W the type to write to (e.g. ContentValues)
  */
-class CrudActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val entityType: CrudEntityType[Q,L,R,W])
+class CrudActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val entityType: CrudEntityType[Q,L,R,W], val childEntities: List[CrudEntityTypeRef])
   extends Activity with CrudContext[Q,L,R,W] {
 
   private val longFormat = new BasicValueFormat[Long]()

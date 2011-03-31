@@ -44,15 +44,12 @@ class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
   it("should get the correct entity actions with child entities") {
     val persistence = mock[EntityPersistence[AnyRef,List[mutable.Map[String,Any]],mutable.Map[String,Any],mutable.Map[String,Any]]]
     val actionFactory = mock[UIActionFactory]
-    var parentEntityOption: Option[MyEntityType] = None
+    val parentEntity = new MyEntityType(persistence)
     val childEntity = new MyEntityType(persistence) {
-      override lazy val fields = Field(foreignKey(parentEntityOption.get)) :: super.fields
+      override lazy val fields = Field(foreignKey(parentEntity)) :: super.fields
     }
-    parentEntityOption = Some(new MyEntityType(persistence) {
-      override def childEntities = childEntity :: super.childEntities
-    })
-    val parentEntity = parentEntityOption.get
     expecting {
+      call(actionFactory.allChildEntities).andReturn(List(childEntity)).anyTimes
       call(actionFactory.displayList(childEntity)).andReturn(displayChildList)
       call(actionFactory.adapt[ID,EntityUriSegment](eql(displayChildList), notNull())).andReturn(adaptedDisplayChildList)
       call(actionFactory.startUpdate(parentEntity)).andReturn(startUpdateParent)
@@ -69,20 +66,17 @@ class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
   it("should get the correct list actions with child entities") {
     val persistence = mock[EntityPersistence[AnyRef,List[mutable.Map[String,Any]],mutable.Map[String,Any],mutable.Map[String,Any]]]
     val actionFactory = mock[UIActionFactory]
-    var parentEntityOption: Option[MyEntityType] = None
+    val parentEntity = new MyEntityType(persistence) {
+      override val displayLayout = Some(123)
+    }
     val childEntity = new MyEntityType(persistence) {
-      override lazy val fields = Field(foreignKey(parentEntityOption.get)) :: super.fields
+      override lazy val fields = Field(foreignKey(parentEntity)) :: super.fields
     }
     val childEntity2 = new MyEntityType(persistence) {
-      override lazy val fields = Field(foreignKey(parentEntityOption.get)) :: super.fields
+      override lazy val fields = Field(foreignKey(parentEntity)) :: super.fields
     }
-    parentEntityOption = Some(new MyEntityType(persistence) {
-      override val displayLayout = Some(123)
-
-      override def childEntities = childEntity :: childEntity2 :: super.childEntities
-    })
-    val parentEntity = parentEntityOption.get
     expecting {
+      call(actionFactory.allChildEntities).andReturn(List(childEntity, childEntity2)).anyTimes
       call(actionFactory.startCreate(parentEntity)).andReturn(startCreateParent)
       call(actionFactory.startCreate(childEntity)).andReturn(startCreateChild)
       call(actionFactory.displayList(childEntity)).andStubReturn(displayChildList)
@@ -99,18 +93,15 @@ class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
   it("should get the correct list actions with child entities w/ no parent display") {
     val persistence = mock[EntityPersistence[AnyRef,List[mutable.Map[String,Any]],mutable.Map[String,Any],mutable.Map[String,Any]]]
     val actionFactory = mock[UIActionFactory]
-    var parentEntityOption: Option[MyEntityType] = None
+    var parentEntity = new MyEntityType(persistence)
     val childEntity = new MyEntityType(persistence) {
-      override lazy val fields = Field(foreignKey(parentEntityOption.get)) :: super.fields
+      override lazy val fields = Field(foreignKey(parentEntity)) :: super.fields
     }
     val childEntity2 = new MyEntityType(persistence) {
-      override lazy val fields = Field(foreignKey(parentEntityOption.get)) :: super.fields
+      override lazy val fields = Field(foreignKey(parentEntity)) :: super.fields
     }
-    parentEntityOption = Some(new MyEntityType(persistence) {
-      override def childEntities = childEntity :: childEntity2 :: super.childEntities
-    })
-    val parentEntity = parentEntityOption.get
     expecting {
+      call(actionFactory.allChildEntities).andReturn(List(childEntity, childEntity2)).anyTimes
       call(actionFactory.startCreate(parentEntity)).andReturn(startCreateParent)
       call(actionFactory.startUpdate(parentEntity)).andReturn(startUpdateParent)
       call(actionFactory.adapt[Unit,Long](eql(startUpdateParent), notNull())).andReturn(adaptedStartUpdateParent)

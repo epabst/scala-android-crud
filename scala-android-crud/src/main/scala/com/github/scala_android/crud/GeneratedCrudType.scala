@@ -5,8 +5,6 @@ import android.widget.ListAdapter
 import res.R
 
 trait GeneratedCrudType[T <: AnyRef,Q <: AnyRef] extends CrudEntityType[Q,List[T],T,ContentValues] {
-  def childEntities = Nil
-
   def openEntityPersistence(context: Context): ListEntityPersistence[T,Q]
 
   def refreshAfterSave(listAdapter: ListAdapter) {}
@@ -17,7 +15,7 @@ trait GeneratedCrudType[T <: AnyRef,Q <: AnyRef] extends CrudEntityType[Q,List[T
       val parentEntity = foreignKey.entityType
       val getForeignKey = { _: Unit => foreignKey.partialGet(actionFactory.currentIntent).get }
       actionFactory.adapt(actionFactory.startUpdate(parentEntity), getForeignKey) ::
-              parentEntity.displayChildEntityLists(actionFactory, getForeignKey)
+              parentEntity.displayChildEntityLists(actionFactory, getForeignKey, childEntities(actionFactory))
     }
     case _ => Nil
   }

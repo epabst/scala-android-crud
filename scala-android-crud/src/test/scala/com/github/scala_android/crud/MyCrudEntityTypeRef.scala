@@ -21,7 +21,7 @@ object MyCrudEntityTypeRef extends CrudEntityTypeRef {
 
   def listActivityClass = classOf[CrudListActivity[_,_,_,_]]
 
-  def childEntities = Nil
+  def parentEntities = Nil
 
   def hasDisplayPage = false
 }

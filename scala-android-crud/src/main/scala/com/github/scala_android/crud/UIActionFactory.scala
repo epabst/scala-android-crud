@@ -17,6 +17,12 @@ trait UIActionFactory {
   type ID = Long
 
   /**
+   * All entities that might be child entities.  These are checked using an entity's parentEntities method.
+   * @see CrudEntityType#getEntityActions
+   */
+  def allChildEntities: List[CrudEntityTypeRef]
+
+  /**
    * Gets the current UI.  This can be helpful to get the current android Intent, etc.
    */
   def currentIntent: Intent
@@ -78,7 +84,7 @@ trait UIAction[T] {
  */
 abstract class CrudUIAction[T](val icon: Option[Int], val title: Option[Int], val entityType: CrudEntityTypeRef) extends UIAction[T]
 
-class ActivityUIActionFactory(currentActivity: Activity) extends UIActionFactory {
+class ActivityUIActionFactory(currentActivity: Activity, val allChildEntities: List[CrudEntityTypeRef]) extends UIActionFactory {
   def currentIntent = currentActivity.getIntent
 
   private def toAction[T](icon: Option[Int], title: Option[Int], entityType: CrudEntityTypeRef, intentGetter: T => Intent) =

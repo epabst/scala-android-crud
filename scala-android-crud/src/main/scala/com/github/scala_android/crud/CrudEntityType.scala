@@ -36,7 +36,8 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
         val parentEntity = foreignKey.entityType
         val getForeignKey = { _: Unit => foreignKey.partialGet(actionFactory.currentIntent).get }
         actionFactory.adapt(actionFactory.startUpdate(parentEntity), getForeignKey) ::
-                parentEntity.displayChildEntityLists(actionFactory, getForeignKey, parentEntity.childEntities.filter(_ != thisEntity))
+                parentEntity.displayChildEntityLists(actionFactory, getForeignKey,
+                  parentEntity.childEntities(actionFactory).filter(_ != thisEntity))
       }
       case _ => Nil
     }) ::: actionFactory.startCreate(this) :: Nil
@@ -59,7 +60,7 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
    */
   def getEntityActions(actionFactory: UIActionFactory): List[UIAction[ID]] =
     displayLayout.map(_ => actionFactory.display(this)).toList :::
-            displayChildEntityLists[ID](actionFactory, id => id) :::
+            displayChildEntityLists[ID](actionFactory, id => id, childEntities(actionFactory)) :::
             List(actionFactory.startUpdate(this), actionFactory.startDelete(this))
 
   def copyFields(from: AnyRef, to: AnyRef) {
@@ -93,14 +94,17 @@ trait CrudEntityTypeRef {
   def deleteItemString: Int = res.R.string.delete_item
   def cancelItemString: Int
 
+  def parentEntities: List[CrudEntityTypeRef]
+
   /**
    * The list of entities that refer to this one.
    * Those entities should have a foreignKey in their fields list, if persisted.
    */
-  def childEntities: List[CrudEntityTypeRef]
+  def childEntities(actionFactory: UIActionFactory): List[CrudEntityTypeRef] =
+    actionFactory.allChildEntities.filter(_.parentEntities.contains(this))
 
   def displayChildEntityLists[T](actionFactory: UIActionFactory, idGetter: T => ID,
-                                 childEntities: List[CrudEntityTypeRef] = childEntities): List[UIAction[T]] =
+                                 childEntities: List[CrudEntityTypeRef]): List[UIAction[T]] =
     childEntities.map(entity => actionFactory.adapt(actionFactory.displayList(entity), (value: T) =>
       Some(EntityUriSegment(entityName, idGetter(value).toString))))
 

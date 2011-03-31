@@ -30,8 +30,6 @@ trait MyEntityTesting extends EasyMockSugar {
       //here to test a non-UI field
       Field[String](persisted("uri"), readOnly[Intent,String](_.getData.toString)))
 
-    def childEntities: List[CrudEntityTypeRef] = Nil
-
     def openEntityPersistence(context: Context) = persistence
 
     def refreshAfterSave(listAdapter: ListAdapter) {
