@@ -13,9 +13,7 @@ import com.github.triangle.{BasicValueFormat, Field}
  * Time: 5:33 PM
  */
 
-trait UIActionFactory {
-  type ID = Long
-
+trait UIActionFactory extends PlatformTypes {
   /**
    * The application.
    */
@@ -120,8 +118,7 @@ class ActivityUIActionFactory(currentActivity: Activity, val application: CrudAp
     toAction[ID](android.R.drawable.ic_menu_delete, entityType.deleteItemString, entityType, id => getDeleteIntent(entityType, id, currentIntent.getData, currentActivity))
 }
 
-object ActivityUIActionFactory {
-  type ID = Long
+object ActivityUIActionFactory extends PlatformTypes {
   val CreateActionString = Intent.ACTION_INSERT
   val ListActionString = Intent.ACTION_PICK
   val DisplayActionString = Intent.ACTION_VIEW

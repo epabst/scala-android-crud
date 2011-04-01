@@ -1,5 +1,7 @@
 package com.github.scala_android.crud.model
 
+import com.github.scala_android.crud.PlatformTypes
+
 /**
  * A trait with a primary key
  * @author Eric Pabst (epabst@gmail.com)
@@ -7,7 +9,6 @@ package com.github.scala_android.crud.model
  * Time: 6:49 AM
  */
 
-trait IdPk {
-  type ID = Long
+trait IdPk extends PlatformTypes {
   var id: ID = _
 }

@@ -10,7 +10,7 @@ import monitor.Logging
  * Time: 7:01 PM
  */
 
-trait CrudContext[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Logging { this: Activity =>
+trait CrudContext[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends PlatformTypes with Logging { this: Activity =>
   def entityType: CrudEntityType[Q,L,R,W]
 
   def application: CrudApplication

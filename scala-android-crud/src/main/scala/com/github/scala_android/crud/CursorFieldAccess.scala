@@ -5,9 +5,7 @@ import android.database.Cursor
 import android.provider.BaseColumns
 import com.github.triangle._
 
-object CursorFieldAccess {
-  type ID = Long
-
+object CursorFieldAccess extends PlatformTypes {
   def persisted[T](name: String)(implicit persistedType: PersistedType[T]): CursorFieldAccess[T] = {
     new CursorFieldAccess[T](name)(persistedType)
   }

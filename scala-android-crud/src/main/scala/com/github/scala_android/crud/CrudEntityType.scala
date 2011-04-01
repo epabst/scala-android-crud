@@ -78,10 +78,7 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
   def refreshAfterSave(listAdapter: ListAdapter)
 }
 
-trait CrudEntityTypeRef {
-  //this makes it available for subtypes to use to make it clear that it's an ID
-  type ID = Long
-
+trait CrudEntityTypeRef extends PlatformTypes {
   //this is the type used for internationalized strings
   def entityName: String
 
