@@ -37,7 +37,7 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
         val getForeignKey = { _: Unit => foreignKey.partialGet(actionFactory.currentIntent).get }
         actionFactory.adapt(actionFactory.startUpdate(parentEntity), getForeignKey) ::
                 parentEntity.displayChildEntityLists(actionFactory, getForeignKey,
-                  parentEntity.childEntities(actionFactory).filter(_ != thisEntity))
+                  parentEntity.childEntities(actionFactory.application).filter(_ != thisEntity))
       }
       case _ => Nil
     }) ::: actionFactory.startCreate(this) :: Nil
@@ -60,7 +60,7 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
    */
   def getEntityActions(actionFactory: UIActionFactory): List[UIAction[ID]] =
     displayLayout.map(_ => actionFactory.display(this)).toList :::
-            displayChildEntityLists[ID](actionFactory, id => id, childEntities(actionFactory)) :::
+            displayChildEntityLists[ID](actionFactory, id => id, childEntities(actionFactory.application)) :::
             List(actionFactory.startUpdate(this), actionFactory.startDelete(this))
 
   def copyFields(from: AnyRef, to: AnyRef) {
@@ -100,8 +100,8 @@ trait CrudEntityTypeRef {
    * The list of entities that refer to this one.
    * Those entities should have a foreignKey in their fields list, if persisted.
    */
-  def childEntities(actionFactory: UIActionFactory): List[CrudEntityTypeRef] =
-    actionFactory.allChildEntities.filter(_.parentEntities.contains(this))
+  def childEntities(application: CrudApplication): List[CrudEntityTypeRef] =
+    application.allEntities.filter(_.parentEntities.contains(this))
 
   def displayChildEntityLists[T](actionFactory: UIActionFactory, idGetter: T => ID,
                                  childEntities: List[CrudEntityTypeRef]): List[UIAction[T]] =

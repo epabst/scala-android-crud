@@ -18,7 +18,7 @@ import android.widget.AdapterView.AdapterContextMenuInfo
  * @param R the type to read from (e.g. Cursor)
  * @param W the type to write to (e.g. ContentValues)
  */
-class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val entityType: CrudEntityType[Q,L,R,W], val childEntities: List[CrudEntityTypeRef])
+class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val entityType: CrudEntityType[Q,L,R,W], val application: CrudApplication)
   extends ListActivity with CrudContext[Q,L,R,W] {
 
   type ID = Long

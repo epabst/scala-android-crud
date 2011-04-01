@@ -20,7 +20,8 @@ class CrudActivitySpec extends EasyMockSugar with ShouldMatchers with MyEntityTe
     import ActivityUIActionFactory._
     val persistence = mock[EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
     val entityType = new MyEntityType(persistence)
-    val activity = new CrudActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityType, Nil)
+    val application = mock[CrudApplication]
+    val activity = new CrudActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityType, application)
     val entity = Map[String,Any]("name" -> "Bob", "age" -> 25)
     val writable = Map[String,Any]()
     val uri = toUri(entityType.entityName)
@@ -48,7 +49,8 @@ class CrudActivitySpec extends EasyMockSugar with ShouldMatchers with MyEntityTe
   def shouldAllowUpdating {
     val persistence = mock[EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
     val entityType = new MyEntityType(persistence)
-    val activity = new CrudActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityType, Nil)
+    val application = mock[CrudApplication]
+    val activity = new CrudActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityType, application)
     val entity = Map[String,Any]("name" -> "Bob", "age" -> 25)
     val writable = Map[String,Any]()
     expecting {
@@ -75,7 +77,8 @@ class CrudActivitySpec extends EasyMockSugar with ShouldMatchers with MyEntityTe
   def withPersistenceShouldClosePersistence {
     val persistence = mock[EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
     val entityType = new MyEntityType(persistence)
-    val activity = new CrudActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityType, Nil)
+    val application = mock[CrudApplication]
+    val activity = new CrudActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityType, application)
     expecting {
       call(persistence.findAll(Unit)).andReturn(List[Map[String,Any]]())
       call(persistence.close)
@@ -89,7 +92,8 @@ class CrudActivitySpec extends EasyMockSugar with ShouldMatchers with MyEntityTe
   def withPersistenceShouldClosePersistenceWithFailure {
     val persistence = mock[EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
     val entityType = new MyEntityType(persistence)
-    val activity = new CrudActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityType, Nil)
+    val application = mock[CrudApplication]
+    val activity = new CrudActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityType, application)
     expecting {
       call(persistence.close)
     }

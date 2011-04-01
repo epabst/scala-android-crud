@@ -13,7 +13,7 @@ import monitor.Logging
 trait CrudContext[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Logging { this: Activity =>
   def entityType: CrudEntityType[Q,L,R,W]
 
-  def childEntities: List[CrudEntityTypeRef]
+  def application: CrudApplication
 
   protected val activity: Activity = this
 
@@ -31,5 +31,5 @@ trait CrudContext[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Loggi
     }
   }
 
-  lazy val actionFactory = new ActivityUIActionFactory(this, childEntities)
+  lazy val actionFactory = new ActivityUIActionFactory(this, application)
 }

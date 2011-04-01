@@ -18,8 +18,6 @@ object AuthorCrudType extends SQLiteCrudEntityType {
 
   def fields = List(Field[String](persisted("name"), viewId[TextView,String](R.id.name)))
 
-  def childEntities: List[CrudEntityTypeRef] = Nil  //todo add Book
-
   def activityClass = classOf[AuthorActivity]
 
   def listActivityClass = classOf[AuthorListActivity]
@@ -44,5 +42,5 @@ object AuthorCrudType extends SQLiteCrudEntityType {
   def addItemString = R.string.add_author
 }
 
-class AuthorListActivity extends CrudListActivity(AuthorCrudType, AuthorCrudType.childEntities)
-class AuthorActivity extends CrudActivity(AuthorCrudType, AuthorCrudType.childEntities)
+class AuthorListActivity extends CrudListActivity(AuthorCrudType, SampleApplication)
+class AuthorActivity extends CrudActivity(AuthorCrudType, SampleApplication)

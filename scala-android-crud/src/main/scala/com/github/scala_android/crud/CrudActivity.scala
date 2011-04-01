@@ -1,8 +1,7 @@
 package com.github.scala_android.crud
 
-import _root_.android.app.{Activity, AlertDialog}
-import _root_.android.view.{Menu, MenuItem, View}
-import android.content.Intent
+import _root_.android.app.Activity
+import _root_.android.view.{Menu, MenuItem}
 import android.os.Bundle
 import com.github.triangle.BasicValueFormat
 
@@ -16,7 +15,7 @@ import com.github.triangle.BasicValueFormat
  * @param R the type to read from (e.g. Cursor)
  * @param W the type to write to (e.g. ContentValues)
  */
-class CrudActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val entityType: CrudEntityType[Q,L,R,W], val childEntities: List[CrudEntityTypeRef])
+class CrudActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val entityType: CrudEntityType[Q,L,R,W], val application: CrudApplication)
   extends Activity with CrudContext[Q,L,R,W] {
 
   private val longFormat = new BasicValueFormat[Long]()
