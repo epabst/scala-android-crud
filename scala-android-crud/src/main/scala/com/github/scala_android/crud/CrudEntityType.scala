@@ -10,17 +10,15 @@ import com.github.triangle.{PartialFieldAccess, CopyableField}
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 2/23/11
  * Time: 3:24 PM
- * @param Int a translatable text identifier
- * @param LT a layout configuration
  */
 trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends CrudEntityTypeRef {
   def fields: List[CopyableField]
 
-  def headerLayout: Int
-  def listLayout: Int
-  def rowLayout: Int
-  def displayLayout: Option[Int]
-  def entryLayout: Int
+  def headerLayout: LayoutKey
+  def listLayout: LayoutKey
+  def rowLayout: LayoutKey
+  def displayLayout: Option[LayoutKey]
+  def entryLayout: LayoutKey
 
   final def hasDisplayPage = displayLayout.isDefined
 
@@ -84,12 +82,11 @@ trait CrudEntityTypeRef extends PlatformTypes {
 
   def hasDisplayPage: Boolean
 
-  def listItemsString: Option[Int] = None
-  //todo replace these with using the standard android icons
-  def addItemString: Int
-  def editItemString: Int
-  def deleteItemString: Int = res.R.string.delete_item
-  def cancelItemString: Int
+  def listItemsString: Option[SKey] = None
+  def addItemString: SKey
+  def editItemString: SKey
+  def deleteItemString: SKey = res.R.string.delete_item
+  def cancelItemString: SKey
 
   def parentEntities: List[CrudEntityTypeRef]
 

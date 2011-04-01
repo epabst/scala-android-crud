@@ -62,29 +62,29 @@ trait UIActionFactory extends PlatformTypes {
  * Represents an action that a user can initiate.
  * It's equals/hashCode MUST be implemented in order to suppress the action that is already happening.
  */
-trait UIAction[T] {
+trait UIAction[T] extends PlatformTypes {
   /** The icon to display for this action. */
-  def icon: Option[Int]
+  def icon: Option[ImgKey]
 
   /**The title to display for this action.
    * If the title is None, it won't be displayed in the context menu for an item.
    * If both title and icon are None,
    * then it won't be displayed in the main options menu, but can still be triggered as a default action.
    */
-  def title: Option[Int]
+  def title: Option[SKey]
 
   def apply(value: T)
 }
 
-/**
- * Represents an action involving a crud entity.
- */
-abstract class CrudUIAction[T](val icon: Option[Int], val title: Option[Int], val entityType: CrudEntityTypeRef) extends UIAction[T]
-
 class ActivityUIActionFactory(currentActivity: Activity, val application: CrudApplication) extends UIActionFactory {
   def currentIntent = currentActivity.getIntent
 
-  private def toAction[T](icon: Option[Int], title: Option[Int], entityType: CrudEntityTypeRef, intentGetter: T => Intent) =
+  /**
+   * Represents an action involving a crud entity.
+   */
+  abstract class CrudUIAction[T](val icon: Option[ImgKey], val title: Option[SKey], val entityType: CrudEntityTypeRef) extends UIAction[T]
+
+  private def toAction[T](icon: Option[ImgKey], title: Option[SKey], entityType: CrudEntityTypeRef, intentGetter: T => Intent) =
     new CrudUIAction[T](icon, title, entityType) {
       def apply(value: T) {
         currentActivity.startActivity(intentGetter(value))
