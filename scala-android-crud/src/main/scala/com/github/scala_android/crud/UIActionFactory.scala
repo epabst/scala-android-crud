@@ -166,16 +166,16 @@ object ActivityUIActionFactory extends PlatformTypes {
   }
 }
 
-case class EntityUriSegment(entityName: String, detail: String*) {
+case class EntityUriSegment(entityName: String, detail: String*) extends PlatformTypes {
   import JavaConversions._
-  private val longFormat = new BasicValueFormat[Long]()
+  private val idFormat = new BasicValueFormat[ID]()
 
   def specifyInUri(currentUri: Uri): Uri =
     replacePathSegments(currentUri, _.takeWhile(_ != entityName) ::: entityName :: detail.toList)
 
-  def findId(currentUri: Uri): Option[Long] =
+  def findId(currentUri: Uri): Option[ID] =
     currentUri.getPathSegments.toList.dropWhile(_ != entityName) match {
-      case nameString :: idString :: x => longFormat.toValue(idString)
+      case nameString :: idString :: x => idFormat.toValue(idString)
       case _ => None
     }
 

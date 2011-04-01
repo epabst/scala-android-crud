@@ -26,7 +26,7 @@ trait MyEntityTesting extends EasyMockSugar {
 
     def fields: List[CopyableField] = List(
       Field(persisted[String]("name"), viewId[TextView,String](R.id.name)),
-      Field(persisted[Long]("age"), viewId[TextView,Long](R.id.age)),
+      Field(persisted[Int]("age"), viewId[TextView,Int](R.id.age)),
       //here to test a non-UI field
       Field[String](persisted("uri"), readOnly[Intent,String](_.getData.toString)))
 

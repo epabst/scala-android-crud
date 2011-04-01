@@ -39,7 +39,7 @@ class ViewFieldAccessById[T](val viewResourceId: Int)(childViewFieldAccess: Part
     if (childView != null) childViewFieldAccess.partialSet(childView, value) else false
 }
 
-object ViewFieldAccess {
+object ViewFieldAccess extends PlatformTypes {
   def viewFieldAccess[V <: View,T](getter: V => Option[T], setter: V => T => Unit)(implicit m: ClassManifest[V]): ViewFieldAccess[V,T] = {
     new ViewFieldAccess[V,T] {
       def get(view: V) = getter(view)
@@ -86,8 +86,8 @@ object ViewFieldAccess {
     })
   }
 
-  def intentId(entityName: String): FieldGetter[Intent,Long] = {
+  def intentId(entityName: String): FieldGetter[Intent,ID] = {
     val uriSegment = EntityUriSegment(entityName)
-    Field.readOnly[Intent,Long](intent => uriSegment.findId(intent.getData))
+    Field.readOnly[Intent,ID](intent => uriSegment.findId(intent.getData))
   }
 }

@@ -8,7 +8,6 @@ import android.app.Activity
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 2/2/11
  * Time: 4:12 PM
- * @param ID the ID type for the entity such as String or Long.
  * @param Q the query criteria type
  * @param L the type of findAll (e.g. Cursor)
  * @param R the type to read from (e.g. Cursor)

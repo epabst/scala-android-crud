@@ -9,7 +9,7 @@ package com.github.scala_android.crud
 
 trait PlatformTypes {
   /** An entity ID */
-  type ID = Long
+  final type ID = Long
   /** A string key used with translation. */
-  type SKey = Int
+  final type SKey = Int
 }

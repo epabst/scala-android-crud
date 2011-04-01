@@ -30,7 +30,7 @@ class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
   }
 
   val startCreateParent = namedMock[UIAction[Unit]]("startCreateParent")
-  val startUpdateParent = namedMock[UIAction[Long]]("startUpdateParent")
+  val startUpdateParent = namedMock[UIAction[ID]]("startUpdateParent")
   val adaptedStartUpdateParent = namedMock[UIAction[Unit]]("adaptedStartUpdateParent")
   val startDeleteParent = namedMock[UIAction[ID]]("startDeleteParent")
   val displayChildList = namedMock[UIAction[EntityUriSegment]]("displayChildList")
@@ -110,7 +110,7 @@ class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
       call(application.allEntities).andReturn(List(parentEntity, childEntity, childEntity2)).anyTimes
       call(actionFactory.startCreate(parentEntity)).andReturn(startCreateParent)
       call(actionFactory.startUpdate(parentEntity)).andReturn(startUpdateParent)
-      call(actionFactory.adapt[Unit,Long](eql(startUpdateParent), notNull())).andReturn(adaptedStartUpdateParent)
+      call(actionFactory.adapt[Unit,ID](eql(startUpdateParent), notNull())).andReturn(adaptedStartUpdateParent)
       call(actionFactory.startCreate(childEntity)).andReturn(startCreateChild)
       call(actionFactory.displayList(childEntity)).andStubReturn(displayChildList)
       call(actionFactory.adapt[ID,EntityUriSegment](eql(displayChildList), notNull())).andStubReturn(adaptedDisplayChildList)

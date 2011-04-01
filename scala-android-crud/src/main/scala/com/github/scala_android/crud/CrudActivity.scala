@@ -18,8 +18,8 @@ import com.github.triangle.BasicValueFormat
 class CrudActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val entityType: CrudEntityType[Q,L,R,W], val application: CrudApplication)
   extends Activity with CrudContext[Q,L,R,W] {
 
-  private val longFormat = new BasicValueFormat[Long]()
-  def id: Option[Long] = longFormat.toValue(getIntent.getData.getLastPathSegment)
+  private val idFormat = new BasicValueFormat[ID]()
+  def id: Option[ID] = idFormat.toValue(getIntent.getData.getLastPathSegment)
 
   override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)

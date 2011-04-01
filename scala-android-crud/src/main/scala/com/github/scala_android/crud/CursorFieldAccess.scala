@@ -50,7 +50,7 @@ class CursorFieldAccess[T](val name: String)(implicit val persistedType: Persist
 import CursorFieldAccess._
 import ViewFieldAccess.intentId
 
-class ForeignKey(val entityType: CrudEntityTypeRef) extends FieldAccessVariations[Long] {
+class ForeignKey(val entityType: CrudEntityTypeRef) extends PlatformTypes with FieldAccessVariations[ID] {
   val fieldName = entityType.entityName.toLowerCase + BaseColumns._ID
-  val fieldAccesses = List[PartialFieldAccess[Long]](persisted(fieldName), intentId(entityType.entityName), sqliteCriteria(fieldName))
+  val fieldAccesses = List[PartialFieldAccess[ID]](persisted(fieldName), intentId(entityType.entityName), sqliteCriteria(fieldName))
 }
