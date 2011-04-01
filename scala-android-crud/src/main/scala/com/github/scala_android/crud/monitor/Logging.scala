@@ -13,32 +13,37 @@ trait Logging {
   lazy val logTag: String = this.getClass.getName
 
   protected def verbose(f: => String) {
-    println("TRACE " + f)
     try Log.v(logTag, f)
-    catch { case e: RuntimeException if (e.getMessage == "Stub!") => }
+    catch {
+      case e: RuntimeException if (e.getMessage == "Stub!") => println("TRACE " + f)
+    }
   }
 
   protected def debug(f: => String) {
-    println("DEBUG " + f)
     try Log.d(logTag, f)
-    catch { case e: RuntimeException if (e.getMessage == "Stub!") => }
+    catch {
+      case e: RuntimeException if (e.getMessage == "Stub!") => println("DEBUG " + f)
+    }
   }
 
   protected def info(f: => String) {
-    println("INFO  " + f)
     try Log.i(logTag, f)
-    catch { case e: RuntimeException if (e.getMessage == "Stub!") => }
+    catch {
+      case e: RuntimeException if (e.getMessage == "Stub!") => println("INFO  " + f)
+    }
   }
 
   protected def warn(f: => String) {
-    println("WARN  " + f)
     try Log.w(logTag, f)
-    catch { case e: RuntimeException if (e.getMessage == "Stub!") => }
+    catch {
+      case e: RuntimeException if (e.getMessage == "Stub!") => println("WARN  " + f)
+    }
   }
 
   protected def error(f: => String) {
-    println("ERROR " + f)
     try Log.e(logTag, f)
-    catch { case e: RuntimeException if (e.getMessage == "Stub!") => }
+    catch {
+      case e: RuntimeException if (e.getMessage == "Stub!") => println("ERROR " + f)
+    }
   }
 }
