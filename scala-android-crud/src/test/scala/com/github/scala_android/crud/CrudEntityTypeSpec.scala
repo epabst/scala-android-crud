@@ -6,7 +6,8 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.Spec
 import com.github.scala_android.crud.CursorFieldAccess._
-import org.easymock.EasyMock.notNull
+import org.easymock.EasyMock
+import EasyMock.notNull
 import com.github.triangle.Field
 
 /**
@@ -120,6 +121,60 @@ class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
     whenExecuting(actionFactory, persistence, application) {
       parentEntity.getListActions(actionFactory) should be (List(startCreateParent))
       childEntity.getListActions(actionFactory) should be (List(adaptedStartUpdateParent, adaptedDisplayChild2List, startCreateChild))
+    }
+  }
+
+  it("should delete with undo possibility") {
+    type Persistence = EntityPersistence[AnyRef,List[mutable.Map[String,Any]],mutable.Map[String,Any],mutable.Map[String,Any]]
+    val persistence = mock[Persistence]
+    val actionFactory = mock[UIActionFactory]
+    val application = mock[CrudApplication]
+    var entity = new MyEntityType(persistence)
+    val readable = mutable.Map[String,Any]()
+    val id = 345L
+    expecting {
+      call(actionFactory.withEntityPersistence(eql(entity), notNull[Persistence => Unit]())).andAnswer(answer {
+        val f = EasyMock.getCurrentArguments()(1).asInstanceOf[Persistence => Unit]
+        f(persistence)
+      })
+      call(actionFactory.application).andReturn(application).anyTimes
+      call(persistence.find(id)).andReturn(Some(readable))
+      call(persistence.delete(List(id)))
+      call(actionFactory.addUndoableDelete(eql(entity), notNull[Undoable[ID]])).andAnswer(answer {
+        val undoable = EasyMock.getCurrentArguments()(1).asInstanceOf[Undoable[ID]]
+        undoable.close()
+      })
+    }
+    whenExecuting(actionFactory, persistence, application) {
+      entity.startDelete(id, actionFactory)
+    }
+  }
+
+  it("undo of delete should work") {
+    type Persistence = EntityPersistence[AnyRef,List[mutable.Map[String,Any]],mutable.Map[String,Any],mutable.Map[String,Any]]
+    val persistence = mock[Persistence]
+    val actionFactory = mock[UIActionFactory]
+    val application = mock[CrudApplication]
+    var entity = new MyEntityType(persistence)
+    val readable = mutable.Map[String,Any]("name" -> "George")
+    val id = 345L
+    val id2 = 444L
+    expecting {
+      call(actionFactory.withEntityPersistence(eql(entity), notNull[Persistence => Unit]())).andAnswer(answer {
+        val f = EasyMock.getCurrentArguments()(1).asInstanceOf[Persistence => Unit]
+        f(persistence)
+      })
+      call(actionFactory.application).andReturn(application).anyTimes
+      call(persistence.find(id)).andReturn(Some(readable))
+      call(persistence.delete(List(id)))
+      call(persistence.save(None, mutable.Map("name" -> "George"))).andReturn(id2)
+      call(actionFactory.addUndoableDelete(eql(entity), notNull[Undoable[ID]])).andAnswer(answer {
+        val undoable = EasyMock.getCurrentArguments()(1).asInstanceOf[Undoable[ID]]
+        undoable.undo() should be(id2)
+      })
+    }
+    whenExecuting(actionFactory, persistence, application) {
+      entity.startDelete(id, actionFactory)
     }
   }
 }

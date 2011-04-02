@@ -5,6 +5,8 @@ import android.widget.ListAdapter
 import res.R
 
 trait GeneratedCrudType[T <: AnyRef,Q <: AnyRef] extends CrudEntityType[Q,List[T],T,ContentValues] {
+  def newWritable = new ContentValues
+
   def openEntityPersistence(context: Context): ListEntityPersistence[T,Q]
 
   def refreshAfterSave(listAdapter: ListAdapter) {}

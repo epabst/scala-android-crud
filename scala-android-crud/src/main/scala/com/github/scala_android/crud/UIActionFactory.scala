@@ -48,13 +48,19 @@ trait UIActionFactory extends PlatformTypes {
   /**
    * Gets the action to display a UI to allow a user to proceed with deleting a list of entities given their ids.
    */
-  def startDelete(entityType: CrudEntityTypeRef): UIAction[ID]
+  def startDelete(entityType: CrudEntityType[_,_,_,_]): UIAction[ID]
+
+  /** Puts the UI in place for the undo to be chosen. */
+  def addUndoableDelete(entityType: CrudEntityTypeRef, undoable: Undoable[ID])
 
   /**
    * Adapts an action from one type to another.
    * This is useful when dealing with childEntities and foreignKeys.
    */
   def adapt[T,F](uiAction: UIAction[F], f: T => F): UIAction[T]
+
+  /** Pass-through in order to get the Context. */
+  def withEntityPersistence[T,Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](entityType: CrudEntityType[Q,L,R,W], f: EntityPersistence[Q,L,R,W] => T): T
 }
 
 
@@ -76,7 +82,8 @@ trait UIAction[T] extends PlatformTypes {
   def apply(value: T)
 }
 
-class ActivityUIActionFactory(currentActivity: Activity, val application: CrudApplication) extends UIActionFactory {
+class ActivityUIActionFactory(currentActivity: CrudContext[_,_,_,_], val application: CrudApplication) extends UIActionFactory {
+  private def thisFactory = this
   def currentIntent = currentActivity.getIntent
 
   /**
@@ -114,8 +121,19 @@ class ActivityUIActionFactory(currentActivity: Activity, val application: CrudAp
   def startUpdate(entityType: CrudEntityTypeRef) =
     toAction[ID](android.R.drawable.ic_menu_edit, entityType.editItemString, entityType, id => getUpdateIntent(entityType, id, currentIntent.getData, currentActivity))
 
-  def startDelete(entityType: CrudEntityTypeRef) =
-    toAction[ID](android.R.drawable.ic_menu_delete, entityType.deleteItemString, entityType, id => getDeleteIntent(entityType, id, currentIntent.getData, currentActivity))
+  def startDelete(entityTypeToDelete: CrudEntityType[_,_,_,_]) =
+    new CrudUIAction[ID](android.R.drawable.ic_menu_delete, entityTypeToDelete.deleteItemString, entityTypeToDelete) {
+      def apply(id: ID) {
+        entityTypeToDelete.startDelete(id, thisFactory)
+      }
+    }
+
+  def addUndoableDelete(entityType: CrudEntityTypeRef, undoable: Undoable[ID]) {
+    currentActivity.addUndoableDelete(entityType, undoable)
+  }
+
+  def withEntityPersistence[T, Q <: AnyRef, L <: AnyRef, R <: AnyRef, W <: AnyRef](entityType: CrudEntityType[Q, L, R, W], f: (EntityPersistence[Q, L, R, W]) => T) =
+    entityType.withEntityPersistence(currentActivity, f)
 }
 
 object ActivityUIActionFactory extends PlatformTypes {
@@ -143,10 +161,6 @@ object ActivityUIActionFactory extends PlatformTypes {
 
   def getUpdateIntent(entityType: CrudEntityTypeRef, id: ID, baseUri: Uri, context: Context): Intent =
     newIntent(UpdateActionString, entityType.activityClass, entityType.entityName, detail = List(id.toString), baseUri, context)
-
-  def getDeleteIntent(entityType: CrudEntityTypeRef, id: ID, baseUri: Uri, context: Context): Intent =
-    //todo don't start a new intent - if on the individual entity, go back until you're not.  otherwise, stayhere
-    newIntent(DeleteActionString, entityType.listActivityClass, entityType.entityName, detail = List(id.toString), baseUri, context)
 
   private def newIntent(action: String, activityClass: Class[_ <: Activity],
                         entityName: String, detail: List[String], currentUri: Uri, context: Context) = {

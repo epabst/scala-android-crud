@@ -27,7 +27,11 @@ trait EntityPersistence[Q,L,R,W] extends PlatformTypes {
   /** Save a created or updated entity. */
   def save(id: Option[ID], writable: W): ID
 
-  /** Delete a list of entities by ID. */
+  /**
+   * Delete a list of entities by ID.
+   * This should NOT delete child entities because that would make the "undo" functionality incomplete.
+   * Instead, assume that the CrudEntityType will handle deleting all child entities explicitly.
+   */
   def delete(ids: List[ID])
 
   def close()

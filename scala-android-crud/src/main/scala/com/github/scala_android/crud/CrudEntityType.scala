@@ -79,6 +79,31 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
     finally persistence.close
   }
 
+  private[crud] def undoableDelete(id: ID, uiActionFactory: UIActionFactory)(persistence: EntityPersistence[Q,L,R,W]) {
+    persistence.find(id).map { readable =>
+      val writable = newWritable
+      copyFields(readable, writable)
+      persistence.delete(List(id))
+      //todo make the requery happen automatically by SQLitePersistence for any ListAdapters it created in the CrudContext.
+      uiActionFactory.addUndoableDelete(this, new Undoable[ID] {
+        def undo(): ID = {
+          persistence.save(None, writable)
+        }
+
+        def close() {
+          //todo delete childEntities(application) recursively
+        }
+      })
+    }
+  }
+
+  /**
+   * Delete an entity by ID with an undo option.  It can be overridden to do a confirmation box if desired.
+   */
+  def startDelete(id: ID, uiActionFactory: UIActionFactory) {
+    uiActionFactory.withEntityPersistence(this, undoableDelete(id, uiActionFactory))
+  }
+
   def refreshAfterSave(listAdapter: ListAdapter)
 }
 
@@ -112,4 +137,15 @@ trait CrudEntityTypeRef extends PlatformTypes {
   def activityClass: Class[_ <: CrudActivity[_,_,_,_]]
 
   override def toString = entityName
+}
+
+/**
+ * An undoable command.  The command should have already completed, but it can be undone or accepted.
+ */
+trait Undoable[T] {
+  /** Reverses the action. */
+  def undo(): T
+
+  /** Releases any resources, and is guaranteed to be called.  For example, deleting related entities if undo was not called. */
+  def close()
 }

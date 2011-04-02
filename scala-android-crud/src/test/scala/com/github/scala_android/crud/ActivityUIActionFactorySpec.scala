@@ -3,7 +3,6 @@ package com.github.scala_android.crud
 import _root_.android.content.Intent
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.scalatest.mock.EasyMockSugar
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.scalatest.matchers.ShouldMatchers
 
@@ -14,7 +13,7 @@ import org.scalatest.matchers.ShouldMatchers
  * Time: 6:22 PM
  */
 @RunWith(classOf[RobolectricTestRunner])
-class ActivityUIActionFactorySpec extends EasyMockSugar with ShouldMatchers {
+class ActivityUIActionFactorySpec extends MyEntityTesting with ShouldMatchers {
   //todo determine if shadowing, and run tests on real Android device as well.
   val isShadowing = true
 
@@ -92,13 +91,19 @@ class ActivityUIActionFactorySpec extends EasyMockSugar with ShouldMatchers {
   }
 
   @Test
-  def getDeleteIntentShouldGetTheRightUri {
-    getDeleteIntent(MyCrudEntityTypeRef, 35, toUri("foo"), context).getData should
-      be (toUri("foo", entityName, "35"))
-    getDeleteIntent(MyCrudEntityTypeRef, 35, toUri("foo", entityName, "123"), context).getData should
-      be (toUri("foo", entityName, "35"))
-    getDeleteIntent(MyCrudEntityTypeRef, 35, toUri(), context).getData should
-      be (toUri(entityName, "35"))
+  def deleteActionShouldBeUndoable {
+    val currentActivity = mock[CrudActivity[_,_,_,_]]
+    val application = mock[CrudApplication]
+    val entityType = mock[CrudEntityType[_,_,_,_]]
+    val id = 345L
+    val uiFactory = new ActivityUIActionFactory(currentActivity, application)
+    expecting {
+      call(entityType.deleteItemString).andReturn(5)
+      call(entityType.startDelete(id, uiFactory))
+    }
+    whenExecuting(entityType, currentActivity, application) {
+      uiFactory.startDelete(entityType)(id)
+    }
   }
 
   @Test
@@ -108,7 +113,6 @@ class ActivityUIActionFactorySpec extends EasyMockSugar with ShouldMatchers {
       getDisplayListIntent(MyCrudEntityTypeRef, toUri("foo"), context).getAction should be (Intent.ACTION_PICK)
       getDisplayIntent(MyCrudEntityTypeRef, 45, toUri("foo", entityName), context).getAction should be (Intent.ACTION_VIEW)
       getUpdateIntent(MyCrudEntityTypeRef, 45, toUri("foo", entityName), context).getAction should be (Intent.ACTION_EDIT)
-      getDeleteIntent(MyCrudEntityTypeRef, 45, toUri("foo", entityName), context).getAction should be (Intent.ACTION_DELETE)
     }
   }
 

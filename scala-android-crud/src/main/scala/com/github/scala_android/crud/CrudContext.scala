@@ -10,7 +10,7 @@ import monitor.Logging
  * Time: 7:01 PM
  */
 
-trait CrudContext[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends PlatformTypes with Logging { this: Activity =>
+trait CrudContext[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Activity with PlatformTypes with Logging {
   def entityType: CrudEntityType[Q,L,R,W]
 
   def application: CrudApplication
@@ -29,6 +29,10 @@ trait CrudContext[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Platf
     } finally {
       persistence.close
     }
+  }
+
+  def addUndoableDelete(entityType: CrudEntityTypeRef, undoable: Undoable[ID]) {
+    //todo implement
   }
 
   lazy val actionFactory = new ActivityUIActionFactory(this, application)
