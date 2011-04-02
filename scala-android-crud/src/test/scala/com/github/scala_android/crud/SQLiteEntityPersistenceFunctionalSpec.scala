@@ -55,7 +55,7 @@ class SQLiteEntityPersistenceFunctionalSpec extends EasyMockSugar with ShouldMat
     val mockContext = mock[Context]
     val persistence = new SQLiteEntityPersistence(TestEntityType, mockContext)
     whenExecuting(mockContext) {
-      val writable = persistence.newWritable
+      val writable = TestEntityType.newWritable
       TestEntityType.copyFields(Unit, writable)
       val id = persistence.save(None, writable)
       val cursors = List(

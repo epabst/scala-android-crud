@@ -65,6 +65,12 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
     fields.foreach(_.copy(from, to))
   }
 
+  /**
+   * Instantiates a data buffer which can be saved by EntityPersistence.
+   * The fields must support copying into this object.
+   */
+  def newWritable: W
+
   def openEntityPersistence(context: Context): EntityPersistence[Q,L,R,W]
 
   def withEntityPersistence[T](context: Context, f: EntityPersistence[Q,L,R,W] => T): T = {

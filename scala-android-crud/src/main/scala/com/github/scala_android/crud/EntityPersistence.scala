@@ -24,8 +24,6 @@ trait EntityPersistence[Q,L,R,W] extends PlatformTypes {
   /** Find an entity by ID. */
   def find(id: ID): Option[R]
 
-  def newWritable: W
-
   /** Save a created or updated entity. */
   def save(id: Option[ID], writable: W): ID
 

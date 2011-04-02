@@ -78,8 +78,6 @@ class SQLiteEntityPersistence(entityType: SQLiteCrudEntityType, context: Context
     }
   }
 
-  def newWritable = new ContentValues
-
   def save(idOption: Option[ID], contentValues: ContentValues): ID = {
     idOption match {
       case None => {

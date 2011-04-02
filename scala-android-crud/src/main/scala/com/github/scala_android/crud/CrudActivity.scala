@@ -32,8 +32,8 @@ class CrudActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val entityTy
   }
 
   override def onPause() {
+    val writable = entityType.newWritable
     withPersistence { persistence =>
-      val writable = persistence.newWritable
       entityType.copyFields(getIntent, writable)
       entityType.copyFields(this, writable)
       persistence.save(id, writable)

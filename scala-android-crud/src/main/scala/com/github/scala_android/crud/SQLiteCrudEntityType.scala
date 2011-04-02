@@ -13,6 +13,8 @@ import android.widget.{CursorAdapter, ListAdapter}
  */
 
 trait SQLiteCrudEntityType extends CrudEntityType[SQLiteCriteria,Cursor,Cursor,ContentValues] {
+  def newWritable = new ContentValues
+
   def openEntityPersistence(context: Context) = new SQLiteEntityPersistence(this, context)
 
   def refreshAfterSave(listAdapter: ListAdapter) {
