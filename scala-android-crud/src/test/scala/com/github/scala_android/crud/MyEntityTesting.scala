@@ -32,7 +32,7 @@ trait MyEntityTesting extends EasyMockSugar {
 
     def newWritable = Map[String,Any]()
 
-    def openEntityPersistence(context: Context) = persistence
+    def openEntityPersistence(crudContext: CrudContext) = persistence
 
     def refreshAfterSave(listAdapter: ListAdapter) {
       refreshCount += 1

@@ -84,6 +84,7 @@ trait UIAction[T] extends PlatformTypes {
 
 class ActivityUIActionFactory(currentActivity: BaseCrudActivity[_,_,_,_], val application: CrudApplication) extends UIActionFactory {
   private def thisFactory = this
+  val crudContext = currentActivity.crudContext
   def currentIntent = currentActivity.getIntent
 
   /**
@@ -133,7 +134,7 @@ class ActivityUIActionFactory(currentActivity: BaseCrudActivity[_,_,_,_], val ap
   }
 
   def withEntityPersistence[T, Q <: AnyRef, L <: AnyRef, R <: AnyRef, W <: AnyRef](entityType: CrudEntityType[Q, L, R, W], f: (EntityPersistence[Q, L, R, W]) => T) =
-    entityType.withEntityPersistence(currentActivity, f)
+    entityType.withEntityPersistence(crudContext, f)
 }
 
 object ActivityUIActionFactory extends PlatformTypes {

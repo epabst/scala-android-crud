@@ -1,13 +1,13 @@
 package com.github.scala_android.crud
 
-import android.content.{ContentValues, Context}
+import android.content.ContentValues
 import android.widget.ListAdapter
 import res.R
 
 trait GeneratedCrudType[T <: AnyRef,Q <: AnyRef] extends CrudEntityType[Q,List[T],T,ContentValues] {
   def newWritable = new ContentValues
 
-  def openEntityPersistence(context: Context): ListEntityPersistence[T,Q]
+  def openEntityPersistence(crudContext: CrudContext): ListEntityPersistence[T,Q]
 
   def refreshAfterSave(listAdapter: ListAdapter) {}
 

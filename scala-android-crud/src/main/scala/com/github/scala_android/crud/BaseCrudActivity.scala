@@ -15,12 +15,12 @@ trait BaseCrudActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends 
 
   def application: CrudApplication
 
-  protected val activity: Activity = this
+  val crudContext = new CrudContext(this)
 
   override lazy val logTag = classOf[BaseCrudActivity[Q,L,R,W]].getName + "(" + entityType.entityName + ")"
 
   //available to be overridden for testing
-  def openEntityPersistence(): EntityPersistence[Q,L,R,W] = entityType.openEntityPersistence(activity)
+  def openEntityPersistence(): EntityPersistence[Q,L,R,W] = entityType.openEntityPersistence(crudContext)
 
   def withPersistence[T](f: EntityPersistence[Q,L,R,W] => T): T = {
     val persistence = openEntityPersistence()

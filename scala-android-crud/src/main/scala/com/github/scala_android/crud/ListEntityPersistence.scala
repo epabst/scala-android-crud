@@ -14,6 +14,7 @@ import android.content.{Intent, Context, ContentValues}
 
 abstract class ListEntityPersistence[T <: AnyRef,Q <: AnyRef](entityType: CrudEntityType[Q,List[T],T,ContentValues],
                                                               activity: Activity) extends EntityPersistence[Q,List[T],T,ContentValues] {
+  //todo replace context here
   protected def getIntent(context: Context): Intent = context match {
     case activity: Activity => activity.getIntent
   }

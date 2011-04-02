@@ -1,6 +1,5 @@
 package com.github.scala_android.crud
 
-import android.content.Context
 import android.widget.ListAdapter
 import com.github.triangle.{PartialFieldAccess, CopyableField}
 
@@ -71,10 +70,10 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
    */
   def newWritable: W
 
-  def openEntityPersistence(context: Context): EntityPersistence[Q,L,R,W]
+  def openEntityPersistence(crudContext: CrudContext): EntityPersistence[Q,L,R,W]
 
-  def withEntityPersistence[T](context: Context, f: EntityPersistence[Q,L,R,W] => T): T = {
-    val persistence = openEntityPersistence(context)
+  def withEntityPersistence[T](crudContext: CrudContext, f: EntityPersistence[Q,L,R,W] => T): T = {
+    val persistence = openEntityPersistence(crudContext)
     try f(persistence)
     finally persistence.close
   }
