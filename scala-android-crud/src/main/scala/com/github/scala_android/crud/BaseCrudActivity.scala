@@ -10,14 +10,14 @@ import monitor.Logging
  * Time: 7:01 PM
  */
 
-trait CrudContext[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Activity with PlatformTypes with Logging {
+trait BaseCrudActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Activity with PlatformTypes with Logging {
   def entityType: CrudEntityType[Q,L,R,W]
 
   def application: CrudApplication
 
   protected val activity: Activity = this
 
-  override lazy val logTag = classOf[CrudContext[Q,L,R,W]].getName + "(" + entityType.entityName + ")"
+  override lazy val logTag = classOf[BaseCrudActivity[Q,L,R,W]].getName + "(" + entityType.entityName + ")"
 
   //available to be overridden for testing
   def openEntityPersistence(): EntityPersistence[Q,L,R,W] = entityType.openEntityPersistence(activity)

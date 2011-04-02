@@ -19,7 +19,7 @@ import android.widget.AdapterView.AdapterContextMenuInfo
  * @param W the type to write to (e.g. ContentValues)
  */
 class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val entityType: CrudEntityType[Q,L,R,W], val application: CrudApplication)
-  extends ListActivity with CrudContext[Q,L,R,W] {
+  extends ListActivity with BaseCrudActivity[Q,L,R,W] {
 
   val ADD_DIALOG_ID = 100
   val EDIT_DIALOG_ID = 101

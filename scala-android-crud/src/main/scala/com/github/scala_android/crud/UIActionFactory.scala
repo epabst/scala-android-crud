@@ -82,7 +82,7 @@ trait UIAction[T] extends PlatformTypes {
   def apply(value: T)
 }
 
-class ActivityUIActionFactory(currentActivity: CrudContext[_,_,_,_], val application: CrudApplication) extends UIActionFactory {
+class ActivityUIActionFactory(currentActivity: BaseCrudActivity[_,_,_,_], val application: CrudApplication) extends UIActionFactory {
   private def thisFactory = this
   def currentIntent = currentActivity.getIntent
 
