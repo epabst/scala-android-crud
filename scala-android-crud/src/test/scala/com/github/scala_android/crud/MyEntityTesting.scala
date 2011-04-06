@@ -20,7 +20,8 @@ import res.R
  */
 
 trait MyEntityTesting extends EasyMockSugar {
-  class MyEntityType(persistence: EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]) extends CrudEntityType[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]] {
+  class MyEntityType(persistence: EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]], listAdapter: ListAdapter)
+          extends CrudEntityType[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]] {
     val entityName = "MyMap"
     var refreshCount = 0
 
@@ -34,7 +35,10 @@ trait MyEntityTesting extends EasyMockSugar {
 
     def openEntityPersistence(crudContext: CrudContext) = persistence
 
-    def refreshAfterSave(listAdapter: ListAdapter) {
+    def createListAdapter(persistence: EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]],
+                          crudContext: CrudContext) = listAdapter
+
+    def refreshAfterSave(crudContext: CrudContext) {
       refreshCount += 1
     }
 

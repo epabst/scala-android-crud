@@ -1,8 +1,6 @@
 package com.github.scala_android.crud
 
 import android.app.Activity
-import android.widget.BaseAdapter
-import android.view.{ViewGroup, View}
 import android.content.ContentValues
 
 /**
@@ -30,18 +28,4 @@ abstract class ListEntityPersistence[T <: AnyRef,Q <: AnyRef](entityType: CrudEn
   def delete(ids: List[ID]) = throw new UnsupportedOperationException("delete not supported")
 
   def close() {}
-
-  def createListAdapter(activity: Activity) = new BaseAdapter() {
-    def getCount: Int = list.size
-
-    def getItemId(position: Int) = getId(list(position))
-
-    def getItem(position: Int) = list(position)
-
-    def getView(position: Int, convertView: View, parent: ViewGroup): View = {
-      val view = if (convertView == null) activity.getLayoutInflater.inflate(entityType.rowLayout, parent, false) else convertView
-      entityType.copyFields(list(position), view)
-      view
-    }
-  }
 }

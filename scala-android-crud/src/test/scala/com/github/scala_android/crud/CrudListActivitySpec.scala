@@ -1,7 +1,7 @@
 package com.github.scala_android.crud
 
 import _root_.android.content.Intent
-import _root_.android.widget.CursorAdapter
+import android.widget.ListAdapter
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.scalatest.mock.EasyMockSugar
@@ -22,15 +22,12 @@ class CrudListActivitySpec extends EasyMockSugar with ShouldMatchers with MyEnti
   @Test
   def shouldAllowAdding {
     val persistence = mock[EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
-    val entityType = new MyEntityType(persistence)
     val application = mock[CrudApplication]
-    val activity = new CrudListActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityType, application)
     val entity = Map[String,Any]("age" -> 25)
-    val listAdapter = mock[CursorAdapter]
-    expecting {
-      call(persistence.createListAdapter(activity)).andReturn(listAdapter)
-    }
+    val listAdapter = mock[ListAdapter]
     whenExecuting(persistence, listAdapter, application) {
+      val entityType = new MyEntityType(persistence, listAdapter)
+      val activity = new CrudListActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityType, application)
       activity.setIntent(new Intent(Intent.ACTION_MAIN))
       activity.onCreate(null)
       val menu = new TestMenu(activity)
@@ -47,10 +44,9 @@ class CrudListActivitySpec extends EasyMockSugar with ShouldMatchers with MyEnti
   @Test
   def shouldHaveCorrectContextMenu {
     val persistence = mock[EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
-    val entityType = new MyEntityType(persistence)
     val application = mock[CrudApplication]
-    val activity = new CrudListActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityType, application)
     val contextMenu = mock[ContextMenu]
+    val listAdapter = mock[ListAdapter]
     val menuItem = mock[MenuItem]
     val ignoredView: View = null
     val ignoredMenuInfo: ContextMenu.ContextMenuInfo = null
@@ -58,7 +54,9 @@ class CrudListActivitySpec extends EasyMockSugar with ShouldMatchers with MyEnti
       call(application.allEntities).andReturn(Nil).anyTimes
       call(contextMenu.add(0, 0, 0, res.R.string.delete_item)).andReturn(menuItem)
     }
-    whenExecuting(contextMenu, menuItem, application, persistence) {
+    whenExecuting(contextMenu, menuItem, application, persistence, listAdapter) {
+      val entityType = new MyEntityType(persistence, listAdapter)
+      val activity = new CrudListActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityType, application)
       activity.onCreateContextMenu(contextMenu, ignoredView, ignoredMenuInfo)
     }
   }
@@ -66,15 +64,16 @@ class CrudListActivitySpec extends EasyMockSugar with ShouldMatchers with MyEnti
   @Test
   def shouldHandleNoEntityOptions {
     val persistence = mock[EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
-    val entityType = new MyEntityType(persistence) {
-      override def getEntityActions(actionFactory: UIActionFactory) = Nil
-    }
     val application = mock[CrudApplication]
-    val activity = new CrudListActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityType, application)
     val contextMenu = mock[ContextMenu]
+    val listAdapter = mock[ListAdapter]
     val ignoredView: View = null
     val ignoredMenuInfo: ContextMenu.ContextMenuInfo = null
-    whenExecuting(contextMenu, persistence, application) {
+    whenExecuting(contextMenu, persistence, application, listAdapter) {
+      val entityType = new MyEntityType(persistence, listAdapter) {
+        override def getEntityActions(actionFactory: UIActionFactory) = Nil
+      }
+      val activity = new CrudListActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityType, application)
       //shouldn't do anything
       activity.onCreateContextMenu(contextMenu, ignoredView, ignoredMenuInfo)
     }
@@ -83,27 +82,24 @@ class CrudListActivitySpec extends EasyMockSugar with ShouldMatchers with MyEnti
   @Test
   def shouldRefreshOnResume {
     val persistence = mock[EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
-    val entityType = new MyEntityType(persistence)
     var refreshCount = 0
     val application = mock[CrudApplication]
-    class MyCrudListActivity extends CrudListActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityType, application) {
-      //make it public for testing
-      override def onPause() {
-        super.onPause
-      }
-
-      //make it public for testing
-      override def onResume() {
-        super.onResume
-      }
-    }
-    val activity = new MyCrudListActivity
     val entity = Map[String,Any]("age" -> 25)
-    val listAdapter = mock[CursorAdapter]
-    expecting {
-      call(persistence.createListAdapter(activity)).andReturn(listAdapter)
-    }
+    val listAdapter = mock[ListAdapter]
     whenExecuting(persistence, listAdapter, application) {
+      val entityType = new MyEntityType(persistence, listAdapter)
+      class MyCrudListActivity extends CrudListActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityType, application) {
+        //make it public for testing
+        override def onPause() {
+          super.onPause
+        }
+
+        //make it public for testing
+        override def onResume() {
+          super.onResume
+        }
+      }
+      val activity = new MyCrudListActivity
       activity.setIntent(new Intent(Intent.ACTION_MAIN))
       activity.onCreate(null)
       activity.onPause()
@@ -117,9 +113,10 @@ class CrudListActivitySpec extends EasyMockSugar with ShouldMatchers with MyEnti
   @Test
   def shouldIgnoreClicksOnHeader {
     val persistence = mock[EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
-    val entityType = new MyEntityType(persistence)
     val application = mock[CrudApplication]
+    val listAdapter = mock[ListAdapter]
     whenExecuting(persistence, application) {
+      val entityType = new MyEntityType(persistence, listAdapter)
       val activity = new CrudListActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityType, application)
       activity.onListItemClick(null, null, -1, -1)
     }

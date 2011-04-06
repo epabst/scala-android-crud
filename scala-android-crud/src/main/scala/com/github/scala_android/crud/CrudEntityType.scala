@@ -21,6 +21,8 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
 
   final def hasDisplayPage = displayLayout.isDefined
 
+  private val persistenceVarForListAdapter = new ContextVar[EntityPersistence[Q,L,R,W]]
+
   /**
    * Gets the actions that a user can perform from a list of the entities.
    * May be overridden to modify the list of actions.
@@ -78,6 +80,20 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
     finally persistence.close
   }
 
+  final def createListAdapter(crudContext: CrudContext): ListAdapter = {
+    val persistence = openEntityPersistence(crudContext)
+    persistenceVarForListAdapter.set(crudContext, persistence)
+    createListAdapter(persistence, crudContext)
+  }
+
+  def createListAdapter(persistence: EntityPersistence[Q,L,R,W], crudContext: CrudContext): ListAdapter
+
+  def refreshAfterSave(crudContext: CrudContext)
+
+  def destroyContextVars(crudContext: CrudContext) {
+    persistenceVarForListAdapter.clear(crudContext).map(_.close())
+  }
+
   private[crud] def undoableDelete(id: ID, uiActionFactory: UIActionFactory)(persistence: EntityPersistence[Q,L,R,W]) {
     persistence.find(id).map { readable =>
       val writable = newWritable
@@ -102,8 +118,6 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
   def startDelete(id: ID, uiActionFactory: UIActionFactory) {
     uiActionFactory.withEntityPersistence(this, undoableDelete(id, uiActionFactory))
   }
-
-  def refreshAfterSave(listAdapter: ListAdapter)
 }
 
 trait CrudEntityTypeRef extends PlatformTypes {

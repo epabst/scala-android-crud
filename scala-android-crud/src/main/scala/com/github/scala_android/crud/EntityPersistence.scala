@@ -1,8 +1,5 @@
 package com.github.scala_android.crud
 
-import android.widget.ListAdapter
-import android.app.Activity
-
 /**
  * Persistence support for an entity.
  * @author Eric Pabst (epabst@gmail.com)
@@ -18,8 +15,6 @@ trait EntityPersistence[Q,L,R,W] extends PlatformTypes {
   def newCriteria: Q
 
   def findAll(query: Q): L
-
-  def createListAdapter(activity: Activity): ListAdapter
 
   /** Find an entity by ID. */
   def find(id: ID): Option[R]

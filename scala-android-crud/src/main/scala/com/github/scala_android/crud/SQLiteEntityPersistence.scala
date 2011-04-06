@@ -1,12 +1,9 @@
 package com.github.scala_android.crud
 
-import _root_.android.app.Activity
-import _root_.android.widget.ResourceCursorAdapter
 import android.provider.BaseColumns
-import android.view.View
 import android.database.sqlite.SQLiteDatabase
 import android.database.Cursor
-import android.content.{Context, ContentValues}
+import android.content.ContentValues
 import com.github.scala_android.crud.monitor.Logging
 import scala.None
 import collection.mutable.{SynchronizedQueue, ListBuffer}
@@ -52,18 +49,6 @@ class SQLiteEntityPersistence(entityType: SQLiteCrudEntityType, crudContext: Cru
     //consider treating this as an Iterator instead of a List, and closing the cursor at the end of the iterator's loop
     cursor.close();
     results.result
-  }
-
-  def createListAdapter(activity: Activity): ResourceCursorAdapter = {
-    val criteria = newCriteria
-    entityType.copyFields(activity.getIntent, criteria)
-    val cursor = findAll(criteria)
-    activity.startManagingCursor(cursor)
-    new ResourceCursorAdapter(activity, entityType.rowLayout, cursor) {
-      def bindView(view: View, context: Context, cursor: Cursor) {
-        entityType.copyFields(cursor, view)
-      }
-    }
   }
 
   def find(id: ID): Option[Cursor] = {

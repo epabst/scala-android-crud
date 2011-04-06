@@ -9,6 +9,7 @@ import com.github.scala_android.crud.CursorFieldAccess._
 import org.easymock.EasyMock
 import EasyMock.notNull
 import com.github.triangle.Field
+import android.widget.ListAdapter
 
 /**
  * A behavior specification for {@link CrudEntityType}.
@@ -22,12 +23,15 @@ class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
 
   it("should derive parent entities from foreignKey fields") {
     val persistence = mock[EntityPersistence[AnyRef,List[mutable.Map[String,Any]],mutable.Map[String,Any],mutable.Map[String,Any]]]
-    val entityType1 = new MyEntityType(persistence)
-    val entityType2 = new MyEntityType(persistence)
-    val entityType3 = new MyEntityType(persistence) {
-      override val fields = Field(foreignKey(entityType1)) :: Field(foreignKey(entityType2)) :: super.fields
+    val listAdapter = mock[ListAdapter]
+    whenExecuting(persistence, listAdapter) {
+      val entityType1 = new MyEntityType(persistence, listAdapter)
+      val entityType2 = new MyEntityType(persistence, listAdapter)
+      val entityType3 = new MyEntityType(persistence, listAdapter) {
+        override val fields = Field(foreignKey(entityType1)) :: Field(foreignKey(entityType2)) :: super.fields
+      }
+      entityType3.parentEntities should be (List(entityType1, entityType2))
     }
-    entityType3.parentEntities should be (List(entityType1, entityType2))
   }
 
   val startCreateParent = namedMock[UIAction[Unit]]("startCreateParent")
@@ -46,8 +50,9 @@ class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
     val persistence = mock[EntityPersistence[AnyRef,List[mutable.Map[String,Any]],mutable.Map[String,Any],mutable.Map[String,Any]]]
     val actionFactory = mock[UIActionFactory]
     val application = mock[CrudApplication]
-    val parentEntity = new MyEntityType(persistence)
-    val childEntity = new MyEntityType(persistence) {
+    val listAdapter = mock[ListAdapter]
+    val parentEntity = new MyEntityType(persistence, listAdapter)
+    val childEntity = new MyEntityType(persistence, listAdapter) {
       override lazy val fields = Field(foreignKey(parentEntity)) :: super.fields
     }
     expecting {
@@ -70,13 +75,14 @@ class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
     val persistence = mock[EntityPersistence[AnyRef,List[mutable.Map[String,Any]],mutable.Map[String,Any],mutable.Map[String,Any]]]
     val actionFactory = mock[UIActionFactory]
     val application = mock[CrudApplication]
-    val parentEntity = new MyEntityType(persistence) {
+    val listAdapter = mock[ListAdapter]
+    val parentEntity = new MyEntityType(persistence, listAdapter) {
       override val displayLayout = Some(123)
     }
-    val childEntity = new MyEntityType(persistence) {
+    val childEntity = new MyEntityType(persistence, listAdapter) {
       override lazy val fields = Field(foreignKey(parentEntity)) :: super.fields
     }
-    val childEntity2 = new MyEntityType(persistence) {
+    val childEntity2 = new MyEntityType(persistence, listAdapter) {
       override lazy val fields = Field(foreignKey(parentEntity)) :: super.fields
     }
     expecting {
@@ -99,11 +105,12 @@ class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
     val persistence = mock[EntityPersistence[AnyRef,List[mutable.Map[String,Any]],mutable.Map[String,Any],mutable.Map[String,Any]]]
     val actionFactory = mock[UIActionFactory]
     val application = mock[CrudApplication]
-    var parentEntity = new MyEntityType(persistence)
-    val childEntity = new MyEntityType(persistence) {
+    val listAdapter = mock[ListAdapter]
+    var parentEntity = new MyEntityType(persistence, listAdapter)
+    val childEntity = new MyEntityType(persistence, listAdapter) {
       override lazy val fields = Field(foreignKey(parentEntity)) :: super.fields
     }
-    val childEntity2 = new MyEntityType(persistence) {
+    val childEntity2 = new MyEntityType(persistence, listAdapter) {
       override lazy val fields = Field(foreignKey(parentEntity)) :: super.fields
     }
     expecting {
@@ -129,7 +136,8 @@ class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
     val persistence = mock[Persistence]
     val actionFactory = mock[UIActionFactory]
     val application = mock[CrudApplication]
-    var entity = new MyEntityType(persistence)
+    val listAdapter = mock[ListAdapter]
+    var entity = new MyEntityType(persistence, listAdapter)
     val readable = mutable.Map[String,Any]()
     val id = 345L
     expecting {
@@ -155,7 +163,8 @@ class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
     val persistence = mock[Persistence]
     val actionFactory = mock[UIActionFactory]
     val application = mock[CrudApplication]
-    var entity = new MyEntityType(persistence)
+    val listAdapter = mock[ListAdapter]
+    var entity = new MyEntityType(persistence, listAdapter)
     val readable = mutable.Map[String,Any]("name" -> "George")
     val id = 345L
     val id2 = 444L
