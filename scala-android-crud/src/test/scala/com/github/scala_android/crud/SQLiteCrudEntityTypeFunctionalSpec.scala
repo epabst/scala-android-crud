@@ -19,7 +19,7 @@ import android.content.Context
  * Time: 6:22 PM
  */
 @RunWith(classOf[RobolectricTestRunner])
-class SQLiteEntityPersistenceFunctionalSpec extends EasyMockSugar with ShouldMatchers {
+class SQLiteCrudEntityTypeFunctionalSpec extends EasyMockSugar with ShouldMatchers {
   object TestEntityType extends SQLiteCrudEntityType {
     def entityName = "Person"
     val fields = List(Field[Int](persisted("age"), default(21)))
