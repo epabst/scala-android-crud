@@ -35,12 +35,13 @@ class CrudContextSpec extends Spec with ShouldMatchers {
       myVar.set(crudContext, "hello")
       myVar2.set(crudContext, "howdy")
 
-      myVar.clear(crudContext2)
+      myVar.clear(crudContext2) should be (None)
       myVar.get(crudContext) should be (Some("hello"))
 
-      myVar.clear(crudContext)
+      myVar.clear(crudContext) should be (Some("hello"))
       myVar.get(crudContext) should be (None)
-      myVar2.get(crudContext) should be (Some("howdy"))
+
+      myVar2.clear(crudContext) should be (Some("howdy"))
     }
   }
 }

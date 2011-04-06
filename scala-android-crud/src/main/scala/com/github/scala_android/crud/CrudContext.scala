@@ -45,7 +45,7 @@ class ContextVar[T] {
     crudContext.variables.put(this, value.asInstanceOf[AnyVal])
   }
 
-  def clear(crudContext: CrudContext) {
-    crudContext.variables.remove(this)
+  def clear(crudContext: CrudContext): Option[T] = {
+    crudContext.variables.remove(this).map(_.asInstanceOf[T])
   }
 }
