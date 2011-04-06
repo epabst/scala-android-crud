@@ -1,16 +1,21 @@
 package com.github.scala_android.crud
 
 import android.provider.BaseColumns
+import monitor.Logging
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.scalatest.mock.EasyMockSugar
+import org.easymock.EasyMock.isA
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.scalatest.matchers.ShouldMatchers
 import com.github.triangle._
 import CursorFieldAccess._
 import Field._
 import res.R
-import android.content.Context
+import android.app.Activity
+import android.net.Uri
+import android.content.{Intent, Context}
+import android.database.{Cursor, DataSetObserver}
 
 /**
  * A test for {@link CrudListActivity}.
@@ -19,7 +24,18 @@ import android.content.Context
  * Time: 6:22 PM
  */
 @RunWith(classOf[RobolectricTestRunner])
-class SQLiteCrudEntityTypeFunctionalSpec extends EasyMockSugar with ShouldMatchers {
+class SQLiteCrudEntityTypeFunctionalSpec extends EasyMockSugar with ShouldMatchers with Logging {
+  val runningOnRealAndroid: Boolean = try {
+    debug("Seeing if running on Real Android...")
+    Class.forName("com.xtremelabs.robolectric.RobolectricTestRunner")
+    warn("NOT running on Real Android.")
+    false
+  } catch {
+    case _ => {
+      info("Running on Real Android.")
+      true
+    }
+  }
   object TestEntityType extends SQLiteCrudEntityType {
     def entityName = "Person"
     val fields = List(Field[Int](persisted("age"), default(21)))
@@ -74,6 +90,39 @@ class SQLiteCrudEntityTypeFunctionalSpec extends EasyMockSugar with ShouldMatche
       for (cursor <- cursors) {
         cursor should be ('closed)
       }
+    }
+  }
+
+  @Test
+  def shouldRefreshCursorWhenDeletingAndSaving {
+    val activity = mock[Activity]
+    val observer = mock[DataSetObserver]
+    expecting {
+      call(activity.getIntent).andReturn(new Intent("foo", Uri.EMPTY)).anyTimes
+      call(activity.startManagingCursor(isA(classOf[Cursor]))).asStub
+      if (runningOnRealAndroid) call(observer.onChanged())
+    }
+    whenExecuting(activity, observer) {
+      val crudContext = new CrudContext(activity)
+      val listAdapter = TestEntityType.createListAdapter(crudContext)
+      listAdapter.getCount should be (0)
+
+      val writable = TestEntityType.newWritable
+      TestEntityType.copyFields(Unit, writable)
+      val id = TestEntityType.withEntityPersistence(crudContext, _.save(None, writable))
+      //it should have refreshed the listAdapter
+      listAdapter.getCount should be (if (runningOnRealAndroid) 1 else 0)
+
+      TestEntityType.copyFields(Map("age" -> 50), writable)
+      listAdapter.registerDataSetObserver(observer)
+      TestEntityType.withEntityPersistence(crudContext, _.save(Some(id), writable))
+      //it should have refreshed the listAdapter (notified the observer)
+      listAdapter.unregisterDataSetObserver(observer)
+      listAdapter.getCount should be (if (runningOnRealAndroid) 1 else 0)
+
+      TestEntityType.withEntityPersistence(crudContext, _.delete(List(id)))
+      //it should have refreshed the listAdapter
+      listAdapter.getCount should be (0)
     }
   }
 }

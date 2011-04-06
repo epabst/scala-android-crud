@@ -99,7 +99,6 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
       val writable = newWritable
       copyFields(readable, writable)
       persistence.delete(List(id))
-      //todo make the requery happen automatically by SQLitePersistence for any ListAdapters it created in the BaseCrudActivity.
       uiActionFactory.addUndoableDelete(this, new Undoable[ID] {
         def undo(): ID = {
           persistence.save(None, writable)
