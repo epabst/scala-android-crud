@@ -41,9 +41,13 @@ class SQLiteEntityPersistenceFunctionalSpec extends EasyMockSugar with ShouldMat
 
   @Test
   def shouldUseCorrectColumnNamesForFindAll {
-    val mockContext = mock[Context]
-    val persistence = new SQLiteEntityPersistence(TestEntityType, mockContext)
-    whenExecuting(mockContext) {
+    val context = mock[Context]
+    val crudContext = mock[CrudContext]
+    expecting {
+      call(crudContext.context).andReturn(context).anyTimes
+    }
+    whenExecuting(crudContext) {
+      val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext)
       val result = persistence.findAll(persistence.newCriteria)
       result.getColumnIndex(BaseColumns._ID) should be (0)
       result.getColumnIndex("age") should be (1)
@@ -52,9 +56,13 @@ class SQLiteEntityPersistenceFunctionalSpec extends EasyMockSugar with ShouldMat
 
   @Test
   def shouldCloseCursorsWhenClosing {
-    val mockContext = mock[Context]
-    val persistence = new SQLiteEntityPersistence(TestEntityType, mockContext)
-    whenExecuting(mockContext) {
+    val context = mock[Context]
+    val crudContext = mock[CrudContext]
+    expecting {
+      call(crudContext.context).andReturn(context).anyTimes
+    }
+    whenExecuting(crudContext) {
+      val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext)
       val writable = TestEntityType.newWritable
       TestEntityType.copyFields(Unit, writable)
       val id = persistence.save(None, writable)

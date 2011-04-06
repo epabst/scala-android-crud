@@ -15,7 +15,7 @@ import android.widget.{CursorAdapter, ListAdapter}
 trait SQLiteCrudEntityType extends CrudEntityType[SQLiteCriteria,Cursor,Cursor,ContentValues] {
   def newWritable = new ContentValues
 
-  def openEntityPersistence(crudContext: CrudContext) = new SQLiteEntityPersistence(this, crudContext.context)
+  def openEntityPersistence(crudContext: CrudContext) = new SQLiteEntityPersistence(this, crudContext)
 
   def refreshAfterSave(listAdapter: ListAdapter) {
     listAdapter.asInstanceOf[CursorAdapter].getCursor.requery

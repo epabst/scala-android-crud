@@ -17,10 +17,10 @@ import collection.mutable.{SynchronizedQueue, ListBuffer}
  * Date: 2/3/11
  * Time: 6:17 PM
  */
-class SQLiteEntityPersistence(entityType: SQLiteCrudEntityType, context: Context)
+class SQLiteEntityPersistence(entityType: SQLiteCrudEntityType, crudContext: CrudContext)
   extends EntityPersistence[SQLiteCriteria,Cursor,Cursor,ContentValues] with Logging {
 
-  lazy val databaseSetup = entityType.getDatabaseSetup(context)
+  lazy val databaseSetup = entityType.getDatabaseSetup(crudContext.context)
   lazy val database: SQLiteDatabase = databaseSetup.getWritableDatabase
   private var cursors = new SynchronizedQueue[Cursor]
 
