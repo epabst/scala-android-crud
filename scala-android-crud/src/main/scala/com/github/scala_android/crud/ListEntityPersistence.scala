@@ -3,7 +3,7 @@ package com.github.scala_android.crud
 import android.app.Activity
 import android.widget.BaseAdapter
 import android.view.{ViewGroup, View}
-import android.content.{Intent, Context, ContentValues}
+import android.content.ContentValues
 
 /**
  * EntityPersistence for a simple generated List.
@@ -14,11 +14,6 @@ import android.content.{Intent, Context, ContentValues}
 
 abstract class ListEntityPersistence[T <: AnyRef,Q <: AnyRef](entityType: CrudEntityType[Q,List[T],T,ContentValues],
                                                               activity: Activity) extends EntityPersistence[Q,List[T],T,ContentValues] {
-  //todo replace context here
-  protected def getIntent(context: Context): Intent = context match {
-    case activity: Activity => activity.getIntent
-  }
-
   lazy val list = {
     val criteria = newCriteria
     entityType.copyFields(activity.getIntent, criteria)

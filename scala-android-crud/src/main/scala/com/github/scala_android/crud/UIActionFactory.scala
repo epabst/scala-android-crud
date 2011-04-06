@@ -84,7 +84,7 @@ trait UIAction[T] extends PlatformTypes {
 
 class ActivityUIActionFactory(currentActivity: BaseCrudActivity[_,_,_,_], val application: CrudApplication) extends UIActionFactory {
   private def thisFactory = this
-  val crudContext = currentActivity.crudContext
+  lazy val crudContext = currentActivity.crudContext
   def currentIntent = currentActivity.getIntent
 
   /**
@@ -111,16 +111,16 @@ class ActivityUIActionFactory(currentActivity: BaseCrudActivity[_,_,_,_], val ap
 
   def startCreate(entityType: CrudEntityTypeRef) =
     toAction(android.R.drawable.ic_menu_add, entityType.addItemString, entityType, _ =>
-      getCreateIntent(entityType, currentIntent.getData, currentActivity))
+      getCreateIntent(entityType, currentIntent.getData, crudContext))
 
   def displayList(entityType: CrudEntityTypeRef) =
-    toAction[Option[EntityUriSegment]](None, entityType.listItemsString, entityType, value => getDisplayListIntent(entityType, currentIntent.getData, value, currentActivity))
+    toAction[Option[EntityUriSegment]](None, entityType.listItemsString, entityType, value => getDisplayListIntent(entityType, currentIntent.getData, value, crudContext))
 
   def display(entityType: CrudEntityTypeRef) =
-    toAction[ID](None, None, entityType, id => getDisplayIntent(entityType, id, currentIntent.getData, currentActivity))
+    toAction[ID](None, None, entityType, id => getDisplayIntent(entityType, id, currentIntent.getData, crudContext))
 
   def startUpdate(entityType: CrudEntityTypeRef) =
-    toAction[ID](android.R.drawable.ic_menu_edit, entityType.editItemString, entityType, id => getUpdateIntent(entityType, id, currentIntent.getData, currentActivity))
+    toAction[ID](android.R.drawable.ic_menu_edit, entityType.editItemString, entityType, id => getUpdateIntent(entityType, id, currentIntent.getData, crudContext))
 
   def startDelete(entityTypeToDelete: CrudEntityType[_,_,_,_]) =
     new CrudUIAction[ID](android.R.drawable.ic_menu_delete, entityTypeToDelete.deleteItemString, entityTypeToDelete) {
@@ -144,29 +144,29 @@ object ActivityUIActionFactory extends PlatformTypes {
   val UpdateActionString = Intent.ACTION_EDIT
   val DeleteActionString = Intent.ACTION_DELETE
 
-  def getCreateIntent(entityType: CrudEntityTypeRef, baseUri: Uri, context: Context): Intent =
-    newIntent(CreateActionString, entityType.activityClass, entityType.entityName, detail = Nil, baseUri, context)
+  def getCreateIntent(entityType: CrudEntityTypeRef, baseUri: Uri, crudContext: CrudContext): Intent =
+    newIntent(CreateActionString, entityType.activityClass, entityType.entityName, detail = Nil, baseUri, crudContext)
 
   /**
    * Gets the intent for displaying a list of the entityType.
    * @param uriContext an optional EntityUriSegment to specify in the baseUri to provide any necessary context
    */
-  def getDisplayListIntent(entityType: CrudEntityTypeRef, baseUri: Uri, uriContext: Option[EntityUriSegment], context: Context): Intent =
-    getDisplayListIntent(entityType, uriContext.map(_.specifyInUri(baseUri)).getOrElse(baseUri), context)
+  def getDisplayListIntent(entityType: CrudEntityTypeRef, baseUri: Uri, uriContext: Option[EntityUriSegment], crudContext: CrudContext): Intent =
+    getDisplayListIntent(entityType, uriContext.map(_.specifyInUri(baseUri)).getOrElse(baseUri), crudContext)
 
-  def getDisplayListIntent(entityType: CrudEntityTypeRef, baseUri: Uri, context: Context): Intent =
-    newIntent(ListActionString, entityType.listActivityClass, entityType.entityName, detail = Nil, baseUri, context)
+  def getDisplayListIntent(entityType: CrudEntityTypeRef, baseUri: Uri, crudContext: CrudContext): Intent =
+    newIntent(ListActionString, entityType.listActivityClass, entityType.entityName, detail = Nil, baseUri, crudContext)
 
-  def getDisplayIntent(entityType: CrudEntityTypeRef, id: ID, baseUri: Uri, context: Context): Intent =
-    newIntent(DisplayActionString, entityType.activityClass, entityType.entityName, detail = List(id.toString), baseUri, context)
+  def getDisplayIntent(entityType: CrudEntityTypeRef, id: ID, baseUri: Uri, crudContext: CrudContext): Intent =
+    newIntent(DisplayActionString, entityType.activityClass, entityType.entityName, detail = List(id.toString), baseUri, crudContext)
 
-  def getUpdateIntent(entityType: CrudEntityTypeRef, id: ID, baseUri: Uri, context: Context): Intent =
-    newIntent(UpdateActionString, entityType.activityClass, entityType.entityName, detail = List(id.toString), baseUri, context)
+  def getUpdateIntent(entityType: CrudEntityTypeRef, id: ID, baseUri: Uri, crudContext: CrudContext): Intent =
+    newIntent(UpdateActionString, entityType.activityClass, entityType.entityName, detail = List(id.toString), baseUri, crudContext)
 
   private def newIntent(action: String, activityClass: Class[_ <: Activity],
-                        entityName: String, detail: List[String], currentUri: Uri, context: Context) = {
+                        entityName: String, detail: List[String], currentUri: Uri, crudContext: CrudContext) = {
     val newUri = EntityUriSegment(entityName, detail:_*).specifyInUri(currentUri)
-    constructIntent(action, newUri, context, activityClass)
+    constructIntent(action, newUri, crudContext.context, activityClass)
   }
 
   def toUri(segments: String*): Uri = {

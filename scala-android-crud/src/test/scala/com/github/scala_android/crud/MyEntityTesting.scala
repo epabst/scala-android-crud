@@ -6,7 +6,7 @@ import com.github.triangle._
 import Field._
 import ViewFieldAccess._
 import CursorFieldAccess._
-import android.content.{Intent, Context}
+import android.content.Intent
 import org.easymock.IAnswer
 import org.easymock.classextension.EasyMock
 import android.widget.{ListAdapter, TextView}
