@@ -22,9 +22,11 @@ class CrudContext(val activity: Activity) {
  * <p />
  * Normally you create an object that extends this:
  * <code>object ProductName extends ContextVar[String]</code>
+ * But if you need uniqueness by instance, do this:
+ * <code>val productName = new ContextVar[String]</code>
  * It doesn't accumulate any data and is sharable across threads since all data is stored in each CrudContext.
  */
-trait ContextVar[T] {
+class ContextVar[T] {
   /**
    * Gets the value or None if not set.
    * @param crudContext the Context where the value is stored

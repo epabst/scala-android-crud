@@ -29,7 +29,7 @@ class CrudContextSpec extends Spec with ShouldMatchers {
 
     it("clear should clear the value for the same CrudContext") {
       object myVar extends ContextVar[String]
-      object myVar2 extends ContextVar[String]
+      val myVar2 = new ContextVar[String]
       val crudContext = new CrudContext(null)
       val crudContext2 = new CrudContext(null)
       myVar.set(crudContext, "hello")
