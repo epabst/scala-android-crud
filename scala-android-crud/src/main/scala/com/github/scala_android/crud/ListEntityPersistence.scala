@@ -1,6 +1,5 @@
 package com.github.scala_android.crud
 
-import android.app.Activity
 import android.content.ContentValues
 
 /**
@@ -10,17 +9,13 @@ import android.content.ContentValues
  * Time: 5:05 PM
  */
 
-abstract class ListEntityPersistence[T <: AnyRef,Q <: AnyRef](entityType: CrudEntityType[Q,List[T],T,ContentValues],
-                                                              activity: Activity) extends EntityPersistence[Q,List[T],T,ContentValues] {
-  lazy val list = {
-    val criteria = newCriteria
-    entityType.copyFields(activity.getIntent, criteria)
-    findAll(criteria)
-  }
-
+abstract class ListEntityPersistence[T <: AnyRef,Q <: AnyRef](entityType: CrudEntityType[Q,List[T],T,ContentValues])
+        extends EntityPersistence[Q,List[T],T,ContentValues] {
   def getId(entity: T): ID
 
-  def find(id: ID): Option[T] = list.find(entity => id == getId(entity))
+  def find(id: ID): Option[T] = {
+    findAll(newCriteria).find(entity => id == getId(entity))
+  }
 
   def save(id: Option[ID], contentValues: ContentValues) =
     throw new UnsupportedOperationException("write not suppoted")

@@ -13,7 +13,7 @@ trait GeneratedCrudType[T <: AnyRef,Q <: AnyRef] extends CrudEntityType[Q,List[T
 
   def createListAdapter(persistence: EntityPersistence[Q,List[T],T,ContentValues], crudContext: CrudContext, activity: Activity) = new BaseAdapter() {
     val listPersistence = persistence.asInstanceOf[ListEntityPersistence[T, Q]]
-    val list = listPersistence.list
+    val list = listPersistence.findAll(listPersistence.newCriteria)
 
     def getCount: Int = list.size
 
