@@ -11,6 +11,7 @@ import org.easymock.IAnswer
 import org.easymock.classextension.EasyMock
 import android.widget.{ListAdapter, TextView}
 import res.R
+import android.app.Activity
 
 /**
  * An object mother pattern for getting CrudEntityType instances.
@@ -36,7 +37,7 @@ trait MyEntityTesting extends EasyMockSugar {
     def openEntityPersistence(crudContext: CrudContext) = persistence
 
     def createListAdapter(persistence: EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]],
-                          crudContext: CrudContext) = listAdapter
+                          crudContext: CrudContext, activity: Activity) = listAdapter
 
     def refreshAfterSave(crudContext: CrudContext) {
       refreshCount += 1

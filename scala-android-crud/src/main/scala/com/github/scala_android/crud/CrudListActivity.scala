@@ -41,7 +41,7 @@ class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val enti
 		view.addHeaderView(getLayoutInflater().inflate(entityType.headerLayout, null));
     registerForContextMenu(getListView)
 
-    setListAdapter(entityType.createListAdapter(crudContext))
+    setListAdapter(entityType.createListAdapter(crudContext, this))
   }
 
 

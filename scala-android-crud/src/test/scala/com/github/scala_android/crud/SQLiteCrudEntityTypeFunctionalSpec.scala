@@ -104,7 +104,7 @@ class SQLiteCrudEntityTypeFunctionalSpec extends EasyMockSugar with ShouldMatche
     }
     whenExecuting(activity, observer) {
       val crudContext = new CrudContext(activity)
-      val listAdapter = TestEntityType.createListAdapter(crudContext)
+      val listAdapter = TestEntityType.createListAdapter(crudContext, activity)
       listAdapter.getCount should be (0)
 
       val writable = TestEntityType.newWritable

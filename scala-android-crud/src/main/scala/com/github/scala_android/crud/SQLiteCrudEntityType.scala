@@ -5,6 +5,7 @@ import android.database.Cursor
 import android.content.{ContentValues, Context}
 import android.widget.ResourceCursorAdapter
 import android.view.View
+import android.app.Activity
 
 /**
  * A CrudEntityType for SQLite.
@@ -33,13 +34,13 @@ trait SQLiteCrudEntityType extends CrudEntityType[SQLiteCriteria,Cursor,Cursor,C
 
   val cursorVarForListAdapter = new ContextVar[Cursor]
 
-  def createListAdapter(persistence: EntityPersistence[SQLiteCriteria,Cursor,Cursor,ContentValues], crudContext: CrudContext): ResourceCursorAdapter = {
+  def createListAdapter(persistence: EntityPersistence[SQLiteCriteria,Cursor,Cursor,ContentValues], crudContext: CrudContext, activity: Activity): ResourceCursorAdapter = {
     val criteria = persistence.newCriteria
-    copyFields(crudContext.activity.getIntent, criteria)
+    copyFields(activity.getIntent, criteria)
     val cursor = persistence.findAll(criteria)
     cursorVarForListAdapter.set(crudContext, cursor)
-    crudContext.activity.startManagingCursor(cursor)
-    new ResourceCursorAdapter(crudContext.context, rowLayout, cursor) {
+    activity.startManagingCursor(cursor)
+    new ResourceCursorAdapter(activity, rowLayout, cursor) {
       def bindView(view: View, context: Context, cursor: Cursor) {
         copyFields(cursor, view)
       }

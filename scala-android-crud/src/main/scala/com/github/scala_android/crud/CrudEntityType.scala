@@ -2,6 +2,7 @@ package com.github.scala_android.crud
 
 import android.widget.ListAdapter
 import com.github.triangle.{PartialFieldAccess, CopyableField}
+import android.app.Activity
 
 /**
  * An entity configuration that provides all custom information needed to
@@ -77,16 +78,16 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
   def withEntityPersistence[T](crudContext: CrudContext, f: EntityPersistence[Q,L,R,W] => T): T = {
     val persistence = openEntityPersistence(crudContext)
     try f(persistence)
-    finally persistence.close
+    finally persistence.close()
   }
 
-  final def createListAdapter(crudContext: CrudContext): ListAdapter = {
+  final def createListAdapter(crudContext: CrudContext, activity: Activity): ListAdapter = {
     val persistence = openEntityPersistence(crudContext)
     persistenceVarForListAdapter.set(crudContext, persistence)
-    createListAdapter(persistence, crudContext)
+    createListAdapter(persistence, crudContext, activity)
   }
 
-  def createListAdapter(persistence: EntityPersistence[Q,L,R,W], crudContext: CrudContext): ListAdapter
+  def createListAdapter(persistence: EntityPersistence[Q,L,R,W], crudContext: CrudContext, activity: Activity): ListAdapter
 
   def refreshAfterSave(crudContext: CrudContext)
 

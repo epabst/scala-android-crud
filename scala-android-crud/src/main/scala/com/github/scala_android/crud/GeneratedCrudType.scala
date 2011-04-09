@@ -4,13 +4,14 @@ import android.content.ContentValues
 import res.R
 import android.widget.BaseAdapter
 import android.view.{ViewGroup, View}
+import android.app.Activity
 
 trait GeneratedCrudType[T <: AnyRef,Q <: AnyRef] extends CrudEntityType[Q,List[T],T,ContentValues] {
   def newWritable = new ContentValues
 
   def openEntityPersistence(crudContext: CrudContext): ListEntityPersistence[T,Q]
 
-  def createListAdapter(persistence: EntityPersistence[Q,List[T],T,ContentValues], crudContext: CrudContext) = new BaseAdapter() {
+  def createListAdapter(persistence: EntityPersistence[Q,List[T],T,ContentValues], crudContext: CrudContext, activity: Activity) = new BaseAdapter() {
     val listPersistence = persistence.asInstanceOf[ListEntityPersistence[T, Q]]
     val list = listPersistence.list
 
@@ -21,7 +22,7 @@ trait GeneratedCrudType[T <: AnyRef,Q <: AnyRef] extends CrudEntityType[Q,List[T
     def getItem(position: Int) = list(position)
 
     def getView(position: Int, convertView: View, parent: ViewGroup): View = {
-      val view = if (convertView == null) crudContext.activity.getLayoutInflater.inflate(rowLayout, parent, false) else convertView
+      val view = if (convertView == null) activity.getLayoutInflater.inflate(rowLayout, parent, false) else convertView
       copyFields(list(position), view)
       view
     }
