@@ -1,7 +1,6 @@
 package com.github.scala_android.crud
 
 import android.content.Context
-import android.app.Activity
 import scala.collection.mutable
 
 /**
@@ -11,9 +10,7 @@ import scala.collection.mutable
  * Time: 3:43 PM
  */
 
-class CrudContext(val activity: Activity) {
-  def context: Context = activity
-
+class CrudContext(val context: Context) {
   private[crud] val variables = mutable.Map[ContextVar[_], AnyVal]()
 }
 
