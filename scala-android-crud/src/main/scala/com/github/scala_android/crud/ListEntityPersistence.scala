@@ -17,6 +17,8 @@ abstract class ListEntityPersistence[T <: AnyRef,Q <: AnyRef](entityType: CrudEn
     findAll(newCriteria).find(entity => id == getId(entity))
   }
 
+  def toIterator(list: List[T]) = list.toIterator
+
   def save(id: Option[ID], contentValues: ContentValues) =
     throw new UnsupportedOperationException("write not suppoted")
 

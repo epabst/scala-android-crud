@@ -36,11 +36,18 @@ class SQLiteEntityPersistence(entityType: SQLiteCrudEntityType, crudContext: Cru
     cursor
   }
 
+  def toIterator(list: Cursor) = new CalculatedIterator[Cursor] {
+    def calculateNextValue() = if (list.moveToNext) Some(list) else {
+      list.close()
+      None
+    }
+  }
+
   def findAll[T <: AnyRef](criteria: SQLiteCriteria, instantiate: () => T): List[T] = {
     val cursor = findAll(criteria)
     cursor.moveToFirst();
     var results = new ListBuffer[T]()
-    while (cursor.isAfterLast() == false) {
+    while (cursor.isAfterLast == false) {
       val result = instantiate()
       entityType.copyFields(cursor, result)
       results += result
@@ -48,7 +55,7 @@ class SQLiteEntityPersistence(entityType: SQLiteCrudEntityType, crudContext: Cru
     }
     //consider treating this as an Iterator instead of a List, and closing the cursor at the end of the iterator's loop
     cursor.close();
-    results.result
+    results.result()
   }
 
   def find(id: ID): Option[Cursor] = {
