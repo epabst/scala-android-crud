@@ -15,8 +15,10 @@ object CursorFieldAccess extends PlatformTypes {
   def fieldAccessFlatMap[B](fields: List[CopyableField], f: (PartialFieldAccess[_]) => Traversable[B]): List[B] =
     fields.map(_.asInstanceOf[Field[_]].fieldAccesses).flatMap(_.flatMap(f))
 
+  val persistedId = persisted[ID](BaseColumns._ID)
+
   def queryFieldNames(fields: List[CopyableField]): List[String] = {
-    BaseColumns._ID :: fieldAccessFlatMap(fields, _ match {
+    persistedId.name :: fieldAccessFlatMap(fields, _ match {
       case fieldAccess: CursorFieldAccess[_] => Some(fieldAccess.name)
       case foreignKey: ForeignKey => Some(foreignKey.fieldName)
       case _ => None

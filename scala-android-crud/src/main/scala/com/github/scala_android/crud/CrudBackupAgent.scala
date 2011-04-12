@@ -1,7 +1,10 @@
 package com.github.scala_android.crud
 
-import android.os.ParcelFileDescriptor
 import android.app.backup.{BackupDataOutput, BackupDataInput, BackupAgent}
+import scala.collection.mutable
+import scala.collection.JavaConversions._
+import android.os.{Parcel, ParcelFileDescriptor}
+import CursorFieldAccess._
 
 /**
  * A BackupAgent for a CrudApplication.
@@ -14,26 +17,56 @@ import android.app.backup.{BackupDataOutput, BackupDataInput, BackupAgent}
 class CrudBackupAgent(application: CrudApplication) extends BackupAgent {
   final def onBackup(oldState: ParcelFileDescriptor, data: BackupDataOutput, newState: ParcelFileDescriptor) {
     onBackup(oldState, new BackupTarget {
-      def writeEntity(key: String, dataArray: Option[Array[Byte]]) {
-        data.writeEntityHeader(key, dataArray.map(_.length).getOrElse(-1))
-        dataArray.map(array => data.writeEntityData(array, array.length))
+      def writeEntity(key: String, dataMap: Option[Map[String,Any]]) {
+        dataMap match {
+          case Some(map) =>
+            val parcel = Parcel.obtain()
+            try {
+              parcel.writeMap(map)
+              val bytes = parcel.marshall()
+              data.writeEntityHeader(key, bytes.length)
+              data.writeEntityData(bytes, bytes.length)
+            } finally parcel.recycle()
+          case None => data.writeEntityHeader(key, -1)
+        }
       }
     }, newState)
   }
 
   def onBackup(oldState: ParcelFileDescriptor, data: BackupTarget, newState: ParcelFileDescriptor) {
-    val entities = application.allEntities
+    val crudContext = new CrudContext(this)
+    application.allEntities.map(_ match {
+      case entityType: CrudEntityType[_,_,_,_] => onBackup(entityType, data, crudContext)
+    })
+  }
+
+  def onBackup[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](entityType: CrudEntityType[Q,L,R,W], data: BackupTarget, crudContext: CrudContext) {
+    entityType.withEntityPersistence[Unit](crudContext, persistence => {
+      val all = persistence.findAll(persistence.newCriteria)
+      persistence.toIterator(all).foreach(entity => {
+        val map = mutable.Map[String,Any]()
+        entityType.copyFields(entity, map)
+        val id = persistedId.partialGet(entity).get
+        data.writeEntity(entityType.entityName + "#" + id, Some(map.toMap))
+      })
+    })
   }
 
   final def onRestore(data: BackupDataInput, appVersionCode: Int, newState: ParcelFileDescriptor) {
-    onRestore(new BackupSource with CalculatedIterator[(String, Array[Byte])] {
-      def calculateNextValue(): Option[(String, Array[Byte])] = {
+    onRestore(new CalculatedIterator[RestoreItem] {
+      def calculateNextValue(): Option[RestoreItem] = {
         if (data.readNextHeader) {
+          val map = Map[String,Any]()
           val key = data.getKey
           val size = data.getDataSize
-          val array = new Array[Byte](size)
-          data.readEntityData(array, 0, size)
-          Some((key, array))
+          val bytes = new Array[Byte](size)
+          data.readEntityData(bytes, 0, size)
+          val parcel = Parcel.obtain
+          try {
+            parcel.unmarshall(bytes, 0, size)
+            parcel.readMap(map, getClass.getClassLoader)
+          } finally parcel.recycle()
+          Some(RestoreItem(key, map.toMap))
         } else {
           None
         }
@@ -41,7 +74,7 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent {
     }, appVersionCode, newState)
   }
 
-  def onRestore(data: BackupSource, appVersionCode: Int, newState: ParcelFileDescriptor) {
+  def onRestore(data: Iterator[RestoreItem], appVersionCode: Int, newState: ParcelFileDescriptor) {
   }
 }
 
@@ -67,7 +100,7 @@ private[crud] trait CalculatedIterator[T] extends Iterator[T] {
 }
 
 trait BackupTarget {
-  def writeEntity(key: String, dataArray: Option[Array[Byte]])
+  def writeEntity(key: String, dataMap: Option[Map[String,Any]])
 }
 
-trait BackupSource extends Iterator[(String, Array[Byte])]
+case class RestoreItem(key: String, dataMap: Map[String,Any])

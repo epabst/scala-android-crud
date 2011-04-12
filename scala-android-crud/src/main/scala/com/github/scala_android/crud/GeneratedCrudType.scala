@@ -1,17 +1,16 @@
 package com.github.scala_android.crud
 
-import android.content.ContentValues
 import res.R
 import android.widget.BaseAdapter
 import android.view.{ViewGroup, View}
 import android.app.Activity
 
-trait GeneratedCrudType[T <: AnyRef,Q <: AnyRef] extends CrudEntityType[Q,List[T],T,ContentValues] {
-  def newWritable = new ContentValues
+trait GeneratedCrudType[T <: AnyRef,Q <: AnyRef] extends CrudEntityType[Q,List[T],T,T] {
+  def newWritable = throw new UnsupportedOperationException("not supported")
 
   def openEntityPersistence(crudContext: CrudContext): ListEntityPersistence[T,Q]
 
-  def createListAdapter(persistence: EntityPersistence[Q,List[T],T,ContentValues], crudContext: CrudContext, activity: Activity) = new BaseAdapter() {
+  def createListAdapter(persistence: EntityPersistence[Q,List[T],T,T], crudContext: CrudContext, activity: Activity) = new BaseAdapter() {
     val listPersistence = persistence.asInstanceOf[ListEntityPersistence[T, Q]]
     val list = listPersistence.findAll(listPersistence.newCriteria)
 

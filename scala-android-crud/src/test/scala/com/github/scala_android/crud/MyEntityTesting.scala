@@ -21,9 +21,18 @@ import android.app.Activity
  */
 
 trait MyEntityTesting extends EasyMockSugar {
-  class MyEntityType(persistence: EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]], listAdapter: ListAdapter)
+  type MyEntityPersistenceType = EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]
+
+  class MyEntityPersistence(list: List[Map[String,Any]]) extends ListEntityPersistence[Map[String,Any],AnyRef] {
+    def getId(entity: Map[String, Any]) = persistedId.partialGet(entity).get
+
+    def newCriteria = "TheCriteria"
+
+    def findAll(criteria: AnyRef) = list
+  }
+
+  class MyEntityType(persistence: MyEntityPersistenceType, listAdapter: ListAdapter, val entityName: String = "MyMap")
           extends CrudEntityType[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]] {
-    val entityName = "MyMap"
     var refreshCount = 0
 
     def fields: List[CopyableField] = List(
@@ -36,8 +45,7 @@ trait MyEntityTesting extends EasyMockSugar {
 
     def openEntityPersistence(crudContext: CrudContext) = persistence
 
-    def createListAdapter(persistence: EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]],
-                          crudContext: CrudContext, activity: Activity) = listAdapter
+    def createListAdapter(persistence: MyEntityPersistenceType, crudContext: CrudContext, activity: Activity) = listAdapter
 
     def refreshAfterSave(crudContext: CrudContext) {
       refreshCount += 1

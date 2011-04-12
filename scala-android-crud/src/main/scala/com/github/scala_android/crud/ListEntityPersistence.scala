@@ -1,7 +1,5 @@
 package com.github.scala_android.crud
 
-import android.content.ContentValues
-
 /**
  * EntityPersistence for a simple generated List.
  * @author Eric Pabst (epabst@gmail.com)
@@ -9,8 +7,7 @@ import android.content.ContentValues
  * Time: 5:05 PM
  */
 
-abstract class ListEntityPersistence[T <: AnyRef,Q <: AnyRef](entityType: CrudEntityType[Q,List[T],T,ContentValues])
-        extends EntityPersistence[Q,List[T],T,ContentValues] {
+abstract class ListEntityPersistence[T <: AnyRef,Q <: AnyRef] extends EntityPersistence[Q,List[T],T,T] {
   def getId(entity: T): ID
 
   def find(id: ID): Option[T] = {
@@ -19,8 +16,7 @@ abstract class ListEntityPersistence[T <: AnyRef,Q <: AnyRef](entityType: CrudEn
 
   def toIterator(list: List[T]) = list.toIterator
 
-  def save(id: Option[ID], contentValues: ContentValues) =
-    throw new UnsupportedOperationException("write not suppoted")
+  def save(id: Option[ID], data: T) = throw new UnsupportedOperationException("write not supported")
 
   def delete(ids: List[ID]) = throw new UnsupportedOperationException("delete not supported")
 
