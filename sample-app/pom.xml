@@ -88,6 +88,7 @@
             <option>-keep public class * extends android.app.Activity</option>
             <option>-keep public class * extends android.app.Application</option>
             <option>-keep public class * extends android.app.Service</option>
+            <option>-keep public class * extends android.app.backup.BackupAgent</option>
             <option>-keep public class * extends android.content.BroadcastReceiver</option>
             <option>-keep public class * extends android.content.ContentProvider</option>
             <option>-dontskipnonpubliclibraryclasses</option>
