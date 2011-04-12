@@ -1,6 +1,7 @@
 package com.github.scala_android.crud
 
 import android.app.backup.{BackupDataOutput, BackupDataInput, BackupAgent}
+import monitor.Logging
 import scala.collection.mutable
 import scala.collection.JavaConversions._
 import android.os.{Parcel, ParcelFileDescriptor}
@@ -14,10 +15,11 @@ import CursorFieldAccess._
  * Time: 4:35 PM
  */
 
-class CrudBackupAgent(application: CrudApplication) extends BackupAgent {
+class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Logging {
   final def onBackup(oldState: ParcelFileDescriptor, data: BackupDataOutput, newState: ParcelFileDescriptor) {
     onBackup(oldState, new BackupTarget {
       def writeEntity(key: String, dataMap: Option[Map[String,Any]]) {
+        debug("Backing up " + key + " <- " + dataMap)
         dataMap match {
           case Some(map) =>
             val parcel = Parcel.obtain()
@@ -34,6 +36,7 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent {
   }
 
   def onBackup(oldState: ParcelFileDescriptor, data: BackupTarget, newState: ParcelFileDescriptor) {
+    info("Backing up " + application)
     val crudContext = new CrudContext(this)
     application.allEntities.map(_ match {
       case entityType: CrudEntityType[_,_,_,_] => onBackup(entityType, data, crudContext)
@@ -75,6 +78,7 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent {
   }
 
   def onRestore(data: Iterator[RestoreItem], appVersionCode: Int, newState: ParcelFileDescriptor) {
+    info("Restoring backup of " + application)
     val crudContext = new CrudContext(this)
     val entities = application.allEntities
     data.foreach(restoreItem => {
@@ -86,6 +90,7 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent {
   }
 
   def onRestore[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](entityType: CrudEntityType[Q,L,R,W], restoreItem: RestoreItem, crudContext: CrudContext) {
+    debug("Restoring " + restoreItem.key + " <- " + restoreItem.dataMap)
     val id = restoreItem.key.substring(restoreItem.key.lastIndexOf("#") + 1).toLong
     val writable = entityType.newWritable
     entityType.copyFields(restoreItem.dataMap, writable)
