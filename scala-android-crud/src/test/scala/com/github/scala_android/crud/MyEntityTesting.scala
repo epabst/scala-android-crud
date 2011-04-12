@@ -1,7 +1,8 @@
 package com.github.scala_android.crud
 
 import org.scalatest.mock.EasyMockSugar
-import scala.collection.mutable.Map
+import scala.collection.mutable
+import mutable.Map
 import com.github.triangle._
 import Field._
 import ViewFieldAccess._
@@ -23,12 +24,8 @@ import android.app.Activity
 trait MyEntityTesting extends EasyMockSugar {
   type MyEntityPersistenceType = EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]
 
-  class MyEntityPersistence(list: List[Map[String,Any]]) extends ListEntityPersistence[Map[String,Any],AnyRef] {
-    def getId(entity: Map[String, Any]) = persistedId.partialGet(entity).get
-
+  class MyEntityPersistence extends ListBufferEntityPersistence[Map[String,Any],AnyRef] {
     def newCriteria = "TheCriteria"
-
-    def findAll(criteria: AnyRef) = list
   }
 
   class MyEntityType(persistence: MyEntityPersistenceType, listAdapter: ListAdapter, val entityName: String = "MyMap")

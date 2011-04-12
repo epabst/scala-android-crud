@@ -75,6 +75,23 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent {
   }
 
   def onRestore(data: Iterator[RestoreItem], appVersionCode: Int, newState: ParcelFileDescriptor) {
+    val crudContext = new CrudContext(this)
+    val entities = application.allEntities
+    data.foreach(restoreItem => {
+      val entityName = restoreItem.key.substring(0, restoreItem.key.lastIndexOf("#"))
+      entities.find(_.entityName == entityName).map(_ match {
+        case entityType: CrudEntityType[_,_,_,_] => onRestore(entityType, restoreItem, crudContext)
+      })
+    })
+  }
+
+  def onRestore[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](entityType: CrudEntityType[Q,L,R,W], restoreItem: RestoreItem, crudContext: CrudContext) {
+    val id = restoreItem.key.substring(restoreItem.key.lastIndexOf("#") + 1).toLong
+    val writable = entityType.newWritable
+    entityType.copyFields(restoreItem.dataMap, writable)
+
+    entityType.withEntityPersistence(crudContext, _.save(Some(id), writable))
+    Unit
   }
 }
 

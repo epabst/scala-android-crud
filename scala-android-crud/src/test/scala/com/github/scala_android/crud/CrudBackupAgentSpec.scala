@@ -40,19 +40,24 @@ class CrudBackupAgentSpec extends MyEntityTesting with ShouldMatchers {
   @Test
   def shouldSupportBackupAndRestore() {
     val application = mock[CrudApplication]
+    val applicationB = mock[CrudApplication]
     val listAdapter = mock[ListAdapter]
     val backupTarget = mock[BackupTarget]
     val state1 = mock[ParcelFileDescriptor]
     val state1b = mock[ParcelFileDescriptor]
 
-    val persistence = new MyEntityPersistence(List(
-        mutable.Map(BaseColumns._ID -> 100L, "name" -> "Joe", "age" -> 30),
-        mutable.Map(BaseColumns._ID -> 101L, "name" -> "Mary", "age" -> 28)))
-    val persistence2 = new MyEntityPersistence(List(
-        mutable.Map(BaseColumns._ID -> 101L, "city" -> "Los Angeles", "state" -> "CA"),
-        mutable.Map(BaseColumns._ID -> 104L, "city" -> "Chicago", "state" -> "IL")))
+    val persistence = new MyEntityPersistence
+    persistence.save(Some(100L), mutable.Map("name" -> "Joe", "age" -> 30))
+    persistence.save(Some(101L), mutable.Map("name" -> "Mary", "age" -> 28))
+    val persistence2 = new MyEntityPersistence
+    persistence2.save(Some(101L), mutable.Map("city" -> "Los Angeles", "state" -> "CA"))
+    persistence2.save(Some(104L), mutable.Map("city" -> "Chicago", "state" -> "IL"))
     val entityType = new MyEntityType(persistence, listAdapter)
     val entityType2 = new MyEntityType(persistence2, listAdapter, "OtherMap")
+    val persistenceB = new MyEntityPersistence
+    val persistence2B = new MyEntityPersistence
+    val entityTypeB = new MyEntityType(persistenceB, listAdapter)
+    val entityType2B = new MyEntityType(persistence2B, listAdapter, "OtherMap")
     val state0 = null
     var restoreItems = mutable.ListBuffer[RestoreItem]()
     expecting {
@@ -61,17 +66,29 @@ class CrudBackupAgentSpec extends MyEntityTesting with ShouldMatchers {
       backupTarget.writeEntity(eql("MyMap#101"), notNull()).andAnswer(saveRestoreItem(restoreItems))
       backupTarget.writeEntity(eql("OtherMap#101"), notNull()).andAnswer(saveRestoreItem(restoreItems))
       backupTarget.writeEntity(eql("OtherMap#104"), notNull()).andAnswer(saveRestoreItem(restoreItems))
+      call(applicationB.allEntities).andReturn(List[CrudEntityTypeRef](entityTypeB, entityType2B))
     }
-    whenExecuting(application, listAdapter, backupTarget, state1, state1b) {
+    whenExecuting(application, applicationB, listAdapter, backupTarget, state1, state1b) {
       val backupAgent = new CrudBackupAgent(application)
       backupAgent.onCreate()
       backupAgent.onBackup(state0, backupTarget, state1)
       backupAgent.onDestroy()
 
-      val backupAgent2 = new CrudBackupAgent(application)
-      backupAgent2.onCreate()
-      backupAgent2.onRestore(restoreItems.toIterator, 1, state1b)
-      backupAgent2.onDestroy()
+      persistenceB.findAll(persistenceB.newCriteria).size should be (0)
+      persistence2B.findAll(persistence2B.newCriteria).size should be (0)
+
+      val backupAgentB = new CrudBackupAgent(applicationB)
+      backupAgentB.onCreate()
+      backupAgentB.onRestore(restoreItems.toIterator, 1, state1b)
+      backupAgentB.onDestroy()
+
+      val allB = persistenceB.findAll(persistenceB.newCriteria)
+      allB.size should be (2)
+      allB.map(persistenceB.getId) should be (List(100L, 101L))
+
+      val all2B = persistence2B.findAll(persistence2B.newCriteria)
+      all2B.size should be (2)
+      all2B.map(persistence2B.getId) should be (List(101L, 104L))
     }
   }
 
