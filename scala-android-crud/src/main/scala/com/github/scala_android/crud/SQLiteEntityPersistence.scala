@@ -7,6 +7,7 @@ import android.content.ContentValues
 import com.github.scala_android.crud.monitor.Logging
 import scala.None
 import collection.mutable.{SynchronizedQueue, ListBuffer}
+import android.app.backup.BackupManager
 
 /**
  * EntityPersistence for SQLite.
@@ -19,6 +20,7 @@ class SQLiteEntityPersistence(entityType: SQLiteCrudEntityType, crudContext: Cru
 
   lazy val databaseSetup = entityType.getDatabaseSetup(crudContext.context)
   lazy val database: SQLiteDatabase = databaseSetup.getWritableDatabase
+  private lazy val backupManager = new BackupManager(crudContext.context)
   private var cursors = new SynchronizedQueue[Cursor]
 
   lazy val queryFieldNames: List[String] = CursorFieldAccess.queryFieldNames(entityType.fields)
@@ -71,7 +73,7 @@ class SQLiteEntityPersistence(entityType: SQLiteCrudEntityType, crudContext: Cru
   }
 
   def save(idOption: Option[ID], contentValues: ContentValues): ID = {
-    idOption match {
+    val id = idOption match {
       case None => {
         info("Adding " + entityType.entityName + " with " + contentValues)
         database.insert(entityType.entityName, null, contentValues)
@@ -82,10 +84,13 @@ class SQLiteEntityPersistence(entityType: SQLiteCrudEntityType, crudContext: Cru
         id
       }
     }
+    backupManager.dataChanged()
+    id
   }
 
   def delete(ids: List[ID]) {
     ids.foreach(id => database.delete(entityType.entityName, BaseColumns._ID + "=" + id, Nil.toArray))
+    backupManager.dataChanged()
   }
 
   def close() {
