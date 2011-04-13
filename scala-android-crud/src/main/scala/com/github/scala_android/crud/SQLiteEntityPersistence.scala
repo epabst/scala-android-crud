@@ -72,6 +72,11 @@ class SQLiteEntityPersistence(entityType: SQLiteCrudEntityType, crudContext: Cru
     }
   }
 
+  private def notifyDataChanged() {
+    backupManager.dataChanged()
+    debug("Notified BackupManager that data changed.")
+  }
+
   def save(idOption: Option[ID], contentValues: ContentValues): ID = {
     val id = idOption match {
       case None => {
@@ -84,13 +89,13 @@ class SQLiteEntityPersistence(entityType: SQLiteCrudEntityType, crudContext: Cru
         id
       }
     }
-    backupManager.dataChanged()
+    notifyDataChanged()
     id
   }
 
   def delete(ids: List[ID]) {
     ids.foreach(id => database.delete(entityType.entityName, BaseColumns._ID + "=" + id, Nil.toArray))
-    backupManager.dataChanged()
+    notifyDataChanged()
   }
 
   def close() {
