@@ -29,7 +29,7 @@ trait MyEntityTesting extends EasyMockSugar {
   }
 
   class MyEntityType(persistence: MyEntityPersistenceType, listAdapter: ListAdapter, val entityName: String = "MyMap")
-          extends CrudEntityType[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]] {
+          extends StubEntityType {
     var refreshCount = 0
 
     def fields: List[CopyableField] = List(
@@ -48,6 +48,10 @@ trait MyEntityTesting extends EasyMockSugar {
       refreshCount += 1
     }
 
+    val cancelItemString = R.string.cancel_item
+  }
+
+  trait StubEntityType extends CrudEntityType[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]] {
     val listLayout = R.layout.entity_list
     val headerLayout = R.layout.test_row
     val rowLayout = R.layout.test_row
@@ -55,7 +59,6 @@ trait MyEntityTesting extends EasyMockSugar {
     val entryLayout = R.layout.test_entry
     val addItemString = R.string.add_item
     val editItemString = R.string.edit_item
-    val cancelItemString = R.string.cancel_item
 
     def listActivityClass = classOf[CrudListActivity[_,_,_,_]]
     def activityClass = classOf[CrudActivity[_,_,_,_]]
