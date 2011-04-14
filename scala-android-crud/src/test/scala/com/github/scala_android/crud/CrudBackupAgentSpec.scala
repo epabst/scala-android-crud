@@ -6,10 +6,12 @@ import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.scalatest.matchers.ShouldMatchers
 import android.os.ParcelFileDescriptor
 import android.widget.ListAdapter
-import android.provider.BaseColumns
 import scala.collection.mutable
 import org.easymock.{IAnswer, EasyMock}
 import EasyMock.notNull
+import com.github.triangle.Field
+import com.github.triangle.Field._
+import CursorFieldAccess._
 
 /**
  * A test for {@link CrudBackupAgent}.
@@ -96,6 +98,35 @@ class CrudBackupAgentSpec extends MyEntityTesting with ShouldMatchers {
     val currentArguments = EasyMock.getCurrentArguments
     currentArguments(1).asInstanceOf[Option[Map[String,Any]]].foreach { map =>
       restoreItems += RestoreItem(currentArguments(0).asInstanceOf[String], map)
+    }
+  }
+
+  @Test
+  def shouldSkipBackupOfGeneratedTypes() {
+    val application = mock[CrudApplication]
+    val listAdapter = mock[ListAdapter]
+    val backupTarget = mock[BackupTarget]
+    val state1 = mock[ParcelFileDescriptor]
+    val generatedPersistence = mock[MyEntityPersistence]
+
+    val persistence = new MyEntityPersistence
+    val entityType = new MyEntityType(persistence, listAdapter)
+    val generatedType = new GeneratedCrudType[mutable.Map[String,Any],AnyRef] with StubEntityType {
+      def entityName = "Generated"
+      def fields = List(Field(foreignKey(entityType)), Field[Int](default(100)))
+      def openEntityPersistence(crudContext: CrudContext) = generatedPersistence
+    }
+    val state0 = null
+    expecting {
+      call(application.allEntities).andReturn(List[CrudEntityTypeRef](entityType, generatedType))
+      //shouldn't call any methods on generatedPersistence
+    }
+    whenExecuting(application, listAdapter, backupTarget, state1) {
+      val backupAgent = new CrudBackupAgent(application)
+      backupAgent.onCreate()
+      //shouldn't fail even though one is generated
+      backupAgent.onBackup(state0, backupTarget, state1)
+      backupAgent.onDestroy()
     }
   }
 }

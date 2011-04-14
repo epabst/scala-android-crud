@@ -39,6 +39,7 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Log
     info("Backing up " + application)
     val crudContext = new CrudContext(this)
     application.allEntities.map(_ match {
+      case generated: GeneratedCrudType[_,_] => //skip
       case entityType: CrudEntityType[_,_,_,_] => onBackup(entityType, data, crudContext)
     })
   }
