@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.database.Cursor
 import android.provider.BaseColumns
 import com.github.triangle._
+import android.os.Bundle
 
 object CursorFieldAccess extends PlatformTypes {
   def persisted[T](name: String)(implicit persistedType: PersistedType[T]): CursorFieldAccess[T] = {
@@ -32,7 +33,10 @@ object CursorFieldAccess extends PlatformTypes {
  * Also supports accessing a scala Map (mutable.Map for writing) using the same name.
  */
 class CursorFieldAccess[T](val name: String)(implicit val persistedType: PersistedType[T]) extends FieldAccessVariations[T] {
-  val fieldAccesses = List(Field.flow[Cursor,ContentValues,T](getFromCursor, setIntoContentValues), Field.mapAccess[T](name))
+  val fieldAccesses = List(
+    Field.flow[Cursor,ContentValues,T](getFromCursor, setIntoContentValues),
+    Field.fieldAccess[Bundle,T](b => persistedType.getValue(b, name), b => v => persistedType.putValue(b, name, v)),
+    Field.mapAccess[T](name))
 
   private def getFromCursor(cursor: Cursor) = {
     val columnIndex = cursor.getColumnIndex(name)
