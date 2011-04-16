@@ -35,6 +35,18 @@ class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val enti
     // If no data was given in the intent (because we were started
     // as a MAIN activity), then use our default content provider.
     if (getIntent.getData == null) getIntent.setData(defaultContentUri);
+    //copy each parent Entity's data to the Activity
+    entityType.parentEntities.foreach(_ match {
+      case parentType: CrudEntityType[_,_,_,_] =>
+        parentType.findId(getIntent.getData).map { id =>
+          parentType.withEntityPersistence(crudContext, { persistence =>
+            persistence.find(id).map { readable =>
+              debug("Copying " + entityType.entityName + "#" + id + " to " + this)
+              entityType.copyFields(readable, this)
+            }
+          })
+        }
+    })
 
     val view = getListView;
 		view.setHeaderDividersEnabled(true);

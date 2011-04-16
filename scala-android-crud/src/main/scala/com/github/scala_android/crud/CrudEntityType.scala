@@ -3,6 +3,7 @@ package com.github.scala_android.crud
 import android.widget.ListAdapter
 import com.github.triangle.{PartialFieldAccess, CopyableField}
 import android.app.Activity
+import android.net.Uri
 
 /**
  * An entity configuration that provides all custom information needed to
@@ -148,6 +149,8 @@ trait CrudEntityTypeRef extends PlatformTypes {
 
   def listActivityClass: Class[_ <: CrudListActivity[_,_,_,_]]
   def activityClass: Class[_ <: CrudActivity[_,_,_,_]]
+
+  def findId(uri: Uri): Option[ID] = new EntityUriSegment(entityName).findId(uri)
 
   override def toString = entityName
 }
