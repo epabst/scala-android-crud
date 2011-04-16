@@ -40,6 +40,19 @@ class CrudBackupAgentSpec extends MyEntityTesting with ShouldMatchers {
   }
 
   @Test
+  def shouldMarshallAndUnmarshall() {
+    val application = mock[CrudApplication]
+    whenExecuting(application) {
+      val bundle = new Bundle()
+      bundle.putString("name", "George")
+      bundle.putInt("age", 35)
+      val agent = new CrudBackupAgent(application)
+      val bundleCopy = agent.unmarshall(agent.marshall(bundle))
+      bundleCopy should be (bundle)
+    }
+  }
+
+  @Test
   def shouldSupportBackupAndRestore() {
     val application = mock[CrudApplication]
     val applicationB = mock[CrudApplication]

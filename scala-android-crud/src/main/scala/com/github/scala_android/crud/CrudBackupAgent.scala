@@ -14,20 +14,32 @@ import android.os.{Bundle, Parcel, ParcelFileDescriptor}
  */
 
 class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Logging {
+  private[crud] def marshall(bundle: Bundle): Array[Byte] = {
+    val parcel = Parcel.obtain()
+    try {
+      parcel.writeBundle(bundle)
+      parcel.marshall()
+    } finally parcel.recycle()
+  }
+
+  private[crud] def unmarshall(bytes: Array[Byte]): Bundle = {
+    val parcel = Parcel.obtain
+    try {
+      parcel.unmarshall(bytes, 0, bytes.size)
+      parcel.readBundle(getClass.getClassLoader)
+    } finally parcel.recycle()
+  }
+
   final def onBackup(oldState: ParcelFileDescriptor, data: BackupDataOutput, newState: ParcelFileDescriptor) {
     onBackup(oldState, new BackupTarget {
       def writeEntity(key: String, bundleOpt: Option[Bundle]) {
         debug("Backing up " + key + " <- " + bundleOpt)
         bundleOpt match {
           case Some(bundle) =>
-            val parcel = Parcel.obtain()
-            try {
-              parcel.writeBundle(bundle)
-              val bytes = parcel.marshall()
-              data.writeEntityHeader(key, bytes.length)
-              data.writeEntityData(bytes, bytes.length)
-              debug("Backed up " + key + " with " + bytes.length + " bytes")
-            } finally parcel.recycle()
+            val bytes = marshall(bundle)
+            data.writeEntityHeader(key, bytes.length)
+            data.writeEntityData(bytes, bytes.length)
+            debug("Backed up " + key + " with " + bytes.length + " bytes")
           case None => data.writeEntityHeader(key, -1)
         }
       }
@@ -65,13 +77,9 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Log
           val actualSize = data.readEntityData(bytes, 0, size)
           debug("Restoring " + key + ": expected " + size + " bytes, read " + actualSize + " bytes")
           if (actualSize != size) throw new IllegalStateException("readEntityData returned " + actualSize + " instead of " + size)
-          val parcel = Parcel.obtain
-          try {
-            parcel.unmarshall(bytes, 0, size)
-            val bundle = parcel.readBundle(getClass.getClassLoader)
-            debug("Restoring " + key + ": read Bundle: " + bundle)
-            Some(RestoreItem(key, bundle))
-          } finally parcel.recycle()
+          val bundle = unmarshall(bytes)
+          debug("Restoring " + key + ": read Bundle: " + bundle)
+          Some(RestoreItem(key, bundle))
         } else {
           None
         }
@@ -96,7 +104,6 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Log
     val id = restoreItem.key.substring(restoreItem.key.lastIndexOf("#") + 1).toLong
     val writable = entityType.newWritable
     entityType.copyFields(restoreItem.bundle, writable)
-
     entityType.withEntityPersistence(crudContext, _.save(Some(id), writable))
     Unit
   }
