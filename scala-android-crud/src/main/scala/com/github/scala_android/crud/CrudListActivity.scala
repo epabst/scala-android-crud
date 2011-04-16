@@ -27,33 +27,33 @@ class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val enti
   lazy val contentProviderAuthority = this.getClass.getPackage.toString
   lazy val defaultContentUri = Uri.parse("content://" + contentProviderAuthority + "/" + entityType.entityName);
 
-  override def onCreate(savedInstanceState: Bundle): Unit = {
+  override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)
 
     setContentView(entityType.listLayout)
 
     // If no data was given in the intent (because we were started
     // as a MAIN activity), then use our default content provider.
-    if (getIntent.getData() == null) getIntent.setData(defaultContentUri);
+    if (getIntent.getData == null) getIntent.setData(defaultContentUri);
 
-    val view = getListView();
+    val view = getListView;
 		view.setHeaderDividersEnabled(true);
-		view.addHeaderView(getLayoutInflater().inflate(entityType.headerLayout, null));
+		view.addHeaderView(getLayoutInflater.inflate(entityType.headerLayout, null));
     registerForContextMenu(getListView)
 
     setListAdapter(entityType.createListAdapter(crudContext, this))
   }
 
 
-  override def onDestroy {
+  override def onDestroy() {
     entityType.destroyContextVars(crudContext)
-    super.onDestroy
+    super.onDestroy()
   }
 
   override def onResume() {
     verbose("onResume")
     entityType.refreshAfterSave(crudContext)
-    super.onResume
+    super.onResume()
   }
 
   protected def contextMenuActions: List[UIAction[ID]] = entityType.getEntityActions(actionFactory) match {
