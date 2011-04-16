@@ -6,7 +6,8 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.Spec
 import com.github.triangle.Field._
 import com.github.scala_android.crud.CursorFieldAccess._
-import collection.mutable.Buffer
+import scala.collection.mutable
+import mutable.Buffer
 
 
 /**
@@ -52,6 +53,27 @@ class FieldSpec extends Spec with ShouldMatchers {
       val stringField = Field(default("Hello"))
       stringField.findValue(List("bogus list")) should be (None)
       stringField.findValue(Unit) should be (Some("Hello"))
+    }
+
+    it("mapAccess should clear") {
+      val stringField = Field(mapAccess("greeting"))
+      val map = mutable.Map("greeting" -> "Hola")
+      stringField.copy(mutable.Map[String,Any](), map) should be (true)
+      map.get("greeting") should be (None)
+    }
+
+    it("copy should happen if partialGet applies") {
+      val stringField = Field(default("Hello"), mapAccess("greeting"))
+      val map = mutable.Map[String,Any]("greeting" -> "Hola")
+      stringField.copy(Unit, map) should be (true)
+      map.get("greeting") should be (Some("Hello"))
+    }
+
+    it("partialSet should not happen if partialGet doesn't apply") {
+      val stringField = Field(default("Hello"), mapAccess("greeting"))
+      val map = mutable.Map[String,Any]("greeting" -> "Hola")
+      stringField.copy(new Object, map) should be (false)
+      map.get("greeting") should be (Some("Hola"))
     }
 
     it("should copy from one to multiple") {
