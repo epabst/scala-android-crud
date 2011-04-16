@@ -62,11 +62,14 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Log
           val key = data.getKey
           val size = data.getDataSize
           val bytes = new Array[Byte](size)
-          data.readEntityData(bytes, 0, size)
+          val actualSize = data.readEntityData(bytes, 0, size)
+          debug("Restoring " + key + ": expected " + size + " bytes, read " + actualSize + " bytes")
+          if (actualSize != size) throw new IllegalStateException("readEntityData returned " + actualSize + " instead of " + size)
           val parcel = Parcel.obtain
           try {
             parcel.unmarshall(bytes, 0, size)
             val bundle = parcel.readBundle(getClass.getClassLoader)
+            debug("Restoring " + key + ": read Bundle: " + bundle)
             Some(RestoreItem(key, bundle))
           } finally parcel.recycle()
         } else {
