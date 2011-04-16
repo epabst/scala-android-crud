@@ -82,7 +82,7 @@ class FieldSpec extends Spec with ShouldMatchers {
     }
 
     it("writeOnly should call clearer if no value") {
-      val stringField = Field(writeOnly[Buffer[String],String]({ b => v => b += v; Unit }, b => v => b.clear()))
+      val stringField = Field(writeOnly[Buffer[String],String]({ b => v => b += v; Unit }, _.clear()))
       val buffer = Buffer("hello")
       stringField.setValue(buffer, None)
       buffer should be ('empty)

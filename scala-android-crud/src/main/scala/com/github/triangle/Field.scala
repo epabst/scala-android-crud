@@ -183,8 +183,11 @@ object Field {
     new FieldSetter[W,T] {
       protected def writableManifest = typeManifest
 
-      def set(writable: W, value: Option[T]) { 
-        setter(writable)(value.get) 
+      def set(writable: W, valueOpt: Option[T]) {
+        valueOpt match {
+          case Some(value) => setter(writable)(value)
+          case None => clearer(writable)
+        }
       }
 
       def partialGet(readable: AnyRef) = None
