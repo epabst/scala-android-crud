@@ -11,7 +11,7 @@ import EasyMock.notNull
 import com.github.triangle.Field
 import com.github.triangle.Field._
 import CursorFieldAccess._
-import android.os.{Bundle, ParcelFileDescriptor}
+import android.os.ParcelFileDescriptor
 
 /**
  * A test for {@link CrudBackupAgent}.
@@ -43,12 +43,13 @@ class CrudBackupAgentSpec extends MyEntityTesting with ShouldMatchers {
   def shouldMarshallAndUnmarshall() {
     val application = mock[CrudApplication]
     whenExecuting(application) {
-      val bundle = new Bundle()
-      bundle.putString("name", "George")
-      bundle.putInt("age", 35)
+      val map = mutable.Map[String,Any]()
+      map.put("name", "George")
+      map.put("age", 35)
       val agent = new CrudBackupAgent(application)
-      val bundleCopy = agent.unmarshall(agent.marshall(bundle))
-      bundleCopy should be (bundle)
+      val bytes = agent.marshall(map)
+      val copy = agent.unmarshall(bytes)
+      copy should be (map)
     }
   }
 
@@ -109,8 +110,8 @@ class CrudBackupAgentSpec extends MyEntityTesting with ShouldMatchers {
 
   def saveRestoreItem(restoreItems: mutable.ListBuffer[RestoreItem]): IAnswer[Unit] = answer {
     val currentArguments = EasyMock.getCurrentArguments
-    currentArguments(1).asInstanceOf[Option[Bundle]].foreach { bundle =>
-      restoreItems += RestoreItem(currentArguments(0).asInstanceOf[String], bundle)
+    currentArguments(1).asInstanceOf[Option[mutable.Map[String,Any]]].foreach { map =>
+      restoreItems += RestoreItem(currentArguments(0).asInstanceOf[String], map)
     }
   }
 

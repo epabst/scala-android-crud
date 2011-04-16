@@ -3,7 +3,11 @@ package com.github.scala_android.crud
 import android.app.backup.{BackupDataOutput, BackupDataInput, BackupAgent}
 import monitor.Logging
 import CursorFieldAccess._
-import android.os.{Bundle, Parcel, ParcelFileDescriptor}
+import android.os.ParcelFileDescriptor
+import java.io.{ObjectInputStream, ByteArrayInputStream, ObjectOutputStream, ByteArrayOutputStream}
+import scala.collection.mutable
+import scala.collection.JavaConversions._
+import java.util.{Map => JMap,HashMap}
 
 /**
  * A BackupAgent for a CrudApplication.
@@ -14,29 +18,36 @@ import android.os.{Bundle, Parcel, ParcelFileDescriptor}
  */
 
 class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Logging {
-  private[crud] def marshall(bundle: Bundle): Array[Byte] = {
-    val parcel = Parcel.obtain()
+  private val backupStrategyVersion: Int = 1
+
+  private[crud] def marshall(map: mutable.Map[String,Any]): Array[Byte] = {
+    val out = new ByteArrayOutputStream
     try {
-      parcel.writeBundle(bundle)
-      parcel.marshall()
-    } finally parcel.recycle()
+      val objectStream = new ObjectOutputStream(out)
+      objectStream.writeInt(backupStrategyVersion)
+      val jmap: JMap[String,Any] = map
+      val hashMap: JMap[String,Any] = new HashMap(jmap)
+      objectStream.writeObject(hashMap)
+      out.toByteArray
+    } finally out.close()
   }
 
-  private[crud] def unmarshall(bytes: Array[Byte]): Bundle = {
-    val parcel = Parcel.obtain
+  private[crud] def unmarshall(bytes: Array[Byte]): mutable.Map[String,Any] = {
+    val objectStream = new ObjectInputStream(new ByteArrayInputStream(bytes))
     try {
-      parcel.unmarshall(bytes, 0, bytes.size)
-      parcel.readBundle(getClass.getClassLoader)
-    } finally parcel.recycle()
+      val strategyVersion = objectStream.readInt()
+      if (strategyVersion != backupStrategyVersion) throw new IllegalStateException
+      objectStream.readObject().asInstanceOf[JMap[String,Any]]
+    } finally objectStream.close()
   }
 
   final def onBackup(oldState: ParcelFileDescriptor, data: BackupDataOutput, newState: ParcelFileDescriptor) {
     onBackup(oldState, new BackupTarget {
-      def writeEntity(key: String, bundleOpt: Option[Bundle]) {
-        debug("Backing up " + key + " <- " + bundleOpt)
-        bundleOpt match {
-          case Some(bundle) =>
-            val bytes = marshall(bundle)
+      def writeEntity(key: String, mapOpt: Option[mutable.Map[String,Any]]) {
+        debug("Backing up " + key + " <- " + mapOpt)
+        mapOpt match {
+          case Some(map) =>
+            val bytes = marshall(map)
             data.writeEntityHeader(key, bytes.length)
             data.writeEntityData(bytes, bytes.length)
             debug("Backed up " + key + " with " + bytes.length + " bytes")
@@ -59,10 +70,10 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Log
     entityType.withEntityPersistence[Unit](crudContext, persistence => {
       val all = persistence.findAll(persistence.newCriteria)
       persistence.toIterator(all).foreach(entity => {
-        val bundle = new Bundle
-        entityType.copyFields(entity, bundle)
+        val map = mutable.Map[String,Any]()
+        entityType.copyFields(entity, map)
         val id = persistedId.partialGet(entity).get
-        data.writeEntity(entityType.entityName + "#" + id, Some(bundle))
+        data.writeEntity(entityType.entityName + "#" + id, Some(map))
       })
     })
   }
@@ -77,9 +88,9 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Log
           val actualSize = data.readEntityData(bytes, 0, size)
           debug("Restoring " + key + ": expected " + size + " bytes, read " + actualSize + " bytes")
           if (actualSize != size) throw new IllegalStateException("readEntityData returned " + actualSize + " instead of " + size)
-          val bundle = unmarshall(bytes)
-          debug("Restoring " + key + ": read Bundle: " + bundle)
-          Some(RestoreItem(key, bundle))
+          val map = unmarshall(bytes)
+          debug("Restoring " + key + ": read Map: " + map)
+          Some(RestoreItem(key, map))
         } else {
           None
         }
@@ -100,10 +111,10 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Log
   }
 
   def onRestore[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](entityType: CrudEntityType[Q,L,R,W], restoreItem: RestoreItem, crudContext: CrudContext) {
-    debug("Restoring " + restoreItem.key + " <- " + restoreItem.bundle)
+    debug("Restoring " + restoreItem.key + " <- " + restoreItem.map)
     val id = restoreItem.key.substring(restoreItem.key.lastIndexOf("#") + 1).toLong
     val writable = entityType.newWritable
-    entityType.copyFields(restoreItem.bundle, writable)
+    entityType.copyFields(restoreItem.map, writable)
     entityType.withEntityPersistence(crudContext, _.save(Some(id), writable))
     Unit
   }
@@ -131,7 +142,7 @@ private[crud] trait CalculatedIterator[T] extends Iterator[T] {
 }
 
 trait BackupTarget {
-  def writeEntity(key: String, bundle: Option[Bundle])
+  def writeEntity(key: String, map: Option[mutable.Map[String,Any]])
 }
 
-case class RestoreItem(key: String, bundle: Bundle)
+case class RestoreItem(key: String, map: mutable.Map[String,Any])
