@@ -6,6 +6,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.Spec
 import com.github.triangle.Field._
 import com.github.scala_android.crud.CursorFieldAccess._
+import collection.mutable.Buffer
 
 
 /**
@@ -78,6 +79,13 @@ class FieldSpec extends Spec with ShouldMatchers {
       stringField.copy(new Object, myEntity2) should be (false)
 
       stringField.copy(otherEntity2, new Object) should be (false)
+    }
+
+    it("writeOnly should call clearer if no value") {
+      val stringField = Field(writeOnly[Buffer[String],String]({ b => v => b += v; Unit }, b => v => b.clear()))
+      val buffer = Buffer("hello")
+      stringField.setValue(buffer, None)
+      buffer should be ('empty)
     }
   }
 }

@@ -50,16 +50,15 @@ final class Field[T](fieldAccessArgs: PartialFieldAccess[T]*) extends CopyableFi
    * Sets a value in <code>to</code> by using all FieldAccesses that can handle it.
    * @return true if any were successful
    */
-  def setValue(to: AnyRef, value: T): Boolean = {
+  def setValue(to: AnyRef, value: Option[T]): Boolean = {
     fieldAccesses.foldLeft(false)((result, access) => access.partialSet(to, value) || result)
   }
 
   //inherited
   def copy(from: AnyRef, to: AnyRef): Boolean = {
-    findValue(from).map(value => {
-      debug("Copying " + value + " from " + from + " to " + to + " for field " + this)
-      setValue(to, value)
-    }).getOrElse(false)
+    val value = findValue(from)
+    debug("Copying " + value + " from " + from + " to " + to + " for field " + this)
+    setValue(to, value)
   }
 }
 
@@ -80,8 +79,9 @@ trait PartialFieldAccess[T] {
   /**
    * Tries to set the value in <code>writable</code>.
    * @param writable any kind of Object.  If it is not supported by this FieldAccess, this simply returns false.
+   * @param value the value in an Option.  It will be None if the partialGet of the readable returned None.
    */
-  def partialSet(writable: AnyRef, value: T): Boolean
+  def partialSet(writable: AnyRef, value: Option[T]): Boolean
 }
 
 /**
@@ -112,9 +112,9 @@ trait FieldSetter[W,T] extends PartialFieldAccess[T] with Logging {
   protected def writableManifest: ClassManifest[W]
 
   /** An abstract method that must be implemented by subtypes. */
-  def set(writable: W, value: T)
+  def set(writable: W, value: Option[T])
 
-  override def partialSet(writable: AnyRef, value: T) = {
+  override def partialSet(writable: AnyRef, value: Option[T]) = {
     debug("Seeing if " + writable + " is an instance of " + writableManifest.erasure + " to set value " + value)
     if (writable == null) throw new IllegalArgumentException("'writable' may not be null")
     if (writableManifest.erasure.isInstance(writable)) {
@@ -155,7 +155,7 @@ trait FieldAccessVariations[T] extends PartialFieldAccess[T] {
    * Sets a value in <code>writable</code> by using all FieldAccesses that can handle it.
    * @return true if any were successful
    */
-  def partialSet(writable: AnyRef, value: T) = {
+  def partialSet(writable: AnyRef, value: Option[T]) = {
     fieldAccesses.foldLeft(false)((result, access) => access.partialSet(writable, value) || result)
   }
 }
@@ -173,24 +173,23 @@ object Field {
     new FieldGetter[R,T] {
       def get(readable: R) = getter(readable)
 
-      def partialSet(writable: AnyRef, value: T) = false
+      def partialSet(writable: AnyRef, value: Option[T]) = false
     }
   }
 
   /** Defines write-only fieldAccess for a field value for a Writable type. */
-  def writeOnly[W,T](setter: W => T => Unit)
+  def writeOnly[W,T](setter: W => T => Unit, clearer: W => Unit = {_: W => })
                     (implicit typeManifest: ClassManifest[W]): FieldSetter[W,T] = {
     new FieldSetter[W,T] {
       protected def writableManifest = typeManifest
 
-      def set(writable: W, value: T) {
-        setter(writable)(value)
+      def set(writable: W, value: Option[T]) { 
+        setter(writable)(value.get) 
       }
 
       def partialGet(readable: AnyRef) = None
     }
   }
-
 
   /** Defines a default for a field value, used when copied from {@link Unit}. */
   def default[T](value: => T): PartialFieldAccess[T] = readOnly[Any,T](r => if (Unit == r) Some(value) else None)
@@ -203,13 +202,17 @@ object Field {
    * @param W the Writable type to put the value into
    * @param T the value type
    */
-  def flow[R,W,T](getter: R => Option[T], setter: W => T => Unit)
+  def flow[R,W,T](getter: R => Option[T], setter: W => T => Unit, clearer: W => Unit = {_: W => })
                  (implicit readableManifest: ClassManifest[R], writableManifest: ClassManifest[W]): FieldAccess[R,W,T] = {
     new FieldAccess[R,W,T] {
       def get(readable: R) = getter(readable)
 
-      def set(writable: W, value: T) {
-        setter(writable)(value)
+      //todo test this for None that it should call clearer
+      def set(writable: W, valueOpt: Option[T]) {
+        valueOpt match {
+          case Some(value) => setter(writable)(value)
+          case None =>
+        }
       }
     }
   }
@@ -219,10 +222,11 @@ object Field {
    * @param M any mutable type
    * @param T the value type
    */
-  def fieldAccess[M,T](getter: M => Option[T], setter: M => T => Unit)
-                 (implicit typeManifest: ClassManifest[M]): FieldAccess[M,M,T] = flow[M,M,T](getter, setter)
+  def fieldAccess[M,T](getter: M => Option[T], setter: M => T => Unit, clearer: M => Unit = {_: M => })
+                 (implicit typeManifest: ClassManifest[M]): FieldAccess[M,M,T] = flow[M,M,T](getter, setter, clearer)
 
   def mapAccess[T](name: String): FieldAccess[Map[String,_ <: T],collection.mutable.Map[String,_ >: T],T] =
+  //todo test clearer here
     flow(_.get(name), m => v => m.put(name, v))
 
   def variations[T](fieldAccessArgs: PartialFieldAccess[T]*): PartialFieldAccess[T] = new FieldAccessVariations[T] {

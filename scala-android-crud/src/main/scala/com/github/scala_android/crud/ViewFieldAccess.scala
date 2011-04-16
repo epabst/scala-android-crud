@@ -27,7 +27,7 @@ object ViewFieldAccess extends PlatformTypes {
       case _ => None
     }
 
-    def partialSet(writable: AnyRef, value: T) = writable match {
+    def partialSet(writable: AnyRef, value: Option[T]) = writable match {
       case entryView: View => partialSetInChildView(entryView.findViewById(viewResourceId), value)
       case activity: Activity => partialSetInChildView(activity.findViewById(viewResourceId), value)
       case _ => false
@@ -36,15 +36,17 @@ object ViewFieldAccess extends PlatformTypes {
     def partialGetFromChildView(childView: View) =
       if (childView != null) childViewFieldAccess.partialGet(childView) else None
 
-    def partialSetInChildView(childView: View, value: T) =
+    def partialSetInChildView(childView: View, value: Option[T]) =
       if (childView != null) childViewFieldAccess.partialSet(childView, value) else false
   }
 
-  def viewFieldAccess[V <: View,T](getter: V => Option[T], setter: V => T => Unit)(implicit m: ClassManifest[V]): ViewFieldAccess[V,T] = {
+  def viewFieldAccess[V <: View,T](getter: V => Option[T], setter: V => T => Unit, clearer: V => Unit = {_: V => })
+                                  (implicit m: ClassManifest[V]): ViewFieldAccess[V,T] = {
     new ViewFieldAccess[V,T] {
       def get(view: V) = getter(view)
 
-      def set(view: V, value: T) = setter(view)(value)
+      //todo test that this calls clearer
+      def set(view: V, value: Option[T]) { setter(view)(value.get) }
     }
   }
 
@@ -56,12 +58,13 @@ object ViewFieldAccess extends PlatformTypes {
     new ViewFieldAccessById[T](viewResourceId)(Field.variations(childViewAccessVariations: _*))
   }
 
-  def viewFieldAccessById[V <: View,T](viewResourceId: ViewKey, getter: V => Option[T], setter: V => T => Unit)
+  def viewFieldAccessById[V <: View,T](viewResourceId: ViewKey, getter: V => Option[T], setter: V => T => Unit, clearer: V => Unit = {_: V => })
                                  (implicit m: ClassManifest[V]): ViewFieldAccessById[T] = {
-    viewId(viewResourceId)(viewFieldAccess(getter,setter))
+    viewId(viewResourceId)(viewFieldAccess(getter,setter, clearer))
   }
 
   def formattedTextViewFieldAccess[T](format: ValueFormat[T]): ViewFieldAccess[TextView,T] =
+//todo test that this clears the TextView
     viewFieldAccess[TextView,T](v => format.toValue(v.getText.toString), v => value => v.setText(format.toString(value)))
 
   implicit def primitiveTextViewFieldAccess[T <: AnyVal](implicit m: Manifest[T]): ViewFieldAccess[TextView,T] =
@@ -72,11 +75,13 @@ object ViewFieldAccess extends PlatformTypes {
   private def toOption(string: String): Option[String] = if (string == "") None else Some(string)
 
   implicit val calendarDatePickerFieldAccess: ViewFieldAccess[DatePicker,Calendar] = viewFieldAccess[DatePicker,Calendar](
+//todo test that this clears the DatePicker
     v => Some(new GregorianCalendar(v.getYear, v.getMonth, v.getDayOfMonth)),
     v => calendar => v.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)))
 
   def enumerationSpinnerFieldAccess[E <: Ordered[_]](enum: Enumeration): ViewFieldAccess[Spinner,E] = {
     val valueArray: Array[E] = enum.values.toArray.asInstanceOf[Array[E]]
+//todo test that this clears the Spinner
     viewFieldAccess[Spinner,E](v => Option(v.getSelectedItem.asInstanceOf[E]), spinner => value => {
       //don't do it again if already done from a previous time
       if (spinner.getAdapter == null) {
