@@ -2,10 +2,8 @@ package com.github.scala_android.crud
 
 import android.app.backup.{BackupDataOutput, BackupDataInput, BackupAgent}
 import monitor.Logging
-import scala.collection.mutable
-import scala.collection.JavaConversions._
-import android.os.{Parcel, ParcelFileDescriptor}
 import CursorFieldAccess._
+import android.os.{Bundle, Parcel, ParcelFileDescriptor}
 
 /**
  * A BackupAgent for a CrudApplication.
@@ -18,16 +16,17 @@ import CursorFieldAccess._
 class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Logging {
   final def onBackup(oldState: ParcelFileDescriptor, data: BackupDataOutput, newState: ParcelFileDescriptor) {
     onBackup(oldState, new BackupTarget {
-      def writeEntity(key: String, dataMap: Option[Map[String,Any]]) {
-        debug("Backing up " + key + " <- " + dataMap)
-        dataMap match {
-          case Some(map) =>
+      def writeEntity(key: String, bundleOpt: Option[Bundle]) {
+        debug("Backing up " + key + " <- " + bundleOpt)
+        bundleOpt match {
+          case Some(bundle) =>
             val parcel = Parcel.obtain()
             try {
-              parcel.writeMap(map)
+              parcel.writeBundle(bundle)
               val bytes = parcel.marshall()
               data.writeEntityHeader(key, bytes.length)
               data.writeEntityData(bytes, bytes.length)
+              debug("Backed up " + key + " with " + bytes.length + " bytes")
             } finally parcel.recycle()
           case None => data.writeEntityHeader(key, -1)
         }
@@ -48,10 +47,10 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Log
     entityType.withEntityPersistence[Unit](crudContext, persistence => {
       val all = persistence.findAll(persistence.newCriteria)
       persistence.toIterator(all).foreach(entity => {
-        val map = mutable.Map[String,Any]()
-        entityType.copyFields(entity, map)
+        val bundle = new Bundle
+        entityType.copyFields(entity, bundle)
         val id = persistedId.partialGet(entity).get
-        data.writeEntity(entityType.entityName + "#" + id, Some(map.toMap))
+        data.writeEntity(entityType.entityName + "#" + id, Some(bundle))
       })
     })
   }
@@ -60,7 +59,6 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Log
     onRestore(new CalculatedIterator[RestoreItem] {
       def calculateNextValue(): Option[RestoreItem] = {
         if (data.readNextHeader) {
-          val map = Map[String,Any]()
           val key = data.getKey
           val size = data.getDataSize
           val bytes = new Array[Byte](size)
@@ -68,9 +66,9 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Log
           val parcel = Parcel.obtain
           try {
             parcel.unmarshall(bytes, 0, size)
-            parcel.readMap(map, getClass.getClassLoader)
+            val bundle = parcel.readBundle(getClass.getClassLoader)
+            Some(RestoreItem(key, bundle))
           } finally parcel.recycle()
-          Some(RestoreItem(key, map.toMap))
         } else {
           None
         }
@@ -91,10 +89,10 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Log
   }
 
   def onRestore[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](entityType: CrudEntityType[Q,L,R,W], restoreItem: RestoreItem, crudContext: CrudContext) {
-    debug("Restoring " + restoreItem.key + " <- " + restoreItem.dataMap)
+    debug("Restoring " + restoreItem.key + " <- " + restoreItem.bundle)
     val id = restoreItem.key.substring(restoreItem.key.lastIndexOf("#") + 1).toLong
     val writable = entityType.newWritable
-    entityType.copyFields(restoreItem.dataMap, writable)
+    entityType.copyFields(restoreItem.bundle, writable)
 
     entityType.withEntityPersistence(crudContext, _.save(Some(id), writable))
     Unit
@@ -123,7 +121,7 @@ private[crud] trait CalculatedIterator[T] extends Iterator[T] {
 }
 
 trait BackupTarget {
-  def writeEntity(key: String, dataMap: Option[Map[String,Any]])
+  def writeEntity(key: String, bundle: Option[Bundle])
 }
 
-case class RestoreItem(key: String, dataMap: Map[String,Any])
+case class RestoreItem(key: String, bundle: Bundle)

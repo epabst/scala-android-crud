@@ -4,7 +4,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.scalatest.matchers.ShouldMatchers
-import android.os.ParcelFileDescriptor
 import android.widget.ListAdapter
 import scala.collection.mutable
 import org.easymock.{IAnswer, EasyMock}
@@ -12,6 +11,7 @@ import EasyMock.notNull
 import com.github.triangle.Field
 import com.github.triangle.Field._
 import CursorFieldAccess._
+import android.os.{Bundle, ParcelFileDescriptor}
 
 /**
  * A test for {@link CrudBackupAgent}.
@@ -96,8 +96,8 @@ class CrudBackupAgentSpec extends MyEntityTesting with ShouldMatchers {
 
   def saveRestoreItem(restoreItems: mutable.ListBuffer[RestoreItem]): IAnswer[Unit] = answer {
     val currentArguments = EasyMock.getCurrentArguments
-    currentArguments(1).asInstanceOf[Option[Map[String,Any]]].foreach { map =>
-      restoreItems += RestoreItem(currentArguments(0).asInstanceOf[String], map)
+    currentArguments(1).asInstanceOf[Option[Bundle]].foreach { bundle =>
+      restoreItems += RestoreItem(currentArguments(0).asInstanceOf[String], bundle)
     }
   }
 
