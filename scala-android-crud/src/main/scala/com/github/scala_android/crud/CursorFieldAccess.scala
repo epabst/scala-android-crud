@@ -31,22 +31,16 @@ object CursorFieldAccess extends PlatformTypes {
 /**
  * Also supports accessing a scala Map (mutable.Map for writing) using the same name.
  */
-class CursorFieldAccess[T](val name: String)(implicit val persistedType: PersistedType[T]) extends FieldAccess[Cursor,ContentValues,T] {
-  private lazy val mapAccess = Field.mapAccess[T](name)
+class CursorFieldAccess[T](val name: String)(implicit val persistedType: PersistedType[T]) extends FieldAccessVariations[T] {
+  val fieldAccesses = List(Field.flow[Cursor,ContentValues,T](getFromCursor, setIntoContentValues), Field.mapAccess[T](name))
 
-  override def partialGet(readable: AnyRef) =
-    super.partialGet(readable).orElse(mapAccess.partialGet(readable))
-
-  override def partialSet(writable: AnyRef, value: T) =
-    super.partialSet(writable, value) || mapAccess.partialSet(writable, value)
-
-  def get(cursor: Cursor) = {
+  private def getFromCursor(cursor: Cursor) = {
     val columnIndex = cursor.getColumnIndex(name)
     if (columnIndex < 0) throw new IllegalArgumentException("column not in Cursor: " + name)
     persistedType.getValue(cursor, columnIndex)
   }
 
-  def set(contentValues: ContentValues, value: T) = persistedType.putValue(contentValues, name, value)
+  private def setIntoContentValues(contentValues: ContentValues)(value: T) { persistedType.putValue(contentValues, name, value) }
 }
 
 import CursorFieldAccess._
