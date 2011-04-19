@@ -7,7 +7,7 @@ import collection.Map
 trait CopyableField {
   /**
    * Copies this field from <code>from</code> to <code>to</code>.
-   * @returns true if successfullly set a value
+   * @returns true if successfully set a value
    */
   def copy(from: AnyRef, to: AnyRef): Boolean
 }
@@ -36,9 +36,20 @@ final class Field[T](fieldAccessArgs: PartialFieldAccess[T]*) extends CopyableFi
   val fieldAccesses: List[PartialFieldAccess[T]] = fieldAccessArgs.toList
   /**
    * Finds a value out of <code>from</code> by using the FieldAccess that can handle it.
-   * @returns Some(value) if successful, otherwise None
+   * @returns Some(value) if successful, otherwise None (whether because no PartialFieldAccess applied or because the value was None)
+   * @see #findOptionalValue to differentiate the two None cases
    */
-  def findValue(from: AnyRef): Option[T] = {
+  def findValue(from: AnyRef): Option[T] = findOptionalValue(from).getOrElse {
+    debug("Unable to find value in " + from + " for field " + this)
+    None
+  }
+
+  /**
+   * Finds a value of out <code>from</code>.
+   * @returns Some(Some(value)) if successful, Some(None) if a PartialFieldAccess applied but the value was None,
+   * or None if no PartialFieldAccess applied.
+   */
+  def findOptionalValue(from: AnyRef): Option[Option[T]] = {
     for (fieldAccess <- fieldAccesses) {
       val value = fieldAccess.partialGet(from)
       if (value.isDefined) return value
@@ -51,14 +62,20 @@ final class Field[T](fieldAccessArgs: PartialFieldAccess[T]*) extends CopyableFi
    * @return true if any were successful
    */
   def setValue(to: AnyRef, value: Option[T]): Boolean = {
-    fieldAccesses.foldLeft(false)((result, access) => access.partialSet(to, value) || result)
+    val result = fieldAccesses.foldLeft(false)((result, access) => access.partialSet(to, value) || result)
+    if (!result) debug("Unable to set value of field " + this + " into " + to + " to " + value + ".")
+    result
   }
 
   //inherited
   def copy(from: AnyRef, to: AnyRef): Boolean = {
-    val value = findValue(from)
-    debug("Copying " + value + " from " + from + " to " + to + " for field " + this)
-    setValue(to, value)
+    findOptionalValue(from) match {
+      case Some(optionalValue) =>
+        debug("Copying " + optionalValue + " from " + from + " to " + to + " for field " + this)
+        setValue(to, optionalValue)
+      case None =>
+        false
+    }
   }
 }
 
@@ -72,9 +89,10 @@ trait PartialFieldAccess[T] {
   /**
    * Tries to get the value from <code>readable</code>.
    * @param readable any kind of Object.  If it is not supported by this FieldAccess, this simply returns None.
-   * @returns Some(value) if successful, otherwise None
+   * @returns Some(Some(value)) if successful, Some(None) if a PartialFieldAccess applied but the value was None,
+   * or None if no PartialFieldAccess applied.
    */
-  def partialGet(readable: AnyRef): Option[T]
+  def partialGet(readable: AnyRef): Option[Option[T]]
 
   /**
    * Tries to set the value in <code>writable</code>.
@@ -97,7 +115,7 @@ abstract class FieldGetter[R,T](implicit readableManifest: ClassManifest[R]) ext
     debug("Seeing if " + readable + " is an instance of " + readableManifest.erasure + " to get value")
     if (readable == null) throw new IllegalArgumentException("'readable' may not be null")
     if (readableManifest.erasure.isInstance(readable))
-      get(readable.asInstanceOf[R])
+      Some(get(readable.asInstanceOf[R]))
     else
       None
   }
@@ -143,7 +161,7 @@ trait FieldAccessVariations[T] extends PartialFieldAccess[T] {
    * Gets a value out of <code>readable</code> by using the first FieldAccess that can handle it.
    * @returns Some(value) if successful, otherwise None
    */
-  def partialGet(readable: AnyRef): Option[T] = {
+  def partialGet(readable: AnyRef): Option[Option[T]] = {
     for (fieldAccess <- fieldAccesses) {
       val value = fieldAccess.partialGet(readable)
       if (value.isDefined) return value

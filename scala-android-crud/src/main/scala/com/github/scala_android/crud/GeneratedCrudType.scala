@@ -12,7 +12,7 @@ trait GeneratedCrudType[T <: AnyRef,Q <: AnyRef] extends CrudEntityType[Q,List[T
 
   def createListAdapter(persistence: EntityPersistence[Q,List[T],T,T], crudContext: CrudContext, activity: Activity) = new BaseAdapter() {
     val listPersistence = persistence.asInstanceOf[ListEntityPersistence[T, Q]]
-    val list = {
+    val list: List[T] = {
       val criteria = listPersistence.newCriteria
       copyFields(activity.getIntent, criteria)
       listPersistence.findAll(criteria)
@@ -37,7 +37,7 @@ trait GeneratedCrudType[T <: AnyRef,Q <: AnyRef] extends CrudEntityType[Q,List[T
     //exactly one parent w/o a display page
     case foreignKey :: Nil if !foreignKey.entityType.hasDisplayPage => {
       val parentEntity = foreignKey.entityType
-      val getForeignKey = { _: Unit => foreignKey.partialGet(actionFactory.currentIntent).get }
+      val getForeignKey = { _: Unit => foreignKey.partialGet(actionFactory.currentIntent).get.get }
       actionFactory.adapt(actionFactory.startUpdate(parentEntity), getForeignKey) ::
               parentEntity.displayChildEntityLists(actionFactory, getForeignKey, childEntities(actionFactory.application))
     }

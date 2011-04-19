@@ -79,17 +79,18 @@ class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
   }
 
   @Test
-  def itShouldSkipUnparseableValues() {
+  def itShouldHandleUnparseableValues() {
     val context = mock[Context]
     whenExecuting(context) {
       val field = Field[Int](primitiveTextViewFieldAccess, fieldAccess[MyEntity,Int](_.number, _.number_=))
       val view = new TextView(context)
       view.setText("twenty")
       field.findValue(view) should be (None)
+      field.findOptionalValue(view) should be (Some(None))
 
       val entity = new MyEntity("my1", 30)
       val result = field.copy(view, entity)
-      result should be (false)
+      result should be (true)
       entity.number should be (30)
     }
   }

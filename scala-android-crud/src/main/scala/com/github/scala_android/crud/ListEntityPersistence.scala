@@ -11,7 +11,7 @@ import CursorFieldAccess._
  */
 
 abstract class ListEntityPersistence[T <: AnyRef,Q <: AnyRef] extends EntityPersistence[Q,List[T],T,T] {
-  def getId(entity: T) = persistedId.partialGet(entity).get
+  def getId(entity: T): ID = persistedId.partialGet(entity).get.get
 
   def find(id: ID): Option[T] = {
     findAll(newCriteria).find(entity => id == getId(entity))
@@ -43,7 +43,7 @@ abstract class ListBufferEntityPersistence[T <: AnyRef,Q <: AnyRef] extends List
     newId
   }
 
-  override def delete(ids: List[ID]) = {
+  override def delete(ids: List[ID]) {
     ids.foreach(id => find(id).map(entity => buffer -= entity))
   }
 }
