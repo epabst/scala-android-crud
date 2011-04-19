@@ -9,15 +9,7 @@ import scala.collection.mutable
 import scala.collection.JavaConversions._
 import java.util.{Map => JMap,HashMap}
 
-/**
- * A BackupAgent for a CrudApplication.
- * It must be subclassed in order to put it into the AndroidManifest.xml.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 4/7/11
- * Time: 4:35 PM
- */
-
-class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Logging {
+object CrudBackupAgent {
   private val backupStrategyVersion: Int = 1
 
   private[crud] def marshall(map: mutable.Map[String,Any]): Array[Byte] = {
@@ -40,7 +32,19 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Log
       objectStream.readObject().asInstanceOf[JMap[String,Any]]
     } finally objectStream.close()
   }
+}
 
+/**
+ * A BackupAgent for a CrudApplication.
+ * It must be subclassed in order to put it into the AndroidManifest.xml.
+ * @author Eric Pabst (epabst@gmail.com)
+ * Date: 4/7/11
+ * Time: 4:35 PM
+ */
+
+import CrudBackupAgent._
+
+class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Logging {
   final def onBackup(oldState: ParcelFileDescriptor, data: BackupDataOutput, newState: ParcelFileDescriptor) {
     onBackup(oldState, new BackupTarget {
       def writeEntity(key: String, mapOpt: Option[mutable.Map[String,Any]]) {
@@ -87,6 +91,8 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Log
           val bytes = new Array[Byte](size)
           val actualSize = data.readEntityData(bytes, 0, size)
           debug("Restoring " + key + ": expected " + size + " bytes, read " + actualSize + " bytes")
+          try { debug("Bytes being restored: " + new String(bytes)) }
+          catch { case e: RuntimeException => e.printStackTrace(Console.err) }
           if (actualSize != size) throw new IllegalStateException("readEntityData returned " + actualSize + " instead of " + size)
           val map = unmarshall(bytes)
           debug("Restoring " + key + ": read Map: " + map)

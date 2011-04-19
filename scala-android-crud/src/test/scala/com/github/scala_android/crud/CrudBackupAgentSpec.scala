@@ -11,6 +11,7 @@ import EasyMock.notNull
 import com.github.triangle.Field
 import com.github.triangle.Field._
 import CursorFieldAccess._
+import CrudBackupAgent._
 import android.os.ParcelFileDescriptor
 
 /**
@@ -46,9 +47,8 @@ class CrudBackupAgentSpec extends MyEntityTesting with ShouldMatchers {
       val map = mutable.Map[String,Any]()
       map.put("name", "George")
       map.put("age", 35)
-      val agent = new CrudBackupAgent(application)
-      val bytes = agent.marshall(map)
-      val copy = agent.unmarshall(bytes)
+      val bytes = marshall(map)
+      val copy = unmarshall(bytes)
       copy should be (map)
     }
   }
