@@ -11,7 +11,7 @@ import CursorFieldAccess._
  */
 
 abstract class ListEntityPersistence[T <: AnyRef,Q <: AnyRef] extends EntityPersistence[Q,List[T],T,T] {
-  def getId(entity: T): ID = persistedId.partialGet(entity).get.get
+  def getId(entity: T): ID = persistedId.findValue(entity).get
 
   def find(id: ID): Option[T] = {
     findAll(newCriteria).find(entity => id == getId(entity))

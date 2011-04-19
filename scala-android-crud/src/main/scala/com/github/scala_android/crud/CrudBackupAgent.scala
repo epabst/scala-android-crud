@@ -76,7 +76,7 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Log
       persistence.toIterator(all).foreach(entity => {
         val map = mutable.Map[String,Any]()
         entityType.copyFields(entity, map)
-        val id = persistedId.partialGet(entity).get
+        val id = persistedId.partialGet(entity).get.get
         data.writeEntity(entityType.entityName + "#" + id, Some(map))
       })
     })

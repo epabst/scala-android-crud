@@ -37,7 +37,7 @@ trait GeneratedCrudType[T <: AnyRef,Q <: AnyRef] extends CrudEntityType[Q,List[T
     //exactly one parent w/o a display page
     case foreignKey :: Nil if !foreignKey.entityType.hasDisplayPage => {
       val parentEntity = foreignKey.entityType
-      val getForeignKey = { _: Unit => foreignKey.partialGet(actionFactory.currentIntent).get.get }
+      val getForeignKey = { _: Unit => foreignKey.findValue(actionFactory.currentIntent).get }
       actionFactory.adapt(actionFactory.startUpdate(parentEntity), getForeignKey) ::
               parentEntity.displayChildEntityLists(actionFactory, getForeignKey, childEntities(actionFactory.application))
     }

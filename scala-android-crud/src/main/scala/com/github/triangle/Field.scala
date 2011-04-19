@@ -95,6 +95,13 @@ trait PartialFieldAccess[T] {
   def partialGet(readable: AnyRef): Option[Option[T]]
 
   /**
+   * Finds a value out of <code>readable</code>.
+   * @returns Some(value) if successful, otherwise None (whether this PartialFieldAccess didn't apply or because the value was None)
+   * @see #partialGet(AnyRef) to differentiate the two None cases
+   */
+  def findValue(readable:AnyRef): Option[T] = partialGet(readable).getOrElse(None)
+
+  /**
    * Tries to set the value in <code>writable</code>.
    * @param writable any kind of Object.  If it is not supported by this FieldAccess, this simply returns false.
    * @param value the value in an Option.  It will be None if the partialGet of the readable returned None.
