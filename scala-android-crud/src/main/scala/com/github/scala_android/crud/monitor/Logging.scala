@@ -46,4 +46,13 @@ trait Logging {
       case e: RuntimeException if (e.getMessage == "Stub!") => println("ERROR " + f)
     }
   }
+
+  protected def error(f: => String, e: Throwable) {
+    try Log.e(logTag, f, e)
+    catch {
+      case e: RuntimeException if (e.getMessage == "Stub!") =>
+        print("ERROR " + f + ": ")
+        e.printStackTrace(Console.out)
+    }
+  }
 }

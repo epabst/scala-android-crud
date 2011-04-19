@@ -95,7 +95,6 @@ class SQLiteEntityPersistence(entityType: SQLiteCrudEntityType, crudContext: Cru
     entityType.copyFields(contentValues, map)
     val bytes = CrudBackupAgent.marshall(map)
     debug("Scheduled backup which will include " + entityType.entityName + "#" + id + ": size " + bytes.size + " bytes")
-    try { debug("Bytes being scheduled: " + new String(bytes)) }
     id
   }
 
