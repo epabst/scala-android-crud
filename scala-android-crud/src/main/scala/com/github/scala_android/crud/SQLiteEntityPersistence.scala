@@ -86,7 +86,15 @@ class SQLiteEntityPersistence(entityType: SQLiteCrudEntityType, crudContext: Cru
       }
       case Some(id) => {
         info("Updating " + entityType.entityName + " #" + id + " with " + contentValues)
-        database.update(entityType.entityName, contentValues, BaseColumns._ID + "=" + id, null)
+        val rowCount = database.update(entityType.entityName, contentValues, BaseColumns._ID + "=" + id, null)
+        if (rowCount == 0) {
+          contentValues.put(BaseColumns._ID, id)
+          info("Added " + entityType.entityName + " #" + id + " with " + contentValues + " since id is not present yet")
+          val resultingId = database.insert(entityType.entityName, null, contentValues)
+          if (id != resultingId)
+            throw new IllegalStateException("id changed from " + id + " to " + resultingId +
+                    " when restoring " + entityType.entityName + " #" + id + " with " + contentValues)
+        }
         id
       }
     }
