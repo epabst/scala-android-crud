@@ -128,6 +128,10 @@ abstract class FieldGetter[R,T](implicit readableManifest: ClassManifest[R]) ext
   }
 }
 
+trait NoSetter[T] extends PartialFieldAccess[T] {
+  def partialSet(writable: AnyRef, value: Option[T]) = false
+}
+
 /**
  * {@PartialFieldAccess} support for setting a value if <code>writable</code> is of type W.
  * This is a trait so that it can be mixed with FieldGetter.
@@ -195,10 +199,8 @@ object Field {
   /** Defines read-only fieldAccess for a field value for a Readable type. */
   def readOnly[R,T](getter: R => Option[T])
                    (implicit typeManifest: ClassManifest[R]): FieldGetter[R,T] = {
-    new FieldGetter[R,T] {
+    new FieldGetter[R,T] with NoSetter[T] {
       def get(readable: R) = getter(readable)
-
-      def partialSet(writable: AnyRef, value: Option[T]) = false
     }
   }
 
@@ -220,7 +222,12 @@ object Field {
   }
 
   /** Defines a default for a field value, used when copied from {@link Unit}. */
-  def default[T](value: => T): PartialFieldAccess[T] = readOnly[Any,T](r => if (Unit == r) Some(value) else None)
+  def default[T](value: => T): PartialFieldAccess[T] = new PartialFieldAccess[T] with NoSetter[T] {
+    def partialGet(readable: AnyRef) = readable match {
+      case Unit => Some(Some(value))
+      case _ => None
+    }
+  }
 
   /**
    * Defines a flow for a field value from a Readable type to a Writable type.
@@ -235,11 +242,10 @@ object Field {
     new FieldAccess[R,W,T] {
       def get(readable: R) = getter(readable)
 
-      //todo test this for None that it should call clearer
       def set(writable: W, valueOpt: Option[T]) {
         valueOpt match {
           case Some(value) => setter(writable)(value)
-          case None =>
+          case None => clearer(writable)
         }
       }
     }
@@ -254,8 +260,7 @@ object Field {
                  (implicit typeManifest: ClassManifest[M]): FieldAccess[M,M,T] = flow[M,M,T](getter, setter, clearer)
 
   def mapAccess[T](name: String): FieldAccess[Map[String,_ <: T],collection.mutable.Map[String,_ >: T],T] =
-  //todo test clearer here
-    flow(_.get(name), m => v => m.put(name, v))
+    flow(_.get(name), m => v => m.put(name, v), _.remove(name))
 
   def variations[T](fieldAccessArgs: PartialFieldAccess[T]*): PartialFieldAccess[T] = new FieldAccessVariations[T] {
     val fieldAccesses: List[PartialFieldAccess[T]] = fieldAccessArgs.toList
