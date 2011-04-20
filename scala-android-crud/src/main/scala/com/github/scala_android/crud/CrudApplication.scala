@@ -8,6 +8,11 @@ package com.github.scala_android.crud
  */
 
 trait CrudApplication {
+  def name: String
+
+  //this will be used for programmatic uses such as a database name
+  lazy val nameId = name.replace(" ", "_").toLowerCase
+
   /**
    * All entities in the application, in priority order of most interesting first.
    */

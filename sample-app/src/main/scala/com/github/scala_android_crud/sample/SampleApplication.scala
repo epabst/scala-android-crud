@@ -10,5 +10,7 @@ import com.github.scala_android.crud.CrudApplication
  */
 
 object SampleApplication extends CrudApplication {
+  val name = "Sample Application"
+
   def allEntities = List(AuthorCrudType)
 }
