@@ -29,4 +29,23 @@ class PersistedTypeSpec extends ShouldMatchers with EasyMockSugar {
     persistedType.putValue(bundle, "foo", value)
     persistedType.getValue(bundle, "foo") should be (Some(value))
   }
+
+  @Test
+  def itShouldGiveCorrectSQLiteType() {
+    import PersistedType._
+    stringType.sqliteType should be ("TEXT")
+    blobType.sqliteType should be ("BLOB")
+    longRefType.sqliteType should be ("INTEGER")
+    longType.sqliteType should be ("INTEGER")
+    intRefType.sqliteType should be ("INTEGER")
+    intType.sqliteType should be ("INTEGER")
+    shortRefType.sqliteType should be ("INTEGER")
+    shortType.sqliteType should be ("INTEGER")
+    byteRefType.sqliteType should be ("INTEGER")
+    byteType.sqliteType should be ("INTEGER")
+    doubleRefType.sqliteType should be ("REAL")
+    doubleType.sqliteType should be ("REAL")
+    floatRefType.sqliteType should be ("REAL")
+    floatType.sqliteType should be ("REAL")
+  }
 }

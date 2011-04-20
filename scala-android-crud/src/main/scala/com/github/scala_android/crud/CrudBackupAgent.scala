@@ -63,7 +63,7 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Log
 
   def onBackup(oldState: ParcelFileDescriptor, data: BackupTarget, newState: ParcelFileDescriptor) {
     info("Backing up " + application)
-    val crudContext = new CrudContext(this)
+    val crudContext = new CrudContext(this, application)
     application.allEntities.map(_ match {
       case generated: GeneratedCrudType[_,_] => //skip
       case entityType: CrudEntityType[_,_,_,_] => onBackup(entityType, data, crudContext)
@@ -111,7 +111,7 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Log
 
   def onRestore(data: Iterator[RestoreItem], appVersionCode: Int, newState: ParcelFileDescriptor) {
     info("Restoring backup of " + application)
-    val crudContext = new CrudContext(this)
+    val crudContext = new CrudContext(this, application)
     val entities = application.allEntities
     data.foreach(restoreItem => {
       val entityName = restoreItem.key.substring(0, restoreItem.key.lastIndexOf("#"))

@@ -5,7 +5,6 @@ import CursorFieldAccess._
 import ViewFieldAccess._
 import com.github.triangle._
 import android.widget.TextView
-import android.content.Context
 
 /**
  * A CRUD type for Author.
@@ -21,8 +20,6 @@ object AuthorCrudType extends SQLiteCrudEntityType {
   def activityClass = classOf[AuthorActivity]
 
   def listActivityClass = classOf[AuthorListActivity]
-
-  def getDatabaseSetup(context: Context) = null
 
   def entryLayout = R.layout.author_entry
 

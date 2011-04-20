@@ -1,6 +1,7 @@
 package com.github.scala_android.crud
 
 import res.R
+import com.github.triangle.CopyableField
 
 /**
  * A simple CrudEntityTypeRef for testing.
@@ -10,6 +11,8 @@ import res.R
  */
 object MyCrudEntityTypeRef extends CrudEntityTypeRef {
   def entityName = "MyEntity"
+
+  def fields = List[CopyableField]()
 
   def addItemString = R.string.add_item
 

@@ -9,6 +9,8 @@ import android.os.Bundle
 trait PersistedType[T] {
   def valueManifest: Manifest[T]
 
+  def sqliteType: String
+
   def getValue(cursor: Cursor, cursorIndex: Int): Option[T]
 
   def putValue(contentValues: ContentValues, name: String, value: T)
@@ -28,6 +30,8 @@ trait PersistedType[T] {
 private class ConvertedPersistedType[T,P](toValue: P => Option[T], toPersisted: T => P)
                                           (implicit persistedType: PersistedType[P], implicit val valueManifest: Manifest[T])
         extends PersistedType[T] {
+  def sqliteType = persistedType.sqliteType
+
   def putValue(contentValues: ContentValues, name: String, value: T) {
     persistedType.putValue(contentValues, name, toPersisted(value))
   }
@@ -41,7 +45,8 @@ private class ConvertedPersistedType[T,P](toValue: P => Option[T], toPersisted: 
   def getValue(bundle: Bundle, name: String): Option[T] = persistedType.getValue(bundle, name).flatMap(toValue)
 }
 
-private class DirectPersistedType[T <: AnyRef](cursorGetter: Cursor => Int => Option[T], contentValuesPutter: ContentValues => (String, T) => Unit,
+private class DirectPersistedType[T <: AnyRef](val sqliteType: String,
+                                               cursorGetter: Cursor => Int => Option[T], contentValuesPutter: ContentValues => (String, T) => Unit,
                                                bundleGetter: Bundle => String => Option[T], bundlePutter: Bundle => (String, T) => Unit)
                                       (implicit val valueManifest: Manifest[T]) extends PersistedType[T] {
   def putValue(contentValues: ContentValues, name: String, value: T) {
@@ -58,8 +63,10 @@ private class DirectPersistedType[T <: AnyRef](cursorGetter: Cursor => Int => Op
 }
 
 private class CastedPersistedType[T <: AnyVal, R <: AnyRef](implicit refType: PersistedType[R],
-                                                               implicit val valueManifest: Manifest[T])
+                                                            implicit val valueManifest: Manifest[T])
         extends PersistedType[T] {
+  def sqliteType = refType.sqliteType
+
   def putValue(contentValues: ContentValues, name: String, value: T) {
     refType.putValue(contentValues, name, value.asInstanceOf[R])
   }
@@ -99,14 +106,14 @@ object PersistedType {
     def getJFloat(index: Int): java.lang.Float = cursor.getFloat(index).asInstanceOf[java.lang.Float]
   }
   private implicit def toRichCursor(cursor: Cursor): RichCursor = new RichCursor(cursor)
-  implicit lazy val stringType: PersistedType[String] = directPersistedType[String](_.getString, _.put, _.getString, _.putString)
-  implicit lazy val longRefType: PersistedType[java.lang.Long] = directPersistedType[java.lang.Long](_.getJLong, _.put, _.getJLong, _.putJLong)
-  implicit lazy val intRefType: PersistedType[java.lang.Integer] = directPersistedType[java.lang.Integer](_.getJInt, _.put, _.getJInt, _.putJInt)
-  implicit lazy val shortRefType: PersistedType[java.lang.Short] = directPersistedType[java.lang.Short](_.getJShort, _.put, _.getJShort, _.putJShort)
-  implicit lazy val byteRefType: PersistedType[java.lang.Byte] = directPersistedType[java.lang.Byte](_.getJByte, _.put, _.getJByte, _.putJByte)
-  implicit lazy val doubleRefType: PersistedType[java.lang.Double] = directPersistedType[java.lang.Double](_.getJDouble, _.put, _.getJDouble, _.putJDouble)
-  implicit lazy val floatRefType: PersistedType[java.lang.Float] = directPersistedType[java.lang.Float](_.getJFloat, _.put, _.getJFloat, _.putJFloat)
-  implicit lazy val blobType: PersistedType[Array[Byte]] = directPersistedType[Array[Byte]](_.getBlob, _.put, _.getByteArray, _.putByteArray)
+  implicit lazy val stringType: PersistedType[String] = directPersistedType[String]("TEXT", _.getString, _.put, _.getString, _.putString)
+  implicit lazy val longRefType: PersistedType[java.lang.Long] = directPersistedType[java.lang.Long]("INTEGER", _.getJLong, _.put, _.getJLong, _.putJLong)
+  implicit lazy val intRefType: PersistedType[java.lang.Integer] = directPersistedType[java.lang.Integer]("INTEGER", _.getJInt, _.put, _.getJInt, _.putJInt)
+  implicit lazy val shortRefType: PersistedType[java.lang.Short] = directPersistedType[java.lang.Short]("INTEGER", _.getJShort, _.put, _.getJShort, _.putJShort)
+  implicit lazy val byteRefType: PersistedType[java.lang.Byte] = directPersistedType[java.lang.Byte]("INTEGER", _.getJByte, _.put, _.getJByte, _.putJByte)
+  implicit lazy val doubleRefType: PersistedType[java.lang.Double] = directPersistedType[java.lang.Double]("REAL", _.getJDouble, _.put, _.getJDouble, _.putJDouble)
+  implicit lazy val floatRefType: PersistedType[java.lang.Float] = directPersistedType[java.lang.Float]("REAL", _.getJFloat, _.put, _.getJFloat, _.putJFloat)
+  implicit lazy val blobType: PersistedType[Array[Byte]] = directPersistedType[Array[Byte]]("BLOB", _.getBlob, _.put, _.getByteArray, _.putByteArray)
   implicit lazy val longType: PersistedType[Long] = castedPersistedType[Long,java.lang.Long]
   implicit lazy val intType: PersistedType[Int] = castedPersistedType[Int,java.lang.Integer]
   implicit lazy val shortType: PersistedType[Short] = castedPersistedType[Short,java.lang.Short]
@@ -141,8 +148,9 @@ object PersistedType {
   }
 
   //doesn't require an Option.
-  private def directPersistedType[T <: AnyRef](cursorGetter: Cursor => Int => T, contentValuesPutter: ContentValues => (String, T) => Unit,
+  private def directPersistedType[T <: AnyRef](sqliteType: String,
+                                               cursorGetter: Cursor => Int => T, contentValuesPutter: ContentValues => (String, T) => Unit,
                                                bundleGetter: Bundle => String => T, bundlePutter: Bundle => (String, T) => Unit)
                                               (implicit valueManifest: Manifest[T]) =
-    new DirectPersistedType(c => index => Some(cursorGetter(c)(index)), contentValuesPutter, b => k => Some(bundleGetter(b)(k)), bundlePutter)
+    new DirectPersistedType(sqliteType, c => index => Some(cursorGetter(c)(index)), contentValuesPutter, b => k => Some(bundleGetter(b)(k)), bundlePutter)
 }

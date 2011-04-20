@@ -19,7 +19,7 @@ import collection.mutable
 class SQLiteEntityPersistence(entityType: SQLiteCrudEntityType, crudContext: CrudContext)
   extends EntityPersistence[SQLiteCriteria,Cursor,Cursor,ContentValues] with Logging {
 
-  lazy val databaseSetup = entityType.getDatabaseSetup(crudContext.context)
+  lazy val databaseSetup = entityType.getDatabaseSetup(crudContext)
   lazy val database: SQLiteDatabase = databaseSetup.getWritableDatabase
   private lazy val backupManager = new BackupManager(crudContext.context)
   private var cursors = new SynchronizedQueue[Cursor]

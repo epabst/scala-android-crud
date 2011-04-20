@@ -20,7 +20,7 @@ class ActivityUIActionFactorySpec extends MyEntityTesting with ShouldMatchers {
   import ActivityUIActionFactory._
   import MyCrudEntityTypeRef.entityName
 
-  val crudContext = new CrudContext(null)
+  val crudContext = new CrudContext(null, null)
 
   @Test
   def getCreateIntentShouldGetTheRightUri {

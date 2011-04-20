@@ -10,7 +10,7 @@ import scala.collection.mutable
  * Time: 3:43 PM
  */
 
-class CrudContext(val context: Context) {
+class CrudContext(val context: Context, val application: CrudApplication) {
   private[crud] val variables = mutable.Map[ContextVar[_], AnyVal]()
 }
 

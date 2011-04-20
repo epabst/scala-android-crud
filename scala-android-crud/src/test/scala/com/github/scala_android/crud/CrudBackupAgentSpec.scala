@@ -22,8 +22,6 @@ import android.os.ParcelFileDescriptor
  */
 @RunWith(classOf[RobolectricTestRunner])
 class CrudBackupAgentSpec extends MyEntityTesting with ShouldMatchers {
-  val crudContext = new CrudContext(null)
-
   @Test
   def calculatedIteratorShouldWork() {
     val values = List("a", "b", "c").toIterator
@@ -42,15 +40,12 @@ class CrudBackupAgentSpec extends MyEntityTesting with ShouldMatchers {
 
   @Test
   def shouldMarshallAndUnmarshall() {
-    val application = mock[CrudApplication]
-    whenExecuting(application) {
-      val map = mutable.Map[String,Any]()
-      map.put("name", "George")
-      map.put("age", 35)
-      val bytes = marshall(map)
-      val copy = unmarshall(bytes)
-      copy should be (map)
-    }
+    val map = mutable.Map[String,Any]()
+    map.put("name", "George")
+    map.put("age", 35)
+    val bytes = marshall(map)
+    val copy = unmarshall(bytes)
+    copy should be (map)
   }
 
   @Test

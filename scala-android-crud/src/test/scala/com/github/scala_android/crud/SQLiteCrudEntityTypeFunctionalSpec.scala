@@ -48,19 +48,23 @@ class SQLiteCrudEntityTypeFunctionalSpec extends EasyMockSugar with ShouldMatche
     val addItemString = R.string.add_item
     val editItemString = R.string.edit_item
     val cancelItemString = R.string.cancel_item
-
-    def getDatabaseSetup(context: Context) = new TestingDatabaseSetup(context)
-
     def activityClass = classOf[CrudActivity[_,_,_,_]]
     def listActivityClass = classOf[CrudListActivity[_,_,_,_]]
   }
 
+  object TestApplication extends CrudApplication {
+    val name = "Test Application"
+
+    def allEntities = List(TestEntityType)
+  }
+
   @Test
-  def shouldUseCorrectColumnNamesForFindAll {
+  def shouldUseCorrectColumnNamesForFindAll() {
     val context = mock[Context]
     val crudContext = mock[CrudContext]
     expecting {
       call(crudContext.context).andReturn(context).anyTimes
+      call(crudContext.application).andReturn(TestApplication).anyTimes
     }
     whenExecuting(crudContext) {
       val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext)
@@ -71,11 +75,12 @@ class SQLiteCrudEntityTypeFunctionalSpec extends EasyMockSugar with ShouldMatche
   }
 
   @Test
-  def shouldCloseCursorsWhenClosing {
+  def shouldCloseCursorsWhenClosing() {
     val context = mock[Context]
     val crudContext = mock[CrudContext]
     expecting {
       call(crudContext.context).andReturn(context).anyTimes
+      call(crudContext.application).andReturn(TestApplication).anyTimes
     }
     whenExecuting(crudContext) {
       val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext)
@@ -94,16 +99,16 @@ class SQLiteCrudEntityTypeFunctionalSpec extends EasyMockSugar with ShouldMatche
   }
 
   @Test
-  def shouldRefreshCursorWhenDeletingAndSaving {
+  def shouldRefreshCursorWhenDeletingAndSaving() {
     val activity = mock[Activity]
     val observer = mock[DataSetObserver]
     expecting {
       call(activity.getIntent).andReturn(new Intent("foo", Uri.EMPTY)).anyTimes
-      call(activity.startManagingCursor(isA(classOf[Cursor]))).asStub
+      call(activity.startManagingCursor(isA(classOf[Cursor]))).asStub()
       if (runningOnRealAndroid) call(observer.onChanged())
     }
     whenExecuting(activity, observer) {
-      val crudContext = new CrudContext(activity)
+      val crudContext = new CrudContext(activity, TestApplication)
       val listAdapter = TestEntityType.createListAdapter(crudContext, activity)
       listAdapter.getCount should be (0)
 

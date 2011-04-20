@@ -15,7 +15,7 @@ trait BaseCrudActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends 
 
   def application: CrudApplication
 
-  val crudContext = new CrudContext(this)
+  val crudContext = new CrudContext(this, application)
 
   override lazy val logTag = classOf[BaseCrudActivity[Q,L,R,W]].getName + "(" + entityType.entityName + ")"
 
@@ -35,5 +35,5 @@ trait BaseCrudActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends 
     //todo implement
   }
 
-  lazy val actionFactory = new ActivityUIActionFactory(this, application)
+  lazy val actionFactory = new ActivityUIActionFactory(this, crudContext.application)
 }

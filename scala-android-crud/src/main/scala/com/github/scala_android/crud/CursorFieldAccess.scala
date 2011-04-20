@@ -19,13 +19,16 @@ object CursorFieldAccess extends PlatformTypes {
 
   val persistedId = persisted[ID](BaseColumns._ID)
 
-  def queryFieldNames(fields: List[CopyableField]): List[String] = {
-    persistedId.name :: fieldAccessFlatMap(fields, _ match {
-      case fieldAccess: CursorFieldAccess[_] => Some(fieldAccess.name)
-      case foreignKey: ForeignKey => Some(foreignKey.fieldName)
+  def persistedFields(fields: List[CopyableField]): List[CursorFieldAccess[_]] = {
+    val id: CursorFieldAccess[_] = persistedId
+    id :: fieldAccessFlatMap(fields, _ match {
+      case fieldAccess: CursorFieldAccess[_] => Some(fieldAccess)
+      case foreignKey: ForeignKey => Some[CursorFieldAccess[_]](foreignKey.persistedField)
       case _ => None
     })
   }
+
+  def queryFieldNames(fields: List[CopyableField]): List[String] = persistedFields(fields).map(_.name)
 
   def sqliteCriteria[T](name: String) = Field.writeOnly[SQLiteCriteria,T](criteria => value => criteria.selection = name + "=" + value)
 }
@@ -57,5 +60,6 @@ import ViewFieldAccess.intentId
 
 class ForeignKey(val entityType: CrudEntityTypeRef) extends PlatformTypes with FieldAccessVariations[ID] {
   val fieldName = entityType.entityName.toLowerCase + BaseColumns._ID
-  val fieldAccesses = List[PartialFieldAccess[ID]](persisted(fieldName), intentId(entityType.entityName), sqliteCriteria(fieldName))
+  val persistedField = persisted[ID](fieldName)
+  val fieldAccesses = List[PartialFieldAccess[ID]](persistedField, intentId(entityType.entityName), sqliteCriteria(fieldName))
 }

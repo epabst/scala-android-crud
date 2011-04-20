@@ -13,8 +13,6 @@ import android.net.Uri
  * Time: 3:24 PM
  */
 trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends CrudEntityTypeRef {
-  def fields: List[CopyableField]
-
   def headerLayout: LayoutKey
   def listLayout: LayoutKey
   def rowLayout: LayoutKey
@@ -124,6 +122,8 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
 trait CrudEntityTypeRef extends PlatformTypes {
   //this is the type used for internationalized strings
   def entityName: String
+
+  def fields: List[CopyableField]
 
   def hasDisplayPage: Boolean
 
