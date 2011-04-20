@@ -22,22 +22,22 @@ object ViewFieldAccess extends PlatformTypes {
   class ViewFieldAccessById[T](val viewResourceId: ViewKey)(childViewFieldAccess: PartialFieldAccess[T])
           extends PartialFieldAccess[T] {
     def partialGet(readable: AnyRef) = readable match {
-      case entryView: View => Option(entryView.findViewById(viewResourceId)).flatMap(v => partialGetFromChildView(v))
-      case activity: Activity => Option(activity.findViewById(viewResourceId)).flatMap(v => partialGetFromChildView(v))
+      case entryView: View => partialGetFromChildView(Option(entryView.findViewById(viewResourceId)))
+      case activity: Activity => partialGetFromChildView(Option(activity.findViewById(viewResourceId)))
       case _ => None
     }
 
     def partialSet(writable: AnyRef, value: Option[T]) = writable match {
-      case entryView: View => partialSetInChildView(entryView.findViewById(viewResourceId), value)
-      case activity: Activity => partialSetInChildView(activity.findViewById(viewResourceId), value)
+      case entryView: View => partialSetInChildView(Option(entryView.findViewById(viewResourceId)), value)
+      case activity: Activity => partialSetInChildView(Option(activity.findViewById(viewResourceId)), value)
       case _ => false
     }
 
-    def partialGetFromChildView(childView: View) =
-      if (childView != null) childViewFieldAccess.partialGet(childView) else None
+    def partialGetFromChildView(childView: Option[View]) =
+      childView.flatMap(v => childViewFieldAccess.partialGet(v))
 
-    def partialSetInChildView(childView: View, value: Option[T]) =
-      if (childView != null) childViewFieldAccess.partialSet(childView, value) else false
+    def partialSetInChildView(childView: Option[View], value: Option[T]): Boolean =
+      childView.map(v => childViewFieldAccess.partialSet(v, value)).getOrElse(false)
   }
 
   def viewFieldAccess[V <: View,T](getter: V => Option[T], setter: V => T => Unit, clearer: V => Unit = {_: V => })
