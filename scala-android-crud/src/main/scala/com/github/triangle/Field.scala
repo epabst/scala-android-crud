@@ -45,6 +45,12 @@ final class Field[T](fieldAccessArgs: PartialFieldAccess[T]*) extends CopyableFi
   }
 
   /**
+   * Gets the value, similar to {@link Map#apply}, and the value must not be None.
+   * @see #findValue
+   */
+  def apply(readable: AnyRef): T = findValue(readable).get
+
+  /**
    * Finds a value of out <code>from</code>.
    * @returns Some(Some(value)) if successful, Some(None) if a PartialFieldAccess applied but the value was None,
    * or None if no PartialFieldAccess applied.
