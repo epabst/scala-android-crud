@@ -40,6 +40,31 @@ class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
   }
 
   @Test
+  def itShouldClearTheViewIfEmpty() {
+    val viewGroup = mock[View]
+    val view1 = mock[TextView]
+    val view2 = mock[TextView]
+    val view3 = mock[TextView]
+    expecting {
+      call(viewGroup.findViewById(101)).andReturn(view1)
+      call(viewGroup.findViewById(102)).andReturn(view2)
+      call(view1.setText(""))
+      call(view2.setText("Please Fill"))
+      call(viewGroup.findViewById(103)).andReturn(view3)
+      call(view3.setText(""))
+    }
+    whenExecuting(viewGroup, view1, view2, view3) {
+      val stringField = Field(
+        viewId[TextView,String](101),
+        viewFieldAccessById[TextView,String](102, v => Option(v.getText.toString), _.setText, _.setText("Please Fill")))
+      stringField.setValue(viewGroup, None)
+
+      val intField = Field(viewId[TextView,Int](103))
+      intField.setValue(viewGroup, None)
+    }
+  }
+
+  @Test
   def itShouldOnlyCopyToAndFromViewByIdIfTheRightType() {
     val context = mock[Context]
     val group = mock[View]

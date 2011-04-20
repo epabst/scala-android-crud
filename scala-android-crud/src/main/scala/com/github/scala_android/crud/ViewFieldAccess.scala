@@ -45,8 +45,12 @@ object ViewFieldAccess extends PlatformTypes {
     new ViewFieldAccess[V,T] {
       def get(view: V) = getter(view)
 
-      //todo test that this calls clearer
-      def set(view: V, value: Option[T]) { setter(view)(value.get) }
+      def set(view: V, optionalValue: Option[T]) {
+        optionalValue match {
+          case Some(value) => setter(view)(value)
+          case None => clearer(view)
+        }
+      }
     }
   }
 
@@ -64,24 +68,21 @@ object ViewFieldAccess extends PlatformTypes {
   }
 
   def formattedTextViewFieldAccess[T](format: ValueFormat[T]): ViewFieldAccess[TextView,T] =
-//todo test that this clears the TextView
-    viewFieldAccess[TextView,T](v => format.toValue(v.getText.toString), v => value => v.setText(format.toString(value)))
+    viewFieldAccess[TextView,T](v => format.toValue(v.getText.toString), v => value => v.setText(format.toString(value)), _.setText(""))
 
   implicit def primitiveTextViewFieldAccess[T <: AnyVal](implicit m: Manifest[T]): ViewFieldAccess[TextView,T] =
     formattedTextViewFieldAccess(new BasicValueFormat[T]())
 
-  implicit val stringTextViewFieldAccess: ViewFieldAccess[TextView,String] = viewFieldAccess[TextView,String](v => toOption(v.getText.toString.trim), _.setText)
+  implicit val stringTextViewFieldAccess: ViewFieldAccess[TextView,String] = viewFieldAccess[TextView,String](v => toOption(v.getText.toString.trim), _.setText, _.setText(""))
 
   private def toOption(string: String): Option[String] = if (string == "") None else Some(string)
 
   implicit val calendarDatePickerFieldAccess: ViewFieldAccess[DatePicker,Calendar] = viewFieldAccess[DatePicker,Calendar](
-//todo test that this clears the DatePicker
     v => Some(new GregorianCalendar(v.getYear, v.getMonth, v.getDayOfMonth)),
     v => calendar => v.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)))
 
   def enumerationSpinnerFieldAccess[E <: Ordered[_]](enum: Enumeration): ViewFieldAccess[Spinner,E] = {
     val valueArray: Array[E] = enum.values.toArray.asInstanceOf[Array[E]]
-//todo test that this clears the Spinner
     viewFieldAccess[Spinner,E](v => Option(v.getSelectedItem.asInstanceOf[E]), spinner => value => {
       //don't do it again if already done from a previous time
       if (spinner.getAdapter == null) {
