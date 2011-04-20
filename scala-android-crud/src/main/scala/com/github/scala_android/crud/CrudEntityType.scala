@@ -156,6 +156,23 @@ trait CrudEntityTypeRef extends PlatformTypes {
 }
 
 /**
+ * A trait for stubbing out the UI methods of CrudEntityType for use when the entity will
+ * never be used with the UI.
+ */
+trait HiddenEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends CrudEntityType[Q,L,R,W] {
+  def headerLayout: LayoutKey = throw new UnsupportedOperationException
+  def listLayout: LayoutKey = throw new UnsupportedOperationException
+  def rowLayout: LayoutKey = throw new UnsupportedOperationException
+  def displayLayout: Option[LayoutKey] = throw new UnsupportedOperationException
+  def entryLayout: LayoutKey = throw new UnsupportedOperationException
+  def addItemString: SKey = throw new UnsupportedOperationException
+  def editItemString: SKey = throw new UnsupportedOperationException
+  def cancelItemString: SKey = throw new UnsupportedOperationException
+  def activityClass = throw new UnsupportedOperationException
+  def listActivityClass = throw new UnsupportedOperationException
+}
+
+/**
  * An undoable command.  The command should have already completed, but it can be undone or accepted.
  */
 trait Undoable[T] {

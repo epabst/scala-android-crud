@@ -107,7 +107,10 @@ class SQLiteEntityPersistence(entityType: SQLiteCrudEntityType, crudContext: Cru
   }
 
   def delete(ids: List[ID]) {
-    ids.foreach(id => database.delete(entityType.entityName, BaseColumns._ID + "=" + id, Nil.toArray))
+    ids.foreach { id =>
+      database.delete(entityType.entityName, BaseColumns._ID + "=" + id, Nil.toArray)
+      DeletedEntityIdCrudType.recordDeletion(entityType, id, crudContext.context)
+    }
     notifyDataChanged()
   }
 

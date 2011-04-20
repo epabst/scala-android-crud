@@ -8,6 +8,9 @@ import java.io.{ObjectInputStream, ByteArrayInputStream, ObjectOutputStream, Byt
 import scala.collection.mutable
 import scala.collection.JavaConversions._
 import java.util.{Map => JMap,HashMap}
+import com.github.triangle.Field
+import android.database.Cursor
+import android.content.{Context, ContentValues}
 
 object CrudBackupAgent {
   private val backupStrategyVersion: Int = 1
@@ -63,6 +66,7 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Log
 
   def onBackup(oldState: ParcelFileDescriptor, data: BackupTarget, newState: ParcelFileDescriptor) {
     info("Backing up " + application)
+    DeletedEntityIdCrudType.writeEntityRemovals(data, this)
     val crudContext = new CrudContext(this, application)
     application.allEntities.map(_ match {
       case generated: GeneratedCrudType[_,_] => //skip
@@ -157,3 +161,51 @@ trait BackupTarget {
 }
 
 case class RestoreItem(key: String, map: mutable.Map[String,Any])
+
+/**
+ * Helps prevent restoring entities that the user deleted when an onRestore operation happens.
+ * It only contains the entityName and ID since it is not intended as a recycle bin,
+ * but to delete data in the Backup Service.
+ * This entity is in its own CrudApplication by itself, separate from any other CrudApplication.
+ * It is intended to be in a separate database owned by the scala-android-crud framework.
+ */
+object DeletedEntityIdCrudType extends SQLiteCrudEntityType with HiddenEntityType[SQLiteCriteria,Cursor,Cursor,ContentValues] {
+
+  def entityName = "DeletedEntityId"
+
+  private val entityNameField = persisted[String]("entityName")
+  private val entityIdField = persisted[ID]("entityId")
+  def fields = List(Field(entityNameField), Field(entityIdField))
+
+  private val application = new CrudApplication {
+    def name = "scala_android_crud_deleted"
+
+    def allEntities = List(DeletedEntityIdCrudType)
+  }
+
+  /**
+   * Records that a deletion happened so that it is deleted from the Backup Service.
+   * It's ok for this to happen immediately because if a delete is undone,
+   * it will be restored independent of this support, and it will then be re-added to the Backup Service later
+   * just like any new entity being added.
+   */
+  def recordDeletion(entityType: CrudEntityTypeRef, id: ID, context: Context) {
+    val crudContext = new CrudContext(context, application)
+    val writable = newWritable
+    copyFields(Map(entityNameField.name -> entityType.entityName, entityIdField.name -> id), writable)
+    withEntityPersistence(crudContext, { persistence =>
+      persistence.save(None, writable)
+    })
+  }
+
+  def writeEntityRemovals(data: BackupTarget, context: Context) {
+    val crudContext = new CrudContext(context, application)
+    withEntityPersistence(crudContext, { persistence =>
+      persistence.toIterator(persistence.findAll(persistence.newCriteria)).foreach { entity =>
+        val deletedEntityName: String = entityNameField(entity)
+        val deletedId: ID = entityIdField(entity)
+        data.writeEntity(deletedEntityName + "#" + deletedId, None)
+      }
+    })
+  }
+}

@@ -102,6 +102,11 @@ trait PartialFieldAccess[T] {
   def findValue(readable:AnyRef): Option[T] = partialGet(readable).getOrElse(None)
 
   /**
+   * Gets the value, similar to {@link Map#apply}
+   */
+  def apply(readable:AnyRef): T = findValue(readable).get
+
+  /**
    * Tries to set the value in <code>writable</code>.
    * @param writable any kind of Object.  If it is not supported by this FieldAccess, this simply returns false.
    * @param value the value in an Option.  It will be None if the partialGet of the readable returned None.
