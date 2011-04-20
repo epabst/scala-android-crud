@@ -10,6 +10,8 @@ import CursorFieldAccess._
 import org.scalatest.matchers.ShouldMatchers
 import android.content.Intent
 import android.net.Uri
+import org.scalatest.mock.EasyMockSugar
+import android.database.Cursor
 
 /**
  * A specification for {@link CursorFieldAccess}.
@@ -18,17 +20,30 @@ import android.net.Uri
  * Time: 6:22 PM
  */
 @RunWith(classOf[RobolectricTestRunner])
-class CursorFieldAccessSpec extends ShouldMatchers {
+class CursorFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
   @Test
-  def shouldGetColumnsForQueryCorrectly {
+  def shouldGetColumnsForQueryCorrectly() {
     val foreign = foreignKey(MyCrudEntityTypeRef)
     val fields = List(Field(foreign), Field(persisted[Int]("age")))
     val actualFields = CursorFieldAccess.queryFieldNames(fields)
     actualFields should be (List(BaseColumns._ID, foreign.fieldName, "age"))
+
   }
 
   @Test
-  def shouldGetCriteriaCorrectly {
+  def persistedShouldReturnNoneIfColumnNotInCursor() {
+    val cursor = mock[Cursor]
+    expecting {
+      call(cursor.getColumnIndex("name")).andReturn(-1)
+    }
+    whenExecuting(cursor) {
+      val field = Field[String](persisted("name"))
+      field.findValue(cursor) should be (None)
+    }
+  }
+
+  @Test
+  def shouldGetCriteriaCorrectly() {
     val field = Field[Int](sqliteCriteria("age"), default(19))
     val criteria = new SQLiteCriteria
     field.copy(Unit, criteria)
@@ -36,9 +51,9 @@ class CursorFieldAccessSpec extends ShouldMatchers {
   }
 
   @Test
-  def shouldGetCriteriaCorrectlyForForeignKey {
+  def shouldGetCriteriaCorrectlyForForeignKey() {
     val foreign = foreignKey(MyCrudEntityTypeRef)
-    val field = Field[ID](foreign)
+    val field = Field(foreign)
     val uri = EntityUriSegment(MyCrudEntityTypeRef.entityName, "19").specifyInUri(Uri.EMPTY)
     //add on extra stuff to make sure it is ignored
     val intent = new Intent("", Uri.withAppendedPath(uri, "foo/1234"))

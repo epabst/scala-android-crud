@@ -5,6 +5,7 @@ import android.database.Cursor
 import android.provider.BaseColumns
 import com.github.triangle._
 import android.os.Bundle
+import monitor.Logging
 
 object CursorFieldAccess extends PlatformTypes {
   def persisted[T](name: String)(implicit persistedType: PersistedType[T]): CursorFieldAccess[T] = {
@@ -32,7 +33,7 @@ object CursorFieldAccess extends PlatformTypes {
 /**
  * Also supports accessing a scala Map (mutable.Map for writing) using the same name.
  */
-class CursorFieldAccess[T](val name: String)(implicit val persistedType: PersistedType[T]) extends FieldAccessVariations[T] {
+class CursorFieldAccess[T](val name: String)(implicit val persistedType: PersistedType[T]) extends FieldAccessVariations[T] with Logging {
   val fieldAccesses = List(
     Field.flow[Cursor,ContentValues,T](getFromCursor, setIntoContentValues),
     Field.fieldAccess[Bundle,T](b => persistedType.getValue(b, name), b => v => persistedType.putValue(b, name, v)),
@@ -40,8 +41,12 @@ class CursorFieldAccess[T](val name: String)(implicit val persistedType: Persist
 
   private def getFromCursor(cursor: Cursor) = {
     val columnIndex = cursor.getColumnIndex(name)
-    if (columnIndex < 0) throw new IllegalArgumentException("column not in Cursor: " + name)
-    persistedType.getValue(cursor, columnIndex)
+    if (columnIndex >= 0) {
+      persistedType.getValue(cursor, columnIndex)
+    } else {
+      warn("column not in Cursor: " + name)
+      None
+    }
   }
 
   private def setIntoContentValues(contentValues: ContentValues)(value: T) { persistedType.putValue(contentValues, name, value) }
