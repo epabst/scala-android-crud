@@ -142,14 +142,16 @@ class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
     val id = 345L
     expecting {
       call(actionFactory.withEntityPersistence(eql(entity), notNull[Persistence => Unit]())).andAnswer(answer {
-        val f = EasyMock.getCurrentArguments()(1).asInstanceOf[Persistence => Unit]
+        val currentArguments = EasyMock.getCurrentArguments
+        val f = currentArguments(1).asInstanceOf[Persistence => Unit]
         f(persistence)
       })
       call(actionFactory.application).andReturn(application).anyTimes
       call(persistence.find(id)).andReturn(Some(readable))
       call(persistence.delete(List(id)))
       call(actionFactory.addUndoableDelete(eql(entity), notNull[Undoable[ID]])).andAnswer(answer {
-        val undoable = EasyMock.getCurrentArguments()(1).asInstanceOf[Undoable[ID]]
+        val currentArguments = EasyMock.getCurrentArguments
+        val undoable = currentArguments(1).asInstanceOf[Undoable[ID]]
         undoable.close()
       })
     }
@@ -170,7 +172,8 @@ class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
     val id2 = 444L
     expecting {
       call(actionFactory.withEntityPersistence(eql(entity), notNull[Persistence => Unit]())).andAnswer(answer {
-        val f = EasyMock.getCurrentArguments()(1).asInstanceOf[Persistence => Unit]
+        val currentArguments = EasyMock.getCurrentArguments
+        val f = currentArguments(1).asInstanceOf[Persistence => Unit]
         f(persistence)
       })
       call(actionFactory.application).andReturn(application).anyTimes
@@ -178,7 +181,8 @@ class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
       call(persistence.delete(List(id)))
       call(persistence.save(None, mutable.Map("name" -> "George"))).andReturn(id2)
       call(actionFactory.addUndoableDelete(eql(entity), notNull[Undoable[ID]])).andAnswer(answer {
-        val undoable = EasyMock.getCurrentArguments()(1).asInstanceOf[Undoable[ID]]
+        val currentArguments = EasyMock.getCurrentArguments
+        val undoable = currentArguments(1).asInstanceOf[Undoable[ID]]
         undoable.undo() should be(id2)
       })
     }
