@@ -130,7 +130,7 @@ abstract class FieldGetter[R,T](implicit readableManifest: ClassManifest[R]) ext
   def get(readable: R): Option[T]
 
   def partialGet(readable: AnyRef) = {
-    debug("Seeing if " + readable + " is an instance of " + readableManifest.erasure + " to get value")
+    verbose("Seeing if " + readable + " is an instance of " + readableManifest.erasure + " to get value")
     if (readable == null) throw new IllegalArgumentException("'readable' may not be null")
     if (readableManifest.erasure.isInstance(readable))
       Some(get(readable.asInstanceOf[R]))
@@ -155,7 +155,7 @@ trait FieldSetter[W,T] extends PartialFieldAccess[T] with Logging {
   def set(writable: W, value: Option[T])
 
   override def partialSet(writable: AnyRef, value: Option[T]) = {
-    debug("Seeing if " + writable + " is an instance of " + writableManifest.erasure + " to set value " + value)
+    verbose("Seeing if " + writable + " is an instance of " + writableManifest.erasure + " to set value " + value)
     if (writable == null) throw new IllegalArgumentException("'writable' may not be null")
     if (writableManifest.erasure.isInstance(writable)) {
       set(writable.asInstanceOf[W], value)
