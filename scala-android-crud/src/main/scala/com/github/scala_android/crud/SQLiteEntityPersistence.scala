@@ -32,7 +32,7 @@ class SQLiteEntityPersistence(entityType: SQLiteCrudEntityType, crudContext: Cru
   def newCriteria = new SQLiteCriteria
 
   def findAll(criteria: SQLiteCriteria): Cursor = {
-    debug("Querying " + entityType.entityName + " for " + queryFieldNames.mkString(",") + " where " + criteria.selection)
+    debug("Finding each " + entityType.entityName + " for " + queryFieldNames.mkString(",") + " where " + criteria.selection)
     val cursor = database.query(entityType.entityName, queryFieldNames.toArray,
       criteria.selection, criteria.selectionArgs, criteria.groupBy, criteria.having, criteria.orderBy)
     cursors += cursor
@@ -62,6 +62,7 @@ class SQLiteEntityPersistence(entityType: SQLiteCrudEntityType, crudContext: Cru
   }
 
   def find(id: ID): Option[Cursor] = {
+    debug("Finding " + entityType.entityName + " for " + queryFieldNames.mkString(",") + " where " + BaseColumns._ID + "=" + id)
     val cursor = database.query(entityType.entityName, queryFieldNames.toArray,
       BaseColumns._ID + "=" + id, Nil.toArray, null, null, null)
     if (cursor.moveToFirst) {
