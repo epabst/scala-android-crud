@@ -1,9 +1,9 @@
 package com.github.scala_android.crud
 
 import android.widget.ListAdapter
-import com.github.triangle.{PartialFieldAccess, CopyableField}
 import android.app.Activity
 import android.net.Uri
+import com.github.triangle.{FieldList, CopyableField}
 
 /**
  * An entity configuration that provides all custom information needed to
@@ -42,16 +42,6 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
     }) ::: actionFactory.startCreate(this) :: Nil
   }
 
-  lazy val foreignKeys: List[ForeignKey] = fieldAccessFlatMap(_ match {
-    case foreignKey: ForeignKey => Some(foreignKey)
-    case _ => None
-  })
-
-  lazy val parentEntities: List[CrudEntityTypeRef] = foreignKeys.map(_.entityType)
-
-  def fieldAccessFlatMap[B](f: (PartialFieldAccess[_]) => Traversable[B]): List[B] =
-    CursorFieldAccess.fieldAccessFlatMap(fields, f)
-
   /**
    * Gets the actions that a user can perform from a specific entity instance.
    * The first one is the one that will be used when the item is clicked on.
@@ -61,10 +51,6 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
     displayLayout.map(_ => actionFactory.display(this)).toList :::
             displayChildEntityLists[ID](actionFactory, id => id, childEntities(actionFactory.application)) :::
             List(actionFactory.startUpdate(this), actionFactory.startDelete(this))
-
-  def copyFields(from: AnyRef, to: AnyRef) {
-    fields.foreach(_.copy(from, to))
-  }
 
   /**
    * Instantiates a data buffer which can be saved by EntityPersistence.
@@ -119,7 +105,7 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
   }
 }
 
-trait CrudEntityTypeRef extends PlatformTypes {
+trait CrudEntityTypeRef extends FieldList with PlatformTypes {
   //this is the type used for internationalized strings
   def entityName: String
 
@@ -133,7 +119,12 @@ trait CrudEntityTypeRef extends PlatformTypes {
   def deleteItemString: SKey = res.R.string.delete_item
   def cancelItemString: SKey
 
-  def parentEntities: List[CrudEntityTypeRef]
+  lazy val foreignKeys: List[ForeignKey] = fieldAccessFlatMap(_ match {
+    case foreignKey: ForeignKey => Some(foreignKey)
+    case _ => None
+  })
+
+  lazy val parentEntities: List[CrudEntityTypeRef] = foreignKeys.map(_.entityType)
 
   /**
    * The list of entities that refer to this one.

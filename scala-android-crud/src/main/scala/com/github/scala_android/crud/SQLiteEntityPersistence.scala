@@ -24,7 +24,7 @@ class SQLiteEntityPersistence(entityType: SQLiteCrudEntityType, crudContext: Cru
   private lazy val backupManager = new BackupManager(crudContext.context)
   private var cursors = new SynchronizedQueue[Cursor]
 
-  lazy val queryFieldNames: List[String] = CursorFieldAccess.queryFieldNames(entityType.fields)
+  lazy val queryFieldNames: List[String] = CursorFieldAccess.queryFieldNames(entityType)
 
   override lazy val logTag = classOf[EntityPersistence[SQLiteCriteria,Cursor,Cursor,ContentValues]].getName +
           "(" + entityType.entityName + ")"

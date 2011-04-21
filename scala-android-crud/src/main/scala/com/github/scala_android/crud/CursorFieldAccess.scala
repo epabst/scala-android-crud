@@ -14,21 +14,18 @@ object CursorFieldAccess extends PlatformTypes {
 
   def foreignKey[ID](entityType: CrudEntityTypeRef) = new ForeignKey(entityType)
 
-  def fieldAccessFlatMap[B](fields: List[CopyableField], f: (PartialFieldAccess[_]) => Traversable[B]): List[B] =
-    fields.map(_.asInstanceOf[Field[_]].fieldAccesses).flatMap(_.flatMap(f))
-
   val persistedId = persisted[ID](BaseColumns._ID)
 
-  def persistedFields(fields: List[CopyableField]): List[CursorFieldAccess[_]] = {
+  def persistedFields(fields: FieldList): List[CursorFieldAccess[_]] = {
     val id: CursorFieldAccess[_] = persistedId
-    id :: fieldAccessFlatMap(fields, _ match {
+    id :: fields.fieldAccessFlatMap(_ match {
       case fieldAccess: CursorFieldAccess[_] => Some(fieldAccess)
       case foreignKey: ForeignKey => Some[CursorFieldAccess[_]](foreignKey.persistedField)
       case _ => None
     })
   }
 
-  def queryFieldNames(fields: List[CopyableField]): List[String] = persistedFields(fields).map(_.name)
+  def queryFieldNames(fields: FieldList): List[String] = persistedFields(fields).map(_.name)
 
   def sqliteCriteria[T](name: String) = Field.writeOnly[SQLiteCriteria,T](criteria => value => criteria.selection = name + "=" + value)
 }
