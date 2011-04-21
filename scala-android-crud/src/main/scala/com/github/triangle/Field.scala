@@ -2,6 +2,8 @@ package com.github.triangle
 
 import com.github.scala_android.crud.monitor.Logging
 import collection.Map
+import collection.mutable
+import mutable.{Buffer, Builder}
 
 /** A trait for {@link Field} for convenience such as when defining a List of heterogeneous Fields. */
 trait CopyableField {
@@ -289,13 +291,29 @@ import scala.collection._
  * A trait for a class that has a list of Fields.  The only requirement is that <code>fields</code> be defined.
  * It has helpful methods that can operate on them.
  */
-trait FieldList extends Traversable[CopyableField] {
-  protected def fields: Traversable[CopyableField]
+trait FieldList extends Seq[CopyableField] with SeqLike[CopyableField,FieldList] {
+  import FieldList._
 
-  def foreach[U](f: (CopyableField) => U) { fields.foreach(f) }
+  protected def fields: Seq[CopyableField]
 
-  def copyFields(from: AnyRef, to: AnyRef) {
-    fields.foreach(_.copy(from, to))
+  def iterator = fields.iterator
+
+  def apply(idx: Int) = fields(idx)
+
+  def length = fields.length
+
+  override protected[this] def newBuilder = new Builder[CopyableField, FieldList] {
+    private val buffer = Buffer[CopyableField]()
+
+    def clear() { buffer.clear() }
+
+    def +=(elem: CopyableField) = { buffer += elem; this }
+
+    def result(): FieldList = toFieldList(buffer.toList)
+  }
+
+  def copyFields(from: AnyRef, to: AnyRef): FieldList = {
+    fields.flatMap(f => if (f.copy(from, to)) None else Some(f))
   }
 
   def fieldAccessFlatMap[B](f: (PartialFieldAccess[_]) => Traversable[B]): List[B] =
@@ -303,5 +321,7 @@ trait FieldList extends Traversable[CopyableField] {
 }
 
 object FieldList {
-  def apply(_fields: CopyableField*): FieldList = new FieldList { val fields = List(_fields:_*) }
+  def apply(_fields: CopyableField*): FieldList = toFieldList(_fields)
+
+  implicit def toFieldList(list: Seq[CopyableField]): FieldList = new FieldList { def fields = list }
 }

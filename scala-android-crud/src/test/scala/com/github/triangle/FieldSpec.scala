@@ -134,6 +134,25 @@ class FieldSpec extends Spec with ShouldMatchers {
         //should have been overwritten because the Map didn't have it
         countField.findValue(map) should be (None)
       }
+
+      it("should return the Fields that were not copied") {
+        val countField = Field[Int](default(10), mapAccess("count"))
+        val priceField = Field[Double](mapAccess("price"))
+        val fields = FieldList(countField, priceField)
+        val map = mutable.Map[String, Any]()
+
+        //copy where only one field has an accessor
+        val resultOfCopy: FieldList = fields.copyFields(Unit, map)
+        map.contains("count") should be (true)
+        countField(map) should be (10)
+        map.contains("price") should be (false)
+        resultOfCopy should be (FieldList(priceField))
+
+        resultOfCopy.copyFields(mutable.Map("price" -> 300.00), map).size should be (0)
+        map.contains("price") should be (true)
+        priceField(map) should be (300.00)
+        countField(map) should be (10)
+      }
     }
   }
 }
