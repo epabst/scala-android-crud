@@ -75,6 +75,7 @@ class ValueFormatSpec extends Spec with ShouldMatchers {
 
     it("should format correctly") {
       format.toString(1234.2) should be ("1,234.20")
+      format.toString(1234.22324) should be ("1,234.22")
     }
   }
 }

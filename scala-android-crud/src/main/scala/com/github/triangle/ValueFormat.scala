@@ -61,13 +61,14 @@ class FlexibleValueFormat[T](formats: List[ValueFormat[T]]) extends ValueFormat[
 }
 
 object ValueFormat {
-  lazy val currencyFormat = NumberFormat.getCurrencyInstance()
+  lazy val currencyFormat = NumberFormat.getCurrencyInstance
   lazy val currencyEditFormat = {
-    val editFormat = NumberFormat.getNumberInstance()
+    val editFormat = NumberFormat.getNumberInstance
     editFormat.setMinimumFractionDigits(currencyFormat.getMinimumFractionDigits)
+    editFormat.setMaximumFractionDigits(currencyFormat.getMaximumFractionDigits)
     editFormat
   }
-  lazy val amountFormats = List(currencyEditFormat, currencyFormat, NumberFormat.getNumberInstance()).map(new TextValueFormat[Number](_))
+  lazy val amountFormats = List(currencyEditFormat, currencyFormat, NumberFormat.getNumberInstance).map(new TextValueFormat[Number](_))
 
   lazy val dateFormats = List(new java.text.SimpleDateFormat("MM/dd/yyyy")).map(new TextValueFormat[Date](_))
 
