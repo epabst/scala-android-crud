@@ -55,6 +55,5 @@ import ViewFieldAccess.intentId
 
 class ForeignKey(val entityType: CrudEntityTypeRef) extends PlatformTypes with FieldAccessVariations[ID] {
   val fieldName = entityType.entityName.toLowerCase + BaseColumns._ID
-  val persistedField = persisted[ID](fieldName)
-  val fieldAccesses = List[PartialFieldAccess[ID]](persistedField, intentId(entityType.entityName), sqliteCriteria(fieldName))
+  val fieldAccesses = List[PartialFieldAccess[ID]](persisted(fieldName), intentId(entityType.entityName), sqliteCriteria(fieldName))
 }
