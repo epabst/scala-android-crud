@@ -24,8 +24,8 @@ trait CopyableField {
  * import android.widget.{TextView, ListView}
  *
  * val fields = List(
- *   new Field[String](persisted("name"), viewId[TextView,String](R.id.name)),
- *   new Field[Double](persisted("score"), viewId[TextView,Double](R.id.score))
+ *   Field[String](persisted("name"), viewId[TextView,String](R.id.name)),
+ *   Field[Double](persisted("score"), viewId[TextView,Double](R.id.score))
  * )
  * </pre>
  * <p>
