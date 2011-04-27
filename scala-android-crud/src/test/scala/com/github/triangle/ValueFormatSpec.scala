@@ -31,6 +31,12 @@ class ValueFormatSpec extends Spec with ShouldMatchers {
       val format = new BasicValueFormat[T]
       itShouldFormatAndParse(format, value)
     }
+
+    it("should fail to construct if no type specified") {
+      intercept[IllegalArgumentException] {
+        new BasicValueFormat[AnyVal]
+      }
+    }
   }
 
   describe("TextValueFormat") {

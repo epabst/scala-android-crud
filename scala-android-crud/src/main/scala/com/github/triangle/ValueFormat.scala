@@ -17,25 +17,30 @@ trait ValueFormat[T] {
 }
 
 class BasicValueFormat[T <: AnyVal]()(implicit m: Manifest[T]) extends ValueFormat[T] {
-  /** May need to be overridden */
-  def toValue(s: String): Option[T] = {
-    val erasure = m.asInstanceOf[ClassManifest[T]].erasure
+
+  private val converter: String => Option[T] = {
+    val classManifest = m.asInstanceOf[ClassManifest[T]]
+    classManifest.erasure match {
+      case x: Class[_] if (x == classOf[Int]) => convert(_.toInt)
+      case x: Class[_] if (x == classOf[Long]) => convert(_.toLong)
+      case x: Class[_] if (x == classOf[Short]) => convert(_.toShort)
+      case x: Class[_] if (x == classOf[Byte]) => convert(_.toByte)
+      case x: Class[_] if (x == classOf[Double]) => convert(_.toDouble)
+      case x: Class[_] if (x == classOf[Float]) => convert(_.toFloat)
+      case x: Class[_] if (x == classOf[Boolean]) => convert(_.toBoolean)
+      case _ => throw new IllegalArgumentException("Unknown primitive type: " + classManifest.erasure)
+    }
+  }
+
+  private def convert(f: String => AnyVal)(s: String): Option[T] = {
     try {
-      erasure match {
-        case x: Class[_] if (x == classOf[String]) => Some(s.asInstanceOf[T])
-        case x: Class[_] if (x == classOf[Int]) => Some(s.toInt.asInstanceOf[T])
-        case x: Class[_] if (x == classOf[Long]) => Some(s.toLong.asInstanceOf[T])
-        case x: Class[_] if (x == classOf[Short]) => Some(s.toShort.asInstanceOf[T])
-        case x: Class[_] if (x == classOf[Byte]) => Some(s.toByte.asInstanceOf[T])
-        case x: Class[_] if (x == classOf[Double]) => Some(s.toDouble.asInstanceOf[T])
-        case x: Class[_] if (x == classOf[Float]) => Some(s.toFloat.asInstanceOf[T])
-        case x: Class[_] if (x == classOf[Boolean]) => Some(s.toBoolean.asInstanceOf[T])
-        case _ => None
-      }
+      Some(f(s).asInstanceOf[T])
     } catch {
       case e: IllegalArgumentException => None
     }
   }
+
+  def toValue(s: String): Option[T] = converter(s)
 }
 
 class TextValueFormat[T](format: Format, obj2Value: (Object) => T = {(v: Object) => v.asInstanceOf[T]}) extends ValueFormat[T] {
