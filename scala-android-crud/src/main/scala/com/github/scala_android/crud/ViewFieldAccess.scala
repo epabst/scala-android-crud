@@ -61,9 +61,6 @@ object ViewFieldAccess extends PlatformTypes {
     new ViewFieldAccessById[T](viewResourceId)(Field.variations(childViewAccessVariations: _*))
   }
 
-  def viewId[T <: AnyVal](viewResourceId: ViewKey)(implicit m: Manifest[T]): ViewFieldAccessById[T] =
-    viewId[T](viewResourceId, formatted(textView))
-
   def viewFieldAccessById[V <: View,T](viewResourceId: ViewKey, getter: V => Option[T], setter: V => T => Unit, clearer: V => Unit = {_: V => })
                                  (implicit m: ClassManifest[V]): ViewFieldAccessById[T] = {
     viewId(viewResourceId, viewFieldAccess(getter, setter, clearer))
