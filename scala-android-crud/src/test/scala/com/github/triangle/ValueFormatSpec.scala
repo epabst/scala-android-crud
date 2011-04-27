@@ -29,8 +29,7 @@ class ValueFormatSpec extends Spec with ShouldMatchers {
 
     def itShouldConvertBetweenTypes[T <: AnyVal](value: T)(implicit m: Manifest[T]) {
       val format = new BasicValueFormat[T]
-      val string = format.toString(value)
-      format.toValue(string).get should be (value)
+      itShouldFormatAndParse(format, value)
     }
   }
 
@@ -49,8 +48,7 @@ class ValueFormatSpec extends Spec with ShouldMatchers {
 
     def itShouldParseNumbers[T](value: T)(implicit m: Manifest[T]) {
       val format = new TextValueFormat[T](NumberFormat.getIntegerInstance)
-      val string = format.toString(value)
-      format.toValue(string).get should be (value)
+      itShouldFormatAndParse(format, value)
     }
   }
 
@@ -98,5 +96,26 @@ class ValueFormatSpec extends Spec with ShouldMatchers {
       format.toString(1234.2) should be ("$1,234.20")
       format.toString(1234.22324) should be ("$1,234.22")
     }
+  }
+
+  describe("enumFormat") {
+    object MyEnum extends Enumeration {
+      val A = Value("A")
+      val B = Value("B")
+    }
+    val format = enumFormat[MyEnum.Value](MyEnum)
+
+    it("should handle formatting/parsing") {
+      format.toString(MyEnum.A) should be ("A")
+      format.toString(MyEnum.B) should be ("B")
+      itShouldFormatAndParse(format, MyEnum.A)
+      itShouldFormatAndParse(format, MyEnum.B)
+      format.toValue("") should be (None)
+    }
+  }
+
+  def itShouldFormatAndParse[T](format: ValueFormat[T], value: T) {
+    val string = format.toString(value)
+    format.toValue(string).get should be (value)
   }
 }

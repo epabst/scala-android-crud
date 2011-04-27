@@ -82,6 +82,12 @@ object ValueFormat {
     }
   }
 
+  def enumFormat[T](enum: Enumeration): ValueFormat[T] = new ValueFormat[T] {
+    override def toString(enumValue: T) = enumValue.toString
+
+    def toValue(s: String) = enum.valueOf(s).map(_.asInstanceOf[T])
+  }
+
   lazy val currencyValueFormat = new FlexibleValueFormat[Double](amountFormats)
   lazy val currencyDisplayValueFormat = new TextValueFormat[Double](currencyFormat, _.asInstanceOf[Number].doubleValue)
   lazy val dateValueFormat = new FlexibleValueFormat[Date](dateFormats)
