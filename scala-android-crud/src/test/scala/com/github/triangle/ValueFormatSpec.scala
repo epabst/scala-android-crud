@@ -58,14 +58,14 @@ class ValueFormatSpec extends Spec with ShouldMatchers {
     val format = currencyValueFormat
 
     it("should handle parse various number formats") {
-      format.toValue("$1.00").get should be (1)
-      format.toValue("$1").get should be(1)
-      format.toValue("1.00").get should be(1)
-      format.toValue("1").get should be(1)
-      format.toValue("-1.00").get should be(-1)
-      format.toValue("-1").get should be(-1)
-      format.toValue("($1.00)").get should be(-1)
-      format.toValue("($1)").get should be(-1)
+      format.toValue("$1.00").get should be(1.0)
+      format.toValue("$1").get should be(1.0)
+      format.toValue("1.00").get should be(1.0)
+      format.toValue("1").get should be(1.0)
+      format.toValue("-1.00").get should be(-1.0)
+      format.toValue("-1").get should be(-1.0)
+      format.toValue("($1.00)").get should be(-1.0)
+      format.toValue("($1)").get should be(-1.0)
       //do these later if desired
       format.toValue("(1.00)") should be(None)
       format.toValue("(1)") should be(None)
@@ -76,6 +76,27 @@ class ValueFormatSpec extends Spec with ShouldMatchers {
     it("should format correctly") {
       format.toString(1234.2) should be ("1,234.20")
       format.toString(1234.22324) should be ("1,234.22")
+    }
+  }
+
+  describe("currencyDisplayValueFormat") {
+    val format = currencyDisplayValueFormat
+
+    it("should handle parse various number formats") {
+      format.toValue("$1.00").get should be(1.0)
+      format.toValue("$1").get should be(1.0)
+      format.toValue("1.00") should be(None)
+      format.toValue("($1.00)").get should be(-1.0)
+      format.toValue("($1)").get should be(-1.0)
+      //do these later if desired
+      format.toValue("(1.00)") should be(None)
+      format.toValue("-$1.00") should be(None)
+      format.toValue("-$1") should be(None)
+    }
+
+    it("should format correctly") {
+      format.toString(1234.2) should be ("$1,234.20")
+      format.toString(1234.22324) should be ("$1,234.22")
     }
   }
 }

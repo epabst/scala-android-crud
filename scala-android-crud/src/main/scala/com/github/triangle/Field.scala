@@ -297,6 +297,13 @@ object Field {
     val fieldAccesses: List[PartialFieldAccess[T]] = fieldAccessArgs.toList
   }
 
+  def formatted[T](format: ValueFormat[T], fieldAccesses: PartialFieldAccess[String]*): PartialFieldAccess[T] =
+    variations[T](fieldAccesses.map(access => new PartialFieldAccess[T] {
+      def partialGet(readable: AnyRef) = access.partialGet(readable).map(_.flatMap(s => format.toValue(s)))
+
+      def partialSet(writable: AnyRef, value: Option[T]) = access.partialSet(writable, value.map(v => format.toString(v)))
+    }):_*)
+
   /**
    * Allow creating a Field without using "new".
    */
