@@ -6,6 +6,7 @@ import _root_.android.view.View
 import reflect.ClassManifest
 import _root_.android.widget.{ArrayAdapter, Spinner, DatePicker, TextView}
 import com.github.triangle._
+import Field._
 import java.util.{Calendar, GregorianCalendar}
 
 /**
@@ -54,34 +55,27 @@ object ViewFieldAccess extends PlatformTypes {
     }
   }
 
-  def viewId[V <: View,T](viewResourceId: ViewKey)(implicit childViewFieldAccess: ViewFieldAccess[V,T]): ViewFieldAccessById[T] = {
-    new ViewFieldAccessById[T](viewResourceId)(childViewFieldAccess)
-  }
+  val textView: ViewFieldAccess[TextView,String] = viewFieldAccess[TextView,String](v => toOption(v.getText.toString.trim), _.setText, _.setText(""))
 
-  def viewId[T](viewResourceId: ViewKey, childViewAccessVariations: ViewFieldAccess[_,T]*): ViewFieldAccessById[T] = {
+  def viewId[T](viewResourceId: ViewKey, childViewAccessVariations: PartialFieldAccess[T]*): ViewFieldAccessById[T] = {
     new ViewFieldAccessById[T](viewResourceId)(Field.variations(childViewAccessVariations: _*))
   }
 
+  def viewId[T <: AnyVal](viewResourceId: ViewKey)(implicit m: Manifest[T]): ViewFieldAccessById[T] =
+    viewId[T](viewResourceId, formatted(textView))
+
   def viewFieldAccessById[V <: View,T](viewResourceId: ViewKey, getter: V => Option[T], setter: V => T => Unit, clearer: V => Unit = {_: V => })
                                  (implicit m: ClassManifest[V]): ViewFieldAccessById[T] = {
-    viewId(viewResourceId)(viewFieldAccess(getter,setter, clearer))
+    viewId(viewResourceId, viewFieldAccess(getter, setter, clearer))
   }
-
-  def formattedTextViewFieldAccess[T](format: ValueFormat[T]): ViewFieldAccess[TextView,T] =
-    viewFieldAccess[TextView,T](v => format.toValue(v.getText.toString), v => value => v.setText(format.toString(value)), _.setText(""))
-
-  implicit def primitiveTextViewFieldAccess[T <: AnyVal](implicit m: Manifest[T]): ViewFieldAccess[TextView,T] =
-    formattedTextViewFieldAccess(new BasicValueFormat[T]())
-
-  implicit val stringTextViewFieldAccess: ViewFieldAccess[TextView,String] = viewFieldAccess[TextView,String](v => toOption(v.getText.toString.trim), _.setText, _.setText(""))
 
   private def toOption(string: String): Option[String] = if (string == "") None else Some(string)
 
-  implicit val calendarDatePickerFieldAccess: ViewFieldAccess[DatePicker,Calendar] = viewFieldAccess[DatePicker,Calendar](
+  val calendarDatePicker: ViewFieldAccess[DatePicker,Calendar] = viewFieldAccess[DatePicker,Calendar](
     v => Some(new GregorianCalendar(v.getYear, v.getMonth, v.getDayOfMonth)),
     v => calendar => v.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)))
 
-  def enumerationSpinnerFieldAccess[E <: Ordered[_]](enum: Enumeration): ViewFieldAccess[Spinner,E] = {
+  def enumerationSpinner[E <: Ordered[_]](enum: Enumeration): ViewFieldAccess[Spinner,E] = {
     val valueArray: Array[E] = enum.values.toArray.asInstanceOf[Array[E]]
     viewFieldAccess[Spinner,E](v => Option(v.getSelectedItem.asInstanceOf[E]), spinner => value => {
       //don't do it again if already done from a previous time

@@ -4,7 +4,6 @@ import com.github.scala_android.crud._
 import CursorFieldAccess._
 import ViewFieldAccess._
 import com.github.triangle._
-import android.widget.TextView
 
 /**
  * A CRUD type for Author.
@@ -15,7 +14,7 @@ object AuthorCrudType extends SQLiteCrudEntityType {
 
   def entityName = "Author"
 
-  def fields = List(Field[String](persisted("name"), viewId[TextView,String](R.id.name)))
+  def fields = List(Field[String](persisted("name"), viewId[String](R.id.name, textView)))
 
   def activityClass = classOf[AuthorActivity]
 

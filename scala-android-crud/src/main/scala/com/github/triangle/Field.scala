@@ -24,8 +24,8 @@ trait CopyableField {
  * import android.widget.{TextView, ListView}
  *
  * val fields = List(
- *   Field[String](persisted("name"), viewId[TextView,String](R.id.name)),
- *   Field[Double](persisted("score"), viewId[TextView,Double](R.id.score))
+ *   Field[String](persisted("name"), viewId(R.id.name, textView))),
+ *   Field[Double](persisted("score"), viewId(R.id.score, formatted[Double](textView)))
  * )
  * </pre>
  * <p>
@@ -303,6 +303,12 @@ object Field {
 
       def partialSet(writable: AnyRef, value: Option[T]) = access.partialSet(writable, value.map(v => format.toString(v)))
     }):_*)
+
+  /**
+   * formatted replacement for primitive values.
+   */
+  def formatted[T <: AnyVal](fieldAccesses: PartialFieldAccess[String]*)(implicit m: Manifest[T]): PartialFieldAccess[T] =
+    formatted(new BasicValueFormat[T](), fieldAccesses:_*)
 
   /**
    * Allow creating a Field without using "new".

@@ -34,9 +34,9 @@ class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
 
     val stringField = Field(
       persisted[String]("name"),
-      viewId[TextView,String](101),
+      viewId[String](101, textView),
       viewFieldAccessById[MyView,String](102, _.status, _.status_=),
-      viewId(102)(viewFieldAccess[MyView,String](_.status, _.status_=)))
+      viewId(102, viewFieldAccess[MyView,String](_.status, _.status_=)))
   }
 
   @Test
@@ -55,11 +55,11 @@ class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
     }
     whenExecuting(viewGroup, view1, view2, view3) {
       val stringField = Field(
-        viewId[TextView,String](101),
+        viewId[String](101, textView),
         viewFieldAccessById[TextView,String](102, v => Option(v.getText.toString), _.setText, _.setText("Please Fill")))
       stringField.setValue(viewGroup, None)
 
-      val intField = Field(viewId[TextView,Int](103))
+      val intField = Field(viewId(103, formatted[Int](textView)))
       intField.setValue(viewGroup, None)
     }
   }
@@ -107,7 +107,7 @@ class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
   def itShouldHandleUnparseableValues() {
     val context = mock[Context]
     whenExecuting(context) {
-      val field = Field[Int](primitiveTextViewFieldAccess, fieldAccess[MyEntity,Int](_.number, _.number_=))
+      val field = Field[Int](formatted(textView), fieldAccess[MyEntity,Int](_.number, _.number_=))
       val view = new TextView(context)
       view.setText("twenty")
       field.findValue(view) should be (None)
@@ -143,7 +143,7 @@ class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
   def itShouldConvertNullToNone() {
     val context = mock[Context]
     whenExecuting(context) {
-      val field = Field(stringTextViewFieldAccess)
+      val field = Field(textView)
       val view = new TextView(context)
       view.setText(null)
       field.findValue(view) should be (None)
@@ -157,7 +157,7 @@ class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
   def itShouldTrimStrings() {
     val context = mock[Context]
     whenExecuting(context) {
-      val field = Field(stringTextViewFieldAccess)
+      val field = Field(textView)
       val view = new TextView(context)
       view.setText("  ")
       field.findValue(view) should be (None)

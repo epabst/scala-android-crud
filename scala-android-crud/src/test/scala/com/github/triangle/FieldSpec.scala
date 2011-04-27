@@ -114,7 +114,7 @@ class FieldSpec extends Spec with ShouldMatchers {
     }
 
     it("should parse and format values") {
-      val field = Field[Double](formatted(ValueFormat.currencyValueFormat, mapAccess("amountString")))
+      val field = Field(formatted[Double](ValueFormat.currencyValueFormat, mapAccess[String]("amountString")))
       field(Map("amountString" -> "12.34")) should be (12.34)
 
       val map = mutable.Map[String,Any]()
