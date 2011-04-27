@@ -119,10 +119,9 @@ trait CrudEntityTypeRef extends FieldList with PlatformTypes {
   def deleteItemString: SKey = res.R.string.delete_item
   def cancelItemString: SKey
 
-  lazy val foreignKeys: List[ForeignKey] = fieldAccessFlatMap(_ match {
+  lazy val foreignKeys: List[ForeignKey] = fieldAccessFlatMap {
     case foreignKey: ForeignKey => Some(foreignKey)
-    case _ => None
-  })
+  }
 
   lazy val parentEntities: List[CrudEntityTypeRef] = foreignKeys.map(_.entityType)
 

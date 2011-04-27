@@ -83,6 +83,26 @@ final class Field[T](fieldAccessArgs: PartialFieldAccess[T]*) extends CopyableFi
         false
     }
   }
+
+  /**
+   * Traverses all of the FieldAccesses in this Field, returning the desired information.
+   * Anything not matched will be traversed deeper, if possible, or else ignored.
+   * <pre>
+   *   fieldAccessFlatMap {
+   *     case foo: BarFieldAccess => List(foo.myInfo)
+   *   }
+   * </pre>
+   */
+  def fieldAccessFlatMap[B](f: PartialFunction[PartialFieldAccess[_], Traversable[B]]): List[B] = {
+    val lifted = f.lift
+    fieldAccesses.flatMap(access => lifted(access) match {
+      case Some(t: Traversable[B]) => t
+      case None => access match {
+        case vars: FieldAccessVariations[_] => Field(vars.fieldAccesses: _*).fieldAccessFlatMap(f)
+        case _ => None
+      }
+    })
+  }
 }
 
 /**

@@ -18,11 +18,9 @@ object CursorFieldAccess extends PlatformTypes {
 
   def persistedFields(fields: FieldList): List[CursorFieldAccess[_]] = {
     val id: CursorFieldAccess[_] = persistedId
-    id :: fields.fieldAccessFlatMap(_ match {
-      case fieldAccess: CursorFieldAccess[_] => Some(fieldAccess)
-      case foreignKey: ForeignKey => Some[CursorFieldAccess[_]](foreignKey.persistedField)
-      case _ => None
-    })
+    id :: fields.fieldAccessFlatMap[CursorFieldAccess[_]] {
+      case fieldAccess: CursorFieldAccess[_] => List(fieldAccess)
+    }
   }
 
   def queryFieldNames(fields: FieldList): List[String] = persistedFields(fields).map(_.name)
