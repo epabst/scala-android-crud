@@ -34,7 +34,7 @@ class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
 
     val stringField = Field(
       persisted[String]("name"),
-      viewId[String](101, textView),
+      viewId(101, textView),
       viewFieldAccessById[MyView,String](102, _.status, _.status_=),
       viewId(102, viewFieldAccess[MyView,String](_.status, _.status_=)))
   }
@@ -55,7 +55,7 @@ class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
     }
     whenExecuting(viewGroup, view1, view2, view3) {
       val stringField = Field(
-        viewId[String](101, textView),
+        viewId(101, textView),
         viewFieldAccessById[TextView,String](102, v => Option(v.getText.toString), _.setText, _.setText("Please Fill")))
       stringField.setValue(viewGroup, None)
 

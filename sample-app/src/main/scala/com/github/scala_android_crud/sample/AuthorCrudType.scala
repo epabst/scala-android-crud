@@ -14,7 +14,7 @@ object AuthorCrudType extends SQLiteCrudEntityType {
 
   def entityName = "Author"
 
-  def fields = List(Field[String](persisted("name"), viewId[String](R.id.name, textView)))
+  def fields = List(Field[String](persisted("name"), viewId(R.id.name, textView)))
 
   def activityClass = classOf[AuthorActivity]
 
