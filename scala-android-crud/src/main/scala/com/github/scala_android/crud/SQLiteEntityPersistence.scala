@@ -6,7 +6,7 @@ import android.database.Cursor
 import android.content.ContentValues
 import com.github.scala_android.crud.monitor.Logging
 import scala.None
-import collection.mutable.{SynchronizedQueue, ListBuffer}
+import collection.mutable.SynchronizedQueue
 import android.app.backup.BackupManager
 import collection.mutable
 
@@ -46,20 +46,12 @@ class SQLiteEntityPersistence(entityType: SQLiteCrudEntityType, crudContext: Cru
     }
   }
 
-  def findAll[T <: AnyRef](criteria: SQLiteCriteria, instantiate: () => T): List[T] = {
-    val cursor = findAll(criteria)
-    cursor.moveToFirst();
-    var results = new ListBuffer[T]()
-    while (cursor.isAfterLast == false) {
+  def findAsIterator[T <: AnyRef](criteria: SQLiteCriteria, instantiate: () => T): Iterator[T] =
+    toIterator(findAll(criteria)).map(cursor => {
       val result = instantiate()
       entityType.copyFields(cursor, result)
-      results += result
-      cursor.moveToNext();
-    }
-    //consider treating this as an Iterator instead of a List, and closing the cursor at the end of the iterator's loop
-    cursor.close();
-    results.result()
-  }
+      result
+    })
 
   def find(id: ID): Option[Cursor] = {
     debug("Finding " + entityType.entityName + " for " + queryFieldNames.mkString(",") + " where " + BaseColumns._ID + "=" + id)
