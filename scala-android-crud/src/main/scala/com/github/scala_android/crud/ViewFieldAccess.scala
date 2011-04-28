@@ -19,22 +19,30 @@ import java.util.{Calendar, GregorianCalendar}
 abstract class ViewFieldAccess[V <: View,T](implicit m: ClassManifest[V]) extends FieldAccess[V,V,T]
 
 object ViewFieldAccess extends PlatformTypes {
+  private class ChildViewById(viewResourceId: ViewKey) {
+    def unapply(target: Any): Option[View] = target match {
+      case view: View => Option(view.findViewById(viewResourceId))
+      case activity: Activity => Option(activity.findViewById(viewResourceId))
+      case _ => None
+    }
+  }
+
   /** View fieldAccess for a View resource within a given parent View */
   class ViewFieldAccessById[T](val viewResourceId: ViewKey)(childViewFieldAccess: PartialFieldAccess[T])
           extends PartialFieldAccess[T] {
+    private object ChildView extends ChildViewById(viewResourceId)
+
     def partialGet(readable: AnyRef) = readable match {
-      case entryView: View => partialGetFromChildView(Option(entryView.findViewById(viewResourceId)))
-      case activity: Activity => partialGetFromChildView(Option(activity.findViewById(viewResourceId)))
+      case ChildView(childView) => partialGetFromChildView(childView)
       case _ => None
     }
 
     def partialSet(writable: AnyRef, value: Option[T]) = writable match {
-      case entryView: View => partialSetInChildView(Option(entryView.findViewById(viewResourceId)), value)
-      case activity: Activity => partialSetInChildView(Option(activity.findViewById(viewResourceId)), value)
+      case ChildView(childView) => partialSetInChildView(childView, value)
       case _ => false
     }
 
-    def partialGetFromChildView(childView: Option[View]) =
+    def partialGetFromChildView(childView: Option[View]): Option[Option[T]] =
       childView.flatMap(v => childViewFieldAccess.partialGet(v))
 
     def partialSetInChildView(childView: Option[View], value: Option[T]): Boolean =
