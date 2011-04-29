@@ -38,7 +38,7 @@ abstract class ListBufferEntityPersistence[T <: AnyRef,Q <: AnyRef] extends List
       nextId += 1
       nextId
     }
-    persistedId.partialSet(item, Some(newId));
+    persistedId.setter(item)(Some(newId));
     buffer += item
     newId
   }

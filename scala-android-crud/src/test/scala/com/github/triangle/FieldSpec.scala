@@ -71,7 +71,7 @@ class FieldSpec extends Spec with ShouldMatchers {
       map.get("greeting") should be (Some("Hello"))
     }
 
-    it("partialSet should not happen if partialGet doesn't apply") {
+    it("setter should not be used if partialGet doesn't apply") {
       val stringField = Field(default("Hello"), mapAccess("greeting"))
       val map = mutable.Map[String,Any]("greeting" -> "Hola")
       stringField.findOptionalValue(new Object) should be (None)

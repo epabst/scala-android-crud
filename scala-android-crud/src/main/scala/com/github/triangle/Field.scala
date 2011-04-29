@@ -34,6 +34,8 @@ trait CopyableField {
  */
 final class Field[T](fieldAccessArgs: PartialFieldAccess[T]*) extends CopyableField with Logging {
   val fieldAccesses: List[PartialFieldAccess[T]] = fieldAccessArgs.toList
+  private val variations = Field.variations(fieldAccessArgs:_*)
+
   /**
    * Finds a value out of <code>from</code> by using the FieldAccess that can handle it.
    * @returns Some(value) if successful, otherwise None (whether because no PartialFieldAccess applied or because the value was None)
@@ -68,9 +70,10 @@ final class Field[T](fieldAccessArgs: PartialFieldAccess[T]*) extends CopyableFi
    * @return true if any were successful
    */
   def setValue(to: AnyRef, value: Option[T]): Boolean = {
-    val result = fieldAccesses.foldLeft(false)((result, access) => access.partialSet(to, value) || result)
-    if (!result) debug("Unable to set value of field " + this + " into " + to + " to " + value + ".")
-    result
+    val defined = variations.setter.isDefinedAt(to)
+    if (defined) variations.setter(to)(value)
+    if (!defined) debug("Unable to set value of field " + this + " into " + to + " to " + value + ".")
+    defined
   }
 
   //inherited
@@ -109,7 +112,7 @@ final class Field[T](fieldAccessArgs: PartialFieldAccess[T]*) extends CopyableFi
  * The base trait of all FieldAccesses.  This is based on PartialFunction.
  * @param T the value type that this FieldAccess consumes and provides.
  * @see #partialGet
- * @see #partialSet
+ * @see #setter
  */
 trait PartialFieldAccess[T] {
   /**
@@ -133,11 +136,9 @@ trait PartialFieldAccess[T] {
   def apply(readable:AnyRef): T = findValue(readable).get
 
   /**
-   * Tries to set the value in <code>writable</code>.
-   * @param writable any kind of Object.  If it is not supported by this FieldAccess, this simply returns false.
-   * @param value the value in an Option.  It will be None if the partialGet of the readable returned None.
+   * PartialFunction for setting an optional value in an AnyRef.
    */
-  def partialSet(writable: AnyRef, value: Option[T]): Boolean
+  def setter: PartialFunction[AnyRef,Option[T] => Unit]
 }
 
 /**
@@ -160,7 +161,7 @@ abstract class FieldGetter[R,T](implicit readableManifest: ClassManifest[R]) ext
 }
 
 trait NoSetter[T] extends PartialFieldAccess[T] {
-  def partialSet(writable: AnyRef, value: Option[T]) = false
+  def setter = Field.emptyPartialFunction
 }
 
 /**
@@ -174,13 +175,8 @@ trait FieldSetter[W,T] extends PartialFieldAccess[T] with Logging {
   /** An abstract method that must be implemented by subtypes. */
   def set(writable: W, value: Option[T])
 
-  override def partialSet(writable: AnyRef, value: Option[T]) = {
-    verbose("Seeing if " + writable + " is an instance of " + writableManifest.erasure + " to set value " + value)
-    if (writable == null) throw new IllegalArgumentException("'writable' may not be null")
-    if (writableManifest.erasure.isInstance(writable)) {
-      set(writable.asInstanceOf[W], value)
-      true
-    } else false
+  def setter = {
+    case writable: W if writableManifest.erasure.isInstance(writable) => set(writable, _)
   }
 }
 
@@ -212,11 +208,19 @@ trait FieldAccessVariations[T] extends PartialFieldAccess[T] {
   }
 
   /**
-   * Sets a value in <code>writable</code> by using all FieldAccesses that can handle it.
-   * @return true if any were successful
+   * Combines all of fieldAccesses' setters, calling all that are applicable.
    */
-  def partialSet(writable: AnyRef, value: Option[T]) = {
-    fieldAccesses.foldLeft(false)((result, access) => access.partialSet(writable, value) || result)
+  lazy val setter = new PartialFunction[AnyRef,Option[T] => Unit] {
+    def isDefinedAt(x: AnyRef) = fieldAccesses.exists(_.setter.isDefinedAt(x))
+
+    def apply(writable: AnyRef) = { value =>
+      val definedAccesses = fieldAccesses.filter(_.setter.isDefinedAt(writable))
+      if (definedAccesses.isEmpty) {
+        throw new MatchError("setter in " + FieldAccessVariations.this)
+      } else {
+        definedAccesses.foreach(_.setter(writable)(value))
+      }
+    }
   }
 }
 
@@ -224,6 +228,12 @@ trait FieldAccessVariations[T] extends PartialFieldAccess[T] {
  * Factory methods for basic FieldAccesses.  This should be imported as Field._.
  */
 object Field {
+  def emptyPartialFunction[A,B] = new PartialFunction[A,B] {
+    def isDefinedAt(x: A) = false
+
+    def apply(v1: A) = throw new MatchError("emptyPartialFunction")
+  }
+
   //This is here so that getters can be written more simply by not having to explicitly wrap the result in a "Some".
   implicit def toSome[T](value: T): Option[T] = Some(value)
 
@@ -236,14 +246,14 @@ object Field {
   }
 
   /** Defines write-only fieldAccess for a field value for a Writable type. */
-  def writeOnly[W,T](setter: W => T => Unit, clearer: W => Unit = {_: W => })
+  def writeOnly[W,T](setter1: W => T => Unit, clearer: W => Unit = {_: W => })
                     (implicit typeManifest: ClassManifest[W]): FieldSetter[W,T] = {
     new FieldSetter[W,T] {
       protected def writableManifest = typeManifest
 
       def set(writable: W, valueOpt: Option[T]) {
         valueOpt match {
-          case Some(value) => setter(writable)(value)
+          case Some(value) => setter1(writable)(value)
           case None => clearer(writable)
         }
       }
@@ -268,14 +278,14 @@ object Field {
    * @param W the Writable type to put the value into
    * @param T the value type
    */
-  def flow[R,W,T](getter: R => Option[T], setter: W => T => Unit, clearer: W => Unit = {_: W => })
+  def flow[R,W,T](getter: R => Option[T], setter1: W => T => Unit, clearer: W => Unit = {_: W => })
                  (implicit readableManifest: ClassManifest[R], writableManifest: ClassManifest[W]): FieldAccess[R,W,T] = {
     new FieldAccess[R,W,T] {
       def get(readable: R) = getter(readable)
 
       def set(writable: W, valueOpt: Option[T]) {
         valueOpt match {
-          case Some(value) => setter(writable)(value)
+          case Some(value) => setter1(writable)(value)
           case None => clearer(writable)
         }
       }
@@ -301,7 +311,7 @@ object Field {
     variations[T](fieldAccesses.map(access => new PartialFieldAccess[T] {
       def partialGet(readable: AnyRef) = access.partialGet(readable).map(_.flatMap(s => format.toValue(s)))
 
-      def partialSet(writable: AnyRef, value: Option[T]) = access.partialSet(writable, value.map(v => format.toString(v)))
+      def setter = access.setter.andThen(setter => setter.compose(value => value.map(format.toString _)))
     }):_*)
 
   /**

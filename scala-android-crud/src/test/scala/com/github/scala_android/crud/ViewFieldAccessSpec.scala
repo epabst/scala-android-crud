@@ -1,15 +1,12 @@
 package com.github.scala_android.crud
 
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
-import org.scalatest.Spec
-import java.text.NumberFormat
 import com.github.triangle.Field
 import com.github.triangle.Field._
 import com.github.scala_android.crud.CursorFieldAccess._
 import com.github.scala_android.crud.ViewFieldAccess._
-import android.view.{ViewGroup, View}
+import android.view.View
 import org.scalatest.mock.EasyMockSugar
 import android.widget.{Spinner, LinearLayout, TextView}
 import com.xtremelabs.robolectric.RobolectricTestRunner
@@ -46,11 +43,11 @@ class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
     val view2 = mock[TextView]
     val view3 = mock[TextView]
     expecting {
-      call(viewGroup.findViewById(101)).andReturn(view1)
-      call(viewGroup.findViewById(102)).andReturn(view2)
+      call(viewGroup.findViewById(101)).andReturn(view1).anyTimes
       call(view1.setText(""))
+      call(viewGroup.findViewById(102)).andReturn(view2).anyTimes
       call(view2.setText("Please Fill"))
-      call(viewGroup.findViewById(103)).andReturn(view3)
+      call(viewGroup.findViewById(103)).andReturn(view3).anyTimes
       call(view3.setText(""))
     }
     whenExecuting(viewGroup, view1, view2, view3) {
