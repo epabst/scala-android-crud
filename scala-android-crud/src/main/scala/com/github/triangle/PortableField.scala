@@ -196,6 +196,28 @@ abstract class FlowField[R,W,T](implicit readableManifest: ClassManifest[R], _wr
 }
 
 /**
+ * A PortableField that is generated using the data in other fields.
+ * @param fieldsUsed the fields whose getters must be applicable (i.e. isDefinedAt) in order for this GeneratedField to be applicable.
+ */
+abstract class GeneratedField[T](fieldsUsed: BaseField*) extends PortableField[T] with NoSetter[T] {
+  /**
+   * Generate the value.  The <code>fieldsUsed</code> can be used like this within this method:
+   * <pre>
+   *   val myOptionalFoo = fooField.getter(readable)
+   *   val myRequiredBar = barField(readable)
+   *   ...do the calculation...
+   * </pre>
+   */
+  def generate(readable: AnyRef): Option[T]
+
+  def getter = new PartialFunction[AnyRef,Option[T]] {
+    def isDefinedAt(x: AnyRef) = fieldsUsed.view.forall(_.asInstanceOf[PortableField[_]].getter.isDefinedAt(x))
+
+    def apply(readable: AnyRef) = generate(readable)
+  }
+}
+
+/**
  * Factory methods for basic PortableFields.  This should be imported as PortableField._.
  */
 object PortableField {
