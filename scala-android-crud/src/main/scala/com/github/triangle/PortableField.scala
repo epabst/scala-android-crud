@@ -93,13 +93,15 @@ trait PortableField[T] extends BaseField with Logging {
 
   //inherited
   def copy(from: AnyRef, to: AnyRef): Boolean = {
-    getter.lift(from) match {
-      case Some(optionalValue) =>
-        debug("Copying " + optionalValue + " from " + from + " to " + to + " for field " + this)
-        setValue(to, optionalValue)
-      case None =>
-        false
+    val defined = getter.isDefinedAt(from) && setter.isDefinedAt(to)
+    if (defined) {
+      val value = getter(from)
+      debug("Copying " + value + " from " + from + " to " + to + " for field " + this)
+      setter(to)(value)
+    } else {
+      debug("Unable to copy field " + this + " from " + from + " to " + to + ".")
     }
+    defined
   }
 
   /**
