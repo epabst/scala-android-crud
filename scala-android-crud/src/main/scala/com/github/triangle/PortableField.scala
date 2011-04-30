@@ -61,11 +61,14 @@ trait PortableField[T] extends BaseField with Logging {
    * @returns Some(value) if successful, otherwise None (whether this PortableField didn't apply or because the value was None)
    * @see #getter to differentiate the two None cases
    */
-  def findValue(readable:AnyRef): Option[T] = getter.orElse({
-    case _ =>
-      debug("Unable to find value in " + readable + " for field " + this)
-      None
-  })(readable)
+  def findValue(readable:AnyRef): Option[T] = {
+    val catchAll: PartialFunction[AnyRef,Option[T]] = {
+      case _ =>
+        debug("Unable to find value in " + readable + " for field " + this)
+        None
+    }
+    getter.orElse(catchAll)(readable)
+  }
 
   /**
    * Gets the value, similar to {@link Map#apply}, and the value must not be None.
