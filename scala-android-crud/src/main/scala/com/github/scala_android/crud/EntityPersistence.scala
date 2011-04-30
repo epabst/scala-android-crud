@@ -18,6 +18,8 @@ trait EntityPersistence[Q,L,R,W] extends PlatformTypes {
 
   def toIterator(list: L): Iterator[R]
 
+  def findAsIterator(criteria: Q): Iterator[R] = toIterator(findAll(criteria))
+
   /** Find an entity by ID. */
   def find(id: ID): Option[R]
 
