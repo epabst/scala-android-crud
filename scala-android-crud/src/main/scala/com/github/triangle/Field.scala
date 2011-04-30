@@ -141,6 +141,18 @@ trait PartialFieldAccess[T] {
   }
 }
 
+trait DelegatingPartialFieldAccess[T] extends PartialFieldAccess[T] {
+  protected def delegate: PartialFieldAccess[T]
+
+  def getter = delegate.getter
+
+  def setter = delegate.setter
+
+  override def flatMap[B](f: PartialFunction[PartialFieldAccess[_], Traversable[B]]) = {
+    f.lift(this).getOrElse(delegate.flatMap(f))
+  }
+}
+
 /**
  * {@PartialFieldAccess} support for getting a value as an Option if <code>readable</code> is of type R.
  * @param T the value type

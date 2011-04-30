@@ -30,15 +30,11 @@ object CursorFieldAccess extends PlatformTypes {
 /**
  * Also supports accessing a scala Map (mutable.Map for writing) using the same name.
  */
-class CursorFieldAccess[T](val name: String)(implicit val persistedType: PersistedType[T]) extends PartialFieldAccess[T] with Logging {
-  private val access =
+class CursorFieldAccess[T](val name: String)(implicit val persistedType: PersistedType[T]) extends DelegatingPartialFieldAccess[T] with Logging {
+  protected val delegate =
     Field.flow[Cursor,ContentValues,T](getFromCursor, setIntoContentValues) +
     Field.fieldAccess[Bundle,T](b => persistedType.getValue(b, name), b => v => persistedType.putValue(b, name, v)) +
     Field.mapAccess[T](name)
-
-  def getter = access.getter
-
-  def setter = access.setter
 
   private def getFromCursor(cursor: Cursor) = {
     val columnIndex = cursor.getColumnIndex(name)
@@ -56,11 +52,8 @@ class CursorFieldAccess[T](val name: String)(implicit val persistedType: Persist
 import CursorFieldAccess._
 import ViewFieldAccess.intentId
 
-class ForeignKey(val entityType: CrudEntityTypeRef) extends PlatformTypes with PartialFieldAccess[ID] {
+class ForeignKey(val entityType: CrudEntityTypeRef) extends PlatformTypes with DelegatingPartialFieldAccess[ID] {
   val fieldName = entityType.entityName.toLowerCase + BaseColumns._ID
-  private val access = persisted[ID](fieldName) + intentId(entityType.entityName) + sqliteCriteria[ID](fieldName)
 
-  def getter = access.getter
-
-  def setter = access.setter
+  protected val delegate = persisted[ID](fieldName) + intentId(entityType.entityName) + sqliteCriteria[ID](fieldName)
 }
