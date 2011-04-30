@@ -5,7 +5,7 @@ import scala.collection.mutable
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.Spec
 import com.github.scala_android.crud.CursorField._
-import com.github.triangle.Field
+import com.github.triangle.PortableField
 import android.widget.ListAdapter
 import android.content.Intent
 import ActivityUIActionFactory._

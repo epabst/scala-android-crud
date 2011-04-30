@@ -8,7 +8,7 @@ import org.scalatest.Spec
 import com.github.scala_android.crud.CursorField._
 import org.easymock.EasyMock
 import EasyMock.notNull
-import com.github.triangle.Field
+import com.github.triangle.PortableField
 import android.widget.ListAdapter
 
 /**

@@ -10,7 +10,7 @@ import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.scalatest.matchers.ShouldMatchers
 import com.github.triangle._
 import CursorField._
-import Field._
+import PortableField._
 import res.R
 import android.app.Activity
 import android.net.Uri

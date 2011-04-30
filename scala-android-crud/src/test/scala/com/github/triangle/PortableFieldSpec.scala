@@ -4,22 +4,22 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.Spec
-import com.github.triangle.Field._
+import com.github.triangle.PortableField._
 import com.github.scala_android.crud.CursorField._
 import scala.collection.mutable
 import mutable.Buffer
 
 
 /**
- * A behavior specification for {@link Field}, {@link CursorField}, and {@link ViewField}.
+ * A behavior specification for {@link PortableField}, {@link CursorField}, and {@link ViewField}.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 2/9/11
  * Time: 7:59 PM
  */
 
 @RunWith(classOf[JUnitRunner])
-class FieldSpec extends Spec with ShouldMatchers {
-  describe("Field") {
+class PortableFieldSpec extends Spec with ShouldMatchers {
+  describe("PortableField") {
     class MyEntity(var string: String, var number: Int)
     class OtherEntity(var name: String, var boolean: Boolean)
 

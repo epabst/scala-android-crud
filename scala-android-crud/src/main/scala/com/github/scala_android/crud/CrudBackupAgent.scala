@@ -8,7 +8,7 @@ import java.io.{ObjectInputStream, ByteArrayInputStream, ObjectOutputStream, Byt
 import scala.collection.mutable
 import scala.collection.JavaConversions._
 import java.util.{Map => JMap,HashMap}
-import com.github.triangle.Field
+import com.github.triangle.PortableField
 import android.database.Cursor
 import android.content.{Context, ContentValues}
 

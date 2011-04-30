@@ -24,7 +24,7 @@ object CursorField extends PlatformTypes {
 
   def queryFieldNames(fields: FieldList): List[String] = persistedFields(fields).map(_.name)
 
-  def sqliteCriteria[T](name: String) = Field.writeOnly[SQLiteCriteria,T](criteria => value => criteria.selection = name + "=" + value)
+  def sqliteCriteria[T](name: String) = PortableField.writeOnly[SQLiteCriteria,T](criteria => value => criteria.selection = name + "=" + value)
 }
 
 /**
@@ -32,9 +32,9 @@ object CursorField extends PlatformTypes {
  */
 class CursorField[T](val name: String)(implicit val persistedType: PersistedType[T]) extends DelegatingPortableField[T] with Logging {
   protected val delegate =
-    Field.flow[Cursor,ContentValues,T](getFromCursor, setIntoContentValues) +
-    Field.field[Bundle,T](b => persistedType.getValue(b, name), b => v => persistedType.putValue(b, name, v)) +
-    Field.mapField[T](name)
+    PortableField.flow[Cursor,ContentValues,T](getFromCursor, setIntoContentValues) +
+    PortableField.field[Bundle,T](b => persistedType.getValue(b, name), b => v => persistedType.putValue(b, name, v)) +
+    PortableField.mapField[T](name)
 
   private def getFromCursor(cursor: Cursor) = {
     val columnIndex = cursor.getColumnIndex(name)

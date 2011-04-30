@@ -6,7 +6,7 @@ import _root_.android.view.View
 import reflect.ClassManifest
 import _root_.android.widget.{ArrayAdapter, Spinner, DatePicker, TextView}
 import com.github.triangle._
-import Field._
+import PortableField._
 import java.util.{Calendar, Date, GregorianCalendar}
 
 /**
@@ -90,6 +90,6 @@ object ViewField extends PlatformTypes {
 
   def intentId(entityName: String): FieldGetter[Intent,ID] = {
     val uriSegment = EntityUriSegment(entityName)
-    Field.readOnly[Intent,ID](intent => uriSegment.findId(intent.getData))
+    PortableField.readOnly[Intent,ID](intent => uriSegment.findId(intent.getData))
   }
 }

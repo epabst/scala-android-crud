@@ -4,7 +4,7 @@ import android.app.Activity
 import android.net.Uri
 import android.content.{Context, Intent}
 import collection.JavaConversions
-import com.github.triangle.{BasicValueFormat, Field}
+import com.github.triangle.{BasicValueFormat, PortableField}
 
 /**
  * A Factory for UIActions.
@@ -107,7 +107,7 @@ class ActivityUIActionFactory(currentActivity: BaseCrudActivity[_,_,_,_], val ap
   }
 
   import ActivityUIActionFactory._
-  import Field.toSome
+  import PortableField.toSome
 
   def startCreate(entityType: CrudEntityTypeRef) =
     toAction(android.R.drawable.ic_menu_add, entityType.addItemString, entityType, _ =>

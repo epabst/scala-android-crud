@@ -4,7 +4,7 @@ import org.scalatest.mock.EasyMockSugar
 import scala.collection.mutable
 import mutable.Map
 import com.github.triangle._
-import Field._
+import PortableField._
 import ViewField._
 import CursorField._
 import android.content.Intent

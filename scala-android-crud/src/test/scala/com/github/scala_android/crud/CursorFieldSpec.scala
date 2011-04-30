@@ -5,7 +5,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import com.github.triangle._
-import Field._
+import PortableField._
 import CursorField._
 import org.scalatest.matchers.ShouldMatchers
 import android.content.Intent

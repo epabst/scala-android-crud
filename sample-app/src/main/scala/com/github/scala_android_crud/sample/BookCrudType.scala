@@ -4,7 +4,7 @@ import com.github.scala_android.crud._
 import CursorField._
 import ViewField._
 import com.github.triangle._
-import Field._
+import PortableField._
 import PersistedType._
 import ValueFormat._
 import java.util.Date

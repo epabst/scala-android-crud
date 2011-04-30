@@ -8,8 +8,8 @@ import android.widget.ListAdapter
 import scala.collection.mutable
 import org.easymock.{IAnswer, EasyMock}
 import EasyMock.notNull
-import com.github.triangle.Field
-import com.github.triangle.Field._
+import com.github.triangle.PortableField
+import com.github.triangle.PortableField._
 import CursorField._
 import CrudBackupAgent._
 import android.os.ParcelFileDescriptor

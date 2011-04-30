@@ -3,7 +3,7 @@ package com.github.triangle
 import com.github.scala_android.crud.monitor.Logging
 import collection.Map
 
-/** A trait for {@link Field} for convenience such as when defining a List of heterogeneous Fields. */
+/** A trait for {@link PortableField} for convenience such as when defining a List of heterogeneous Fields. */
 trait BaseField {
   /**
    * Copies this field from <code>from</code> to <code>to</code>.
@@ -33,7 +33,7 @@ trait BaseField {
  * <p>
  * Example:
  * <pre>
- * import com.github.triangle.Field._
+ * import com.github.triangle.PortableField._
  * import com.github.scala_android.crud.CursorField._
  * import com.github.scala_android.crud.PersistedType._
  * import com.github.scala_android.crud.ViewField._
@@ -160,7 +160,7 @@ abstract class FieldGetter[R,T](implicit readableManifest: ClassManifest[R]) ext
 }
 
 trait NoSetter[T] extends PortableField[T] {
-  def setter = Field.emptyPartialFunction
+  def setter = PortableField.emptyPartialFunction
 }
 
 /**
@@ -192,9 +192,9 @@ abstract class FlowField[R,W,T](implicit readableManifest: ClassManifest[R], _wr
 }
 
 /**
- * Factory methods for basic PortableFields.  This should be imported as Field._.
+ * Factory methods for basic PortableFields.  This should be imported as PortableField._.
  */
-object Field {
+object PortableField {
   def emptyPartialFunction[A,B] = new PartialFunction[A,B] {
     def isDefinedAt(x: A) = false
 

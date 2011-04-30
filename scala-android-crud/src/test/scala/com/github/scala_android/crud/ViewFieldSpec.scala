@@ -2,8 +2,8 @@ package com.github.scala_android.crud
 
 import org.junit.runner.RunWith
 import org.scalatest.matchers.ShouldMatchers
-import com.github.triangle.Field
-import com.github.triangle.Field._
+import com.github.triangle.PortableField
+import com.github.triangle.PortableField._
 import com.github.scala_android.crud.CursorField._
 import com.github.scala_android.crud.ViewField._
 import android.view.View
