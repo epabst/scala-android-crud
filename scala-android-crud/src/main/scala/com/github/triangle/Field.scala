@@ -87,7 +87,36 @@ trait PartialFieldAccess[T] extends CopyableField with Logging {
   /**
    * Adds two PartialFieldAccess objects together.
    */
-  def +(access: PartialFieldAccess[T]): PartialFieldAccess[T] = Field.variations(this, access)
+  def +(other: PartialFieldAccess[T]): PartialFieldAccess[T] = {
+    val self = this
+    new PartialFieldAccess[T] {
+      lazy val getter = self.getter.orElse(other.getter)
+
+      /**
+       * Combines all of fieldAccesses' setters, calling all that are applicable.
+       */
+      lazy val setter = new PartialFunction[AnyRef,Option[T] => Unit] {
+        def isDefinedAt(x: AnyRef) = self.setter.isDefinedAt(x) || other.setter.isDefinedAt(x)
+
+        def apply(writable: AnyRef) = { value =>
+          val definedAccesses = List(self, other).filter(_.setter.isDefinedAt(writable))
+          if (definedAccesses.isEmpty) {
+            throw new MatchError("setter in " + PartialFieldAccess.this)
+          } else {
+            definedAccesses.foreach(_.setter(writable)(value))
+          }
+        }
+      }
+
+      override def flatMap[B](f: PartialFunction[PartialFieldAccess[_], Traversable[B]]) = {
+        val lifted = f.lift
+        List(self, other).flatMap(access => lifted(access) match {
+          case Some(t: Traversable[B]) => t
+          case None => access.flatMap(f)
+        })
+      }
+    }
+  }
 
   /**
    * Traverses all of the PartialFieldAccesses in this PartialFieldAccess, returning the desired information.
@@ -160,39 +189,6 @@ trait FieldSetter[W,T] extends PartialFieldAccess[T] with Logging {
 abstract class FieldAccess[R,W,T](implicit readableManifest: ClassManifest[R], _writableManifest: ClassManifest[W])
         extends FieldGetter[R,T] with FieldSetter[W,T] {
   protected def writableManifest = _writableManifest
-}
-
-trait FieldAccessVariations[T] extends PartialFieldAccess[T] {
-  def fieldAccesses: List[PartialFieldAccess[T]]
-
-  /**
-   * Combines all of the fieldAccesses' getters, using the first one that is applicable.
-   */
-  lazy val getter = fieldAccesses.tail.foldLeft(fieldAccesses.head.getter)((result, access) => result.orElse(access.getter))
-
-  /**
-   * Combines all of fieldAccesses' setters, calling all that are applicable.
-   */
-  lazy val setter = new PartialFunction[AnyRef,Option[T] => Unit] {
-    def isDefinedAt(x: AnyRef) = fieldAccesses.exists(_.setter.isDefinedAt(x))
-
-    def apply(writable: AnyRef) = { value =>
-      val definedAccesses = fieldAccesses.filter(_.setter.isDefinedAt(writable))
-      if (definedAccesses.isEmpty) {
-        throw new MatchError("setter in " + FieldAccessVariations.this)
-      } else {
-        definedAccesses.foreach(_.setter(writable)(value))
-      }
-    }
-  }
-
-  override def flatMap[B](f: PartialFunction[PartialFieldAccess[_], Traversable[B]]) = {
-    val lifted = f.lift
-    fieldAccesses.flatMap(access => lifted(access) match {
-      case Some(t: Traversable[B]) => t
-      case None => access.flatMap(f)
-    })
-  }
 }
 
 /**
@@ -270,10 +266,6 @@ object Field {
 
   def mapAccess[T](name: String): FieldAccess[Map[String,_ <: T],collection.mutable.Map[String,_ >: T],T] =
     flow(_.get(name), m => v => m.put(name, v), _.remove(name))
-
-  def variations[T](fieldAccessArgs: PartialFieldAccess[T]*): PartialFieldAccess[T] = new FieldAccessVariations[T] {
-    val fieldAccesses: List[PartialFieldAccess[T]] = fieldAccessArgs.toList
-  }
 
   def formatted[T](format: ValueFormat[T], access: PartialFieldAccess[String]) = new PartialFieldAccess[T] {
     def getter = access.getter.andThen(value => value.flatMap(format.toValue(_)))
