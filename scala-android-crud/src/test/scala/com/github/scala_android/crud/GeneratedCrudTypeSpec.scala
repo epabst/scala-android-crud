@@ -4,7 +4,7 @@ import org.junit.runner.RunWith
 import scala.collection.mutable
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.Spec
-import com.github.scala_android.crud.CursorFieldAccess._
+import com.github.scala_android.crud.CursorField._
 import com.github.triangle.Field
 import android.widget.ListAdapter
 import android.content.Intent

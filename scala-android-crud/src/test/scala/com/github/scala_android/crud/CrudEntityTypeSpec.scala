@@ -5,7 +5,7 @@ import scala.collection.mutable
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.Spec
-import com.github.scala_android.crud.CursorFieldAccess._
+import com.github.scala_android.crud.CursorField._
 import org.easymock.EasyMock
 import EasyMock.notNull
 import com.github.triangle.Field

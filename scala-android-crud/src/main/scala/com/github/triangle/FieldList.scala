@@ -20,7 +20,7 @@ trait FieldList extends Traversable[BaseField] {
     toFieldList(fields.flatMap(f => if (f.copy(from, to)) None else Some(f)))
   }
 
-  def fieldAccessFlatMap[B](f: PartialFunction[BaseField, Traversable[B]]): List[B] =
+  def fieldFlatMap[B](f: PartialFunction[BaseField, Traversable[B]]): List[B] =
     fields.flatMap(_.flatMap(f)).toList
 }
 

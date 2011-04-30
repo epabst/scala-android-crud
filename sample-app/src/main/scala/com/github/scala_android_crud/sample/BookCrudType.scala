@@ -1,8 +1,8 @@
 package com.github.scala_android_crud.sample
 
 import com.github.scala_android.crud._
-import CursorFieldAccess._
-import ViewFieldAccess._
+import CursorField._
+import ViewField._
 import com.github.triangle._
 import Field._
 import PersistedType._
@@ -28,7 +28,7 @@ object BookCrudType extends SQLiteCrudEntityType {
     persisted[Int]("edition") + viewId(R.id.edition, formatted[Int](textView)),
 
     persisted[Date]("publishDate") +
-      viewId[Date](R.id.publishDate, datePickerFieldAccess + formatted(dateValueFormat, textView))
+      viewId[Date](R.id.publishDate, datePicker + formatted(dateValueFormat, textView))
   )
 
   def activityClass = classOf[BookActivity]

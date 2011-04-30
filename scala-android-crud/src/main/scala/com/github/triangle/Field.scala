@@ -12,11 +12,11 @@ trait BaseField {
   def copy(from: AnyRef, to: AnyRef): Boolean
 
   /**
-   * Traverses all of the PartialFieldAccesses in this PartialFieldAccess, returning the desired information.
+   * Traverses all of the PortableFieldes in this PortableField, returning the desired information.
    * Anything not matched will be traversed deeper, if possible, or else ignored.
    * <pre>
    *   flatMap {
-   *     case foo: BarFieldAccess => List(foo.myInfo)
+   *     case foo: BarField => List(foo.myInfo)
    *   }
    * </pre>
    */
@@ -34,9 +34,9 @@ trait BaseField {
  * Example:
  * <pre>
  * import com.github.triangle.Field._
- * import com.github.scala_android.crud.CursorFieldAccess._
+ * import com.github.scala_android.crud.CursorField._
  * import com.github.scala_android.crud.PersistedType._
- * import com.github.scala_android.crud.ViewFieldAccess._
+ * import com.github.scala_android.crud.ViewField._
  *
  * val fields = List(
  *   persisted[String]("name") + viewId(R.id.name, textView),
@@ -46,11 +46,11 @@ trait BaseField {
  * <p>
  * Usage of implicits and defaults make this syntax concise for the simple cases,
  * but allow for very complex situations as well by providing explicit values when needed.
- * @param T the value type that this PartialFieldAccess gets and sets.
+ * @param T the value type that this PortableField gets and sets.
  * @see #getter
  * @see #setter
  */
-trait PartialFieldAccess[T] extends BaseField with Logging {
+trait PortableField[T] extends BaseField with Logging {
   /**
    * PartialFunction for getting an optional value from an AnyRef.
    */
@@ -58,7 +58,7 @@ trait PartialFieldAccess[T] extends BaseField with Logging {
 
   /**
    * Finds a value out of <code>readable</code>.
-   * @returns Some(value) if successful, otherwise None (whether this PartialFieldAccess didn't apply or because the value was None)
+   * @returns Some(value) if successful, otherwise None (whether this PortableField didn't apply or because the value was None)
    * @see #getter to differentiate the two None cases
    */
   def findValue(readable:AnyRef): Option[T] = getter.orElse({
@@ -79,7 +79,7 @@ trait PartialFieldAccess[T] extends BaseField with Logging {
   def setter: PartialFunction[AnyRef,Option[T] => Unit]
 
   /**
-   * Sets a value in <code>to</code> by using all FieldAccesses that can handle it.
+   * Sets a value in <code>to</code> by using all embedded PortableFields that can handle it.
    * @return true if any were successful
    */
   def setValue(to: AnyRef, value: Option[T]): Boolean = {
@@ -101,74 +101,74 @@ trait PartialFieldAccess[T] extends BaseField with Logging {
   }
 
   /**
-   * Adds two PartialFieldAccess objects together.
+   * Adds two PortableField objects together.
    */
-  def +(other: PartialFieldAccess[T]): PartialFieldAccess[T] = {
+  def +(other: PortableField[T]): PortableField[T] = {
     val self = this
-    new PartialFieldAccess[T] {
+    new PortableField[T] {
       lazy val getter = self.getter.orElse(other.getter)
 
       /**
-       * Combines all of fieldAccesses' setters, calling all that are applicable.
+       * Combines the two setters, calling only applicable ones (not just the first though).
        */
       lazy val setter = new PartialFunction[AnyRef,Option[T] => Unit] {
         def isDefinedAt(x: AnyRef) = self.setter.isDefinedAt(x) || other.setter.isDefinedAt(x)
 
         def apply(writable: AnyRef) = { value =>
-          val definedAccesses = List(self, other).filter(_.setter.isDefinedAt(writable))
-          if (definedAccesses.isEmpty) {
-            throw new MatchError("setter in " + PartialFieldAccess.this)
+          val definedFields = List(self, other).filter(_.setter.isDefinedAt(writable))
+          if (definedFields.isEmpty) {
+            throw new MatchError("setter in " + PortableField.this)
           } else {
-            definedAccesses.foreach(_.setter(writable)(value))
+            definedFields.foreach(_.setter(writable)(value))
           }
         }
       }
 
       override def flatMap[B](f: PartialFunction[BaseField, Traversable[B]]) = {
         val lifted = f.lift
-        List(self, other).flatMap(access => lifted(access) match {
+        List(self, other).flatMap(field => lifted(field) match {
           case Some(t: Traversable[B]) => t
-          case None => access.flatMap(f)
+          case None => field.flatMap(f)
         })
       }
     }
   }
 }
 
-trait DelegatingPartialFieldAccess[T] extends PartialFieldAccess[T] {
-  protected def delegate: PartialFieldAccess[T]
+trait DelegatingPortableField[T] extends PortableField[T] {
+  protected def delegate: PortableField[T]
 
   def getter = delegate.getter
 
   def setter = delegate.setter
 
-  override def flatMap[B](f: PartialFunction[CopyableField, Traversable[B]]) = {
+  override def flatMap[B](f: PartialFunction[BaseField, Traversable[B]]) = {
     f.lift(this).getOrElse(delegate.flatMap(f))
   }
 }
 
 /**
- * {@PartialFieldAccess} support for getting a value as an Option if <code>readable</code> is of type R.
+ * {@PortableField} support for getting a value as an Option if <code>readable</code> is of type R.
  * @param T the value type
  * @param R the Readable type to get the value out of
  */
-abstract class FieldGetter[R,T](implicit readableManifest: ClassManifest[R]) extends PartialFieldAccess[T] with Logging {
+abstract class FieldGetter[R,T](implicit readableManifest: ClassManifest[R]) extends PortableField[T] with Logging {
   /** An abstract method that must be implemented by subtypes. */
   def get(readable: R): Option[T]
 
   def getter = { case readable: R if readableManifest.erasure.isInstance(readable) => get(readable) }
 }
 
-trait NoSetter[T] extends PartialFieldAccess[T] {
+trait NoSetter[T] extends PortableField[T] {
   def setter = Field.emptyPartialFunction
 }
 
 /**
- * {@PartialFieldAccess} support for setting a value if <code>writable</code> is of type W.
+ * {@PortableField} support for setting a value if <code>writable</code> is of type W.
  * This is a trait so that it can be mixed with FieldGetter.
  * @param W the Writable type to put the value into
  */
-trait FieldSetter[W,T] extends PartialFieldAccess[T] with Logging {
+trait FieldSetter[W,T] extends PortableField[T] with Logging {
   protected def writableManifest: ClassManifest[W]
 
   /** An abstract method that must be implemented by subtypes. */
@@ -180,19 +180,19 @@ trait FieldSetter[W,T] extends PartialFieldAccess[T] with Logging {
 }
 
 /**
- * {@PartialFieldAccess} support for getting and setting a value if <code>readable</code> and <code>writable</code>
+ * {@PortableField} support for getting and setting a value if <code>readable</code> and <code>writable</code>
  * are of the types R and W respectively.
  * @param T the value type
  * @param R the Readable type to get the value out of
  * @param W the Writable type to put the value into
  */
-abstract class FieldAccess[R,W,T](implicit readableManifest: ClassManifest[R], _writableManifest: ClassManifest[W])
+abstract class FlowField[R,W,T](implicit readableManifest: ClassManifest[R], _writableManifest: ClassManifest[W])
         extends FieldGetter[R,T] with FieldSetter[W,T] {
   protected def writableManifest = _writableManifest
 }
 
 /**
- * Factory methods for basic FieldAccesses.  This should be imported as Field._.
+ * Factory methods for basic PortableFields.  This should be imported as Field._.
  */
 object Field {
   def emptyPartialFunction[A,B] = new PartialFunction[A,B] {
@@ -204,7 +204,7 @@ object Field {
   //This is here so that getters can be written more simply by not having to explicitly wrap the result in a "Some".
   implicit def toSome[T](value: T): Option[T] = Some(value)
 
-  /** Defines read-only fieldAccess for a field value for a Readable type. */
+  /** Defines read-only field for a Readable type. */
   def readOnly[R,T](getter1: R => Option[T])
                    (implicit typeManifest: ClassManifest[R]): FieldGetter[R,T] = {
     new FieldGetter[R,T] with NoSetter[T] {
@@ -212,7 +212,7 @@ object Field {
     }
   }
 
-  /** Defines write-only fieldAccess for a field value for a Writable type. */
+  /** Defines write-only field for a Writable type. */
   def writeOnly[W,T](setter1: W => T => Unit, clearer: W => Unit = {_: W => })
                     (implicit typeManifest: ClassManifest[W]): FieldSetter[W,T] = {
     new FieldSetter[W,T] {
@@ -230,7 +230,7 @@ object Field {
   }
 
   /** Defines a default for a field value, used when copied from {@link Unit}. */
-  def default[T](value: => T): PartialFieldAccess[T] = new PartialFieldAccess[T] with NoSetter[T] {
+  def default[T](value: => T): PortableField[T] = new PortableField[T] with NoSetter[T] {
     def getter = { case Unit => Some(value) }
   }
 
@@ -243,8 +243,8 @@ object Field {
    * @param T the value type
    */
   def flow[R,W,T](getter1: R => Option[T], setter1: W => T => Unit, clearer: W => Unit = {_: W => })
-                 (implicit readableManifest: ClassManifest[R], writableManifest: ClassManifest[W]): FieldAccess[R,W,T] = {
-    new FieldAccess[R,W,T] {
+                 (implicit readableManifest: ClassManifest[R], writableManifest: ClassManifest[W]): FlowField[R,W,T] = {
+    new FlowField[R,W,T] {
       def get(readable: R) = getter1(readable)
 
       def set(writable: W, valueOpt: Option[T]) {
@@ -257,25 +257,25 @@ object Field {
   }
 
   /**
-   *  Defines fieldAccess for a field value using a setter and getter.
+   *  Defines PortableField for a field value using a setter and getter.
    * @param M any mutable type
    * @param T the value type
    */
-  def fieldAccess[M,T](getter: M => Option[T], setter: M => T => Unit, clearer: M => Unit = {_: M => })
-                 (implicit typeManifest: ClassManifest[M]): FieldAccess[M,M,T] = flow[M,M,T](getter, setter, clearer)
+  def field[M,T](getter: M => Option[T], setter: M => T => Unit, clearer: M => Unit = {_: M => })
+                 (implicit typeManifest: ClassManifest[M]): FlowField[M,M,T] = flow[M,M,T](getter, setter, clearer)
 
-  def mapAccess[T](name: String): FieldAccess[Map[String,_ <: T],collection.mutable.Map[String,_ >: T],T] =
+  def mapField[T](name: String): FlowField[Map[String,_ <: T],collection.mutable.Map[String,_ >: T],T] =
     flow(_.get(name), m => v => m.put(name, v), _.remove(name))
 
-  def formatted[T](format: ValueFormat[T], access: PartialFieldAccess[String]) = new PartialFieldAccess[T] {
-    def getter = access.getter.andThen(value => value.flatMap(format.toValue(_)))
+  def formatted[T](format: ValueFormat[T], field: PortableField[String]) = new PortableField[T] {
+    def getter = field.getter.andThen(value => value.flatMap(format.toValue(_)))
 
-    def setter = access.setter.andThen(setter => setter.compose(value => value.map(format.toString _)))
+    def setter = field.setter.andThen(setter => setter.compose(value => value.map(format.toString _)))
   }
 
   /**
    * formatted replacement for primitive values.
    */
-  def formatted[T <: AnyVal](access: PartialFieldAccess[String])(implicit m: Manifest[T]): PartialFieldAccess[T] =
-    formatted(new BasicValueFormat[T](), access)
+  def formatted[T <: AnyVal](field: PortableField[String])(implicit m: Manifest[T]): PortableField[T] =
+    formatted(new BasicValueFormat[T](), field)
 }

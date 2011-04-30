@@ -4,8 +4,8 @@ import org.junit.runner.RunWith
 import org.scalatest.matchers.ShouldMatchers
 import com.github.triangle.Field
 import com.github.triangle.Field._
-import com.github.scala_android.crud.CursorFieldAccess._
-import com.github.scala_android.crud.ViewFieldAccess._
+import com.github.scala_android.crud.CursorField._
+import com.github.scala_android.crud.ViewField._
 import android.view.View
 import org.scalatest.mock.EasyMockSugar
 import android.widget.{Spinner, LinearLayout, TextView}
@@ -15,14 +15,14 @@ import android.content.{Intent, Context}
 
 
 /**
- * A behavior specification for {@link ViewFieldAccess}.
+ * A behavior specification for {@link ViewField}.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 2/9/11
  * Time: 7:59 PM
  */
 
 @RunWith(classOf[RobolectricTestRunner])
-class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
+class ViewFieldSpec extends ShouldMatchers with EasyMockSugar {
   class MyEntity(var string: String, var number: Int)
 
   @Test
@@ -32,7 +32,7 @@ class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
     val stringField =
       persisted[String]("name") +
       viewId(101, textView) +
-      viewId(102, viewFieldAccess[MyView,String](_.status, _.status_=))
+      viewId(102, viewField[MyView,String](_.status, _.status_=))
   }
 
   @Test
@@ -52,7 +52,7 @@ class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
     whenExecuting(viewGroup, view1, view2, view3) {
       val stringField =
         viewId(101, textView) +
-        viewId(102, viewFieldAccess[TextView,String](v => Option(v.getText.toString), _.setText, _.setText("Please Fill")))
+        viewId(102, viewField[TextView,String](v => Option(v.getText.toString), _.setText, _.setText("Please Fill")))
       stringField.setValue(viewGroup, None)
 
       val intField = viewId(103, formatted[Int](textView))
@@ -69,8 +69,8 @@ class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
       call(group.findViewById(56)).andReturn(view).anyTimes
     }
     whenExecuting(context, group, view) {
-      val stringField = fieldAccess[MyEntity,String](_.string, _.string_=) +
-        viewId(56, viewFieldAccess[Spinner,String](
+      val stringField = field[MyEntity,String](_.string, _.string_=) +
+        viewId(56, viewField[Spinner,String](
           _ => throw new IllegalStateException("should not be called"),
           _ => throw new IllegalStateException("should not be called")))
       val myEntity1 = new MyEntity("my1", 1)
@@ -83,8 +83,8 @@ class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
   def itShouldOnlyCopyToAndFromViewByIdIfIdIsFound() {
     val context = mock[Context]
     whenExecuting(context) {
-      val stringField = fieldAccess[MyEntity,String](_.string, _.string_=) +
-        viewId(56, viewFieldAccess[Spinner,String](
+      val stringField = field[MyEntity,String](_.string, _.string_=) +
+        viewId(56, viewField[Spinner,String](
           _ => throw new IllegalStateException("should not be called"),
           _ => throw new IllegalStateException("should not be called")))
       val myEntity1 = new MyEntity("my1", 1)
@@ -101,14 +101,14 @@ class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
   def itShouldHandleUnparseableValues() {
     val context = mock[Context]
     whenExecuting(context) {
-      val field = formatted[Int](textView) + fieldAccess[MyEntity,Int](_.number, _.number_=)
+      val intField = formatted[Int](textView) + field[MyEntity,Int](_.number, _.number_=)
       val view = new TextView(context)
       view.setText("twenty")
-      field.findValue(view) should be (None)
-      field.getter(view) should be (None)
+      intField.findValue(view) should be (None)
+      intField.getter(view) should be (None)
 
       val entity = new MyEntity("my1", 30)
-      val result = field.copy(view, entity)
+      val result = intField.copy(view, entity)
       result should be (true)
       entity.number should be (30)
     }

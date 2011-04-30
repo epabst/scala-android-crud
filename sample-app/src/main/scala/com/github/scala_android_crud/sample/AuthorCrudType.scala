@@ -1,8 +1,8 @@
 package com.github.scala_android_crud.sample
 
 import com.github.scala_android.crud._
-import CursorFieldAccess._
-import ViewFieldAccess._
+import CursorField._
+import ViewField._
 import com.github.triangle._
 
 /**

@@ -5,13 +5,13 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.Spec
 import com.github.triangle.Field._
-import com.github.scala_android.crud.CursorFieldAccess._
+import com.github.scala_android.crud.CursorField._
 import scala.collection.mutable
 import mutable.Buffer
 
 
 /**
- * A behavior specification for {@link Field}, {@link CursorFieldAccess}, and {@link ViewFieldAccess}.
+ * A behavior specification for {@link Field}, {@link CursorField}, and {@link ViewField}.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 2/9/11
  * Time: 7:59 PM
@@ -24,21 +24,21 @@ class FieldSpec extends Spec with ShouldMatchers {
     class OtherEntity(var name: String, var boolean: Boolean)
 
     it("should be easily instantiable for an Entity") {
-      val a1 = fieldAccess[MyEntity,String](_.string, _.string_=)
-      val a2 = fieldAccess[MyEntity,Int](_.number, _.number_=)
+      val a1 = field[MyEntity,String](_.string, _.string_=)
+      val a2 = field[MyEntity,Int](_.number, _.number_=)
       val stringField =
         flow[MyEntity, OtherEntity, String](_.string, _.name_=) +
         persisted[String]("name") +
-        fieldAccess[MyEntity,String](_.string, _.string_=) +
+        field[MyEntity,String](_.string, _.string_=) +
         readOnly[OtherEntity,String](_.name) +
         writeOnly[MyEntity,String](_.string_=) +
-        fieldAccess[OtherEntity,String](_.name, _.name_=)
-      val intField = fieldAccess[MyEntity,Int](_.number, _.number_=)
+        field[OtherEntity,String](_.name, _.name_=)
+      val intField = field[MyEntity,Int](_.number, _.number_=)
       val readOnlyField = readOnly[MyEntity,Int](_.number)
     }
 
     it("should set defaults") {
-      val stringField = fieldAccess[MyEntity,String](_.string, _.string_=) + default("Hello")
+      val stringField = field[MyEntity,String](_.string, _.string_=) + default("Hello")
 
       val myEntity1 = new MyEntity("my1", 15)
       stringField.copy(Unit, myEntity1) should be (true)
@@ -54,8 +54,8 @@ class FieldSpec extends Spec with ShouldMatchers {
       stringField.findValue(Unit) should be (Some("Hello"))
     }
 
-    it("mapAccess should clear") {
-      val stringField = mapAccess[String]("greeting")
+    it("mapField should clear") {
+      val stringField = mapField[String]("greeting")
       val map = mutable.Map("greeting" -> "Hola")
       stringField.getter(mutable.Map[String,Any]()) should be (None)
       stringField.copy(mutable.Map[String,Any](), map) should be (true)
@@ -63,7 +63,7 @@ class FieldSpec extends Spec with ShouldMatchers {
     }
 
     it("copy should happen if getter is applicable") {
-      val stringField = default("Hello") + mapAccess("greeting")
+      val stringField = default("Hello") + mapField("greeting")
       val map = mutable.Map[String,Any]("greeting" -> "Hola")
       stringField.getter(Unit) should be (Some("Hello"))
       stringField.copy(Unit, map) should be (true)
@@ -71,7 +71,7 @@ class FieldSpec extends Spec with ShouldMatchers {
     }
 
     it("setter should not be used if getter isn't applicable") {
-      val stringField = default("Hello") + mapAccess("greeting")
+      val stringField = default("Hello") + mapField("greeting")
       val map = mutable.Map[String,Any]("greeting" -> "Hola")
       stringField.getter.isDefinedAt(new Object) should be (false)
       stringField.copy(new Object, map) should be (false)
@@ -82,7 +82,7 @@ class FieldSpec extends Spec with ShouldMatchers {
       val stringField =
         readOnly[OtherEntity,String](_.name) +
         flow[MyEntity, OtherEntity, String](_.string, _.name_=) +
-        fieldAccess[MyEntity,String](_.string, _.string_=)
+        field[MyEntity,String](_.string, _.string_=)
 
       val myEntity1 = new MyEntity("my1", 1)
       val otherEntity1 = new OtherEntity("other1", false)
@@ -113,7 +113,7 @@ class FieldSpec extends Spec with ShouldMatchers {
     }
 
     it("should parse and format values") {
-      val field = formatted[Double](ValueFormat.currencyValueFormat, mapAccess[String]("amountString"))
+      val field = formatted[Double](ValueFormat.currencyValueFormat, mapField[String]("amountString"))
       field(Map("amountString" -> "12.34")) should be (12.34)
 
       val map = mutable.Map[String,Any]()

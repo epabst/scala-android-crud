@@ -7,18 +7,18 @@ import com.github.triangle._
 import android.os.Bundle
 import monitor.Logging
 
-object CursorFieldAccess extends PlatformTypes {
-  def persisted[T](name: String)(implicit persistedType: PersistedType[T]): CursorFieldAccess[T] = {
-    new CursorFieldAccess[T](name)(persistedType)
+object CursorField extends PlatformTypes {
+  def persisted[T](name: String)(implicit persistedType: PersistedType[T]): CursorField[T] = {
+    new CursorField[T](name)(persistedType)
   }
 
   def foreignKey[ID](entityType: CrudEntityTypeRef) = new ForeignKey(entityType)
 
   val persistedId = persisted[ID](BaseColumns._ID)
 
-  def persistedFields(fields: FieldList): List[CursorFieldAccess[_]] = {
-    persistedId :: fields.fieldAccessFlatMap[CursorFieldAccess[_]] {
-      case fieldAccess: CursorFieldAccess[_] => List(fieldAccess)
+  def persistedFields(fields: FieldList): List[CursorField[_]] = {
+    persistedId :: fields.fieldFlatMap[CursorField[_]] {
+      case cursorField: CursorField[_] => List(cursorField)
     }
   }
 
@@ -30,11 +30,11 @@ object CursorFieldAccess extends PlatformTypes {
 /**
  * Also supports accessing a scala Map (mutable.Map for writing) using the same name.
  */
-class CursorFieldAccess[T](val name: String)(implicit val persistedType: PersistedType[T]) extends DelegatingPartialFieldAccess[T] with Logging {
+class CursorField[T](val name: String)(implicit val persistedType: PersistedType[T]) extends DelegatingPortableField[T] with Logging {
   protected val delegate =
     Field.flow[Cursor,ContentValues,T](getFromCursor, setIntoContentValues) +
-    Field.fieldAccess[Bundle,T](b => persistedType.getValue(b, name), b => v => persistedType.putValue(b, name, v)) +
-    Field.mapAccess[T](name)
+    Field.field[Bundle,T](b => persistedType.getValue(b, name), b => v => persistedType.putValue(b, name, v)) +
+    Field.mapField[T](name)
 
   private def getFromCursor(cursor: Cursor) = {
     val columnIndex = cursor.getColumnIndex(name)
@@ -49,10 +49,10 @@ class CursorFieldAccess[T](val name: String)(implicit val persistedType: Persist
   private def setIntoContentValues(contentValues: ContentValues)(value: T) { persistedType.putValue(contentValues, name, value) }
 }
 
-import CursorFieldAccess._
-import ViewFieldAccess.intentId
+import CursorField._
+import ViewField.intentId
 
-class ForeignKey(val entityType: CrudEntityTypeRef) extends PlatformTypes with DelegatingPartialFieldAccess[ID] {
+class ForeignKey(val entityType: CrudEntityTypeRef) extends PlatformTypes with DelegatingPortableField[ID] {
   val fieldName = entityType.entityName.toLowerCase + BaseColumns._ID
 
   protected val delegate = persisted[ID](fieldName) + intentId(entityType.entityName) + sqliteCriteria[ID](fieldName)

@@ -5,8 +5,8 @@ import scala.collection.mutable
 import mutable.Map
 import com.github.triangle._
 import Field._
-import ViewFieldAccess._
-import CursorFieldAccess._
+import ViewField._
+import CursorField._
 import android.content.Intent
 import org.easymock.IAnswer
 import org.easymock.classextension.EasyMock

@@ -2,7 +2,7 @@ package com.github.scala_android.crud
 
 import android.app.backup.{BackupDataOutput, BackupDataInput, BackupAgent}
 import monitor.Logging
-import CursorFieldAccess._
+import CursorField._
 import android.os.ParcelFileDescriptor
 import java.io.{ObjectInputStream, ByteArrayInputStream, ObjectOutputStream, ByteArrayOutputStream}
 import scala.collection.mutable

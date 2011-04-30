@@ -1,7 +1,7 @@
 package com.github.scala_android.crud
 
 import scala.collection.mutable
-import CursorFieldAccess._
+import CursorField._
 
 /**
  * EntityPersistence for a simple generated List.

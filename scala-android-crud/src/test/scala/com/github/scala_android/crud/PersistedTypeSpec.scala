@@ -9,7 +9,7 @@ import android.os.Bundle
 
 
 /**
- * A behavior specification for {@link ViewFieldAccess}.
+ * A behavior specification for {@link ViewField}.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 2/9/11
  * Time: 7:59 PM

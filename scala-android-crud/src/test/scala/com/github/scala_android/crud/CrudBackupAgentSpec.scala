@@ -10,7 +10,7 @@ import org.easymock.{IAnswer, EasyMock}
 import EasyMock.notNull
 import com.github.triangle.Field
 import com.github.triangle.Field._
-import CursorFieldAccess._
+import CursorField._
 import CrudBackupAgent._
 import android.os.ParcelFileDescriptor
 

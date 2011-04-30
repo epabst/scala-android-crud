@@ -1,5 +1,5 @@
 Three major components: View, Persistence, Model (for business logic).
-They all share the same Entities with Fields but have their own FieldAccessors.
+They all share the same Entities with Fields but have their own PortableFields.
 View has UIContext (access to system UI environment and parent window),
       View instances, resource string and view ids for CRUD UI
 UIContext is NOT tied to an Entity, so it can support CRUD and UI on ANY Entity.

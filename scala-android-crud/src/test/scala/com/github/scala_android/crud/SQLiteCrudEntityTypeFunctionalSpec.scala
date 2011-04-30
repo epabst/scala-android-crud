@@ -9,7 +9,7 @@ import org.easymock.EasyMock.isA
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.scalatest.matchers.ShouldMatchers
 import com.github.triangle._
-import CursorFieldAccess._
+import CursorField._
 import Field._
 import res.R
 import android.app.Activity

@@ -6,7 +6,7 @@ import org.junit.runner.RunWith
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import com.github.triangle._
 import Field._
-import CursorFieldAccess._
+import CursorField._
 import org.scalatest.matchers.ShouldMatchers
 import android.content.Intent
 import android.net.Uri
@@ -14,19 +14,19 @@ import org.scalatest.mock.EasyMockSugar
 import android.database.Cursor
 
 /**
- * A specification for {@link CursorFieldAccess}.
+ * A specification for {@link CursorField}.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 2/18/11
  * Time: 6:22 PM
  */
 @RunWith(classOf[RobolectricTestRunner])
-class CursorFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
+class CursorFieldSpec extends ShouldMatchers with EasyMockSugar {
   @Test
   def shouldGetColumnsForQueryCorrectly() {
     val foreign = foreignKey(MyCrudEntityTypeRef)
     val combined = persisted[Float]("height") + default(6.0f)
     val fields = FieldList(foreign, persisted[Int]("age"), combined)
-    val actualFields = CursorFieldAccess.queryFieldNames(fields)
+    val actualFields = CursorField.queryFieldNames(fields)
     actualFields should be (List(BaseColumns._ID, foreign.fieldName, "age", "height"))
   }
 
