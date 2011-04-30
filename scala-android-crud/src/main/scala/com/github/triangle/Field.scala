@@ -32,10 +32,7 @@ trait CopyableField {
  * Usage of implicits make this syntax concise for the simple cases, but allow for very complex situations as well
  * by providing custom implementations for the implicits.
  */
-final class Field[T](fieldAccessArgs: PartialFieldAccess[T]*) extends CopyableField with Logging {
-  val fieldAccesses: List[PartialFieldAccess[T]] = fieldAccessArgs.toList
-  private val variations = Field.variations(fieldAccessArgs:_*)
-
+final class Field[T](access: PartialFieldAccess[T]) extends CopyableField with Logging {
   /**
    * Finds a value out of <code>from</code> by using the FieldAccess that can handle it.
    * @returns Some(value) if successful, otherwise None (whether because no PartialFieldAccess applied or because the value was None)
@@ -50,22 +47,22 @@ final class Field[T](fieldAccessArgs: PartialFieldAccess[T]*) extends CopyableFi
    * Gets the value, similar to {@link Map#apply}, and the value must not be None.
    * @see #findValue
    */
-  def apply(readable: AnyRef): T = variations.getter(readable).get
+  def apply(readable: AnyRef): T = access.getter(readable).get
 
   /**
    * Finds a value of out <code>from</code>.
    * @returns Some(Some(value)) if successful, Some(None) if a PartialFieldAccess applied but the value was None,
    * or None if no PartialFieldAccess applied.
    */
-  def findOptionalValue(from: AnyRef): Option[Option[T]] = variations.getter.lift(from)
+  def findOptionalValue(from: AnyRef): Option[Option[T]] = access.getter.lift(from)
 
   /**
    * Sets a value in <code>to</code> by using all FieldAccesses that can handle it.
    * @return true if any were successful
    */
   def setValue(to: AnyRef, value: Option[T]): Boolean = {
-    val defined = variations.setter.isDefinedAt(to)
-    if (defined) variations.setter(to)(value)
+    val defined = access.setter.isDefinedAt(to)
+    if (defined) access.setter(to)(value)
     if (!defined) debug("Unable to set value of field " + this + " into " + to + " to " + value + ".")
     defined
   }
@@ -92,7 +89,7 @@ final class Field[T](fieldAccessArgs: PartialFieldAccess[T]*) extends CopyableFi
    */
   def fieldAccessFlatMap[B](f: PartialFunction[PartialFieldAccess[_], Traversable[B]]): List[B] = {
     val lifted = f.lift
-    fieldAccesses.flatMap(access => lifted(access) match {
+    List(access).flatMap(access => lifted(access) match {
       case Some(t: Traversable[B]) => t
       case None => access match {
         case vars: FieldAccessVariations[_] => Field(vars.fieldAccesses: _*).fieldAccessFlatMap(f)
@@ -130,6 +127,11 @@ trait PartialFieldAccess[T] {
    * PartialFunction for setting an optional value in an AnyRef.
    */
   def setter: PartialFunction[AnyRef,Option[T] => Unit]
+
+  /**
+   * Adds two PartialFieldAccess objects together.
+   */
+  def +(access: PartialFieldAccess[T]): PartialFieldAccess[T] = Field.variations(this, access)
 }
 
 /**
@@ -283,9 +285,7 @@ object Field {
     val fieldAccesses: List[PartialFieldAccess[T]] = fieldAccessArgs.toList
   }
 
-  def formatted[T](format: ValueFormat[T], fieldAccesses: PartialFieldAccess[String]*) = new PartialFieldAccess[T] {
-    private val access = variations(fieldAccesses:_*)
-
+  def formatted[T](format: ValueFormat[T], access: PartialFieldAccess[String]) = new PartialFieldAccess[T] {
     def getter = access.getter.andThen(value => value.flatMap(format.toValue(_)))
 
     def setter = access.setter.andThen(setter => setter.compose(value => value.map(format.toString _)))
@@ -294,11 +294,11 @@ object Field {
   /**
    * formatted replacement for primitive values.
    */
-  def formatted[T <: AnyVal](fieldAccesses: PartialFieldAccess[String]*)(implicit m: Manifest[T]): PartialFieldAccess[T] =
-    formatted(new BasicValueFormat[T](), fieldAccesses:_*)
+  def formatted[T <: AnyVal](access: PartialFieldAccess[String])(implicit m: Manifest[T]): PartialFieldAccess[T] =
+    formatted(new BasicValueFormat[T](), access)
 
   /**
    * Allow creating a Field without using "new".
    */
-  def apply[T](fieldAccesses: PartialFieldAccess[T]*): Field[T] = new Field[T](fieldAccesses :_*)
+  def apply[T](access: PartialFieldAccess[T]): Field[T] = new Field[T](access)
 }

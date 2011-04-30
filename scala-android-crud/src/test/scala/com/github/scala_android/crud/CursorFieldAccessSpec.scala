@@ -24,11 +24,10 @@ class CursorFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
   @Test
   def shouldGetColumnsForQueryCorrectly() {
     val foreign = foreignKey(MyCrudEntityTypeRef)
-    val vars = variations(persisted[Float]("height"))
-    val fields = FieldList(Field(foreign), Field(persisted[Int]("age")), Field(vars))
+    val combined = persisted[Float]("height") + default(6.0f)
+    val fields = FieldList(Field(foreign), Field(persisted[Int]("age")), Field(combined))
     val actualFields = CursorFieldAccess.queryFieldNames(fields)
     actualFields should be (List(BaseColumns._ID, foreign.fieldName, "age", "height"))
-
   }
 
   @Test
@@ -45,7 +44,7 @@ class CursorFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
 
   @Test
   def shouldGetCriteriaCorrectly() {
-    val field = Field[Int](sqliteCriteria("age"), default(19))
+    val field = Field[Int](sqliteCriteria("age") + default(19))
     val criteria = new SQLiteCriteria
     field.copy(Unit, criteria)
     criteria.selection should be ("age=19")

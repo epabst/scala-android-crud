@@ -27,11 +27,11 @@ class FieldSpec extends Spec with ShouldMatchers {
       val a1 = fieldAccess[MyEntity,String](_.string, _.string_=)
       val a2 = fieldAccess[MyEntity,Int](_.number, _.number_=)
       val stringField = Field(
-        flow[MyEntity, OtherEntity, String](_.string, _.name_=),
-        persisted[String]("name"),
-        fieldAccess[MyEntity,String](_.string, _.string_=),
-        readOnly[OtherEntity,String](_.name),
-        writeOnly[MyEntity,String](_.string_=),
+        flow[MyEntity, OtherEntity, String](_.string, _.name_=) +
+        persisted[String]("name") +
+        fieldAccess[MyEntity,String](_.string, _.string_=) +
+        readOnly[OtherEntity,String](_.name) +
+        writeOnly[MyEntity,String](_.string_=) +
         fieldAccess[OtherEntity,String](_.name, _.name_=))
       val intField = Field(fieldAccess[MyEntity,Int](_.number, _.number_=))
       val readOnlyField = Field(readOnly[MyEntity,Int](_.number))
@@ -39,7 +39,7 @@ class FieldSpec extends Spec with ShouldMatchers {
 
     it("should set defaults") {
       val stringField = Field(
-        fieldAccess[MyEntity,String](_.string, _.string_=), default("Hello"))
+        fieldAccess[MyEntity,String](_.string, _.string_=) + default("Hello"))
 
       val myEntity1 = new MyEntity("my1", 15)
       stringField.copy(Unit, myEntity1) should be (true)
@@ -64,7 +64,7 @@ class FieldSpec extends Spec with ShouldMatchers {
     }
 
     it("copy should happen if getter is applicable") {
-      val stringField = Field(default("Hello"), mapAccess("greeting"))
+      val stringField = Field(default("Hello") + mapAccess("greeting"))
       val map = mutable.Map[String,Any]("greeting" -> "Hola")
       stringField.findOptionalValue(Unit) should be (Some(Some("Hello")))
       stringField.copy(Unit, map) should be (true)
@@ -72,7 +72,7 @@ class FieldSpec extends Spec with ShouldMatchers {
     }
 
     it("setter should not be used if getter isn't applicable") {
-      val stringField = Field(default("Hello"), mapAccess("greeting"))
+      val stringField = Field(default("Hello") + mapAccess("greeting"))
       val map = mutable.Map[String,Any]("greeting" -> "Hola")
       stringField.findOptionalValue(new Object) should be (None)
       stringField.copy(new Object, map) should be (false)
@@ -81,8 +81,8 @@ class FieldSpec extends Spec with ShouldMatchers {
 
     it("should copy from one to multiple") {
       val stringField = Field(
-        readOnly[OtherEntity,String](_.name),
-        flow[MyEntity, OtherEntity, String](_.string, _.name_=),
+        readOnly[OtherEntity,String](_.name) +
+        flow[MyEntity, OtherEntity, String](_.string, _.name_=) +
         fieldAccess[MyEntity,String](_.string, _.string_=))
 
       val myEntity1 = new MyEntity("my1", 1)

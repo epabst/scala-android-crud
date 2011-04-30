@@ -28,7 +28,7 @@ object ViewFieldAccess extends PlatformTypes {
   }
 
   /** View fieldAccess for a View resource within a given parent View */
-  class ViewFieldAccessById[T](val viewResourceId: ViewKey)(childViewFieldAccess: PartialFieldAccess[T])
+  class ViewFieldAccessById[T](val viewResourceId: ViewKey, childViewFieldAccess: PartialFieldAccess[T])
           extends PartialFieldAccess[T] {
     private object ChildView extends ChildViewById(viewResourceId)
 
@@ -59,13 +59,8 @@ object ViewFieldAccess extends PlatformTypes {
 
   val textView: ViewFieldAccess[TextView,String] = viewFieldAccess[TextView,String](v => toOption(v.getText.toString.trim), _.setText, _.setText(""))
 
-  def viewId[T](viewResourceId: ViewKey, childViewAccessVariations: PartialFieldAccess[T]*): ViewFieldAccessById[T] = {
-    new ViewFieldAccessById[T](viewResourceId)(Field.variations(childViewAccessVariations: _*))
-  }
-
-  def viewFieldAccessById[V <: View,T](viewResourceId: ViewKey, getter: V => Option[T], setter: V => T => Unit, clearer: V => Unit = {_: V => })
-                                 (implicit m: ClassManifest[V]): ViewFieldAccessById[T] = {
-    viewId(viewResourceId, viewFieldAccess(getter, setter, clearer))
+  def viewId[T](viewResourceId: ViewKey, childViewAccess: PartialFieldAccess[T]): ViewFieldAccessById[T] = {
+    new ViewFieldAccessById[T](viewResourceId, childViewAccess)
   }
 
   private def toOption(string: String): Option[String] = if (string == "") None else Some(string)

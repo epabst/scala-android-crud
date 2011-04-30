@@ -13,7 +13,7 @@ import com.github.triangle._
 object AuthorCrudType extends SQLiteCrudEntityType {
   def entityName = "Author"
 
-  def fields = List(Field[String](persisted("name"), viewId(R.id.name, textView)))
+  def fields = List(Field[String](persisted("name") + viewId(R.id.name, textView)))
 
   //Use the same layout for the header
   def headerLayout = R.layout.author_row

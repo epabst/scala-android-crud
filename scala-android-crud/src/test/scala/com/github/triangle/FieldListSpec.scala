@@ -19,7 +19,7 @@ import scala.collection.mutable
 class FieldListSpec extends Spec with ShouldMatchers {
   describe("copyFields") {
     it("should copy values that apply") {
-      val countField = Field[Int](default(10), mapAccess("count"))
+      val countField = Field[Int](default(10) + mapAccess("count"))
       val priceField = Field[Double](mapAccess("price"))
       val fields = FieldList(countField, priceField)
       val map = mutable.Map[String, Any]()
@@ -38,7 +38,7 @@ class FieldListSpec extends Spec with ShouldMatchers {
     }
 
     it("should return the Fields that were not copied") {
-      val countField = Field[Int](default(10), mapAccess("count"))
+      val countField = Field[Int](default(10) + mapAccess("count"))
       val priceField = Field[Double](mapAccess("price"))
       val fields = FieldList(countField, priceField)
       val map = mutable.Map[String, Any]()

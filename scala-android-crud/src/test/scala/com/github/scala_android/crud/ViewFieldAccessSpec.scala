@@ -30,9 +30,8 @@ class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
     class MyView(context: Context, var status: String) extends View(context)
 
     val stringField = Field(
-      persisted[String]("name"),
-      viewId(101, textView),
-      viewFieldAccessById[MyView,String](102, _.status, _.status_=),
+      persisted[String]("name") +
+      viewId(101, textView) +
       viewId(102, viewFieldAccess[MyView,String](_.status, _.status_=)))
   }
 
@@ -52,8 +51,8 @@ class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
     }
     whenExecuting(viewGroup, view1, view2, view3) {
       val stringField = Field(
-        viewId(101, textView),
-        viewFieldAccessById[TextView,String](102, v => Option(v.getText.toString), _.setText, _.setText("Please Fill")))
+        viewId(101, textView) +
+        viewId(102, viewFieldAccess[TextView,String](v => Option(v.getText.toString), _.setText, _.setText("Please Fill"))))
       stringField.setValue(viewGroup, None)
 
       val intField = Field(viewId(103, formatted[Int](textView)))
@@ -71,10 +70,10 @@ class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
     }
     whenExecuting(context, group, view) {
       val stringField = Field[String](
-        fieldAccess[MyEntity,String](_.string, _.string_=),
-        viewFieldAccessById[Spinner,String](56,
+        fieldAccess[MyEntity,String](_.string, _.string_=) +
+        viewId(56, viewFieldAccess[Spinner,String](
           _ => throw new IllegalStateException("should not be called"),
-          _ => throw new IllegalStateException("should not be called")))
+          _ => throw new IllegalStateException("should not be called"))))
       val myEntity1 = new MyEntity("my1", 1)
       stringField.copy(myEntity1, group) should be (false)
       stringField.copy(group, myEntity1) should be (false)
@@ -86,10 +85,10 @@ class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
     val context = mock[Context]
     whenExecuting(context) {
       val stringField = Field[String](
-        fieldAccess[MyEntity,String](_.string, _.string_=),
-        viewFieldAccessById[Spinner,String](56,
+        fieldAccess[MyEntity,String](_.string, _.string_=) +
+        viewId(56, viewFieldAccess[Spinner,String](
           _ => throw new IllegalStateException("should not be called"),
-          _ => throw new IllegalStateException("should not be called")))
+          _ => throw new IllegalStateException("should not be called"))))
       val myEntity1 = new MyEntity("my1", 1)
       val group = new LinearLayout(context)
       val view = new Spinner(context)
@@ -104,7 +103,7 @@ class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
   def itShouldHandleUnparseableValues() {
     val context = mock[Context]
     whenExecuting(context) {
-      val field = Field[Int](formatted(textView), fieldAccess[MyEntity,Int](_.number, _.number_=))
+      val field = Field(formatted[Int](textView) + fieldAccess[MyEntity,Int](_.number, _.number_=))
       val view = new TextView(context)
       view.setText("twenty")
       field.findValue(view) should be (None)

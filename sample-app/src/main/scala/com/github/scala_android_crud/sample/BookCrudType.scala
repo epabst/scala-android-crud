@@ -20,18 +20,18 @@ object BookCrudType extends SQLiteCrudEntityType {
   def fields = List(
     Field(foreignKey(AuthorCrudType)),
 
-    Field[String](persisted("name"),
+    Field[String](persisted("name") +
       viewId(R.id.name, textView)),
 
-    Field[Genre.Value](persisted("genre")(enumStringType[Genre.Value](Genre)),
+    Field[Genre.Value](persisted("genre")(enumStringType[Genre.Value](Genre)) +
           viewId(R.id.genre, enumerationSpinner(Genre))),
 
-    Field[Int](persisted("edition"),
-      viewId(R.id.edition, formatted(textView))),
+    Field[Int](persisted("edition") +
+      viewId(R.id.edition, formatted[Int](textView))),
 
-    Field[Date](persisted("publishDate"),
+    Field[Date](persisted("publishDate") +
       viewId[Date](R.id.publishDate,
-        datePickerFieldAccess, formatted(dateValueFormat, textView)))
+        datePickerFieldAccess + formatted(dateValueFormat, textView)))
   )
 
   def activityClass = classOf[BookActivity]
