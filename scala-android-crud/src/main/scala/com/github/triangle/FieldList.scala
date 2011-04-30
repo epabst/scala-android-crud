@@ -21,7 +21,7 @@ trait FieldList extends Traversable[CopyableField] {
   }
 
   def fieldAccessFlatMap[B](f: PartialFunction[PartialFieldAccess[_], Traversable[B]]): List[B] =
-    fields.toList.flatMap(_.asInstanceOf[Field[_]].fieldAccessFlatMap(f))
+    fields.flatMap(_.asInstanceOf[Field[_]].flatMap(f)).toList
 }
 
 object FieldList {

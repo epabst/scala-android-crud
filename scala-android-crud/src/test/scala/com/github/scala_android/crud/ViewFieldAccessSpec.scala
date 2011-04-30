@@ -107,7 +107,7 @@ class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
       val view = new TextView(context)
       view.setText("twenty")
       field.findValue(view) should be (None)
-      field.findOptionalValue(view) should be (Some(None))
+      field.getter(view) should be (None)
 
       val entity = new MyEntity("my1", 30)
       val result = field.copy(view, entity)

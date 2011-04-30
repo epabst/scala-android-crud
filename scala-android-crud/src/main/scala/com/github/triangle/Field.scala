@@ -12,91 +12,35 @@ trait CopyableField {
   def copy(from: AnyRef, to: AnyRef): Boolean
 }
 
-/**
- * A Field of a specific type which has any number of FieldAccesses to Cursors, Views, Model objects, etc.
- * <p>
- * Example:
- * <pre>
- * import com.github.scala_android.crud._
- * import com.github.scala_android.crud.CursorFieldAccess._
- * import com.github.scala_android.crud.PersistedType._
- * import com.github.scala_android.crud.ViewFieldAccess._
- * import android.widget.{TextView, ListView}
- *
- * val fields = List(
- *   Field[String](persisted("name"), viewId(R.id.name, textView))),
- *   Field[Double](persisted("score"), viewId(R.id.score, formatted[Double](textView)))
- * )
- * </pre>
- * <p>
- * Usage of implicits make this syntax concise for the simple cases, but allow for very complex situations as well
- * by providing custom implementations for the implicits.
- */
-final class Field[T](access: PartialFieldAccess[T]) extends CopyableField with Logging {
-  /**
-   * Finds a value out of <code>from</code> by using the FieldAccess that can handle it.
-   * @returns Some(value) if successful, otherwise None (whether because no PartialFieldAccess applied or because the value was None)
-   * @see #findOptionalValue to differentiate the two None cases
-   */
-  def findValue(from: AnyRef): Option[T] = findOptionalValue(from).getOrElse {
-    debug("Unable to find value in " + from + " for field " + this)
-    None
-  }
+final class Field[T](access: PartialFieldAccess[T]) extends PartialFieldAccess[T] {
+  def setter = access.setter
 
-  /**
-   * Gets the value, similar to {@link Map#apply}, and the value must not be None.
-   * @see #findValue
-   */
-  def apply(readable: AnyRef): T = access.getter(readable).get
-
-  /**
-   * Finds a value of out <code>from</code>.
-   * @returns Some(Some(value)) if successful, Some(None) if a PartialFieldAccess applied but the value was None,
-   * or None if no PartialFieldAccess applied.
-   */
-  def findOptionalValue(from: AnyRef): Option[Option[T]] = access.getter.lift(from)
-
-  /**
-   * Sets a value in <code>to</code> by using all FieldAccesses that can handle it.
-   * @return true if any were successful
-   */
-  def setValue(to: AnyRef, value: Option[T]): Boolean = {
-    val defined = access.setter.isDefinedAt(to)
-    if (defined) access.setter(to)(value)
-    if (!defined) debug("Unable to set value of field " + this + " into " + to + " to " + value + ".")
-    defined
-  }
-
-  //inherited
-  def copy(from: AnyRef, to: AnyRef): Boolean = {
-    findOptionalValue(from) match {
-      case Some(optionalValue) =>
-        debug("Copying " + optionalValue + " from " + from + " to " + to + " for field " + this)
-        setValue(to, optionalValue)
-      case None =>
-        false
-    }
-  }
-
-  /**
-   * Traverses all of the FieldAccesses in this Field, returning the desired information.
-   * Anything not matched will be traversed deeper, if possible, or else ignored.
-   * <pre>
-   *   fieldAccessFlatMap {
-   *     case foo: BarFieldAccess => List(foo.myInfo)
-   *   }
-   * </pre>
-   */
-  def fieldAccessFlatMap[B](f: PartialFunction[PartialFieldAccess[_], Traversable[B]]): List[B] = access.flatMap(f).toList
+  def getter = access.getter
 }
 
 /**
- * The base trait of all FieldAccesses.  This is based on PartialFunction.
- * @param T the value type that this FieldAccess consumes and provides.
+ * A portable field of a specific type which applies to Cursors, Views, Model objects, etc.
+ * <p>
+ * Example:
+ * <pre>
+ * import com.github.triangle.Field._
+ * import com.github.scala_android.crud.CursorFieldAccess._
+ * import com.github.scala_android.crud.PersistedType._
+ * import com.github.scala_android.crud.ViewFieldAccess._
+ *
+ * val fields = List(
+ *   persisted[String]("name") + viewId(R.id.name, textView),
+ *   persisted[Double]("score") + viewId(R.id.score, formatted[Double](textView))
+ * )
+ * </pre>
+ * <p>
+ * Usage of implicits and defaults make this syntax concise for the simple cases,
+ * but allow for very complex situations as well by providing explicit values when needed.
+ * @param T the value type that this PartialFieldAccess gets and sets.
  * @see #getter
  * @see #setter
  */
-trait PartialFieldAccess[T] {
+trait PartialFieldAccess[T] extends CopyableField with Logging {
   /**
    * PartialFunction for getting an optional value from an AnyRef.
    */
@@ -107,10 +51,15 @@ trait PartialFieldAccess[T] {
    * @returns Some(value) if successful, otherwise None (whether this PartialFieldAccess didn't apply or because the value was None)
    * @see #getter to differentiate the two None cases
    */
-  def findValue(readable:AnyRef): Option[T] = getter.orElse(Field.alwaysNone)(readable)
+  def findValue(readable:AnyRef): Option[T] = getter.orElse({
+    case _ =>
+      debug("Unable to find value in " + readable + " for field " + this)
+      None
+  })(readable)
 
   /**
-   * Gets the value, similar to {@link Map#apply}
+   * Gets the value, similar to {@link Map#apply}, and the value must not be None.
+   * @see #findValue
    */
   def apply(readable:AnyRef): T = findValue(readable).get
 
@@ -118,6 +67,28 @@ trait PartialFieldAccess[T] {
    * PartialFunction for setting an optional value in an AnyRef.
    */
   def setter: PartialFunction[AnyRef,Option[T] => Unit]
+
+  /**
+   * Sets a value in <code>to</code> by using all FieldAccesses that can handle it.
+   * @return true if any were successful
+   */
+  def setValue(to: AnyRef, value: Option[T]): Boolean = {
+    val defined = setter.isDefinedAt(to)
+    if (defined) setter(to)(value)
+    if (!defined) debug("Unable to set value of field " + this + " into " + to + " to " + value + ".")
+    defined
+  }
+
+  //inherited
+  def copy(from: AnyRef, to: AnyRef): Boolean = {
+    getter.lift(from) match {
+      case Some(optionalValue) =>
+        debug("Copying " + optionalValue + " from " + from + " to " + to + " for field " + this)
+        setValue(to, optionalValue)
+      case None =>
+        false
+    }
+  }
 
   /**
    * Adds two PartialFieldAccess objects together.
@@ -239,8 +210,6 @@ object Field {
 
     def apply(v1: A) = throw new MatchError("emptyPartialFunction")
   }
-
-  def alwaysNone[T]: PartialFunction[AnyRef,Option[T]] = { case _ => None }
 
   //This is here so that getters can be written more simply by not having to explicitly wrap the result in a "Some".
   implicit def toSome[T](value: T): Option[T] = Some(value)

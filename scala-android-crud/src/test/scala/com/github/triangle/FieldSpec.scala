@@ -58,7 +58,7 @@ class FieldSpec extends Spec with ShouldMatchers {
     it("mapAccess should clear") {
       val stringField = Field(mapAccess("greeting"))
       val map = mutable.Map("greeting" -> "Hola")
-      stringField.findOptionalValue(mutable.Map[String,Any]()) should be (Some(None))
+      stringField.getter(mutable.Map[String,Any]()) should be (None)
       stringField.copy(mutable.Map[String,Any](), map) should be (true)
       map.get("greeting") should be (None)
     }
@@ -66,7 +66,7 @@ class FieldSpec extends Spec with ShouldMatchers {
     it("copy should happen if getter is applicable") {
       val stringField = Field(default("Hello") + mapAccess("greeting"))
       val map = mutable.Map[String,Any]("greeting" -> "Hola")
-      stringField.findOptionalValue(Unit) should be (Some(Some("Hello")))
+      stringField.getter(Unit) should be (Some("Hello"))
       stringField.copy(Unit, map) should be (true)
       map.get("greeting") should be (Some("Hello"))
     }
@@ -74,7 +74,7 @@ class FieldSpec extends Spec with ShouldMatchers {
     it("setter should not be used if getter isn't applicable") {
       val stringField = Field(default("Hello") + mapAccess("greeting"))
       val map = mutable.Map[String,Any]("greeting" -> "Hola")
-      stringField.findOptionalValue(new Object) should be (None)
+      stringField.getter.isDefinedAt(new Object) should be (false)
       stringField.copy(new Object, map) should be (false)
       map.get("greeting") should be (Some("Hola"))
     }
