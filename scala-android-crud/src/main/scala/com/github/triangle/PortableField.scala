@@ -57,24 +57,23 @@ trait PortableField[T] extends BaseField with Logging {
   def getter: PartialFunction[AnyRef,Option[T]]
 
   /**
-   * Finds a value out of <code>readable</code>.
-   * @returns Some(value) if successful, otherwise None (whether this PortableField didn't apply or because the value was None)
-   * @see #getter to differentiate the two None cases
+   * Overrides what to do if getter isn't applicable to a readable.
+   * The default is to throw a MatchError.
    */
-  def findValue(readable:AnyRef): Option[T] = {
-    val catchAll: PartialFunction[AnyRef,Option[T]] = {
-      case _ =>
-        debug("Unable to find value in " + readable + " for field " + this)
-        None
-    }
-    getter.orElse(catchAll)(readable)
+  def getOrReturn(readable: AnyRef, default: => Option[T]): Option[T] = getter.lift(readable).getOrElse {
+    val defaultValue: Option[T] = default
+    debug("Unable to find value in " + readable + " for field " + this + ", so returning default: " + defaultValue)
+    defaultValue
   }
 
   /**
    * Gets the value, similar to {@link Map#apply}, and the value must not be None.
-   * @see #findValue
+   * @see #getter
+   * @returns the value
+   * @throws NoSuchElementException if the value was None
+   * @throws MatchError if readable is not an applicable type
    */
-  def apply(readable:AnyRef): T = findValue(readable).get
+  def apply(readable:AnyRef): T = getter(readable).get
 
   /**
    * PartialFunction for setting an optional value in an AnyRef.

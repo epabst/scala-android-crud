@@ -38,7 +38,7 @@ class CursorFieldSpec extends ShouldMatchers with EasyMockSugar {
     }
     whenExecuting(cursor) {
       val field = persisted[String]("name")
-      field.findValue(cursor) should be (None)
+      field.getter(cursor) should be (None)
     }
   }
 

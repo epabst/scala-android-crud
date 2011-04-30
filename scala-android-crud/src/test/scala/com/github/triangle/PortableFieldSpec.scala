@@ -50,8 +50,8 @@ class PortableFieldSpec extends Spec with ShouldMatchers {
 
     it("default should only work on Unit") {
       val stringField = default("Hello")
-      stringField.findValue(List("bogus list")) should be (None)
-      stringField.findValue(Unit) should be (Some("Hello"))
+      stringField.getter.isDefinedAt(List("bogus list")) should be (false)
+      stringField.getter(Unit) should be (Some("Hello"))
     }
 
     it("mapField should clear") {

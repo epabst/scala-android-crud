@@ -104,7 +104,6 @@ class ViewFieldSpec extends ShouldMatchers with EasyMockSugar {
       val intField = formatted[Int](textView) + field[MyEntity,Int](_.number, _.number_=)
       val view = new TextView(context)
       view.setText("twenty")
-      intField.findValue(view) should be (None)
       intField.getter(view) should be (None)
 
       val entity = new MyEntity("my1", 30)
@@ -118,19 +117,19 @@ class ViewFieldSpec extends ShouldMatchers with EasyMockSugar {
   def itShouldGetTheIdForAnEntityNameFromTheIntent() {
     val field = intentId("foo")
     val intent = new Intent(null, ActivityUIActionFactory.toUri("hello", "1", "foo", "4", "bar", "3"))
-    field.findValue(intent) should be (Some(4))
+    field.getter(intent) should be (Some(4))
 
     val intent2 = new Intent(null, ActivityUIActionFactory.toUri("hello", "1", "foo"))
-    field.findValue(intent2) should be (None)
+    field.getter(intent2) should be (None)
 
     val intent3 = new Intent(null, ActivityUIActionFactory.toUri("hello"))
-    field.findValue(intent3) should be (None)
+    field.getter(intent3) should be (None)
 
     val intent4 = new Intent(null, ActivityUIActionFactory.toUri())
-    field.findValue(intent4) should be (None)
+    field.getter(intent4) should be (None)
 
     val intent5 = new Intent(null, ActivityUIActionFactory.toUri("4"))
-    field.findValue(intent5) should be (None)
+    field.getter(intent5) should be (None)
   }
 
   @Test
@@ -140,10 +139,10 @@ class ViewFieldSpec extends ShouldMatchers with EasyMockSugar {
       val field = textView
       val view = new TextView(context)
       view.setText(null)
-      field.findValue(view) should be (None)
+      field.getter(view) should be (None)
 
       view.setText("")
-      field.findValue(view) should be (None)
+      field.getter(view) should be (None)
     }
   }
 
@@ -154,10 +153,10 @@ class ViewFieldSpec extends ShouldMatchers with EasyMockSugar {
       val field = textView
       val view = new TextView(context)
       view.setText("  ")
-      field.findValue(view) should be (None)
+      field.getter(view) should be (None)
 
       view.setText(" hello world ")
-      field.findValue(view) should be (Some("hello world"))
+      field.getter(view) should be (Some("hello world"))
     }
   }
 }

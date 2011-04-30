@@ -34,7 +34,7 @@ class FieldListSpec extends Spec with ShouldMatchers {
       map.contains("price") should be (true)
       priceField(map) should be (300.00)
       //should have been overwritten because the Map didn't have it
-      countField.findValue(map) should be (None)
+      countField.getter(map) should be (None)
     }
 
     it("should return the Fields that were not copied") {
