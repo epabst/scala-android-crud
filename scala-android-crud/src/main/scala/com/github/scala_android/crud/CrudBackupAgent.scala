@@ -175,7 +175,7 @@ object DeletedEntityIdCrudType extends SQLiteCrudEntityType with HiddenEntityTyp
 
   private val entityNameField = persisted[String]("entityName")
   private val entityIdField = persisted[ID]("entityId")
-  def fields = List(Field(entityNameField), Field(entityIdField))
+  def fields = List(entityNameField, entityIdField)
 
   private val application = new CrudApplication {
     def name = "scala_android_crud_deleted"

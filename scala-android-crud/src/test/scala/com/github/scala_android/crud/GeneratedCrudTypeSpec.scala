@@ -38,7 +38,7 @@ class GeneratedCrudTypeSpec extends Spec with ShouldMatchers with MyEntityTestin
     whenExecuting(listPersistence, crudContext, activity) {
       val generatedType = new GeneratedCrudType[mutable.Map[String,Any],AnyRef] with StubEntityType {
         def entityName = "Generated"
-        def fields = List(Field(foreign))
+        def fields = List(foreign)
         def openEntityPersistence(crudContext: CrudContext) = listPersistence
       }
       val listAdapter = generatedType.createListAdapter(listPersistence, crudContext, activity)

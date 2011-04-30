@@ -12,12 +12,6 @@ trait CopyableField {
   def copy(from: AnyRef, to: AnyRef): Boolean
 }
 
-final class Field[T](access: PartialFieldAccess[T]) extends PartialFieldAccess[T] {
-  def setter = access.setter
-
-  def getter = access.getter
-}
-
 /**
  * A portable field of a specific type which applies to Cursors, Views, Model objects, etc.
  * <p>
@@ -292,9 +286,4 @@ object Field {
    */
   def formatted[T <: AnyVal](access: PartialFieldAccess[String])(implicit m: Manifest[T]): PartialFieldAccess[T] =
     formatted(new BasicValueFormat[T](), access)
-
-  /**
-   * Allow creating a Field without using "new".
-   */
-  def apply[T](access: PartialFieldAccess[T]): Field[T] = new Field[T](access)
 }

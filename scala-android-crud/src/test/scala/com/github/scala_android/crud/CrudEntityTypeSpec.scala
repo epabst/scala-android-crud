@@ -28,7 +28,7 @@ class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
       val entityType1 = new MyEntityType(persistence, listAdapter)
       val entityType2 = new MyEntityType(persistence, listAdapter)
       val entityType3 = new MyEntityType(persistence, listAdapter) {
-        override val fields = Field(foreignKey(entityType1)) :: Field(foreignKey(entityType2)) :: super.fields
+        override val fields = foreignKey(entityType1) :: foreignKey(entityType2) :: super.fields
       }
       entityType3.parentEntities should be (List(entityType1, entityType2))
     }
@@ -53,7 +53,7 @@ class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
     val listAdapter = mock[ListAdapter]
     val parentEntity = new MyEntityType(persistence, listAdapter)
     val childEntity = new MyEntityType(persistence, listAdapter) {
-      override lazy val fields = Field(foreignKey(parentEntity)) :: super.fields
+      override lazy val fields = foreignKey(parentEntity) :: super.fields
     }
     expecting {
       call(actionFactory.application).andReturn(application).anyTimes
@@ -80,10 +80,10 @@ class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
       override val displayLayout = Some(123)
     }
     val childEntity = new MyEntityType(persistence, listAdapter) {
-      override lazy val fields = Field(foreignKey(parentEntity)) :: super.fields
+      override lazy val fields = foreignKey(parentEntity) :: super.fields
     }
     val childEntity2 = new MyEntityType(persistence, listAdapter) {
-      override lazy val fields = Field(foreignKey(parentEntity)) :: super.fields
+      override lazy val fields = foreignKey(parentEntity) :: super.fields
     }
     expecting {
       call(actionFactory.application).andReturn(application).anyTimes
@@ -108,10 +108,10 @@ class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
     val listAdapter = mock[ListAdapter]
     var parentEntity = new MyEntityType(persistence, listAdapter)
     val childEntity = new MyEntityType(persistence, listAdapter) {
-      override lazy val fields = Field(foreignKey(parentEntity)) :: super.fields
+      override lazy val fields = foreignKey(parentEntity) :: super.fields
     }
     val childEntity2 = new MyEntityType(persistence, listAdapter) {
-      override lazy val fields = Field(foreignKey(parentEntity)) :: super.fields
+      override lazy val fields = foreignKey(parentEntity) :: super.fields
     }
     expecting {
       call(actionFactory.application).andReturn(application).anyTimes

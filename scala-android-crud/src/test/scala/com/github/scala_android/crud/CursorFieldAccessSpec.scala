@@ -25,7 +25,7 @@ class CursorFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
   def shouldGetColumnsForQueryCorrectly() {
     val foreign = foreignKey(MyCrudEntityTypeRef)
     val combined = persisted[Float]("height") + default(6.0f)
-    val fields = FieldList(Field(foreign), Field(persisted[Int]("age")), Field(combined))
+    val fields = FieldList(foreign, persisted[Int]("age"), combined)
     val actualFields = CursorFieldAccess.queryFieldNames(fields)
     actualFields should be (List(BaseColumns._ID, foreign.fieldName, "age", "height"))
   }
@@ -37,14 +37,14 @@ class CursorFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
       call(cursor.getColumnIndex("name")).andReturn(-1)
     }
     whenExecuting(cursor) {
-      val field = Field[String](persisted("name"))
+      val field = persisted[String]("name")
       field.findValue(cursor) should be (None)
     }
   }
 
   @Test
   def shouldGetCriteriaCorrectly() {
-    val field = Field[Int](sqliteCriteria("age") + default(19))
+    val field = sqliteCriteria[Int]("age") + default(19)
     val criteria = new SQLiteCriteria
     field.copy(Unit, criteria)
     criteria.selection should be ("age=19")
@@ -53,12 +53,11 @@ class CursorFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
   @Test
   def shouldGetCriteriaCorrectlyForForeignKey() {
     val foreign = foreignKey(MyCrudEntityTypeRef)
-    val field = Field(foreign)
     val uri = EntityUriSegment(MyCrudEntityTypeRef.entityName, "19").specifyInUri(Uri.EMPTY)
     //add on extra stuff to make sure it is ignored
     val intent = new Intent("", Uri.withAppendedPath(uri, "foo/1234"))
     val criteria = new SQLiteCriteria
-    field.copy(intent, criteria)
+    foreign.copy(intent, criteria)
     criteria.selection should be (foreign.fieldName + "=19")
   }
 }

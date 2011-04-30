@@ -29,10 +29,10 @@ class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
   def itShouldBeEasilyInstantiableForAView() {
     class MyView(context: Context, var status: String) extends View(context)
 
-    val stringField = Field(
+    val stringField =
       persisted[String]("name") +
       viewId(101, textView) +
-      viewId(102, viewFieldAccess[MyView,String](_.status, _.status_=)))
+      viewId(102, viewFieldAccess[MyView,String](_.status, _.status_=))
   }
 
   @Test
@@ -50,12 +50,12 @@ class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
       call(view3.setText(""))
     }
     whenExecuting(viewGroup, view1, view2, view3) {
-      val stringField = Field(
+      val stringField =
         viewId(101, textView) +
-        viewId(102, viewFieldAccess[TextView,String](v => Option(v.getText.toString), _.setText, _.setText("Please Fill"))))
+        viewId(102, viewFieldAccess[TextView,String](v => Option(v.getText.toString), _.setText, _.setText("Please Fill")))
       stringField.setValue(viewGroup, None)
 
-      val intField = Field(viewId(103, formatted[Int](textView)))
+      val intField = viewId(103, formatted[Int](textView))
       intField.setValue(viewGroup, None)
     }
   }
@@ -69,11 +69,10 @@ class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
       call(group.findViewById(56)).andReturn(view).anyTimes
     }
     whenExecuting(context, group, view) {
-      val stringField = Field[String](
-        fieldAccess[MyEntity,String](_.string, _.string_=) +
+      val stringField = fieldAccess[MyEntity,String](_.string, _.string_=) +
         viewId(56, viewFieldAccess[Spinner,String](
           _ => throw new IllegalStateException("should not be called"),
-          _ => throw new IllegalStateException("should not be called"))))
+          _ => throw new IllegalStateException("should not be called")))
       val myEntity1 = new MyEntity("my1", 1)
       stringField.copy(myEntity1, group) should be (false)
       stringField.copy(group, myEntity1) should be (false)
@@ -84,11 +83,10 @@ class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
   def itShouldOnlyCopyToAndFromViewByIdIfIdIsFound() {
     val context = mock[Context]
     whenExecuting(context) {
-      val stringField = Field[String](
-        fieldAccess[MyEntity,String](_.string, _.string_=) +
+      val stringField = fieldAccess[MyEntity,String](_.string, _.string_=) +
         viewId(56, viewFieldAccess[Spinner,String](
           _ => throw new IllegalStateException("should not be called"),
-          _ => throw new IllegalStateException("should not be called"))))
+          _ => throw new IllegalStateException("should not be called")))
       val myEntity1 = new MyEntity("my1", 1)
       val group = new LinearLayout(context)
       val view = new Spinner(context)
@@ -103,7 +101,7 @@ class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
   def itShouldHandleUnparseableValues() {
     val context = mock[Context]
     whenExecuting(context) {
-      val field = Field(formatted[Int](textView) + fieldAccess[MyEntity,Int](_.number, _.number_=))
+      val field = formatted[Int](textView) + fieldAccess[MyEntity,Int](_.number, _.number_=)
       val view = new TextView(context)
       view.setText("twenty")
       field.findValue(view) should be (None)
@@ -118,7 +116,7 @@ class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
 
   @Test
   def itShouldGetTheIdForAnEntityNameFromTheIntent() {
-    val field = Field(intentId("foo"))
+    val field = intentId("foo")
     val intent = new Intent(null, ActivityUIActionFactory.toUri("hello", "1", "foo", "4", "bar", "3"))
     field.findValue(intent) should be (Some(4))
 
@@ -139,7 +137,7 @@ class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
   def itShouldConvertNullToNone() {
     val context = mock[Context]
     whenExecuting(context) {
-      val field = Field(textView)
+      val field = textView
       val view = new TextView(context)
       view.setText(null)
       field.findValue(view) should be (None)
@@ -153,7 +151,7 @@ class ViewFieldAccessSpec extends ShouldMatchers with EasyMockSugar {
   def itShouldTrimStrings() {
     val context = mock[Context]
     whenExecuting(context) {
-      val field = Field(textView)
+      val field = textView
       val view = new TextView(context)
       view.setText("  ")
       field.findValue(view) should be (None)

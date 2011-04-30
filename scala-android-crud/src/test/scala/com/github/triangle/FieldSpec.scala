@@ -26,20 +26,19 @@ class FieldSpec extends Spec with ShouldMatchers {
     it("should be easily instantiable for an Entity") {
       val a1 = fieldAccess[MyEntity,String](_.string, _.string_=)
       val a2 = fieldAccess[MyEntity,Int](_.number, _.number_=)
-      val stringField = Field(
+      val stringField =
         flow[MyEntity, OtherEntity, String](_.string, _.name_=) +
         persisted[String]("name") +
         fieldAccess[MyEntity,String](_.string, _.string_=) +
         readOnly[OtherEntity,String](_.name) +
         writeOnly[MyEntity,String](_.string_=) +
-        fieldAccess[OtherEntity,String](_.name, _.name_=))
-      val intField = Field(fieldAccess[MyEntity,Int](_.number, _.number_=))
-      val readOnlyField = Field(readOnly[MyEntity,Int](_.number))
+        fieldAccess[OtherEntity,String](_.name, _.name_=)
+      val intField = fieldAccess[MyEntity,Int](_.number, _.number_=)
+      val readOnlyField = readOnly[MyEntity,Int](_.number)
     }
 
     it("should set defaults") {
-      val stringField = Field(
-        fieldAccess[MyEntity,String](_.string, _.string_=) + default("Hello"))
+      val stringField = fieldAccess[MyEntity,String](_.string, _.string_=) + default("Hello")
 
       val myEntity1 = new MyEntity("my1", 15)
       stringField.copy(Unit, myEntity1) should be (true)
@@ -50,13 +49,13 @@ class FieldSpec extends Spec with ShouldMatchers {
     }
 
     it("default should only work on Unit") {
-      val stringField = Field(default("Hello"))
+      val stringField = default("Hello")
       stringField.findValue(List("bogus list")) should be (None)
       stringField.findValue(Unit) should be (Some("Hello"))
     }
 
     it("mapAccess should clear") {
-      val stringField = Field(mapAccess("greeting"))
+      val stringField = mapAccess[String]("greeting")
       val map = mutable.Map("greeting" -> "Hola")
       stringField.getter(mutable.Map[String,Any]()) should be (None)
       stringField.copy(mutable.Map[String,Any](), map) should be (true)
@@ -64,7 +63,7 @@ class FieldSpec extends Spec with ShouldMatchers {
     }
 
     it("copy should happen if getter is applicable") {
-      val stringField = Field(default("Hello") + mapAccess("greeting"))
+      val stringField = default("Hello") + mapAccess("greeting")
       val map = mutable.Map[String,Any]("greeting" -> "Hola")
       stringField.getter(Unit) should be (Some("Hello"))
       stringField.copy(Unit, map) should be (true)
@@ -72,7 +71,7 @@ class FieldSpec extends Spec with ShouldMatchers {
     }
 
     it("setter should not be used if getter isn't applicable") {
-      val stringField = Field(default("Hello") + mapAccess("greeting"))
+      val stringField = default("Hello") + mapAccess("greeting")
       val map = mutable.Map[String,Any]("greeting" -> "Hola")
       stringField.getter.isDefinedAt(new Object) should be (false)
       stringField.copy(new Object, map) should be (false)
@@ -80,10 +79,10 @@ class FieldSpec extends Spec with ShouldMatchers {
     }
 
     it("should copy from one to multiple") {
-      val stringField = Field(
+      val stringField =
         readOnly[OtherEntity,String](_.name) +
         flow[MyEntity, OtherEntity, String](_.string, _.name_=) +
-        fieldAccess[MyEntity,String](_.string, _.string_=))
+        fieldAccess[MyEntity,String](_.string, _.string_=)
 
       val myEntity1 = new MyEntity("my1", 1)
       val otherEntity1 = new OtherEntity("other1", false)
@@ -107,14 +106,14 @@ class FieldSpec extends Spec with ShouldMatchers {
     }
 
     it("writeOnly should call clearer if no value") {
-      val stringField = Field(writeOnly[Buffer[String],String]({ b => v => b += v; Unit }, _.clear()))
+      val stringField = writeOnly[Buffer[String],String]({ b => v => b += v; Unit }, _.clear())
       val buffer = Buffer("hello")
       stringField.setValue(buffer, None)
       buffer should be ('empty)
     }
 
     it("should parse and format values") {
-      val field = Field(formatted[Double](ValueFormat.currencyValueFormat, mapAccess[String]("amountString")))
+      val field = formatted[Double](ValueFormat.currencyValueFormat, mapAccess[String]("amountString"))
       field(Map("amountString" -> "12.34")) should be (12.34)
 
       val map = mutable.Map[String,Any]()
