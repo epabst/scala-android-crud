@@ -10,6 +10,22 @@ trait CopyableField {
    * @returns true if successfully set a value
    */
   def copy(from: AnyRef, to: AnyRef): Boolean
+
+  /**
+   * Traverses all of the PartialFieldAccesses in this PartialFieldAccess, returning the desired information.
+   * Anything not matched will be traversed deeper, if possible, or else ignored.
+   * <pre>
+   *   flatMap {
+   *     case foo: BarFieldAccess => List(foo.myInfo)
+   *   }
+   * </pre>
+   */
+  def flatMap[B](f: PartialFunction[CopyableField, Traversable[B]]): Traversable[B] = {
+    f.lift(this) match {
+      case Some(t: Traversable[B]) => t
+      case None => None
+    }
+  }
 }
 
 /**
@@ -108,29 +124,13 @@ trait PartialFieldAccess[T] extends CopyableField with Logging {
         }
       }
 
-      override def flatMap[B](f: PartialFunction[PartialFieldAccess[_], Traversable[B]]) = {
+      override def flatMap[B](f: PartialFunction[CopyableField, Traversable[B]]) = {
         val lifted = f.lift
         List(self, other).flatMap(access => lifted(access) match {
           case Some(t: Traversable[B]) => t
           case None => access.flatMap(f)
         })
       }
-    }
-  }
-
-  /**
-   * Traverses all of the PartialFieldAccesses in this PartialFieldAccess, returning the desired information.
-   * Anything not matched will be traversed deeper, if possible, or else ignored.
-   * <pre>
-   *   flatMap {
-   *     case foo: BarFieldAccess => List(foo.myInfo)
-   *   }
-   * </pre>
-   */
-  def flatMap[B](f: PartialFunction[PartialFieldAccess[_], Traversable[B]]): Traversable[B] = {
-    f.lift(this) match {
-      case Some(t: Traversable[B]) => t
-      case None => None
     }
   }
 }
@@ -142,7 +142,7 @@ trait DelegatingPartialFieldAccess[T] extends PartialFieldAccess[T] {
 
   def setter = delegate.setter
 
-  override def flatMap[B](f: PartialFunction[PartialFieldAccess[_], Traversable[B]]) = {
+  override def flatMap[B](f: PartialFunction[CopyableField, Traversable[B]]) = {
     f.lift(this).getOrElse(delegate.flatMap(f))
   }
 }
