@@ -3,7 +3,7 @@ package com.github.scala_android.crud
 import android.widget.ListAdapter
 import android.app.Activity
 import android.net.Uri
-import com.github.triangle.{FieldList, CopyableField}
+import com.github.triangle.{FieldList, BaseField}
 
 /**
  * An entity configuration that provides all custom information needed to
@@ -109,7 +109,7 @@ trait CrudEntityTypeRef extends FieldList with PlatformTypes {
   //this is the type used for internationalized strings
   def entityName: String
 
-  def fields: List[CopyableField]
+  def fields: List[BaseField]
 
   def hasDisplayPage: Boolean
 

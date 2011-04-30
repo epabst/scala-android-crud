@@ -9,23 +9,23 @@ import scala.collection._
  * Date: 4/21/11
  * Time: 1:36 AM
  */
-trait FieldList extends Traversable[CopyableField] {
+trait FieldList extends Traversable[BaseField] {
   import FieldList.toFieldList
 
-  protected def fields: Traversable[CopyableField]
+  protected def fields: Traversable[BaseField]
 
-  def foreach[U](f: (CopyableField) => U) { fields.foreach(f) }
+  def foreach[U](f: (BaseField) => U) { fields.foreach(f) }
 
   def copyFields(from: AnyRef, to: AnyRef): FieldList = {
     toFieldList(fields.flatMap(f => if (f.copy(from, to)) None else Some(f)))
   }
 
-  def fieldAccessFlatMap[B](f: PartialFunction[CopyableField, Traversable[B]]): List[B] =
+  def fieldAccessFlatMap[B](f: PartialFunction[BaseField, Traversable[B]]): List[B] =
     fields.flatMap(_.flatMap(f)).toList
 }
 
 object FieldList {
-  def apply(_fields: CopyableField*): FieldList = toFieldList(_fields)
+  def apply(_fields: BaseField*): FieldList = toFieldList(_fields)
 
-  implicit def toFieldList(list: Traversable[CopyableField]): FieldList = new FieldList { def fields = list }
+  implicit def toFieldList(list: Traversable[BaseField]): FieldList = new FieldList { def fields = list }
 }

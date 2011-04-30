@@ -4,7 +4,7 @@ import com.github.scala_android.crud.monitor.Logging
 import collection.Map
 
 /** A trait for {@link Field} for convenience such as when defining a List of heterogeneous Fields. */
-trait CopyableField {
+trait BaseField {
   /**
    * Copies this field from <code>from</code> to <code>to</code>.
    * @returns true if successfully set a value
@@ -20,7 +20,7 @@ trait CopyableField {
    *   }
    * </pre>
    */
-  def flatMap[B](f: PartialFunction[CopyableField, Traversable[B]]): Traversable[B] = {
+  def flatMap[B](f: PartialFunction[BaseField, Traversable[B]]): Traversable[B] = {
     f.lift(this) match {
       case Some(t: Traversable[B]) => t
       case None => None
@@ -50,7 +50,7 @@ trait CopyableField {
  * @see #getter
  * @see #setter
  */
-trait PartialFieldAccess[T] extends CopyableField with Logging {
+trait PartialFieldAccess[T] extends BaseField with Logging {
   /**
    * PartialFunction for getting an optional value from an AnyRef.
    */
@@ -124,7 +124,7 @@ trait PartialFieldAccess[T] extends CopyableField with Logging {
         }
       }
 
-      override def flatMap[B](f: PartialFunction[CopyableField, Traversable[B]]) = {
+      override def flatMap[B](f: PartialFunction[BaseField, Traversable[B]]) = {
         val lifted = f.lift
         List(self, other).flatMap(access => lifted(access) match {
           case Some(t: Traversable[B]) => t
