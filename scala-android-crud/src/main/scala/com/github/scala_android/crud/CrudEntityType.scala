@@ -58,9 +58,9 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
    */
   def newWritable: W
 
-  def openEntityPersistence(crudContext: CrudContext): EntityPersistence[Q,L,R,W]
+  def openEntityPersistence(crudContext: CrudContext): CrudEntityPersistence[Q,L,R,W]
 
-  def withEntityPersistence[T](crudContext: CrudContext, f: EntityPersistence[Q,L,R,W] => T): T = {
+  final def withEntityPersistence[T](crudContext: CrudContext, f: CrudEntityPersistence[Q,L,R,W] => T): T = {
     val persistence = openEntityPersistence(crudContext)
     try f(persistence)
     finally persistence.close()

@@ -35,3 +35,14 @@ trait EntityPersistence[Q,L,R,W] extends PlatformTypes {
 
   def close()
 }
+
+trait CrudEntityPersistence[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends EntityPersistence[Q,L,R,W] {
+  def entityType: CrudEntityType[Q,L,R,W]
+
+  def findAsIterator[T <: AnyRef](criteria: Q, instantiate: () => T): Iterator[T] =
+    toIterator(findAll(criteria)).map(entity => {
+      val result = instantiate()
+      entityType.copyFields(entity, result)
+      result
+    })
+}

@@ -16,8 +16,8 @@ import collection.mutable
  * Date: 2/3/11
  * Time: 6:17 PM
  */
-class SQLiteEntityPersistence(entityType: SQLiteCrudEntityType, crudContext: CrudContext)
-  extends EntityPersistence[SQLiteCriteria,Cursor,Cursor,ContentValues] with Logging {
+class SQLiteEntityPersistence(val entityType: SQLiteCrudEntityType, crudContext: CrudContext)
+  extends CrudEntityPersistence[SQLiteCriteria,Cursor,Cursor,ContentValues] with Logging {
 
   lazy val databaseSetup = entityType.getDatabaseSetup(crudContext)
   lazy val database: SQLiteDatabase = databaseSetup.getWritableDatabase
@@ -45,13 +45,6 @@ class SQLiteEntityPersistence(entityType: SQLiteCrudEntityType, crudContext: Cru
       None
     }
   }
-
-  def findAsIterator[T <: AnyRef](criteria: SQLiteCriteria, instantiate: () => T): Iterator[T] =
-    toIterator(findAll(criteria)).map(cursor => {
-      val result = instantiate()
-      entityType.copyFields(cursor, result)
-      result
-    })
 
   def find(id: ID): Option[Cursor] = {
     debug("Finding " + entityType.entityName + " for " + queryFieldNames.mkString(",") + " where " + BaseColumns._ID + "=" + id)
