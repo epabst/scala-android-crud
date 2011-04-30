@@ -50,20 +50,14 @@ final class Field[T](fieldAccessArgs: PartialFieldAccess[T]*) extends CopyableFi
    * Gets the value, similar to {@link Map#apply}, and the value must not be None.
    * @see #findValue
    */
-  def apply(readable: AnyRef): T = findValue(readable).get
+  def apply(readable: AnyRef): T = variations.getter(readable).get
 
   /**
    * Finds a value of out <code>from</code>.
    * @returns Some(Some(value)) if successful, Some(None) if a PartialFieldAccess applied but the value was None,
    * or None if no PartialFieldAccess applied.
    */
-  def findOptionalValue(from: AnyRef): Option[Option[T]] = {
-    for (fieldAccess <- fieldAccesses) {
-      val value = fieldAccess.partialGet(from)
-      if (value.isDefined) return value
-    }
-    None
-  }
+  def findOptionalValue(from: AnyRef): Option[Option[T]] = variations.getter.lift(from)
 
   /**
    * Sets a value in <code>to</code> by using all FieldAccesses that can handle it.
@@ -111,24 +105,21 @@ final class Field[T](fieldAccessArgs: PartialFieldAccess[T]*) extends CopyableFi
 /**
  * The base trait of all FieldAccesses.  This is based on PartialFunction.
  * @param T the value type that this FieldAccess consumes and provides.
- * @see #partialGet
+ * @see #getter
  * @see #setter
  */
 trait PartialFieldAccess[T] {
   /**
-   * Tries to get the value from <code>readable</code>.
-   * @param readable any kind of Object.  If it is not supported by this FieldAccess, this simply returns None.
-   * @returns Some(Some(value)) if successful, Some(None) if a PartialFieldAccess applied but the value was None,
-   * or None if no PartialFieldAccess applied.
+   * PartialFunction for getting an optional value from an AnyRef.
    */
-  def partialGet(readable: AnyRef): Option[Option[T]]
+  def getter: PartialFunction[AnyRef,Option[T]]
 
   /**
    * Finds a value out of <code>readable</code>.
    * @returns Some(value) if successful, otherwise None (whether this PartialFieldAccess didn't apply or because the value was None)
-   * @see #partialGet(AnyRef) to differentiate the two None cases
+   * @see #getter to differentiate the two None cases
    */
-  def findValue(readable:AnyRef): Option[T] = partialGet(readable).getOrElse(None)
+  def findValue(readable:AnyRef): Option[T] = getter.orElse(Field.alwaysNone)(readable)
 
   /**
    * Gets the value, similar to {@link Map#apply}
@@ -150,14 +141,7 @@ abstract class FieldGetter[R,T](implicit readableManifest: ClassManifest[R]) ext
   /** An abstract method that must be implemented by subtypes. */
   def get(readable: R): Option[T]
 
-  def partialGet(readable: AnyRef) = {
-    verbose("Seeing if " + readable + " is an instance of " + readableManifest.erasure + " to get value")
-    if (readable == null) throw new IllegalArgumentException("'readable' may not be null")
-    if (readableManifest.erasure.isInstance(readable))
-      Some(get(readable.asInstanceOf[R]))
-    else
-      None
-  }
+  def getter = { case readable: R if readableManifest.erasure.isInstance(readable) => get(readable) }
 }
 
 trait NoSetter[T] extends PartialFieldAccess[T] {
@@ -196,16 +180,9 @@ trait FieldAccessVariations[T] extends PartialFieldAccess[T] {
   def fieldAccesses: List[PartialFieldAccess[T]]
 
   /**
-   * Gets a value out of <code>readable</code> by using the first FieldAccess that can handle it.
-   * @returns Some(value) if successful, otherwise None
+   * Combines all of the fieldAccesses' getters, using the first one that is applicable.
    */
-  def partialGet(readable: AnyRef): Option[Option[T]] = {
-    for (fieldAccess <- fieldAccesses) {
-      val value = fieldAccess.partialGet(readable)
-      if (value.isDefined) return value
-    }
-    None
-  }
+  lazy val getter = fieldAccesses.tail.foldLeft(fieldAccesses.head.getter)((result, access) => result.orElse(access.getter))
 
   /**
    * Combines all of fieldAccesses' setters, calling all that are applicable.
@@ -234,14 +211,16 @@ object Field {
     def apply(v1: A) = throw new MatchError("emptyPartialFunction")
   }
 
+  def alwaysNone[T]: PartialFunction[AnyRef,Option[T]] = { case _ => None }
+
   //This is here so that getters can be written more simply by not having to explicitly wrap the result in a "Some".
   implicit def toSome[T](value: T): Option[T] = Some(value)
 
   /** Defines read-only fieldAccess for a field value for a Readable type. */
-  def readOnly[R,T](getter: R => Option[T])
+  def readOnly[R,T](getter1: R => Option[T])
                    (implicit typeManifest: ClassManifest[R]): FieldGetter[R,T] = {
     new FieldGetter[R,T] with NoSetter[T] {
-      def get(readable: R) = getter(readable)
+      def get(readable: R) = getter1(readable)
     }
   }
 
@@ -258,16 +237,13 @@ object Field {
         }
       }
 
-      def partialGet(readable: AnyRef) = None
+      def getter = emptyPartialFunction
     }
   }
 
   /** Defines a default for a field value, used when copied from {@link Unit}. */
   def default[T](value: => T): PartialFieldAccess[T] = new PartialFieldAccess[T] with NoSetter[T] {
-    def partialGet(readable: AnyRef) = readable match {
-      case Unit => Some(Some(value))
-      case _ => None
-    }
+    def getter = { case Unit => Some(value) }
   }
 
   /**
@@ -278,10 +254,10 @@ object Field {
    * @param W the Writable type to put the value into
    * @param T the value type
    */
-  def flow[R,W,T](getter: R => Option[T], setter1: W => T => Unit, clearer: W => Unit = {_: W => })
+  def flow[R,W,T](getter1: R => Option[T], setter1: W => T => Unit, clearer: W => Unit = {_: W => })
                  (implicit readableManifest: ClassManifest[R], writableManifest: ClassManifest[W]): FieldAccess[R,W,T] = {
     new FieldAccess[R,W,T] {
-      def get(readable: R) = getter(readable)
+      def get(readable: R) = getter1(readable)
 
       def set(writable: W, valueOpt: Option[T]) {
         valueOpt match {
@@ -307,12 +283,13 @@ object Field {
     val fieldAccesses: List[PartialFieldAccess[T]] = fieldAccessArgs.toList
   }
 
-  def formatted[T](format: ValueFormat[T], fieldAccesses: PartialFieldAccess[String]*): PartialFieldAccess[T] =
-    variations[T](fieldAccesses.map(access => new PartialFieldAccess[T] {
-      def partialGet(readable: AnyRef) = access.partialGet(readable).map(_.flatMap(s => format.toValue(s)))
+  def formatted[T](format: ValueFormat[T], fieldAccesses: PartialFieldAccess[String]*) = new PartialFieldAccess[T] {
+    private val access = variations(fieldAccesses:_*)
 
-      def setter = access.setter.andThen(setter => setter.compose(value => value.map(format.toString _)))
-    }):_*)
+    def getter = access.getter.andThen(value => value.flatMap(format.toValue(_)))
+
+    def setter = access.setter.andThen(setter => setter.compose(value => value.map(format.toString _)))
+  }
 
   /**
    * formatted replacement for primitive values.

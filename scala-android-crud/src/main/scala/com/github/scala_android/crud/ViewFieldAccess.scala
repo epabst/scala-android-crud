@@ -32,23 +32,21 @@ object ViewFieldAccess extends PlatformTypes {
           extends PartialFieldAccess[T] {
     private object ChildView extends ChildViewById(viewResourceId)
 
-    def partialGet(readable: AnyRef) = readable match {
-      case ChildView(childView) => partialGetFromChildView(childView)
-      case _ => None
+    def getter = {
+      case ChildView(childView) if childViewFieldAccess.getter.isDefinedAt(childView) =>
+        childViewFieldAccess.getter(childView)
     }
 
     def setter = {
-      case ChildView(childView) if childViewFieldAccess.setter.isDefinedAt(childView) => childViewFieldAccess.setter(childView)
+      case ChildView(childView) if childViewFieldAccess.setter.isDefinedAt(childView) =>
+        childViewFieldAccess.setter(childView)
     }
-
-    def partialGetFromChildView(childView: Option[View]): Option[Option[T]] =
-      childView.flatMap(v => childViewFieldAccess.partialGet(v))
   }
 
-  def viewFieldAccess[V <: View,T](getter: V => Option[T], setter1: V => T => Unit, clearer: V => Unit = {_: V => })
+  def viewFieldAccess[V <: View,T](getter1: V => Option[T], setter1: V => T => Unit, clearer: V => Unit = {_: V => })
                                   (implicit m: ClassManifest[V]): ViewFieldAccess[V,T] = {
     new ViewFieldAccess[V,T] {
-      def get(view: V) = getter(view)
+      def get(view: V) = getter1(view)
 
       def set(view: V, optionalValue: Option[T]) {
         optionalValue match {
