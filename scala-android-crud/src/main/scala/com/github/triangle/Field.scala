@@ -87,16 +87,7 @@ final class Field[T](access: PartialFieldAccess[T]) extends CopyableField with L
    *   }
    * </pre>
    */
-  def fieldAccessFlatMap[B](f: PartialFunction[PartialFieldAccess[_], Traversable[B]]): List[B] = {
-    val lifted = f.lift
-    List(access).flatMap(access => lifted(access) match {
-      case Some(t: Traversable[B]) => t
-      case None => access match {
-        case vars: FieldAccessVariations[_] => Field(vars.fieldAccesses: _*).fieldAccessFlatMap(f)
-        case _ => None
-      }
-    })
-  }
+  def fieldAccessFlatMap[B](f: PartialFunction[PartialFieldAccess[_], Traversable[B]]): List[B] = access.flatMap(f).toList
 }
 
 /**
@@ -132,6 +123,22 @@ trait PartialFieldAccess[T] {
    * Adds two PartialFieldAccess objects together.
    */
   def +(access: PartialFieldAccess[T]): PartialFieldAccess[T] = Field.variations(this, access)
+
+  /**
+   * Traverses all of the PartialFieldAccesses in this PartialFieldAccess, returning the desired information.
+   * Anything not matched will be traversed deeper, if possible, or else ignored.
+   * <pre>
+   *   flatMap {
+   *     case foo: BarFieldAccess => List(foo.myInfo)
+   *   }
+   * </pre>
+   */
+  def flatMap[B](f: PartialFunction[PartialFieldAccess[_], Traversable[B]]): Traversable[B] = {
+    f.lift(this) match {
+      case Some(t: Traversable[B]) => t
+      case None => None
+    }
+  }
 }
 
 /**
@@ -200,6 +207,14 @@ trait FieldAccessVariations[T] extends PartialFieldAccess[T] {
         definedAccesses.foreach(_.setter(writable)(value))
       }
     }
+  }
+
+  override def flatMap[B](f: PartialFunction[PartialFieldAccess[_], Traversable[B]]) = {
+    val lifted = f.lift
+    fieldAccesses.flatMap(access => lifted(access) match {
+      case Some(t: Traversable[B]) => t
+      case None => access.flatMap(f)
+    })
   }
 }
 

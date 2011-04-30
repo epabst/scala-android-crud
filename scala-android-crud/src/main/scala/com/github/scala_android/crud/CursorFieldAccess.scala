@@ -17,8 +17,7 @@ object CursorFieldAccess extends PlatformTypes {
   val persistedId = persisted[ID](BaseColumns._ID)
 
   def persistedFields(fields: FieldList): List[CursorFieldAccess[_]] = {
-    val id: CursorFieldAccess[_] = persistedId
-    id :: fields.fieldAccessFlatMap[CursorFieldAccess[_]] {
+    persistedId :: fields.fieldAccessFlatMap[CursorFieldAccess[_]] {
       case fieldAccess: CursorFieldAccess[_] => List(fieldAccess)
     }
   }
@@ -31,11 +30,15 @@ object CursorFieldAccess extends PlatformTypes {
 /**
  * Also supports accessing a scala Map (mutable.Map for writing) using the same name.
  */
-class CursorFieldAccess[T](val name: String)(implicit val persistedType: PersistedType[T]) extends FieldAccessVariations[T] with Logging {
-  val fieldAccesses = List(
-    Field.flow[Cursor,ContentValues,T](getFromCursor, setIntoContentValues),
-    Field.fieldAccess[Bundle,T](b => persistedType.getValue(b, name), b => v => persistedType.putValue(b, name, v)),
-    Field.mapAccess[T](name))
+class CursorFieldAccess[T](val name: String)(implicit val persistedType: PersistedType[T]) extends PartialFieldAccess[T] with Logging {
+  private val access =
+    Field.flow[Cursor,ContentValues,T](getFromCursor, setIntoContentValues) +
+    Field.fieldAccess[Bundle,T](b => persistedType.getValue(b, name), b => v => persistedType.putValue(b, name, v)) +
+    Field.mapAccess[T](name)
+
+  def getter = access.getter
+
+  def setter = access.setter
 
   private def getFromCursor(cursor: Cursor) = {
     val columnIndex = cursor.getColumnIndex(name)
@@ -53,7 +56,11 @@ class CursorFieldAccess[T](val name: String)(implicit val persistedType: Persist
 import CursorFieldAccess._
 import ViewFieldAccess.intentId
 
-class ForeignKey(val entityType: CrudEntityTypeRef) extends PlatformTypes with FieldAccessVariations[ID] {
+class ForeignKey(val entityType: CrudEntityTypeRef) extends PlatformTypes with PartialFieldAccess[ID] {
   val fieldName = entityType.entityName.toLowerCase + BaseColumns._ID
-  val fieldAccesses = List[PartialFieldAccess[ID]](persisted(fieldName), intentId(entityType.entityName), sqliteCriteria(fieldName))
+  private val access = persisted[ID](fieldName) + intentId(entityType.entityName) + sqliteCriteria[ID](fieldName)
+
+  def getter = access.getter
+
+  def setter = access.setter
 }
