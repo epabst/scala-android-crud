@@ -4,6 +4,7 @@ import res.R
 import android.widget.BaseAdapter
 import android.view.{ViewGroup, View}
 import android.app.Activity
+import com.github.triangle.PortableField.identityField
 
 trait GeneratedCrudType[T <: AnyRef,Q <: AnyRef] extends CrudEntityType[Q,List[T],T,T] {
   def newWritable: T = throw new UnsupportedOperationException("not supported")
@@ -25,8 +26,9 @@ trait GeneratedCrudType[T <: AnyRef,Q <: AnyRef] extends CrudEntityType[Q,List[T
     def getItem(position: Int) = list(position)
 
     def getView(position: Int, convertView: View, parent: ViewGroup): View = {
+      val contextItems = List(activity.getIntent, crudContext, Unit)
       val view = if (convertView == null) activity.getLayoutInflater.inflate(rowLayout, parent, false) else convertView
-      copyFields(list(position), view)
+      copyFieldsFromItem(list(position) :: contextItems, view)
       view
     }
   }
@@ -50,6 +52,6 @@ trait GeneratedCrudType[T <: AnyRef,Q <: AnyRef] extends CrudEntityType[Q,List[T
   val cancelItemString = R.string.cancel_item
 }
 
-
-
-
+object GeneratedCrudType {
+  val crudContextField = identityField[CrudContext]
+}

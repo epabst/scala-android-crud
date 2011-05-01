@@ -25,17 +25,19 @@ class CrudActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val entityTy
     super.onCreate(savedInstanceState)
 
     setContentView(entityType.entryLayout)
+    val contextItems = List(getIntent, crudContext, Unit)
     withPersistence{ persistence =>
       val readableOrUnit: AnyRef = id.map(i => persistence.find(i).get).getOrElse(Unit)
-      entityType.copyFields(readableOrUnit, this)
+      entityType.copyFieldsFromItem(readableOrUnit :: contextItems, this)
     }
   }
 
   override def onPause() {
+    //intentionally don't include CrudContext presumably those are only used for calculated fields, which shouldn't be persisted.
+    val contextItems = List(getIntent, Unit)
     val writable = entityType.newWritable
     withPersistence { persistence =>
-      entityType.copyFields(getIntent, writable)
-      entityType.copyFields(this, writable)
+      entityType.copyFieldsFromItem(this :: contextItems, writable)
       persistence.save(id, writable)
     }
     super.onPause()

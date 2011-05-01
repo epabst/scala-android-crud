@@ -37,6 +37,7 @@ trait SQLiteCrudEntityType extends CrudEntityType[SQLiteCriteria,Cursor,Cursor,C
   val cursorVarForListAdapter = new ContextVar[Cursor]
 
   def createListAdapter(persistence: CrudEntityPersistence[SQLiteCriteria,Cursor,Cursor,ContentValues], crudContext: CrudContext, activity: Activity): ResourceCursorAdapter = {
+    val contextItems = List(activity.getIntent, crudContext, Unit)
     val criteria = persistence.newCriteria
     copyFields(activity.getIntent, criteria)
     val cursor = persistence.findAll(criteria)
@@ -44,7 +45,7 @@ trait SQLiteCrudEntityType extends CrudEntityType[SQLiteCriteria,Cursor,Cursor,C
     activity.startManagingCursor(cursor)
     new ResourceCursorAdapter(activity, rowLayout, cursor) {
       def bindView(view: View, context: Context, cursor: Cursor) {
-        copyFields(cursor, view)
+        copyFieldsFromItem(cursor :: contextItems, view)
       }
     }
   }

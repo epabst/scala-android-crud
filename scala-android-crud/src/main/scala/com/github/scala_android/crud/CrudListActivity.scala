@@ -35,6 +35,7 @@ class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val enti
     // If no data was given in the intent (because we were started
     // as a MAIN activity), then use our default content provider.
     if (getIntent.getData == null) getIntent.setData(defaultContentUri);
+    val contextItems = List(getIntent, crudContext, Unit)
     //copy each parent Entity's data to the Activity if identified in the Intent's URI
     entityType.parentEntities.foreach(_ match {
       case parentType: CrudEntityType[_,_,_,_] =>
@@ -42,7 +43,7 @@ class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val enti
           parentType.withEntityPersistence(crudContext, { persistence =>
             persistence.find(id).map { readable =>
               debug("Copying " + entityType.entityName + "#" + id + " to " + this)
-              entityType.copyFields(readable, this)
+              entityType.copyFieldsFromItem(readable :: contextItems, this)
             }
           })
         }

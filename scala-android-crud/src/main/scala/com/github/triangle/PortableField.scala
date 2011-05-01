@@ -241,17 +241,23 @@ abstract class GeneratedField[T](fieldsUsed: BaseField*) extends PortableField[T
   /**
    * Generate the value.  The <code>fieldsUsed</code> can be used like this within this method:
    * <pre>
-   *   val myOptionalFoo = fooField.getter(readable)
-   *   val myRequiredBar = barField(readable)
+   *   val myOptionalFoo = fooField.getterFromItem(fromItems)
+   *   val myRequiredBar = barField.getterFromItem(fromItems).get
    *   ...do the calculation...
    * </pre>
    */
-  def generate(readable: AnyRef): Option[T]
+  def generate(fromItems: List[AnyRef]): Option[T]
 
-  def getter = new PartialFunction[AnyRef,Option[T]] {
-    def isDefinedAt(x: AnyRef) = fieldsUsed.view.forall(_.asInstanceOf[PortableField[_]].getter.isDefinedAt(x))
+  /** Delegates to getterFromItem */
+  def getter = {
+    case from if getterFromItem.isDefinedAt(List(from)) => getterFromItem(List(from))
+  }
 
-    def apply(readable: AnyRef) = generate(readable)
+  override def getterFromItem = new PartialFunction[List[AnyRef],Option[T]] {
+    def isDefinedAt(fromItems: List[AnyRef]) =
+      fieldsUsed.view.forall(_.asInstanceOf[PortableField[_]].getterFromItem.isDefinedAt(fromItems))
+
+    def apply(fromItems: List[AnyRef]) = generate(fromItems)
   }
 }
 
@@ -275,6 +281,9 @@ object PortableField {
       def get(readable: R) = getter1(readable)
     }
   }
+
+  /** Defines a read-only field for returning the readable item itself (as an Option). */
+  def identityField[R <: AnyRef](implicit typeManifest: ClassManifest[R]) = readOnly[R,R](readable => Some(readable))
 
   /** Defines write-only field for a Writable type. */
   def writeOnly[W,T](setter1: W => T => Unit, clearer: W => Unit = {_: W => })
