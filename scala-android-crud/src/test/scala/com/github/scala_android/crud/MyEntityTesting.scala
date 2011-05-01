@@ -22,9 +22,11 @@ import android.app.Activity
  */
 
 trait MyEntityTesting extends EasyMockSugar {
-  type MyEntityPersistenceType = EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]
+  type MyEntityPersistenceType = CrudEntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]
 
   class MyEntityPersistence extends ListBufferEntityPersistence[Map[String,Any],AnyRef] {
+    def entityType = throw new UnsupportedOperationException
+
     def newCriteria = "TheCriteria"
   }
 

@@ -60,7 +60,7 @@ trait UIActionFactory extends PlatformTypes {
   def adapt[T,F](uiAction: UIAction[F], f: T => F): UIAction[T]
 
   /** Pass-through in order to get the Context. */
-  def withEntityPersistence[T,Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](entityType: CrudEntityType[Q,L,R,W], f: EntityPersistence[Q,L,R,W] => T): T
+  def withEntityPersistence[T,Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](entityType: CrudEntityType[Q,L,R,W], f: CrudEntityPersistence[Q,L,R,W] => T): T
 }
 
 
@@ -133,7 +133,7 @@ class ActivityUIActionFactory(currentActivity: BaseCrudActivity[_,_,_,_], val ap
     currentActivity.addUndoableDelete(entityType, undoable)
   }
 
-  def withEntityPersistence[T, Q <: AnyRef, L <: AnyRef, R <: AnyRef, W <: AnyRef](entityType: CrudEntityType[Q, L, R, W], f: (EntityPersistence[Q, L, R, W]) => T) =
+  def withEntityPersistence[T, Q <: AnyRef, L <: AnyRef, R <: AnyRef, W <: AnyRef](entityType: CrudEntityType[Q, L, R, W], f: (CrudEntityPersistence[Q, L, R, W]) => T) =
     entityType.withEntityPersistence(crudContext, f)
 }
 

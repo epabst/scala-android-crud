@@ -19,7 +19,7 @@ import android.widget.ListAdapter
 class CrudActivitySpec extends EasyMockSugar with ShouldMatchers with MyEntityTesting {
   @Test
   def shouldAllowAdding {
-    val persistence = mock[EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
+    val persistence = mock[CrudEntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
     val listAdapter = mock[ListAdapter]
     val entityType = new MyEntityType(persistence, listAdapter)
     val application = mock[CrudApplication]
@@ -42,7 +42,7 @@ class CrudActivitySpec extends EasyMockSugar with ShouldMatchers with MyEntityTe
 
   @Test
   def shouldAllowUpdating {
-    val persistence = mock[EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
+    val persistence = mock[CrudEntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
     val listAdapter = mock[ListAdapter]
     val entityType = new MyEntityType(persistence, listAdapter)
     val application = mock[CrudApplication]
@@ -70,7 +70,7 @@ class CrudActivitySpec extends EasyMockSugar with ShouldMatchers with MyEntityTe
 
   @Test
   def withPersistenceShouldClosePersistence {
-    val persistence = mock[EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
+    val persistence = mock[CrudEntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
     val listAdapter = mock[ListAdapter]
     val application = mock[CrudApplication]
     expecting {
@@ -86,7 +86,7 @@ class CrudActivitySpec extends EasyMockSugar with ShouldMatchers with MyEntityTe
 
   @Test
   def withPersistenceShouldClosePersistenceWithFailure {
-    val persistence = mock[EntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
+    val persistence = mock[CrudEntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
     val listAdapter = mock[ListAdapter]
     val application = mock[CrudApplication]
     expecting {

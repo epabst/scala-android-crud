@@ -22,7 +22,7 @@ import android.widget.ListAdapter
 class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
 
   it("should derive parent entities from foreignKey fields") {
-    val persistence = mock[EntityPersistence[AnyRef,List[mutable.Map[String,Any]],mutable.Map[String,Any],mutable.Map[String,Any]]]
+    val persistence = mock[CrudEntityPersistence[AnyRef,List[mutable.Map[String,Any]],mutable.Map[String,Any],mutable.Map[String,Any]]]
     val listAdapter = mock[ListAdapter]
     whenExecuting(persistence, listAdapter) {
       val entityType1 = new MyEntityType(persistence, listAdapter)
@@ -47,7 +47,7 @@ class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
   val adaptedDisplayChild2List = namedMock[UIAction[ID]]("adaptedDisplayChild2List")
 
   it("should get the correct entity actions with child entities") {
-    val persistence = mock[EntityPersistence[AnyRef,List[mutable.Map[String,Any]],mutable.Map[String,Any],mutable.Map[String,Any]]]
+    val persistence = mock[CrudEntityPersistence[AnyRef,List[mutable.Map[String,Any]],mutable.Map[String,Any],mutable.Map[String,Any]]]
     val actionFactory = mock[UIActionFactory]
     val application = mock[CrudApplication]
     val listAdapter = mock[ListAdapter]
@@ -72,7 +72,7 @@ class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
   }
 
   it("should get the correct list actions with child entities") {
-    val persistence = mock[EntityPersistence[AnyRef,List[mutable.Map[String,Any]],mutable.Map[String,Any],mutable.Map[String,Any]]]
+    val persistence = mock[CrudEntityPersistence[AnyRef,List[mutable.Map[String,Any]],mutable.Map[String,Any],mutable.Map[String,Any]]]
     val actionFactory = mock[UIActionFactory]
     val application = mock[CrudApplication]
     val listAdapter = mock[ListAdapter]
@@ -102,7 +102,7 @@ class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
   }
 
   it("should get the correct list actions with child entities w/ no parent display") {
-    val persistence = mock[EntityPersistence[AnyRef,List[mutable.Map[String,Any]],mutable.Map[String,Any],mutable.Map[String,Any]]]
+    val persistence = mock[CrudEntityPersistence[AnyRef,List[mutable.Map[String,Any]],mutable.Map[String,Any],mutable.Map[String,Any]]]
     val actionFactory = mock[UIActionFactory]
     val application = mock[CrudApplication]
     val listAdapter = mock[ListAdapter]
@@ -132,7 +132,7 @@ class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
   }
 
   it("should delete with undo possibility") {
-    type Persistence = EntityPersistence[AnyRef,List[mutable.Map[String,Any]],mutable.Map[String,Any],mutable.Map[String,Any]]
+    type Persistence = CrudEntityPersistence[AnyRef,List[mutable.Map[String,Any]],mutable.Map[String,Any],mutable.Map[String,Any]]
     val persistence = mock[Persistence]
     val actionFactory = mock[UIActionFactory]
     val application = mock[CrudApplication]
@@ -161,7 +161,7 @@ class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
   }
 
   it("undo of delete should work") {
-    type Persistence = EntityPersistence[AnyRef,List[mutable.Map[String,Any]],mutable.Map[String,Any],mutable.Map[String,Any]]
+    type Persistence = CrudEntityPersistence[AnyRef,List[mutable.Map[String,Any]],mutable.Map[String,Any],mutable.Map[String,Any]]
     val persistence = mock[Persistence]
     val actionFactory = mock[UIActionFactory]
     val application = mock[CrudApplication]

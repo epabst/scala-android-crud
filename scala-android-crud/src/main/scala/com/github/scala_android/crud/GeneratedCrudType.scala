@@ -10,7 +10,7 @@ trait GeneratedCrudType[T <: AnyRef,Q <: AnyRef] extends CrudEntityType[Q,List[T
 
   def openEntityPersistence(crudContext: CrudContext): ListEntityPersistence[T,Q]
 
-  def createListAdapter(persistence: EntityPersistence[Q,List[T],T,T], crudContext: CrudContext, activity: Activity) = new BaseAdapter() {
+  def createListAdapter(persistence: CrudEntityPersistence[Q,List[T],T,T], crudContext: CrudContext, activity: Activity) = new BaseAdapter() {
     val listPersistence = persistence.asInstanceOf[ListEntityPersistence[T, Q]]
     val list: List[T] = {
       val criteria = listPersistence.newCriteria

@@ -21,7 +21,7 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
 
   final def hasDisplayPage = displayLayout.isDefined
 
-  private val persistenceVarForListAdapter = new ContextVar[EntityPersistence[Q,L,R,W]]
+  private val persistenceVarForListAdapter = new ContextVar[CrudEntityPersistence[Q,L,R,W]]
 
   /**
    * Gets the actions that a user can perform from a list of the entities.
@@ -72,7 +72,7 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
     createListAdapter(persistence, crudContext, activity)
   }
 
-  def createListAdapter(persistence: EntityPersistence[Q,L,R,W], crudContext: CrudContext, activity: Activity): ListAdapter
+  def createListAdapter(persistence: CrudEntityPersistence[Q,L,R,W], crudContext: CrudContext, activity: Activity): ListAdapter
 
   def refreshAfterSave(crudContext: CrudContext)
 

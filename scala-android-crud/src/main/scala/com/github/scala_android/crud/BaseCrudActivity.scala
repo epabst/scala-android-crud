@@ -20,9 +20,9 @@ trait BaseCrudActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends 
   override lazy val logTag = classOf[BaseCrudActivity[Q,L,R,W]].getName + "(" + entityType.entityName + ")"
 
   //available to be overridden for testing
-  def openEntityPersistence(): EntityPersistence[Q,L,R,W] = entityType.openEntityPersistence(crudContext)
+  def openEntityPersistence(): CrudEntityPersistence[Q,L,R,W] = entityType.openEntityPersistence(crudContext)
 
-  def withPersistence[T](f: EntityPersistence[Q,L,R,W] => T): T = {
+  def withPersistence[T](f: CrudEntityPersistence[Q,L,R,W] => T): T = {
     val persistence = openEntityPersistence()
     try {
       f(persistence)

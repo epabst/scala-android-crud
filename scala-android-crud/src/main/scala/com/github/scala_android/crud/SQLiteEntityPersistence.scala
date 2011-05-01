@@ -26,7 +26,7 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudEntityType, crudContext:
 
   lazy val queryFieldNames: List[String] = CursorField.queryFieldNames(entityType)
 
-  override lazy val logTag = classOf[EntityPersistence[SQLiteCriteria,Cursor,Cursor,ContentValues]].getName +
+  override lazy val logTag = classOf[CrudEntityPersistence[SQLiteCriteria,Cursor,Cursor,ContentValues]].getName +
           "(" + entityType.entityName + ")"
 
   def newCriteria = new SQLiteCriteria
