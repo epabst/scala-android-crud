@@ -37,6 +37,20 @@ class FieldListSpec extends Spec with ShouldMatchers {
       countField.getter(map) should be (None)
     }
 
+    it("should copy values that apply from list of items") {
+      //intentionally put default before mapField
+      val countField = default[Int](10) + mapField[Int]("count")
+      val priceField = mapField[Double]("price")
+      val fields = FieldList(countField, priceField)
+      val map = mutable.Map[String, Any]()
+
+      val itemList = List(new Object, Unit, Map("count" -> 11, "price" -> 300.0))
+      fields.copyFieldsFromItem(itemList, map)
+      //should use the default since first in the item list
+      map.get("count") should be (Some(10))
+      map.get("price") should be (Some(300.00))
+    }
+
     it("should return the Fields that were not copied") {
       val countField = default[Int](10) + mapField("count")
       val priceField = mapField[Double]("price")

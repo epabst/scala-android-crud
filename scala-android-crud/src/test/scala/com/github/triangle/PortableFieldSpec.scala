@@ -5,7 +5,6 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.Spec
 import com.github.triangle.PortableField._
-import com.github.scala_android.crud.CursorField._
 import scala.collection.mutable
 import mutable.Buffer
 
@@ -28,7 +27,6 @@ class PortableFieldSpec extends Spec with ShouldMatchers {
       val a2 = field[MyEntity,Int](_.number, _.number_=)
       val stringField =
         flow[MyEntity, OtherEntity, String](_.string, _.name_=) +
-        persisted[String]("name") +
         field[MyEntity,String](_.string, _.string_=) +
         readOnly[OtherEntity,String](_.name) +
         writeOnly[MyEntity,String](_.string_=) +
@@ -103,6 +101,23 @@ class PortableFieldSpec extends Spec with ShouldMatchers {
       stringField.copy(new Object, myEntity2) should be (false)
 
       stringField.copy(otherEntity2, new Object) should be (false)
+    }
+
+    it("should get from the first applicable item") {
+      val myEntity1 = new MyEntity("my1", 1)
+      val otherEntity1 = new OtherEntity("other1", false)
+      val stringField = mapField[String]("stringValue") +
+        field[OtherEntity,String](_.name, _.name_=) +
+        field[MyEntity,String](_.string, _.string_=)
+      stringField.getterFromItem.isDefinedAt(List(myEntity1, otherEntity1)) should be (true)
+      stringField.getterFromItem.isDefinedAt(List(new Object)) should be (false)
+      stringField.getterFromItem(List(myEntity1, otherEntity1)) should be (Some("my1"))
+      stringField.getterFromItem(List(otherEntity1, myEntity1)) should be (Some("other1"))
+      stringField.getFromItemOrReturn(List(myEntity1), Some("n/a")) should be (Some("my1"))
+      stringField.getFromItemOrReturn(List(new Object), Some("n/a")) should be (Some("n/a"))
+      val mutableMap = mutable.Map.empty[String, Any]
+      stringField.copyFromItem(List(myEntity1, otherEntity1), mutableMap) should be (true)
+      mutableMap("stringValue") should be ("my1")
     }
 
     it("writeOnly should call clearer if no value") {

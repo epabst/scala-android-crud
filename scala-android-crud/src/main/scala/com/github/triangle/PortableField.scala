@@ -12,6 +12,12 @@ trait BaseField {
   def copy(from: AnyRef, to: AnyRef): Boolean
 
   /**
+   * Copies this field from the first applicable item in <code>fromItems</code> to <code>to</code>.
+   * @returns true if successfully set a value
+   */
+  def copyFromItem(fromItems: List[AnyRef], to: AnyRef): Boolean
+
+  /**
    * Traverses all of the PortableFieldes in this PortableField, returning the desired information.
    * Anything not matched will be traversed deeper, if possible, or else ignored.
    * <pre>
@@ -56,14 +62,37 @@ trait PortableField[T] extends BaseField with Logging {
    */
   def getter: PartialFunction[AnyRef,Option[T]]
 
+  /** extractor for finding the applicable item. */
+  private object ApplicableItem {
+    def unapply(items: List[AnyRef]): Option[AnyRef] = {
+      items.find(getter.isDefinedAt(_))
+    }
+  }
+
+  /**
+   * PartialFunction for getting an optional value from the first AnyRef in the List that is applicable.
+   */
+  def getterFromItem: PartialFunction[List[AnyRef],Option[T]] = {
+    case ApplicableItem(item) => getter(item)
+  }
+
   /**
    * Overrides what to do if getter isn't applicable to a readable.
    * The default is to throw a MatchError.
    */
-  def getOrReturn(readable: AnyRef, default: => Option[T]): Option[T] = getter.lift(readable).getOrElse {
-    val defaultValue: Option[T] = default
-    debug("Unable to find value in " + readable + " for field " + this + ", so returning default: " + defaultValue)
-    defaultValue
+  def getOrReturn(readable: AnyRef, default: => Option[T]): Option[T] =
+    getter.lift(readable).getOrElse(useDefault(default, readable))
+
+  /**
+   * Overrides what to do if getter isn't applicable to a readable.
+   * The default is to throw a MatchError.
+   */
+  def getFromItemOrReturn(fromItems: List[AnyRef], default: => Option[T]): Option[T] =
+    getterFromItem.lift(fromItems).getOrElse(useDefault(default, fromItems))
+
+  private def useDefault(default: Option[T], readable: AnyRef): Option[T] = {
+    debug("Unable to find value in " + readable + " for field " + this + ", so returning default: " + default)
+    default
   }
 
   /**
@@ -93,9 +122,18 @@ trait PortableField[T] extends BaseField with Logging {
 
   //inherited
   def copy(from: AnyRef, to: AnyRef): Boolean = {
-    val defined = getter.isDefinedAt(from) && setter.isDefinedAt(to)
+    copyUsingGetFunction(getter, from, to)
+  }
+
+  //inherited
+  def copyFromItem(fromItems: List[AnyRef], to: AnyRef): Boolean = {
+    copyUsingGetFunction(getterFromItem, fromItems, to)
+  }
+
+  private def copyUsingGetFunction[F <: AnyRef](get: PartialFunction[F,Option[T]], from: F, to: AnyRef): Boolean = {
+    val defined = get.isDefinedAt(from) && setter.isDefinedAt(to)
     if (defined) {
-      val value = getter(from)
+      val value = get(from)
       debug("Copying " + value + " from " + from + " to " + to + " for field " + this)
       setter(to)(value)
     } else {
