@@ -1,6 +1,7 @@
 package com.github.scala_android.crud.model
 
 import com.github.scala_android.crud.PlatformTypes
+import com.github.triangle.PortableField._
 
 /**
  * A trait with a primary key
@@ -10,5 +11,9 @@ import com.github.scala_android.crud.PlatformTypes
  */
 
 trait IdPk extends PlatformTypes {
-  var id: ID = _
+  var id: Option[ID] = None
+}
+
+object IdPk extends PlatformTypes {
+  val idField = field[IdPk,ID](_.id, pk => id => pk.id = Some(id), pk => pk.id = None)
 }
