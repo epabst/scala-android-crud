@@ -75,7 +75,7 @@ object ValueFormat {
   }
   lazy val amountFormats = List(currencyEditFormat, currencyFormat, NumberFormat.getNumberInstance).map(new TextValueFormat[Double](_, _.asInstanceOf[Number].doubleValue))
 
-  lazy val dateFormats = List(new java.text.SimpleDateFormat("MM/dd/yyyy")).map(new TextValueFormat[Date](_))
+  lazy val dateFormats = List(new java.text.SimpleDateFormat("MM/dd/yyyy"), new java.text.SimpleDateFormat("dd MMM yyyy")).map(new TextValueFormat[Date](_))
 
   def toCalendarFormat(format: ValueFormat[Date]): ValueFormat[Calendar] = new ValueFormat[Calendar] {
     override def toString(value: Calendar) = format.toString(value.getTime)
