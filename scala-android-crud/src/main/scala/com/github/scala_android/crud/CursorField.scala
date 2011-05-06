@@ -47,6 +47,8 @@ class CursorField[T](val name: String)(implicit val persistedType: PersistedType
   }
 
   private def setIntoContentValues(contentValues: ContentValues)(value: T) { persistedType.putValue(contentValues, name, value) }
+
+  override def toString = "persisted(\"" + name + "\")"
 }
 
 import CursorField._
@@ -56,4 +58,6 @@ class ForeignKey(val entityType: CrudEntityTypeRef) extends PlatformTypes with D
   val fieldName = entityType.entityName.toLowerCase + BaseColumns._ID
 
   protected val delegate = persisted[ID](fieldName) + intentId(entityType.entityName) + sqliteCriteria[ID](fieldName)
+
+  override def toString = "foreignKey(" + entityType.getClass.getSimpleName + ")"
 }

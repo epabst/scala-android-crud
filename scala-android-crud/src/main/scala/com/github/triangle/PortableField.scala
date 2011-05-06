@@ -148,6 +148,8 @@ trait PortableField[T] extends BaseField with Logging {
   def +(other: PortableField[T]): PortableField[T] = {
     val self = this
     new PortableField[T] {
+      override def toString = self + " + " + other
+
       lazy val getter = self.getter.orElse(other.getter)
 
       /**
@@ -305,6 +307,8 @@ object PortableField {
   /** Defines a default for a field value, used when copied from {@link Unit}. */
   def default[T](value: => T): PortableField[T] = new PortableField[T] with NoSetter[T] {
     def getter = { case Unit => Some(value) }
+
+    override def toString = "default(" + value + ")"
   }
 
   /**
@@ -324,6 +328,14 @@ object PortableField {
         valueOpt match {
           case Some(value) => setter1(writable)(value)
           case None => clearer(writable)
+        }
+      }
+
+      override def toString = {
+        if (readableManifest == writableManifest) {
+          "field[" + readableManifest.erasure.getSimpleName + "]"
+        } else {
+          "flow[" + readableManifest.erasure.getSimpleName + "," + writableManifest.erasure.getSimpleName + "]"
         }
       }
     }

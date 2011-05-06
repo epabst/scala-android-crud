@@ -41,6 +41,8 @@ object ViewField extends PlatformTypes {
       case ChildView(childView) if childViewField.setter.isDefinedAt(childView) =>
         childViewField.setter(childView)
     }
+
+    override def toString = "viewId(" + viewResourceId + ", " + childViewField + ")"
   }
 
   def viewField[V <: View,T](getter1: V => Option[T], setter1: V => T => Unit, clearer: V => Unit = {_: V => })
@@ -54,6 +56,8 @@ object ViewField extends PlatformTypes {
           case None => clearer(view)
         }
       }
+
+      override def toString = "viewField[" + m.erasure.getName + "]"
     }
   }
 
