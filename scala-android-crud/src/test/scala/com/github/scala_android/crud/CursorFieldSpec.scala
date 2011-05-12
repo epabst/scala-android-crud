@@ -23,7 +23,7 @@ import android.database.Cursor
 class CursorFieldSpec extends ShouldMatchers with EasyMockSugar {
   @Test
   def shouldGetColumnsForQueryCorrectly() {
-    val foreign = foreignKey(MyCrudEntityTypeRef)
+    val foreign = foreignKey(MyCrudTypeRef)
     val combined = persisted[Float]("height") + default(6.0f)
     val fields = FieldList(foreign, persisted[Int]("age"), combined)
     val actualFields = CursorField.queryFieldNames(fields)
@@ -52,8 +52,8 @@ class CursorFieldSpec extends ShouldMatchers with EasyMockSugar {
 
   @Test
   def shouldGetCriteriaCorrectlyForForeignKey() {
-    val foreign = foreignKey(MyCrudEntityTypeRef)
-    val uri = EntityUriSegment(MyCrudEntityTypeRef.entityName, "19").specifyInUri(Uri.EMPTY)
+    val foreign = foreignKey(MyCrudTypeRef)
+    val uri = EntityUriSegment(MyCrudTypeRef.entityName, "19").specifyInUri(Uri.EMPTY)
     //add on extra stuff to make sure it is ignored
     val intent = new Intent("", Uri.withAppendedPath(uri, "foo/1234"))
     val criteria = new SQLiteCriteria

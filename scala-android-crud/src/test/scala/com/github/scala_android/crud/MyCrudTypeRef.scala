@@ -4,12 +4,12 @@ import res.R
 import com.github.triangle.BaseField
 
 /**
- * A simple CrudEntityTypeRef for testing.
+ * A simple CrudTypeRef for testing.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 3/15/11
  * Time: 10:40 PM
  */
-object MyCrudEntityTypeRef extends CrudEntityTypeRef {
+object MyCrudTypeRef extends CrudTypeRef {
   def entityName = "MyEntity"
 
   def fields = List[BaseField]()

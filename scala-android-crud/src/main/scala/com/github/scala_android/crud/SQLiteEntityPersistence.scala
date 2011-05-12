@@ -16,8 +16,8 @@ import collection.mutable
  * Date: 2/3/11
  * Time: 6:17 PM
  */
-class SQLiteEntityPersistence(val entityType: SQLiteCrudEntityType, crudContext: CrudContext)
-  extends CrudEntityPersistence with Logging {
+class SQLiteEntityPersistence(val entityType: SQLiteCrudType, crudContext: CrudContext)
+  extends CrudPersistence with Logging {
 
   lazy val databaseSetup = entityType.getDatabaseSetup(crudContext)
   lazy val database: SQLiteDatabase = databaseSetup.getWritableDatabase
@@ -26,7 +26,7 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudEntityType, crudContext:
 
   lazy val queryFieldNames: List[String] = CursorField.queryFieldNames(entityType)
 
-  override lazy val logTag = classOf[CrudEntityPersistence].getName +
+  override lazy val logTag = classOf[CrudPersistence].getName +
           "(" + entityType.entityName + ")"
 
   def newCriteria: SQLiteCriteria = new SQLiteCriteria

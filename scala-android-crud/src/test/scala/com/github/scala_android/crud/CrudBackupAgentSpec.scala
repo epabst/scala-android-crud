@@ -72,12 +72,12 @@ class CrudBackupAgentSpec extends MyEntityTesting with ShouldMatchers {
     val state0 = null
     var restoreItems = mutable.ListBuffer[RestoreItem]()
     expecting {
-      call(application.allEntities).andReturn(List[CrudEntityTypeRef](entityType, entityType2))
+      call(application.allEntities).andReturn(List[CrudTypeRef](entityType, entityType2))
       backupTarget.writeEntity(eql("MyMap#100"), notNull()).andAnswer(saveRestoreItem(restoreItems))
       backupTarget.writeEntity(eql("MyMap#101"), notNull()).andAnswer(saveRestoreItem(restoreItems))
       backupTarget.writeEntity(eql("OtherMap#101"), notNull()).andAnswer(saveRestoreItem(restoreItems))
       backupTarget.writeEntity(eql("OtherMap#104"), notNull()).andAnswer(saveRestoreItem(restoreItems))
-      call(applicationB.allEntities).andReturn(List[CrudEntityTypeRef](entityTypeB, entityType2B))
+      call(applicationB.allEntities).andReturn(List[CrudTypeRef](entityTypeB, entityType2B))
     }
     whenExecuting(application, applicationB, listAdapter, backupTarget, state1, state1b) {
       val backupAgent = new CrudBackupAgent(application)
@@ -127,7 +127,7 @@ class CrudBackupAgentSpec extends MyEntityTesting with ShouldMatchers {
     }
     val state0 = null
     expecting {
-      call(application.allEntities).andReturn(List[CrudEntityTypeRef](entityType, generatedType))
+      call(application.allEntities).andReturn(List[CrudTypeRef](entityType, generatedType))
       //shouldn't call any methods on generatedPersistence
     }
     whenExecuting(application, listAdapter, backupTarget, state1) {

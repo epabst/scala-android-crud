@@ -10,7 +10,7 @@ import com.github.triangle._
  * @author pabstec
  */
 
-object AuthorCrudType extends SQLiteCrudEntityType {
+object AuthorCrudType extends SQLiteCrudType {
   def entityName = "Author"
 
   def fields = List(persisted[String]("name") + viewId(R.id.name, textView))

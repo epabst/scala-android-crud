@@ -12,7 +12,7 @@ object CursorField extends PlatformTypes {
     new CursorField[T](name)(persistedType)
   }
 
-  def foreignKey[ID](entityType: CrudEntityTypeRef) = new ForeignKey(entityType)
+  def foreignKey[ID](entityType: CrudTypeRef) = new ForeignKey(entityType)
 
   val persistedId = persisted[ID](BaseColumns._ID)
 
@@ -54,7 +54,7 @@ class CursorField[T](val name: String)(implicit val persistedType: PersistedType
 import CursorField._
 import ViewField.intentId
 
-class ForeignKey(val entityType: CrudEntityTypeRef) extends PlatformTypes with DelegatingPortableField[ID] {
+class ForeignKey(val entityType: CrudTypeRef) extends PlatformTypes with DelegatingPortableField[ID] {
   val fieldName = entityType.entityName.toLowerCase + BaseColumns._ID
 
   protected val delegate = persisted[ID](fieldName) + intentId(entityType.entityName) + sqliteCriteria[ID](fieldName)

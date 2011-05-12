@@ -14,7 +14,7 @@ import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.junit.Test
 
 /**
- * A behavior specification for {@link CrudEntityType}.
+ * A behavior specification for {@link CrudType}.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 4/12/11
  * Time: 7:59 PM

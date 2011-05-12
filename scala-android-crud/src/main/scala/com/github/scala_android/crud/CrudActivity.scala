@@ -15,7 +15,7 @@ import com.github.triangle.BasicValueFormat
  * @param R the type to read from (e.g. Cursor)
  * @param W the type to write to (e.g. ContentValues)
  */
-class CrudActivity(val entityType: CrudEntityType, val application: CrudApplication)
+class CrudActivity(val entityType: CrudType, val application: CrudApplication)
   extends Activity with BaseCrudActivity {
 
   private val idFormat = new BasicValueFormat[ID]()

@@ -18,13 +18,13 @@ import android.content.{Intent, Context}
 import android.database.{Cursor, DataSetObserver}
 
 /**
- * A test for {@link CrudListActivity}.
+ * A test for {@link SQLiteCrudType}.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 2/18/11
  * Time: 6:22 PM
  */
 @RunWith(classOf[RobolectricTestRunner])
-class SQLiteCrudEntityTypeFunctionalSpec extends EasyMockSugar with ShouldMatchers with Logging {
+class SQLiteCrudTypeSpec extends EasyMockSugar with ShouldMatchers with Logging {
   val runningOnRealAndroid: Boolean = try {
     debug("Seeing if running on Real Android...")
     Class.forName("com.xtremelabs.robolectric.RobolectricTestRunner")
@@ -36,7 +36,7 @@ class SQLiteCrudEntityTypeFunctionalSpec extends EasyMockSugar with ShouldMatche
       true
     }
   }
-  object TestEntityType extends SQLiteCrudEntityType {
+  object TestEntityType extends SQLiteCrudType {
     def entityName = "Person"
     val fields = List(persisted[Int]("age") + default(21))
 

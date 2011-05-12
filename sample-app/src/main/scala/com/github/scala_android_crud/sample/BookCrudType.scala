@@ -14,7 +14,7 @@ import java.util.Date
  * @book pabstec
  */
 
-object BookCrudType extends SQLiteCrudEntityType {
+object BookCrudType extends SQLiteCrudType {
   def entityName = "Book"
 
   def fields = List(

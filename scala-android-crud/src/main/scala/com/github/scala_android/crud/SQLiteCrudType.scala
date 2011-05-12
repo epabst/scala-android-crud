@@ -10,13 +10,13 @@ import android.database.sqlite.{SQLiteDatabase, SQLiteOpenHelper}
 import android.provider.BaseColumns
 
 /**
- * A CrudEntityType for SQLite.
+ * A CrudType for SQLite.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 2/24/11
  * Time: 11:22 PM
  */
 
-trait SQLiteCrudEntityType extends CrudEntityType {
+trait SQLiteCrudType extends CrudType {
   def newWritable = new ContentValues
 
   def openEntityPersistence(crudContext: CrudContext) = new SQLiteEntityPersistence(this, crudContext) {
@@ -36,7 +36,7 @@ trait SQLiteCrudEntityType extends CrudEntityType {
 
   val cursorVarForListAdapter = new ContextVar[Cursor]
 
-  def createListAdapter(persistence: CrudEntityPersistence, crudContext: CrudContext, activity: Activity): ResourceCursorAdapter =
+  def createListAdapter(persistence: CrudPersistence, crudContext: CrudContext, activity: Activity): ResourceCursorAdapter =
     createListAdapter(persistence.asInstanceOf[SQLiteEntityPersistence], crudContext, activity)
 
   def createListAdapter(persistence: SQLiteEntityPersistence, crudContext: CrudContext, activity: Activity): ResourceCursorAdapter = {

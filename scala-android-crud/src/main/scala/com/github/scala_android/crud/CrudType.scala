@@ -12,7 +12,7 @@ import com.github.triangle.{FieldList, BaseField}
  * Date: 2/23/11
  * Time: 3:24 PM
  */
-trait CrudEntityType extends CrudEntityTypeRef {
+trait CrudType extends CrudTypeRef {
   def headerLayout: LayoutKey
   def listLayout: LayoutKey
   def rowLayout: LayoutKey
@@ -21,7 +21,7 @@ trait CrudEntityType extends CrudEntityTypeRef {
 
   final def hasDisplayPage = displayLayout.isDefined
 
-  private val persistenceVarForListAdapter = new ContextVar[CrudEntityPersistence]
+  private val persistenceVarForListAdapter = new ContextVar[CrudPersistence]
 
   /**
    * Gets the actions that a user can perform from a list of the entities.
@@ -58,9 +58,9 @@ trait CrudEntityType extends CrudEntityTypeRef {
    */
   def newWritable: AnyRef
 
-  def openEntityPersistence(crudContext: CrudContext): CrudEntityPersistence
+  def openEntityPersistence(crudContext: CrudContext): CrudPersistence
 
-  final def withEntityPersistence[T](crudContext: CrudContext, f: CrudEntityPersistence => T): T = {
+  final def withEntityPersistence[T](crudContext: CrudContext, f: CrudPersistence => T): T = {
     val persistence = openEntityPersistence(crudContext)
     try f(persistence)
     finally persistence.close()
@@ -72,7 +72,7 @@ trait CrudEntityType extends CrudEntityTypeRef {
     createListAdapter(persistence, crudContext, activity)
   }
 
-  def createListAdapter(persistence: CrudEntityPersistence, crudContext: CrudContext, activity: Activity): ListAdapter
+  def createListAdapter(persistence: CrudPersistence, crudContext: CrudContext, activity: Activity): ListAdapter
 
   def refreshAfterSave(crudContext: CrudContext)
 
@@ -105,7 +105,7 @@ trait CrudEntityType extends CrudEntityTypeRef {
   }
 }
 
-trait CrudEntityTypeRef extends FieldList with PlatformTypes {
+trait CrudTypeRef extends FieldList with PlatformTypes {
   //this is the type used for internationalized strings
   def entityName: String
 
@@ -123,17 +123,17 @@ trait CrudEntityTypeRef extends FieldList with PlatformTypes {
     case foreignKey: ForeignKey => Some(foreignKey)
   }
 
-  lazy val parentEntities: List[CrudEntityTypeRef] = foreignKeys.map(_.entityType)
+  lazy val parentEntities: List[CrudTypeRef] = foreignKeys.map(_.entityType)
 
   /**
    * The list of entities that refer to this one.
    * Those entities should have a foreignKey in their fields list, if persisted.
    */
-  def childEntities(application: CrudApplication): List[CrudEntityTypeRef] =
+  def childEntities(application: CrudApplication): List[CrudTypeRef] =
     application.allEntities.filter(_.parentEntities.contains(this))
 
   def displayChildEntityLists[T](actionFactory: UIActionFactory, idGetter: T => ID,
-                                 childEntities: List[CrudEntityTypeRef]): List[UIAction[T]] =
+                                 childEntities: List[CrudTypeRef]): List[UIAction[T]] =
     childEntities.map(entity => actionFactory.adapt(actionFactory.displayList(entity), (value: T) =>
       Some(EntityUriSegment(entityName, idGetter(value).toString))))
 
@@ -146,10 +146,10 @@ trait CrudEntityTypeRef extends FieldList with PlatformTypes {
 }
 
 /**
- * A trait for stubbing out the UI methods of CrudEntityType for use when the entity will
+ * A trait for stubbing out the UI methods of CrudType for use when the entity will
  * never be used with the UI.
  */
-trait HiddenEntityType extends CrudEntityType {
+trait HiddenEntityType extends CrudType {
   def headerLayout: LayoutKey = throw new UnsupportedOperationException
   def listLayout: LayoutKey = throw new UnsupportedOperationException
   def rowLayout: LayoutKey = throw new UnsupportedOperationException

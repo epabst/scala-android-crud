@@ -25,15 +25,15 @@ trait EntityPersistence extends PlatformTypes {
   /**
    * Delete a list of entities by ID.
    * This should NOT delete child entities because that would make the "undo" functionality incomplete.
-   * Instead, assume that the CrudEntityType will handle deleting all child entities explicitly.
+   * Instead, assume that the CrudType will handle deleting all child entities explicitly.
    */
   def delete(ids: List[ID])
 
   def close()
 }
 
-trait CrudEntityPersistence extends EntityPersistence {
-  def entityType: CrudEntityType
+trait CrudPersistence extends EntityPersistence {
+  def entityType: CrudType
 
   def findAsIterator[T <: AnyRef](criteria: AnyRef, instantiateItem: () => T): Iterator[T] =
     toIterator(findAll(criteria)).map(entity => {

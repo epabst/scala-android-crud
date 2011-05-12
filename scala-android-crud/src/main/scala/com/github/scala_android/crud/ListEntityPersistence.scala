@@ -10,7 +10,7 @@ import CursorField._
  * Time: 5:05 PM
  */
 
-abstract class ListEntityPersistence[T <: AnyRef] extends CrudEntityPersistence {
+abstract class ListEntityPersistence[T <: AnyRef] extends CrudPersistence {
   def getId(entity: T): ID = persistedId(entity)
 
   def find(id: ID): Option[T] = {

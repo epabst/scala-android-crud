@@ -15,7 +15,7 @@ import res.R
 import android.app.Activity
 
 /**
- * An object mother pattern for getting CrudEntityType instances.
+ * An object mother pattern for getting CrudType instances.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 2/26/11
  * Time: 11:06 PM
@@ -28,7 +28,7 @@ trait MyEntityTesting extends EasyMockSugar {
     def newCriteria = "TheCriteria"
   }
 
-  class MyEntityType(persistence: CrudEntityPersistence, listAdapter: ListAdapter, val entityName: String = "MyMap")
+  class MyEntityType(persistence: CrudPersistence, listAdapter: ListAdapter, val entityName: String = "MyMap")
           extends StubEntityType {
     var refreshCount = 0
 
@@ -42,7 +42,7 @@ trait MyEntityTesting extends EasyMockSugar {
 
     def openEntityPersistence(crudContext: CrudContext) = persistence
 
-    def createListAdapter(persistence: CrudEntityPersistence, crudContext: CrudContext, activity: Activity) = listAdapter
+    def createListAdapter(persistence: CrudPersistence, crudContext: CrudContext, activity: Activity) = listAdapter
 
     def refreshAfterSave(crudContext: CrudContext) {
       refreshCount += 1
@@ -51,7 +51,7 @@ trait MyEntityTesting extends EasyMockSugar {
     val cancelItemString = R.string.cancel_item
   }
 
-  trait StubEntityType extends CrudEntityType {
+  trait StubEntityType extends CrudType {
     val listLayout = R.layout.entity_list
     val headerLayout = R.layout.test_row
     val rowLayout = R.layout.test_row

@@ -11,7 +11,7 @@ import monitor.Logging
  */
 
 trait BaseCrudActivity extends Activity with PlatformTypes with Logging {
-  def entityType: CrudEntityType
+  def entityType: CrudType
 
   def application: CrudApplication
 
@@ -20,9 +20,9 @@ trait BaseCrudActivity extends Activity with PlatformTypes with Logging {
   override lazy val logTag = classOf[BaseCrudActivity].getName + "(" + entityType.entityName + ")"
 
   //available to be overridden for testing
-  def openEntityPersistence(): CrudEntityPersistence = entityType.openEntityPersistence(crudContext)
+  def openEntityPersistence(): CrudPersistence = entityType.openEntityPersistence(crudContext)
 
-  def withPersistence[T](f: CrudEntityPersistence => T): T = {
+  def withPersistence[T](f: CrudPersistence => T): T = {
     val persistence = openEntityPersistence()
     try {
       f(persistence)
@@ -31,7 +31,7 @@ trait BaseCrudActivity extends Activity with PlatformTypes with Logging {
     }
   }
 
-  def addUndoableDelete(entityType: CrudEntityTypeRef, undoable: Undoable[ID]) {
+  def addUndoableDelete(entityType: CrudTypeRef, undoable: Undoable[ID]) {
     //todo implement
   }
 

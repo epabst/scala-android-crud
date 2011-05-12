@@ -12,17 +12,17 @@ import com.github.triangle.PortableField
 import android.widget.ListAdapter
 
 /**
- * A behavior specification for {@link CrudEntityType}.
+ * A behavior specification for {@link CrudType}.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 3/22/11
  * Time: 7:59 PM
  */
 
 @RunWith(classOf[JUnitRunner])
-class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
+class CrudTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
 
   it("should derive parent entities from foreignKey fields") {
-    val persistence = mock[CrudEntityPersistence]
+    val persistence = mock[CrudPersistence]
     val listAdapter = mock[ListAdapter]
     whenExecuting(persistence, listAdapter) {
       val entityType1 = new MyEntityType(persistence, listAdapter)
@@ -47,7 +47,7 @@ class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
   val adaptedDisplayChild2List = namedMock[UIAction[ID]]("adaptedDisplayChild2List")
 
   it("should get the correct entity actions with child entities") {
-    val persistence = mock[CrudEntityPersistence]
+    val persistence = mock[CrudPersistence]
     val actionFactory = mock[UIActionFactory]
     val application = mock[CrudApplication]
     val listAdapter = mock[ListAdapter]
@@ -72,7 +72,7 @@ class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
   }
 
   it("should get the correct list actions with child entities") {
-    val persistence = mock[CrudEntityPersistence]
+    val persistence = mock[CrudPersistence]
     val actionFactory = mock[UIActionFactory]
     val application = mock[CrudApplication]
     val listAdapter = mock[ListAdapter]
@@ -102,7 +102,7 @@ class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
   }
 
   it("should get the correct list actions with child entities w/ no parent display") {
-    val persistence = mock[CrudEntityPersistence]
+    val persistence = mock[CrudPersistence]
     val actionFactory = mock[UIActionFactory]
     val application = mock[CrudApplication]
     val listAdapter = mock[ListAdapter]
@@ -132,7 +132,7 @@ class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
   }
 
   it("should delete with undo possibility") {
-    val persistence = mock[CrudEntityPersistence]
+    val persistence = mock[CrudPersistence]
     val actionFactory = mock[UIActionFactory]
     val application = mock[CrudApplication]
     val listAdapter = mock[ListAdapter]
@@ -140,9 +140,9 @@ class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
     val readable = mutable.Map[String,Any]()
     val id = 345L
     expecting {
-      call(actionFactory.withEntityPersistence(eql(entity), notNull[CrudEntityPersistence => Unit]())).andAnswer(answer {
+      call(actionFactory.withEntityPersistence(eql(entity), notNull[CrudPersistence => Unit]())).andAnswer(answer {
         val currentArguments = EasyMock.getCurrentArguments
-        val f = currentArguments(1).asInstanceOf[CrudEntityPersistence => Unit]
+        val f = currentArguments(1).asInstanceOf[CrudPersistence => Unit]
         f(persistence)
       })
       call(actionFactory.application).andReturn(application).anyTimes
@@ -160,7 +160,7 @@ class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
   }
 
   it("undo of delete should work") {
-    val persistence = mock[CrudEntityPersistence]
+    val persistence = mock[CrudPersistence]
     val actionFactory = mock[UIActionFactory]
     val application = mock[CrudApplication]
     val listAdapter = mock[ListAdapter]
@@ -169,9 +169,9 @@ class CrudEntityTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
     val id = 345L
     val id2 = 444L
     expecting {
-      call(actionFactory.withEntityPersistence(eql(entity), notNull[CrudEntityPersistence => Unit]())).andAnswer(answer {
+      call(actionFactory.withEntityPersistence(eql(entity), notNull[CrudPersistence => Unit]())).andAnswer(answer {
         val currentArguments = EasyMock.getCurrentArguments
-        val f = currentArguments(1).asInstanceOf[CrudEntityPersistence => Unit]
+        val f = currentArguments(1).asInstanceOf[CrudPersistence => Unit]
         f(persistence)
       })
       call(actionFactory.application).andReturn(application).anyTimes

@@ -21,7 +21,7 @@ import android.view.{MenuItem, View, ContextMenu}
 class CrudListActivitySpec extends EasyMockSugar with ShouldMatchers with MyEntityTesting {
   @Test
   def shouldAllowAdding {
-    val persistence = mock[CrudEntityPersistence]
+    val persistence = mock[CrudPersistence]
     val application = mock[CrudApplication]
     val entity = Map[String,Any]("age" -> 25)
     val listAdapter = mock[ListAdapter]
@@ -43,7 +43,7 @@ class CrudListActivitySpec extends EasyMockSugar with ShouldMatchers with MyEnti
 
   @Test
   def shouldHaveCorrectContextMenu {
-    val persistence = mock[CrudEntityPersistence]
+    val persistence = mock[CrudPersistence]
     val application = mock[CrudApplication]
     val contextMenu = mock[ContextMenu]
     val listAdapter = mock[ListAdapter]
@@ -63,7 +63,7 @@ class CrudListActivitySpec extends EasyMockSugar with ShouldMatchers with MyEnti
 
   @Test
   def shouldHandleNoEntityOptions {
-    val persistence = mock[CrudEntityPersistence]
+    val persistence = mock[CrudPersistence]
     val application = mock[CrudApplication]
     val contextMenu = mock[ContextMenu]
     val listAdapter = mock[ListAdapter]
@@ -81,7 +81,7 @@ class CrudListActivitySpec extends EasyMockSugar with ShouldMatchers with MyEnti
 
   @Test
   def shouldRefreshOnResume {
-    val persistence = mock[CrudEntityPersistence]
+    val persistence = mock[CrudPersistence]
     var refreshCount = 0
     val application = mock[CrudApplication]
     val entity = Map[String,Any]("age" -> 25)
@@ -112,7 +112,7 @@ class CrudListActivitySpec extends EasyMockSugar with ShouldMatchers with MyEnti
 
   @Test
   def shouldIgnoreClicksOnHeader {
-    val persistence = mock[CrudEntityPersistence]
+    val persistence = mock[CrudPersistence]
     val application = mock[CrudApplication]
     val listAdapter = mock[ListAdapter]
     whenExecuting(persistence, application) {

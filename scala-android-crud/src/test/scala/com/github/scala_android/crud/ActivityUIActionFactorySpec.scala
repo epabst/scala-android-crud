@@ -18,75 +18,75 @@ class ActivityUIActionFactorySpec extends MyEntityTesting with ShouldMatchers {
   val isShadowing = true
 
   import ActivityUIActionFactory._
-  import MyCrudEntityTypeRef.entityName
+  import MyCrudTypeRef.entityName
 
   val crudContext = new CrudContext(null, null)
 
   @Test
   def getCreateIntentShouldGetTheRightUri {
-    getCreateIntent(MyCrudEntityTypeRef, toUri("foo"), crudContext).getData should
+    getCreateIntent(MyCrudTypeRef, toUri("foo"), crudContext).getData should
       be (toUri("foo", entityName))
-    getCreateIntent(MyCrudEntityTypeRef, toUri("foo", entityName), crudContext).getData should
+    getCreateIntent(MyCrudTypeRef, toUri("foo", entityName), crudContext).getData should
       be (toUri("foo", entityName))
-    getCreateIntent(MyCrudEntityTypeRef, toUri("foo", entityName, "123"), crudContext).getData should
+    getCreateIntent(MyCrudTypeRef, toUri("foo", entityName, "123"), crudContext).getData should
       be (toUri("foo", entityName))
-    getCreateIntent(MyCrudEntityTypeRef, toUri("foo", entityName, "123", "bar"), crudContext).getData should
+    getCreateIntent(MyCrudTypeRef, toUri("foo", entityName, "123", "bar"), crudContext).getData should
       be (toUri("foo", entityName))
-    getCreateIntent(MyCrudEntityTypeRef, toUri(), crudContext).getData should
+    getCreateIntent(MyCrudTypeRef, toUri(), crudContext).getData should
       be (toUri(entityName))
   }
 
   @Test
   def getDisplayListIntentShouldGetTheRightUri {
-    getDisplayListIntent(MyCrudEntityTypeRef, toUri("foo"), crudContext).getData should
+    getDisplayListIntent(MyCrudTypeRef, toUri("foo"), crudContext).getData should
       be (toUri("foo", entityName))
-    getDisplayListIntent(MyCrudEntityTypeRef, toUri("foo", entityName), crudContext).getData should
+    getDisplayListIntent(MyCrudTypeRef, toUri("foo", entityName), crudContext).getData should
       be (toUri("foo", entityName))
-    getDisplayListIntent(MyCrudEntityTypeRef, toUri("foo", entityName, "123"), crudContext).getData should
+    getDisplayListIntent(MyCrudTypeRef, toUri("foo", entityName, "123"), crudContext).getData should
       be (toUri("foo", entityName))
-    getDisplayListIntent(MyCrudEntityTypeRef, toUri("foo", entityName, "123", "bar"), crudContext).getData should
+    getDisplayListIntent(MyCrudTypeRef, toUri("foo", entityName, "123", "bar"), crudContext).getData should
       be (toUri("foo", entityName))
-    getDisplayListIntent(MyCrudEntityTypeRef, toUri(), crudContext).getData should
+    getDisplayListIntent(MyCrudTypeRef, toUri(), crudContext).getData should
       be (toUri(entityName))
   }
 
   @Test
   def getDisplayListIntentWithUriContextShouldGetTheRightUri {
-    getDisplayListIntent(MyCrudEntityTypeRef, toUri("foo"), None, crudContext).getData should
+    getDisplayListIntent(MyCrudTypeRef, toUri("foo"), None, crudContext).getData should
       be (toUri("foo", entityName))
-    getDisplayListIntent(MyCrudEntityTypeRef, toUri("foo"), Some(EntityUriSegment("bar")), crudContext).getData should
+    getDisplayListIntent(MyCrudTypeRef, toUri("foo"), Some(EntityUriSegment("bar")), crudContext).getData should
       be (toUri("foo", "bar", entityName))
-    getDisplayListIntent(MyCrudEntityTypeRef, toUri("foo"), Some(EntityUriSegment("bar", "123")), crudContext).getData should
+    getDisplayListIntent(MyCrudTypeRef, toUri("foo"), Some(EntityUriSegment("bar", "123")), crudContext).getData should
       be (toUri("foo", "bar", "123", entityName))
-    getDisplayListIntent(MyCrudEntityTypeRef, toUri("foo", "bar", "234", entityName), Some(EntityUriSegment("bar", "123")), crudContext).getData should
+    getDisplayListIntent(MyCrudTypeRef, toUri("foo", "bar", "234", entityName), Some(EntityUriSegment("bar", "123")), crudContext).getData should
       be (toUri("foo", "bar", "123", entityName))
   }
 
   @Test
   def getDisplayIntentShouldGetTheRightUri {
-    getDisplayIntent(MyCrudEntityTypeRef, 35, toUri("foo"), crudContext).getData should
+    getDisplayIntent(MyCrudTypeRef, 35, toUri("foo"), crudContext).getData should
       be (toUri("foo", entityName, "35"))
-    getDisplayIntent(MyCrudEntityTypeRef, 34, toUri("foo", entityName), crudContext).getData should
+    getDisplayIntent(MyCrudTypeRef, 34, toUri("foo", entityName), crudContext).getData should
       be (toUri("foo", entityName, "34"))
-    getDisplayIntent(MyCrudEntityTypeRef, 34, toUri("foo", entityName, "123"), crudContext).getData should
+    getDisplayIntent(MyCrudTypeRef, 34, toUri("foo", entityName, "123"), crudContext).getData should
       be (toUri("foo", entityName, "34"))
-    getDisplayIntent(MyCrudEntityTypeRef, 34, toUri("foo", entityName, "123", "bar"), crudContext).getData should
+    getDisplayIntent(MyCrudTypeRef, 34, toUri("foo", entityName, "123", "bar"), crudContext).getData should
       be (toUri("foo", entityName, "34"))
-    getDisplayIntent(MyCrudEntityTypeRef, 34, toUri(), crudContext).getData should
+    getDisplayIntent(MyCrudTypeRef, 34, toUri(), crudContext).getData should
       be (toUri(entityName, "34"))
   }
 
   @Test
   def getUpdateIntentShouldGetTheRightUri {
-    getUpdateIntent(MyCrudEntityTypeRef, 35, toUri("foo"), crudContext).getData should
+    getUpdateIntent(MyCrudTypeRef, 35, toUri("foo"), crudContext).getData should
       be (toUri("foo", entityName, "35"))
-    getUpdateIntent(MyCrudEntityTypeRef, 34, toUri("foo", entityName), crudContext).getData should
+    getUpdateIntent(MyCrudTypeRef, 34, toUri("foo", entityName), crudContext).getData should
       be (toUri("foo", entityName, "34"))
-    getUpdateIntent(MyCrudEntityTypeRef, 34, toUri("foo", entityName, "123"), crudContext).getData should
+    getUpdateIntent(MyCrudTypeRef, 34, toUri("foo", entityName, "123"), crudContext).getData should
       be (toUri("foo", entityName, "34"))
-    getUpdateIntent(MyCrudEntityTypeRef, 34, toUri("foo", entityName, "123", "bar"), crudContext).getData should
+    getUpdateIntent(MyCrudTypeRef, 34, toUri("foo", entityName, "123", "bar"), crudContext).getData should
       be (toUri("foo", entityName, "34"))
-    getUpdateIntent(MyCrudEntityTypeRef, 34, toUri(), crudContext).getData should
+    getUpdateIntent(MyCrudTypeRef, 34, toUri(), crudContext).getData should
       be (toUri(entityName, "34"))
   }
 
@@ -94,7 +94,7 @@ class ActivityUIActionFactorySpec extends MyEntityTesting with ShouldMatchers {
   def deleteActionShouldBeUndoable {
     val currentActivity = mock[CrudActivity]
     val application = mock[CrudApplication]
-    val entityType = mock[CrudEntityType]
+    val entityType = mock[CrudType]
     val id = 345L
     val uiFactory = new ActivityUIActionFactory(currentActivity, application)
     expecting {
@@ -109,10 +109,10 @@ class ActivityUIActionFactorySpec extends MyEntityTesting with ShouldMatchers {
   @Test
   def shouldGetTheRightAction {
     if (!isShadowing) {
-      getCreateIntent(MyCrudEntityTypeRef, toUri("foo"), crudContext).getAction should be (Intent.ACTION_INSERT)
-      getDisplayListIntent(MyCrudEntityTypeRef, toUri("foo"), crudContext).getAction should be (Intent.ACTION_PICK)
-      getDisplayIntent(MyCrudEntityTypeRef, 45, toUri("foo", entityName), crudContext).getAction should be (Intent.ACTION_VIEW)
-      getUpdateIntent(MyCrudEntityTypeRef, 45, toUri("foo", entityName), crudContext).getAction should be (Intent.ACTION_EDIT)
+      getCreateIntent(MyCrudTypeRef, toUri("foo"), crudContext).getAction should be (Intent.ACTION_INSERT)
+      getDisplayListIntent(MyCrudTypeRef, toUri("foo"), crudContext).getAction should be (Intent.ACTION_PICK)
+      getDisplayIntent(MyCrudTypeRef, 45, toUri("foo", entityName), crudContext).getAction should be (Intent.ACTION_VIEW)
+      getUpdateIntent(MyCrudTypeRef, 45, toUri("foo", entityName), crudContext).getAction should be (Intent.ACTION_EDIT)
     }
   }
 
