@@ -16,7 +16,7 @@ import android.provider.BaseColumns
  * Time: 11:22 PM
  */
 
-trait SQLiteCrudEntityType extends CrudEntityType[SQLiteCriteria,Cursor,Cursor,ContentValues] {
+trait SQLiteCrudEntityType extends CrudEntityType {
   def newWritable = new ContentValues
 
   def openEntityPersistence(crudContext: CrudContext) = new SQLiteEntityPersistence(this, crudContext) {
@@ -36,7 +36,10 @@ trait SQLiteCrudEntityType extends CrudEntityType[SQLiteCriteria,Cursor,Cursor,C
 
   val cursorVarForListAdapter = new ContextVar[Cursor]
 
-  def createListAdapter(persistence: CrudEntityPersistence[SQLiteCriteria,Cursor,Cursor,ContentValues], crudContext: CrudContext, activity: Activity): ResourceCursorAdapter = {
+  def createListAdapter(persistence: CrudEntityPersistence, crudContext: CrudContext, activity: Activity): ResourceCursorAdapter =
+    createListAdapter(persistence.asInstanceOf[SQLiteEntityPersistence], crudContext, activity)
+
+  def createListAdapter(persistence: SQLiteEntityPersistence, crudContext: CrudContext, activity: Activity): ResourceCursorAdapter = {
     val contextItems = List(activity.getIntent, crudContext, Unit)
     val criteria = persistence.newCriteria
     copyFields(activity.getIntent, criteria)

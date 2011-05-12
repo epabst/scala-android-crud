@@ -10,36 +10,40 @@ import CursorField._
  * Time: 5:05 PM
  */
 
-abstract class ListEntityPersistence[T <: AnyRef,Q <: AnyRef] extends CrudEntityPersistence[Q,List[T],T,T] {
+abstract class ListEntityPersistence[T <: AnyRef] extends CrudEntityPersistence {
   def getId(entity: T): ID = persistedId(entity)
 
   def find(id: ID): Option[T] = {
     findAll(newCriteria).find(entity => id == getId(entity))
   }
 
+  def findAll(criteria: AnyRef): List[T]
+
+  def toIterator(list: AnyRef) = toIterator(list.asInstanceOf[List[T]])
+
   def toIterator(list: List[T]) = list.toIterator
 
-  def save(id: Option[ID], data: T): ID = throw new UnsupportedOperationException("write not supported")
+  def save(id: Option[ID], data: AnyRef): ID = throw new UnsupportedOperationException("write not supported")
 
   def delete(ids: List[ID]) { throw new UnsupportedOperationException("delete not supported") }
 
   def close() {}
 }
 
-abstract class ListBufferEntityPersistence[T <: AnyRef,Q <: AnyRef] extends ListEntityPersistence[T,Q] {
+abstract class ListBufferEntityPersistence[T <: AnyRef] extends ListEntityPersistence[T] {
   val buffer = mutable.ListBuffer[T]()
 
   var nextId = 10000L
 
-  def findAll(criteria: Q) = buffer.toList
+  def findAll(criteria: AnyRef) = buffer.toList
 
-  override def save(id: Option[ID], item: T) = {
+  override def save(id: Option[ID], item: AnyRef) = {
     val newId = id.getOrElse {
       nextId += 1
       nextId
     }
     persistedId.setter(item)(Some(newId));
-    buffer += item
+    buffer += item.asInstanceOf[T]
     newId
   }
 

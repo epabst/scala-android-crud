@@ -20,9 +20,9 @@ object MyCrudEntityTypeRef extends CrudEntityTypeRef {
 
   def cancelItemString = R.string.cancel_item
 
-  def activityClass = classOf[CrudActivity[_,_,_,_]]
+  def activityClass = classOf[CrudActivity]
 
-  def listActivityClass = classOf[CrudListActivity[_,_,_,_]]
+  def listActivityClass = classOf[CrudListActivity]
 
   def hasDisplayPage = false
 }

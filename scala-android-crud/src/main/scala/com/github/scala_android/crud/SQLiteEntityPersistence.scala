@@ -17,7 +17,7 @@ import collection.mutable
  * Time: 6:17 PM
  */
 class SQLiteEntityPersistence(val entityType: SQLiteCrudEntityType, crudContext: CrudContext)
-  extends CrudEntityPersistence[SQLiteCriteria,Cursor,Cursor,ContentValues] with Logging {
+  extends CrudEntityPersistence with Logging {
 
   lazy val databaseSetup = entityType.getDatabaseSetup(crudContext)
   lazy val database: SQLiteDatabase = databaseSetup.getWritableDatabase
@@ -26,10 +26,12 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudEntityType, crudContext:
 
   lazy val queryFieldNames: List[String] = CursorField.queryFieldNames(entityType)
 
-  override lazy val logTag = classOf[CrudEntityPersistence[SQLiteCriteria,Cursor,Cursor,ContentValues]].getName +
+  override lazy val logTag = classOf[CrudEntityPersistence].getName +
           "(" + entityType.entityName + ")"
 
-  def newCriteria = new SQLiteCriteria
+  def newCriteria: SQLiteCriteria = new SQLiteCriteria
+
+  def findAll(criteria: AnyRef): Cursor = findAll(criteria.asInstanceOf[SQLiteCriteria])
 
   def findAll(criteria: SQLiteCriteria): Cursor = {
     debug("Finding each " + entityType.entityName + " for " + queryFieldNames.mkString(",") + " where " + criteria.selection)
@@ -38,6 +40,8 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudEntityType, crudContext:
     cursors += cursor
     cursor
   }
+
+  def toIterator(list: AnyRef): Iterator[Cursor] = toIterator(list.asInstanceOf[Cursor])
 
   def toIterator(list: Cursor) = new CalculatedIterator[Cursor] {
     def calculateNextValue() = if (list.moveToNext) Some(list) else {
@@ -63,6 +67,8 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudEntityType, crudContext:
     backupManager.dataChanged()
     debug("Notified BackupManager that data changed.")
   }
+
+  def save(idOption: Option[ID], contentValues: AnyRef): ID = save(idOption, contentValues.asInstanceOf[ContentValues])
 
   def save(idOption: Option[ID], contentValues: ContentValues): ID = {
     val id = idOption match {

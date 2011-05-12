@@ -12,7 +12,7 @@ import com.github.triangle.{FieldList, BaseField}
  * Date: 2/23/11
  * Time: 3:24 PM
  */
-trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends CrudEntityTypeRef {
+trait CrudEntityType extends CrudEntityTypeRef {
   def headerLayout: LayoutKey
   def listLayout: LayoutKey
   def rowLayout: LayoutKey
@@ -21,7 +21,7 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
 
   final def hasDisplayPage = displayLayout.isDefined
 
-  private val persistenceVarForListAdapter = new ContextVar[CrudEntityPersistence[Q,L,R,W]]
+  private val persistenceVarForListAdapter = new ContextVar[CrudEntityPersistence]
 
   /**
    * Gets the actions that a user can perform from a list of the entities.
@@ -56,11 +56,11 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
    * Instantiates a data buffer which can be saved by EntityPersistence.
    * The fields must support copying into this object.
    */
-  def newWritable: W
+  def newWritable: AnyRef
 
-  def openEntityPersistence(crudContext: CrudContext): CrudEntityPersistence[Q,L,R,W]
+  def openEntityPersistence(crudContext: CrudContext): CrudEntityPersistence
 
-  final def withEntityPersistence[T](crudContext: CrudContext, f: CrudEntityPersistence[Q,L,R,W] => T): T = {
+  final def withEntityPersistence[T](crudContext: CrudContext, f: CrudEntityPersistence => T): T = {
     val persistence = openEntityPersistence(crudContext)
     try f(persistence)
     finally persistence.close()
@@ -72,7 +72,7 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
     createListAdapter(persistence, crudContext, activity)
   }
 
-  def createListAdapter(persistence: CrudEntityPersistence[Q,L,R,W], crudContext: CrudContext, activity: Activity): ListAdapter
+  def createListAdapter(persistence: CrudEntityPersistence, crudContext: CrudContext, activity: Activity): ListAdapter
 
   def refreshAfterSave(crudContext: CrudContext)
 
@@ -80,7 +80,7 @@ trait CrudEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends Cr
     persistenceVarForListAdapter.clear(crudContext).map(_.close())
   }
 
-  private[crud] def undoableDelete(id: ID, uiActionFactory: UIActionFactory)(persistence: EntityPersistence[Q,L,R,W]) {
+  private[crud] def undoableDelete(id: ID, uiActionFactory: UIActionFactory)(persistence: EntityPersistence) {
     persistence.find(id).map { readable =>
       val writable = newWritable
       copyFields(readable, writable)
@@ -137,8 +137,8 @@ trait CrudEntityTypeRef extends FieldList with PlatformTypes {
     childEntities.map(entity => actionFactory.adapt(actionFactory.displayList(entity), (value: T) =>
       Some(EntityUriSegment(entityName, idGetter(value).toString))))
 
-  def listActivityClass: Class[_ <: CrudListActivity[_,_,_,_]]
-  def activityClass: Class[_ <: CrudActivity[_,_,_,_]]
+  def listActivityClass: Class[_ <: CrudListActivity]
+  def activityClass: Class[_ <: CrudActivity]
 
   def findId(uri: Uri): Option[ID] = new EntityUriSegment(entityName).findId(uri)
 
@@ -149,7 +149,7 @@ trait CrudEntityTypeRef extends FieldList with PlatformTypes {
  * A trait for stubbing out the UI methods of CrudEntityType for use when the entity will
  * never be used with the UI.
  */
-trait HiddenEntityType[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef] extends CrudEntityType[Q,L,R,W] {
+trait HiddenEntityType extends CrudEntityType {
   def headerLayout: LayoutKey = throw new UnsupportedOperationException
   def listLayout: LayoutKey = throw new UnsupportedOperationException
   def rowLayout: LayoutKey = throw new UnsupportedOperationException

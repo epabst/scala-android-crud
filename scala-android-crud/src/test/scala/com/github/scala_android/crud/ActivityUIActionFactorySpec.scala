@@ -92,9 +92,9 @@ class ActivityUIActionFactorySpec extends MyEntityTesting with ShouldMatchers {
 
   @Test
   def deleteActionShouldBeUndoable {
-    val currentActivity = mock[CrudActivity[_,_,_,_]]
+    val currentActivity = mock[CrudActivity]
     val application = mock[CrudApplication]
-    val entityType = mock[CrudEntityType[_,_,_,_]]
+    val entityType = mock[CrudEntityType]
     val id = 345L
     val uiFactory = new ActivityUIActionFactory(currentActivity, application)
     expecting {

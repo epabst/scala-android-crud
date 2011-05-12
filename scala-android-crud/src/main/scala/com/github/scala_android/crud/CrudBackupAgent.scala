@@ -69,12 +69,12 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Log
     DeletedEntityIdCrudType.writeEntityRemovals(data, this)
     val crudContext = new CrudContext(this, application)
     application.allEntities.map(_ match {
-      case generated: GeneratedCrudType[_,_] => //skip
-      case entityType: CrudEntityType[_,_,_,_] => onBackup(entityType, data, crudContext)
+      case generated: GeneratedCrudType[_] => //skip
+      case entityType: CrudEntityType => onBackup(entityType, data, crudContext)
     })
   }
 
-  def onBackup[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](entityType: CrudEntityType[Q,L,R,W], data: BackupTarget, crudContext: CrudContext) {
+  def onBackup(entityType: CrudEntityType, data: BackupTarget, crudContext: CrudContext) {
     entityType.withEntityPersistence[Unit](crudContext, persistence => {
       val all = persistence.findAll(persistence.newCriteria)
       persistence.toIterator(all).foreach(entity => {
@@ -120,12 +120,12 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Log
     data.foreach(restoreItem => {
       val entityName = restoreItem.key.substring(0, restoreItem.key.lastIndexOf("#"))
       entities.find(_.entityName == entityName).map(_ match {
-        case entityType: CrudEntityType[_,_,_,_] => onRestore(entityType, restoreItem, crudContext)
+        case entityType: CrudEntityType => onRestore(entityType, restoreItem, crudContext)
       })
     })
   }
 
-  def onRestore[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](entityType: CrudEntityType[Q,L,R,W], restoreItem: RestoreItem, crudContext: CrudContext) {
+  def onRestore(entityType: CrudEntityType, restoreItem: RestoreItem, crudContext: CrudContext) {
     debug("Restoring " + restoreItem.key + " <- " + restoreItem.map)
     val id = restoreItem.key.substring(restoreItem.key.lastIndexOf("#") + 1).toLong
     val writable = entityType.newWritable
@@ -169,7 +169,7 @@ case class RestoreItem(key: String, map: mutable.Map[String,Any])
  * This entity is in its own CrudApplication by itself, separate from any other CrudApplication.
  * It is intended to be in a separate database owned by the scala-android-crud framework.
  */
-object DeletedEntityIdCrudType extends SQLiteCrudEntityType with HiddenEntityType[SQLiteCriteria,Cursor,Cursor,ContentValues] {
+object DeletedEntityIdCrudType extends SQLiteCrudEntityType with HiddenEntityType {
 
   def entityName = "DeletedEntityId"
 

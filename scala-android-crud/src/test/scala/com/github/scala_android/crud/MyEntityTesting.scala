@@ -22,15 +22,13 @@ import android.app.Activity
  */
 
 trait MyEntityTesting extends EasyMockSugar {
-  type MyEntityPersistenceType = CrudEntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]
-
-  class MyEntityPersistence extends ListBufferEntityPersistence[Map[String,Any],AnyRef] {
+  class MyEntityPersistence extends ListBufferEntityPersistence[Map[String,Any]] {
     def entityType = throw new UnsupportedOperationException
 
     def newCriteria = "TheCriteria"
   }
 
-  class MyEntityType(persistence: MyEntityPersistenceType, listAdapter: ListAdapter, val entityName: String = "MyMap")
+  class MyEntityType(persistence: CrudEntityPersistence, listAdapter: ListAdapter, val entityName: String = "MyMap")
           extends StubEntityType {
     var refreshCount = 0
 
@@ -44,7 +42,7 @@ trait MyEntityTesting extends EasyMockSugar {
 
     def openEntityPersistence(crudContext: CrudContext) = persistence
 
-    def createListAdapter(persistence: MyEntityPersistenceType, crudContext: CrudContext, activity: Activity) = listAdapter
+    def createListAdapter(persistence: CrudEntityPersistence, crudContext: CrudContext, activity: Activity) = listAdapter
 
     def refreshAfterSave(crudContext: CrudContext) {
       refreshCount += 1
@@ -53,7 +51,7 @@ trait MyEntityTesting extends EasyMockSugar {
     val cancelItemString = R.string.cancel_item
   }
 
-  trait StubEntityType extends CrudEntityType[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]] {
+  trait StubEntityType extends CrudEntityType {
     val listLayout = R.layout.entity_list
     val headerLayout = R.layout.test_row
     val rowLayout = R.layout.test_row
@@ -62,8 +60,8 @@ trait MyEntityTesting extends EasyMockSugar {
     val addItemString = R.string.add_item
     val editItemString = R.string.edit_item
 
-    def listActivityClass = classOf[CrudListActivity[_,_,_,_]]
-    def activityClass = classOf[CrudActivity[_,_,_,_]]
+    def listActivityClass = classOf[CrudListActivity]
+    def activityClass = classOf[CrudActivity]
   }
 
   def namedMock[T <: AnyRef](name: String)(implicit manifest: Manifest[T]): T = {

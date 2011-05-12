@@ -6,13 +6,13 @@ import android.view.{ViewGroup, View}
 import android.app.Activity
 import com.github.triangle.PortableField.identityField
 
-trait GeneratedCrudType[T <: AnyRef,Q <: AnyRef] extends CrudEntityType[Q,List[T],T,T] {
-  def newWritable: T = throw new UnsupportedOperationException("not supported")
+trait GeneratedCrudType[T <: AnyRef] extends CrudEntityType {
+  def newWritable = throw new UnsupportedOperationException("not supported")
 
-  def openEntityPersistence(crudContext: CrudContext): ListEntityPersistence[T,Q]
+  def openEntityPersistence(crudContext: CrudContext): ListEntityPersistence[T]
 
-  def createListAdapter(persistence: CrudEntityPersistence[Q,List[T],T,T], crudContext: CrudContext, activity: Activity) = new BaseAdapter() {
-    val listPersistence = persistence.asInstanceOf[ListEntityPersistence[T, Q]]
+  def createListAdapter(persistence: CrudEntityPersistence, crudContext: CrudContext, activity: Activity) = new BaseAdapter() {
+    val listPersistence = persistence.asInstanceOf[ListEntityPersistence[T]]
     val list: List[T] = {
       val criteria = listPersistence.newCriteria
       copyFields(activity.getIntent, criteria)

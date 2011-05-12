@@ -18,8 +18,8 @@ import android.widget.AdapterView.AdapterContextMenuInfo
  * @param R the type to read from (e.g. Cursor)
  * @param W the type to write to (e.g. ContentValues)
  */
-class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val entityType: CrudEntityType[Q,L,R,W], val application: CrudApplication)
-  extends ListActivity with BaseCrudActivity[Q,L,R,W] {
+class CrudListActivity(val entityType: CrudEntityType, val application: CrudApplication)
+  extends ListActivity with BaseCrudActivity {
 
   val ADD_DIALOG_ID = 100
   val EDIT_DIALOG_ID = 101
@@ -38,7 +38,7 @@ class CrudListActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val enti
     val contextItems = List(getIntent, crudContext, Unit)
     //copy each parent Entity's data to the Activity if identified in the Intent's URI
     entityType.parentEntities.foreach(_ match {
-      case parentType: CrudEntityType[_,_,_,_] =>
+      case parentType: CrudEntityType =>
         parentType.findId(getIntent.getData).map { id =>
           parentType.withEntityPersistence(crudContext, { persistence =>
             persistence.find(id).map { readable =>

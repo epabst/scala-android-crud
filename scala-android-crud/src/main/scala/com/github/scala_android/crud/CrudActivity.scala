@@ -15,8 +15,8 @@ import com.github.triangle.BasicValueFormat
  * @param R the type to read from (e.g. Cursor)
  * @param W the type to write to (e.g. ContentValues)
  */
-class CrudActivity[Q <: AnyRef,L <: AnyRef,R <: AnyRef,W <: AnyRef](val entityType: CrudEntityType[Q,L,R,W], val application: CrudApplication)
-  extends Activity with BaseCrudActivity[Q,L,R,W] {
+class CrudActivity(val entityType: CrudEntityType, val application: CrudApplication)
+  extends Activity with BaseCrudActivity {
 
   private val idFormat = new BasicValueFormat[ID]()
   def id: Option[ID] = idFormat.toValue(getIntent.getData.getLastPathSegment)

@@ -21,13 +21,13 @@ import android.view.{MenuItem, View, ContextMenu}
 class CrudListActivitySpec extends EasyMockSugar with ShouldMatchers with MyEntityTesting {
   @Test
   def shouldAllowAdding {
-    val persistence = mock[CrudEntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
+    val persistence = mock[CrudEntityPersistence]
     val application = mock[CrudApplication]
     val entity = Map[String,Any]("age" -> 25)
     val listAdapter = mock[ListAdapter]
     whenExecuting(persistence, listAdapter, application) {
       val entityType = new MyEntityType(persistence, listAdapter)
-      val activity = new CrudListActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityType, application)
+      val activity = new CrudListActivity(entityType, application)
       activity.setIntent(new Intent(Intent.ACTION_MAIN))
       activity.onCreate(null)
       val menu = new TestMenu(activity)
@@ -43,7 +43,7 @@ class CrudListActivitySpec extends EasyMockSugar with ShouldMatchers with MyEnti
 
   @Test
   def shouldHaveCorrectContextMenu {
-    val persistence = mock[CrudEntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
+    val persistence = mock[CrudEntityPersistence]
     val application = mock[CrudApplication]
     val contextMenu = mock[ContextMenu]
     val listAdapter = mock[ListAdapter]
@@ -56,14 +56,14 @@ class CrudListActivitySpec extends EasyMockSugar with ShouldMatchers with MyEnti
     }
     whenExecuting(contextMenu, menuItem, application, persistence, listAdapter) {
       val entityType = new MyEntityType(persistence, listAdapter)
-      val activity = new CrudListActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityType, application)
+      val activity = new CrudListActivity(entityType, application)
       activity.onCreateContextMenu(contextMenu, ignoredView, ignoredMenuInfo)
     }
   }
 
   @Test
   def shouldHandleNoEntityOptions {
-    val persistence = mock[CrudEntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
+    val persistence = mock[CrudEntityPersistence]
     val application = mock[CrudApplication]
     val contextMenu = mock[ContextMenu]
     val listAdapter = mock[ListAdapter]
@@ -73,7 +73,7 @@ class CrudListActivitySpec extends EasyMockSugar with ShouldMatchers with MyEnti
       val entityType = new MyEntityType(persistence, listAdapter) {
         override def getEntityActions(actionFactory: UIActionFactory) = Nil
       }
-      val activity = new CrudListActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityType, application)
+      val activity = new CrudListActivity(entityType, application)
       //shouldn't do anything
       activity.onCreateContextMenu(contextMenu, ignoredView, ignoredMenuInfo)
     }
@@ -81,14 +81,14 @@ class CrudListActivitySpec extends EasyMockSugar with ShouldMatchers with MyEnti
 
   @Test
   def shouldRefreshOnResume {
-    val persistence = mock[CrudEntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
+    val persistence = mock[CrudEntityPersistence]
     var refreshCount = 0
     val application = mock[CrudApplication]
     val entity = Map[String,Any]("age" -> 25)
     val listAdapter = mock[ListAdapter]
     whenExecuting(persistence, listAdapter, application) {
       val entityType = new MyEntityType(persistence, listAdapter)
-      class MyCrudListActivity extends CrudListActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityType, application) {
+      class MyCrudListActivity extends CrudListActivity(entityType, application) {
         //make it public for testing
         override def onPause() {
           super.onPause
@@ -112,12 +112,12 @@ class CrudListActivitySpec extends EasyMockSugar with ShouldMatchers with MyEnti
 
   @Test
   def shouldIgnoreClicksOnHeader {
-    val persistence = mock[CrudEntityPersistence[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]]]
+    val persistence = mock[CrudEntityPersistence]
     val application = mock[CrudApplication]
     val listAdapter = mock[ListAdapter]
     whenExecuting(persistence, application) {
       val entityType = new MyEntityType(persistence, listAdapter)
-      val activity = new CrudListActivity[AnyRef,List[Map[String,Any]],Map[String,Any],Map[String,Any]](entityType, application)
+      val activity = new CrudListActivity(entityType, application)
       activity.onListItemClick(null, null, -1, -1)
     }
   }
