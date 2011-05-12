@@ -49,7 +49,7 @@ trait GeneratedCrudType[T <: AnyRef] extends CrudEntityType {
   override def getEntityActions(actionFactory: UIActionFactory): List[UIAction[ID]] =
     displayLayout.map(_ => actionFactory.display(this)).toList
 
-  val cancelItemString = R.string.cancel_item
+  override val cancelItemString = R.string.cancel_item
 }
 
 object GeneratedCrudType {
