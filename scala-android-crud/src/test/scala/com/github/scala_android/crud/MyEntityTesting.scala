@@ -51,19 +51,6 @@ trait MyEntityTesting extends EasyMockSugar {
     val cancelItemString = R.string.cancel_item
   }
 
-  trait StubEntityType extends CrudType {
-    val listLayout = R.layout.entity_list
-    val headerLayout = R.layout.test_row
-    val rowLayout = R.layout.test_row
-    val displayLayout: Option[LayoutKey] = None
-    val entryLayout = R.layout.test_entry
-    val addItemString = R.string.add_item
-    val editItemString = R.string.edit_item
-
-    def listActivityClass = classOf[CrudListActivity]
-    def activityClass = classOf[CrudActivity]
-  }
-
   def namedMock[T <: AnyRef](name: String)(implicit manifest: Manifest[T]): T = {
     EasyMock.createMock(name, manifest.erasure.asInstanceOf[Class[T]])
   }

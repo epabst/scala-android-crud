@@ -31,7 +31,7 @@ trait BaseCrudActivity extends Activity with PlatformTypes with Logging {
     }
   }
 
-  def addUndoableDelete(entityType: CrudTypeRef, undoable: Undoable[ID]) {
+  def addUndoableDelete(entityType: CrudType, undoable: Undoable[ID]) {
     //todo implement
   }
 

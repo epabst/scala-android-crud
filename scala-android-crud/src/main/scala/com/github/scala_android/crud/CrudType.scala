@@ -12,7 +12,12 @@ import com.github.triangle.{FieldList, BaseField}
  * Date: 2/23/11
  * Time: 3:24 PM
  */
-trait CrudType extends CrudTypeRef {
+trait CrudType extends FieldList with PlatformTypes {
+  //this is the type used for internationalized strings
+  def entityName: String
+
+  def fields: List[BaseField]
+
   def headerLayout: LayoutKey
   def listLayout: LayoutKey
   def rowLayout: LayoutKey
@@ -22,6 +27,37 @@ trait CrudType extends CrudTypeRef {
   final def hasDisplayPage = displayLayout.isDefined
 
   private val persistenceVarForListAdapter = new ContextVar[CrudPersistence]
+
+  def listItemsString: Option[SKey] = None
+  def addItemString: SKey
+  def editItemString: SKey
+  def deleteItemString: SKey = res.R.string.delete_item
+  def cancelItemString: SKey
+
+  lazy val foreignKeys: List[ForeignKey] = fieldFlatMap {
+    case foreignKey: ForeignKey => Some(foreignKey)
+  }
+
+  lazy val parentEntities: List[CrudType] = foreignKeys.map(_.entityType)
+
+  /**
+   * The list of entities that refer to this one.
+   * Those entities should have a foreignKey in their fields list, if persisted.
+   */
+  def childEntities(application: CrudApplication): List[CrudType] =
+    application.allEntities.filter(_.parentEntities.contains(this))
+
+  def displayChildEntityLists[T](actionFactory: UIActionFactory, idGetter: T => ID,
+                                 childEntities: List[CrudType]): List[UIAction[T]] =
+    childEntities.map(entity => actionFactory.adapt(actionFactory.displayList(entity), (value: T) =>
+      Some(EntityUriSegment(entityName, idGetter(value).toString))))
+
+  def listActivityClass: Class[_ <: CrudListActivity]
+  def activityClass: Class[_ <: CrudActivity]
+
+  def findId(uri: Uri): Option[ID] = new EntityUriSegment(entityName).findId(uri)
+
+  override def toString = entityName
 
   /**
    * Gets the actions that a user can perform from a list of the entities.
@@ -103,46 +139,6 @@ trait CrudType extends CrudTypeRef {
   def startDelete(id: ID, uiActionFactory: UIActionFactory) {
     uiActionFactory.withEntityPersistence(this, undoableDelete(id, uiActionFactory))
   }
-}
-
-trait CrudTypeRef extends FieldList with PlatformTypes {
-  //this is the type used for internationalized strings
-  def entityName: String
-
-  def fields: List[BaseField]
-
-  def hasDisplayPage: Boolean
-
-  def listItemsString: Option[SKey] = None
-  def addItemString: SKey
-  def editItemString: SKey
-  def deleteItemString: SKey = res.R.string.delete_item
-  def cancelItemString: SKey
-
-  lazy val foreignKeys: List[ForeignKey] = fieldFlatMap {
-    case foreignKey: ForeignKey => Some(foreignKey)
-  }
-
-  lazy val parentEntities: List[CrudTypeRef] = foreignKeys.map(_.entityType)
-
-  /**
-   * The list of entities that refer to this one.
-   * Those entities should have a foreignKey in their fields list, if persisted.
-   */
-  def childEntities(application: CrudApplication): List[CrudTypeRef] =
-    application.allEntities.filter(_.parentEntities.contains(this))
-
-  def displayChildEntityLists[T](actionFactory: UIActionFactory, idGetter: T => ID,
-                                 childEntities: List[CrudTypeRef]): List[UIAction[T]] =
-    childEntities.map(entity => actionFactory.adapt(actionFactory.displayList(entity), (value: T) =>
-      Some(EntityUriSegment(entityName, idGetter(value).toString))))
-
-  def listActivityClass: Class[_ <: CrudListActivity]
-  def activityClass: Class[_ <: CrudActivity]
-
-  def findId(uri: Uri): Option[ID] = new EntityUriSegment(entityName).findId(uri)
-
-  override def toString = entityName
 }
 
 /**

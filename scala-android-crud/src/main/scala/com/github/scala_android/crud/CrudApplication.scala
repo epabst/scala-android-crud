@@ -16,5 +16,5 @@ trait CrudApplication {
   /**
    * All entities in the application, in priority order of most interesting first.
    */
-  def allEntities: List[CrudTypeRef]
+  def allEntities: List[CrudType]
 }

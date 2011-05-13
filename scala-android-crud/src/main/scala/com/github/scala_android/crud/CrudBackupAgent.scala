@@ -189,7 +189,7 @@ object DeletedEntityIdCrudType extends SQLiteCrudType with HiddenEntityType {
    * it will be restored independent of this support, and it will then be re-added to the Backup Service later
    * just like any new entity being added.
    */
-  def recordDeletion(entityType: CrudTypeRef, id: ID, context: Context) {
+  def recordDeletion(entityType: CrudType, id: ID, context: Context) {
     val crudContext = new CrudContext(context, application)
     val writable = newWritable
     copyFields(Map(entityNameField.name -> entityType.entityName, entityIdField.name -> id), writable)
