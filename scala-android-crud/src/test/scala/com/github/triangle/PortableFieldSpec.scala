@@ -5,7 +5,7 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.Spec
 import com.github.triangle.PortableField._
-import scala.collection.mutable
+import scala.collection.{immutable,mutable}
 import mutable.Buffer
 
 
@@ -134,6 +134,41 @@ class PortableFieldSpec extends Spec with ShouldMatchers {
       val map = mutable.Map[String,Any]()
       field.setValue(map, Some(16))
       map("amountString") should be ("16.00")
+    }
+
+    it("transformer should delegate to setter for mutable objects") {
+      val stringField = mapField[String]("greeting")
+      val map = mutable.Map[String,Any]()
+      val result = stringField.transformer(map)(Some("hello"))
+      result.get("greeting") should be (Some("hello"))
+      result should be (map)
+    }
+
+    it("should support transforming immutable objects") {
+      val stringField = mapField[String]("greeting")
+      val intField = mapField[Int]("count")
+      //qualified to point out that it's immutable
+      val result = stringField.transformer(immutable.Map.empty[String,Any])(Some("hello"))
+      result.get("greeting") should be (Some("hello"))
+
+      val result2 = intField.transformer(result)(Some(10))
+      result2.get("greeting") should be (Some("hello"))
+      result2.get("count") should be (Some(10))
+    }
+
+    it("all transformers of a field should be used") {
+      val stringField = mapField[String]("greeting") +
+              transformOnly[immutable.Map[String,String],String](map => ignored => map + ("greeting" -> map("greeting").toUpperCase), map => map)
+      //qualified to point out that it's immutable
+      val result = stringField.transformer(immutable.Map.empty[String,String])(Some("hello"))
+      result.get("greeting") should be (Some("HELLO"))
+    }
+
+    it("formatted transformer should work") {
+      val formattedField = formatted[Int](mapField[String]("countString"))
+      //qualified to point out that it's immutable
+      val result = formattedField.transformer(immutable.Map.empty[String,Int])(4)
+      result.get("countString") should be (Some("4"))
     }
   }
 }

@@ -1,7 +1,7 @@
 package com.github.triangle
 
 import com.github.scala_android.crud.monitor.Logging
-import collection.Map
+import collection._
 
 /** A trait for {@link PortableField} for convenience such as when defining a List of heterogeneous Fields. */
 trait BaseField {
@@ -120,6 +120,14 @@ trait PortableField[T] extends BaseField with Logging {
     defined
   }
 
+  /**
+   * PartialFunction for transforming an AnyRef using an optional value.
+   * This delegates to <code>setter</code> for mutable objects.
+   * <code>transformer(foo)(value)<code> should return a transformed version of foo (which could be the same instance if mutable).
+   * @param a subject to be transformed, whether immutable or mutable
+   */
+  def transformer[S <: AnyRef]: PartialFunction[S,Option[T] => S]
+
   //inherited
   def copy(from: AnyRef, to: AnyRef): Boolean = {
     copyUsingGetFunction(getter, from, to)
@@ -168,6 +176,13 @@ trait PortableField[T] extends BaseField with Logging {
         }
       }
 
+      def transformer[S <: AnyRef] = {
+        case subject if self.transformer.isDefinedAt(subject) || other.transformer.isDefinedAt(subject) => { value =>
+          val definedFields = List(self, other).filter(_.transformer.isDefinedAt(subject))
+          definedFields.foldLeft(subject)((subject, field) => field.transformer(subject)(value))
+        }
+      }
+
       override def flatMap[B](f: PartialFunction[BaseField, Traversable[B]]) = {
         val lifted = f.lift
         List(self, other).flatMap(field => lifted(field) match {
@@ -186,6 +201,8 @@ trait DelegatingPortableField[T] extends PortableField[T] {
 
   def setter = delegate.setter
 
+  def transformer[S <: AnyRef] = delegate.transformer
+
   override def flatMap[B](f: PartialFunction[BaseField, Traversable[B]]) = {
     f.lift(this).getOrElse(delegate.flatMap(f))
   }
@@ -203,8 +220,18 @@ abstract class FieldGetter[R,T](implicit readableManifest: ClassManifest[R]) ext
   def getter = { case readable: R if readableManifest.erasure.isInstance(readable) => get(readable) }
 }
 
+trait NoGetter[T] extends PortableField[T] {
+  def getter = PortableField.emptyPartialFunction
+}
+
 trait NoSetter[T] extends PortableField[T] {
   def setter = PortableField.emptyPartialFunction
+}
+
+trait TransformerUsingSetter[T] extends PortableField[T] {
+  def transformer[S <: AnyRef]: PartialFunction[S,Option[T] => S] = {
+    case subject if setter.isDefinedAt(subject) => { value => setter(subject).apply(value); subject }
+  }
 }
 
 /**
@@ -212,7 +239,7 @@ trait NoSetter[T] extends PortableField[T] {
  * This is a trait so that it can be mixed with FieldGetter.
  * @param W the Writable type to put the value into
  */
-trait FieldSetter[W,T] extends PortableField[T] with Logging {
+trait FieldSetter[W,T] extends PortableField[T] with TransformerUsingSetter[T] with Logging {
   protected def writableManifest: ClassManifest[W]
 
   /** An abstract method that must be implemented by subtypes. */
@@ -223,6 +250,10 @@ trait FieldSetter[W,T] extends PortableField[T] with Logging {
   }
 }
 
+trait NoTransformer[T] extends NoSetter[T] {
+  def transformer[S <: AnyRef] = PortableField.emptyPartialFunction
+}
+
 /**
  * {@PortableField} support for getting and setting a value if <code>readable</code> and <code>writable</code>
  * are of the types R and W respectively.
@@ -231,7 +262,7 @@ trait FieldSetter[W,T] extends PortableField[T] with Logging {
  * @param W the Writable type to put the value into
  */
 abstract class FlowField[R,W,T](implicit readableManifest: ClassManifest[R], _writableManifest: ClassManifest[W])
-        extends FieldGetter[R,T] with FieldSetter[W,T] {
+        extends FieldGetter[R,T] with FieldSetter[W,T] with TransformerUsingSetter[T] {
   protected def writableManifest = _writableManifest
 }
 
@@ -279,7 +310,7 @@ object PortableField {
   /** Defines read-only field for a Readable type. */
   def readOnly[R,T](getter1: R => Option[T])
                    (implicit typeManifest: ClassManifest[R]): FieldGetter[R,T] = {
-    new FieldGetter[R,T] with NoSetter[T] {
+    new FieldGetter[R,T] with NoSetter[T] with NoTransformer[T] {
       def get(readable: R) = getter1(readable)
     }
   }
@@ -304,8 +335,22 @@ object PortableField {
     }
   }
 
+  /**
+   * {@PortableField} support for transforming a subject using a value if <code>subject</code> is of type S.
+   * @param S the Subject type to transform using the value
+   */
+  def transformOnly[S <: AnyRef,T](theTransform: S => T => S, clearer: S => S)(implicit typeManifest: ClassManifest[S]): PortableField[T] =
+    new PortableField[T] with NoSetter[T] with NoGetter[T] {
+      def transformer[S1] = {
+        case subject: S if typeManifest.erasure.isInstance(subject) => _ match {
+          case Some(value) => theTransform(subject)(value).asInstanceOf[S1]
+          case None => clearer(subject).asInstanceOf[S1]
+        }
+      }
+    }
+
   /** Defines a default for a field value, used when copied from {@link Unit}. */
-  def default[T](value: => T): PortableField[T] = new PortableField[T] with NoSetter[T] {
+  def default[T](value: => T): PortableField[T] = new PortableField[T] with NoSetter[T] with NoTransformer[T] {
     def getter = { case Unit => Some(value) }
 
     override def toString = "default(" + value + ")"
@@ -349,13 +394,20 @@ object PortableField {
   def field[M,T](getter: M => Option[T], setter: M => T => Unit, clearer: M => Unit = {_: M => })
                  (implicit typeManifest: ClassManifest[M]): FlowField[M,M,T] = flow[M,M,T](getter, setter, clearer)
 
-  def mapField[T](name: String): FlowField[Map[String,_ <: T],collection.mutable.Map[String,_ >: T],T] =
-    flow(_.get(name), m => v => m.put(name, v), _.remove(name))
+  def mapField[T](name: String): PortableField[T] =
+    readOnly[Map[String,_ <: T],T](_.get(name)) + writeOnly[mutable.Map[String,_ >: T],T](m => v => m.put(name, v), _.remove(name)) +
+            transformOnly[immutable.Map[String,_ >: T],T](map => value => map + (name -> value), _ - name)
 
   def formatted[T](format: ValueFormat[T], field: PortableField[String]) = new PortableField[T] {
     def getter = field.getter.andThen(value => value.flatMap(format.toValue(_)))
 
     def setter = field.setter.andThen(setter => setter.compose(value => value.map(format.toString _)))
+
+    def transformer[S <: AnyRef] = {
+      case subject if field.transformer[S].isDefinedAt(subject) => { value =>
+        field.transformer(subject)(value.map(format.toString _))
+      }
+    }
   }
 
   /**
