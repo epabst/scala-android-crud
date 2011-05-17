@@ -24,6 +24,10 @@ trait FieldList extends Traversable[BaseField] {
     toFieldList(fields.flatMap(f => if (f.copyFromItem(fromItems, to)) None else Some(f)))
   }
 
+  def transform[S <: AnyRef](initial: S, data: AnyRef): S = {
+    fields.foldLeft(initial)((subject, field) => field.transform(subject, data))
+  }
+
   def fieldFlatMap[B](f: PartialFunction[BaseField, Traversable[B]]): List[B] =
     fields.flatMap(_.flatMap(f)).toList
 }

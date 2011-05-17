@@ -18,6 +18,12 @@ trait BaseField {
   def copyFromItem(fromItems: List[AnyRef], to: AnyRef): Boolean
 
   /**
+   * Transforms the <code>initial</code> subject using the <code>data</code> for this field..
+   * @returns the transformed subject, which could be the initial instance
+   */
+  def transform[S <: AnyRef](initial: S, data: AnyRef): S
+
+  /**
    * Traverses all of the PortableFieldes in this PortableField, returning the desired information.
    * Anything not matched will be traversed deeper, if possible, or else ignored.
    * <pre>
@@ -129,6 +135,17 @@ trait PortableField[T] extends BaseField with Logging {
   def transformer[S <: AnyRef]: PartialFunction[S,Option[T] => S]
 
   //inherited
+  def transform[S <: AnyRef](initial: S, data: AnyRef) = {
+    if (getter.isDefinedAt(data) && transformer.isDefinedAt(initial)) {
+      val value = getter(data)
+      debug("Transforming " + initial + " with value " + value + " for field " + this)
+      transformer(initial)(value)
+    } else {
+      debug("Unable to transform " + initial + " with " + data + " for field " + this + ".")
+      initial
+    }
+  }
+
   def copy(from: AnyRef, to: AnyRef): Boolean = {
     copyUsingGetFunction(getter, from, to)
   }
@@ -394,9 +411,12 @@ object PortableField {
   def field[M,T](getter: M => Option[T], setter: M => T => Unit, clearer: M => Unit = {_: M => })
                  (implicit typeManifest: ClassManifest[M]): FlowField[M,M,T] = flow[M,M,T](getter, setter, clearer)
 
-  def mapField[T](name: String): PortableField[T] =
-    readOnly[Map[String,_ <: T],T](_.get(name)) + writeOnly[mutable.Map[String,_ >: T],T](m => v => m.put(name, v), _.remove(name)) +
+  def mapField[T](name: String): PortableField[T] = new DelegatingPortableField[T] {
+    val delegate = readOnly[Map[String,_ <: T],T](_.get(name)) + writeOnly[mutable.Map[String,_ >: T],T](m => v => m.put(name, v), _.remove(name)) +
             transformOnly[immutable.Map[String,_ >: T],T](map => value => map + (name -> value), _ - name)
+
+    override def toString = "mapField(" + name + ")"
+  }
 
   def formatted[T](format: ValueFormat[T], field: PortableField[String]) = new PortableField[T] {
     def getter = field.getter.andThen(value => value.flatMap(format.toValue(_)))

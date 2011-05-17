@@ -164,6 +164,26 @@ class PortableFieldSpec extends Spec with ShouldMatchers {
       result.get("greeting") should be (Some("HELLO"))
     }
 
+    it("should transform using an initial and some data") {
+      val stringField = mapField[String]("greeting") +
+              transformOnly[immutable.Map[String,String],String](map => ignored => map + ("greeting" -> map("greeting").toUpperCase), map => map)
+      //qualified to point out that it's immutable
+      val result = stringField.transform(initial = immutable.Map.empty[String,String], data = immutable.Map("greeting" -> "hello", "ignored" -> "foo"))
+      result should be (immutable.Map[String,String]("greeting" -> "HELLO"))
+    }
+
+    it("should not transform if initial subject is not applicable") {
+      val stringField = mapField[String]("greeting")
+      val result = stringField.transform(initial = "inapplicable data", data = immutable.Map("greeting" -> "hello", "ignored" -> "foo"))
+      result should be ("inapplicable data")
+    }
+
+    it("should not transform if data is not applicable") {
+      val stringField = mapField[String]("greeting")
+      val result = stringField.transform(initial = immutable.Map.empty[String,String], data = "inapplicable data")
+      result should be (immutable.Map.empty[String,String])
+    }
+
     it("formatted transformer should work") {
       val formattedField = formatted[Int](mapField[String]("countString"))
       //qualified to point out that it's immutable

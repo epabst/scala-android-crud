@@ -5,7 +5,7 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.Spec
 import com.github.triangle.PortableField._
-import scala.collection.mutable
+import scala.collection._
 
 
 /**
@@ -68,6 +68,15 @@ class FieldListSpec extends Spec with ShouldMatchers {
       map.contains("price") should be (true)
       priceField(map) should be (300.00)
       countField(map) should be (10)
+    }
+
+    it("should transform using each Field") {
+      val countField = mapField[Int]("count")
+      val priceField = mapField[Double]("price")
+      val fields = FieldList(countField, priceField)
+      val result = fields.transform(initial = immutable.Map.empty[String,Any],
+                                    data = immutable.Map[String,Any]("ignored" -> "bar", "price" -> 100.0, "count" -> 10))
+      result should be (immutable.Map[String,Any]("count" -> 10, "price" -> 100.0))
     }
   }
 }
