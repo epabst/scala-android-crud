@@ -184,6 +184,13 @@ class PortableFieldSpec extends Spec with ShouldMatchers {
       result should be (immutable.Map.empty[String,String])
     }
 
+    it("should transform using the applicable item for each Field") {
+      val countField = default(12) + mapField[Int]("count")
+      val result = countField.transformWithItem(initial = immutable.Map.empty[String,Any],
+                                                dataItems = List(new Object, Unit))
+      result should be (immutable.Map[String,Any]("count" -> 12))
+    }
+
     it("formatted transformer should work") {
       val formattedField = formatted[Int](mapField[String]("countString"))
       //qualified to point out that it's immutable

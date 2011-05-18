@@ -24,6 +24,12 @@ trait BaseField {
   def transform[S <: AnyRef](initial: S, data: AnyRef): S
 
   /**
+   * Transforms the <code>initial</code> subject using the first applicable item in <code>dataItems</code> for this field..
+   * @returns the transformed subject, which could be the initial instance
+   */
+  def transformWithItem[S <: AnyRef](initial: S, dataItems: List[AnyRef]): S
+
+  /**
    * Traverses all of the PortableFieldes in this PortableField, returning the desired information.
    * Anything not matched will be traversed deeper, if possible, or else ignored.
    * <pre>
@@ -134,10 +140,9 @@ trait PortableField[T] extends BaseField with Logging {
    */
   def transformer[S <: AnyRef]: PartialFunction[S,Option[T] => S]
 
-  //inherited
-  def transform[S <: AnyRef](initial: S, data: AnyRef) = {
-    if (getter.isDefinedAt(data) && transformer.isDefinedAt(initial)) {
-      val value = getter(data)
+  private def transformUsingGetFunction[S <: AnyRef,F <: AnyRef](get: PartialFunction[F,Option[T]], initial: S, data: F) = {
+    if (get.isDefinedAt(data) && transformer.isDefinedAt(initial)) {
+      val value = get(data)
       debug("Transforming " + initial + " with value " + value + " for field " + this)
       transformer(initial)(value)
     } else {
@@ -145,6 +150,12 @@ trait PortableField[T] extends BaseField with Logging {
       initial
     }
   }
+
+  //inherited
+  def transform[S <: AnyRef](initial: S, data: AnyRef) = transformUsingGetFunction[S,AnyRef](getter, initial, data)
+
+  //inherited
+  def transformWithItem[S <: AnyRef](initial: S, dataItems: List[AnyRef]) = transformUsingGetFunction[S,List[AnyRef]](getterFromItem, initial, dataItems)
 
   def copy(from: AnyRef, to: AnyRef): Boolean = {
     copyUsingGetFunction(getter, from, to)

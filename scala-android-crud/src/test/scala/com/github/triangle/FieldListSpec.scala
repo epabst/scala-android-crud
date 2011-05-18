@@ -78,5 +78,14 @@ class FieldListSpec extends Spec with ShouldMatchers {
                                     data = immutable.Map[String,Any]("ignored" -> "bar", "price" -> 100.0, "count" -> 10))
       result should be (immutable.Map[String,Any]("count" -> 10, "price" -> 100.0))
     }
+
+    it("should transform using the first applicable item for each Field") {
+      val countField = default(12) + mapField[Int]("count")
+      val priceField = mapField[Double]("price")
+      val fields = FieldList(countField, priceField)
+      val result = fields.transformWithItem(initial = immutable.Map.empty[String,Any],
+                                            dataItems = List(Unit, immutable.Map[String, Any]("ignored" -> "bar", "price" -> 100.0)))
+      result should be (immutable.Map[String,Any]("count" -> 12, "price" -> 100.0))
+    }
   }
 }
