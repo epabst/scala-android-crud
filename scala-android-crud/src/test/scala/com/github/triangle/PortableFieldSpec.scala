@@ -120,6 +120,18 @@ class PortableFieldSpec extends Spec with ShouldMatchers {
       mutableMap("stringValue") should be ("my1")
     }
 
+    it("should get from the first applicable item with Some value") {
+      val fieldWithDefault = default(12) + mapField[Int]("count")
+      fieldWithDefault.getterFromItem(List(immutable.Map.empty[String,Any], Unit)) should be (Some(12))
+      fieldWithDefault.getterFromItem(List(immutable.Map.empty[String,Any])) should be (None)
+
+      val fieldWithoutDefault = mapField[Int]("count")
+      fieldWithoutDefault.getterFromItem(List(immutable.Map.empty[String,Any], Unit)) should be (None)
+
+      val fieldWithDeprecatedName = mapField[Int]("count") + mapField[Int]("size")
+      fieldWithDeprecatedName.getterFromItem(List(immutable.Map[String,Any]("size" -> 4))) should be (Some(4))
+    }
+
     it("writeOnly should call clearer if no value") {
       val stringField = writeOnly[Buffer[String],String]({ b => v => b += v; Unit }, _.clear())
       val buffer = Buffer("hello")
@@ -184,7 +196,7 @@ class PortableFieldSpec extends Spec with ShouldMatchers {
       result should be (immutable.Map.empty[String,String])
     }
 
-    it("should transform using the applicable item for each Field") {
+    it("should transform using the applicable item") {
       val countField = default(12) + mapField[Int]("count")
       val result = countField.transformWithItem(initial = immutable.Map.empty[String,Any],
                                                 dataItems = List(new Object, Unit))

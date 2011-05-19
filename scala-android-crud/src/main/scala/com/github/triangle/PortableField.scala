@@ -2,6 +2,7 @@ package com.github.triangle
 
 import com.github.scala_android.crud.monitor.Logging
 import collection._
+import javax.management.remote.rmi._RMIConnection_Stub
 
 /** A trait for {@link PortableField} for convenience such as when defining a List of heterogeneous Fields. */
 trait BaseField {
@@ -74,18 +75,21 @@ trait PortableField[T] extends BaseField with Logging {
    */
   def getter: PartialFunction[AnyRef,Option[T]]
 
-  /** extractor for finding the applicable item. */
-  private object ApplicableItem {
-    def unapply(items: List[AnyRef]): Option[AnyRef] = {
-      items.find(getter.isDefinedAt(_))
+  /** extractor for finding the applicable items, if any. */
+  private object ApplicableItems {
+    def unapply(items: List[AnyRef]): Option[List[AnyRef]] = {
+      val applicableItems = items.filter(getter.isDefinedAt(_))
+      if (applicableItems.isEmpty) None else Some(applicableItems)
     }
   }
 
   /**
-   * PartialFunction for getting an optional value from the first AnyRef in the List that is applicable.
+   * PartialFunction for getting an optional value from the first AnyRef in the List that has Some value.
+   * If none of them has Some value, then it will return None if at least one of them applies.
+   * If none of them even apply, the PartialFunction won't match at all (i.e. isDefinedAt will be false).
    */
   def getterFromItem: PartialFunction[List[AnyRef],Option[T]] = {
-    case ApplicableItem(item) => getter(item)
+    case ApplicableItems(items) => items.view.map(getter(_)).find(_.isDefined).getOrElse(None)
   }
 
   /**
@@ -186,7 +190,12 @@ trait PortableField[T] extends BaseField with Logging {
     new PortableField[T] {
       override def toString = self + " + " + other
 
-      lazy val getter = self.getter.orElse(other.getter)
+      def getter = {
+        case x if self.getter.isDefinedAt(x) || other.getter.isDefinedAt(x) => {
+          val values = List(self.getter, other.getter).view.filter(_.isDefinedAt(x)).map(_(x))
+          values.find(_.isDefined).getOrElse(None)
+        }
+      }
 
       /**
        * Combines the two setters, calling only applicable ones (not just the first though).
