@@ -10,7 +10,7 @@ import CursorField._
  * Time: 5:05 PM
  */
 
-abstract class ListEntityPersistence[T <: AnyRef] extends CrudPersistence {
+trait ListEntityPersistence[T <: AnyRef] extends CrudPersistence {
   def getId(entity: T): ID = persistedId(entity)
 
   def find(id: ID): Option[T] = {
@@ -30,10 +30,12 @@ abstract class ListEntityPersistence[T <: AnyRef] extends CrudPersistence {
   def close() {}
 }
 
-abstract class ListBufferEntityPersistence[T <: AnyRef] extends ListEntityPersistence[T] {
+trait ListBufferEntityPersistence[T <: AnyRef] extends ListEntityPersistence[T] {
   val buffer = mutable.ListBuffer[T]()
 
   var nextId = 10000L
+
+  def newCriteria = Unit
 
   def findAll(criteria: AnyRef) = buffer.toList
 

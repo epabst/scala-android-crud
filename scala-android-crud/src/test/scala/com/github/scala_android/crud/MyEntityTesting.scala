@@ -24,8 +24,6 @@ import android.app.Activity
 trait MyEntityTesting extends EasyMockSugar {
   class MyEntityPersistence extends ListBufferEntityPersistence[Map[String,Any]] {
     def entityType = throw new UnsupportedOperationException
-
-    def newCriteria = "TheCriteria"
   }
 
   class MyEntityType(persistence: CrudPersistence, listAdapter: ListAdapter, val entityName: String = "MyMap")
