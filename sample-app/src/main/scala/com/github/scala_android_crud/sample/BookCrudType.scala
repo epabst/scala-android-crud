@@ -17,7 +17,9 @@ import java.util.Date
 trait BookContext {
   def AuthorCrudType: CrudType
 
-  object BookCrudType extends SQLiteCrudType {
+  def BookCrudType: BookCrudType
+
+  abstract class BookCrudType extends CrudType {
     def entityName = "Book"
 
     val authorIdField = foreignKey(AuthorCrudType)

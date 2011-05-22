@@ -2,6 +2,7 @@ package com.github.scala_android_crud.sample
 
 import com.github.scala_android.crud._
 import CursorField._
+import monitor.Logging
 import ViewField._
 import com.github.triangle._
 import PortableField._
@@ -12,12 +13,13 @@ import GeneratedCrudType.crudContextField
  * @author pabstec
  */
 trait AuthorContext {
-  type BookCrudType = CrudType {
-    def authorIdField: PortableField[ID]
+  def BookCrudType: CrudType {
+    def authorIdField: ForeignKey
   }
-  def BookCrudType: BookCrudType
 
-  object AuthorCrudType extends SQLiteCrudType {
+  def AuthorCrudType: AuthorCrudType
+
+  abstract class AuthorCrudType extends CrudType {
     def entityName = "Author"
 
     def fields = List(
@@ -27,6 +29,7 @@ trait AuthorContext {
 
       viewId(R.id.bookCount, formatted[Int](textView)) + new FieldTuple2(persistedId, crudContextField) with CalculatedField[Int] {
         def calculate = { case Values(Some(authorId), Some(crudContext)) =>
+          println("calculating bookCount with authorId=" + authorId + " and " + crudContext)
           BookCrudType.withEntityPersistence(crudContext, { persistence =>
             val criteria = BookCrudType.transform(persistence.newCriteria, Map(BookCrudType.authorIdField.fieldName -> authorId))
             val books = persistence.findAsIterator(criteria)
@@ -53,4 +56,4 @@ trait AuthorContext {
 }
 
 class AuthorListActivity extends CrudListActivity(SampleApplication.AuthorCrudType, SampleApplication)
-class AuthorActivity extends CrudActivity(AuthorCrudType, SampleApplication)
+class AuthorActivity extends CrudActivity(SampleApplication.AuthorCrudType, SampleApplication)
