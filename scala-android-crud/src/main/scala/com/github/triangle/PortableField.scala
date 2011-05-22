@@ -2,7 +2,6 @@ package com.github.triangle
 
 import com.github.scala_android.crud.monitor.Logging
 import collection._
-import javax.management.remote.rmi._RMIConnection_Stub
 
 /** A trait for {@link PortableField} for convenience such as when defining a List of heterogeneous Fields. */
 trait BaseField {
@@ -301,34 +300,6 @@ trait NoTransformer[T] extends NoSetter[T] {
 abstract class FlowField[R,W,T](implicit readableManifest: ClassManifest[R], _writableManifest: ClassManifest[W])
         extends FieldGetter[R,T] with FieldSetter[W,T] with TransformerUsingSetter[T] {
   protected def writableManifest = _writableManifest
-}
-
-/**
- * A PortableField that is generated using the data in other fields.
- * @param fieldsUsed the fields whose getters must be applicable (i.e. isDefinedAt) in order for this GeneratedField to be applicable.
- */
-abstract class GeneratedField[T](fieldsUsed: BaseField*) extends PortableField[T] with NoSetter[T] {
-  /**
-   * Generate the value.  The <code>fieldsUsed</code> can be used like this within this method:
-   * <pre>
-   *   val myOptionalFoo = fooField.getterFromItem(fromItems)
-   *   val myRequiredBar = barField.getterFromItem(fromItems).get
-   *   ...do the calculation...
-   * </pre>
-   */
-  def generate(fromItems: List[AnyRef]): Option[T]
-
-  /** Delegates to getterFromItem */
-  def getter = {
-    case from if getterFromItem.isDefinedAt(List(from)) => getterFromItem(List(from))
-  }
-
-  override def getterFromItem = new PartialFunction[List[AnyRef],Option[T]] {
-    def isDefinedAt(fromItems: List[AnyRef]) =
-      fieldsUsed.view.forall(_.asInstanceOf[PortableField[_]].getterFromItem.isDefinedAt(fromItems))
-
-    def apply(fromItems: List[AnyRef]) = generate(fromItems)
-  }
 }
 
 /**
