@@ -4,6 +4,8 @@ import com.github.scala_android.crud._
 import CursorField._
 import ViewField._
 import com.github.triangle._
+import PortableField._
+import GeneratedCrudType.crudContextField
 
 /**
  * A CRUD type for Author.
@@ -13,7 +15,21 @@ import com.github.triangle._
 object AuthorCrudType extends SQLiteCrudType {
   def entityName = "Author"
 
-  def fields = List(persisted[String]("name") + viewId(R.id.name, textView))
+  def fields = List(
+    persistedId,
+
+    persisted[String]("name") + viewId(R.id.name, textView),
+
+    viewId(R.id.bookCount, formatted[Int](textView)) + new FieldTuple2(persistedId, crudContextField) with CalculatedField[Int] {
+      def calculate = { case Values(Some(authorId), Some(crudContext)) =>
+        BookCrudType.withEntityPersistence(crudContext, { persistence =>
+          val criteria = BookCrudType.transform(persistence.newCriteria, Map(BookCrudType.authorIdField.fieldName -> authorId))
+          val books = persistence.findAsIterator(criteria)
+          Some(books.size)
+        })
+      }
+    }
+  )
 
   //Use the same layout for the header
   def headerLayout = R.layout.author_row

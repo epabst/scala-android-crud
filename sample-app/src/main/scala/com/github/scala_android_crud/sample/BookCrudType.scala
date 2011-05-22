@@ -17,8 +17,10 @@ import java.util.Date
 object BookCrudType extends SQLiteCrudType {
   def entityName = "Book"
 
+  val authorIdField = foreignKey(AuthorCrudType)
+
   def fields = List(
-    foreignKey(AuthorCrudType),
+    authorIdField,
 
     persisted[String]("name") + viewId(R.id.name, textView),
 
