@@ -9,7 +9,7 @@ import com.github.scala_android.crud.{CrudBackupAgent, CrudApplication}
  * Time: 4:53 PM
  */
 
-object SampleApplication extends CrudApplication {
+object SampleApplication extends CrudApplication with AuthorContext with BookContext {
   val name = "Sample Application"
 
   def allEntities = List(AuthorCrudType, BookCrudType)

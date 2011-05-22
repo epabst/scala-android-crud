@@ -11,40 +11,46 @@ import GeneratedCrudType.crudContextField
  * A CRUD type for Author.
  * @author pabstec
  */
+trait AuthorContext {
+  type BookCrudType = CrudType {
+    def authorIdField: PortableField[ID]
+  }
+  def BookCrudType: BookCrudType
 
-object AuthorCrudType extends SQLiteCrudType {
-  def entityName = "Author"
+  object AuthorCrudType extends SQLiteCrudType {
+    def entityName = "Author"
 
-  def fields = List(
-    persistedId,
+    def fields = List(
+      persistedId,
 
-    persisted[String]("name") + viewId(R.id.name, textView),
+      persisted[String]("name") + viewId(R.id.name, textView),
 
-    viewId(R.id.bookCount, formatted[Int](textView)) + new FieldTuple2(persistedId, crudContextField) with CalculatedField[Int] {
-      def calculate = { case Values(Some(authorId), Some(crudContext)) =>
-        BookCrudType.withEntityPersistence(crudContext, { persistence =>
-          val criteria = BookCrudType.transform(persistence.newCriteria, Map(BookCrudType.authorIdField.fieldName -> authorId))
-          val books = persistence.findAsIterator(criteria)
-          Some(books.size)
-        })
+      viewId(R.id.bookCount, formatted[Int](textView)) + new FieldTuple2(persistedId, crudContextField) with CalculatedField[Int] {
+        def calculate = { case Values(Some(authorId), Some(crudContext)) =>
+          BookCrudType.withEntityPersistence(crudContext, { persistence =>
+            val criteria = BookCrudType.transform(persistence.newCriteria, Map(BookCrudType.authorIdField.fieldName -> authorId))
+            val books = persistence.findAsIterator(criteria)
+            Some(books.size)
+          })
+        }
       }
-    }
-  )
+    )
 
-  //Use the same layout for the header
-  def headerLayout = R.layout.author_row
-  def listLayout = R.layout.entity_list
-  def displayLayout = None
-  def entryLayout = R.layout.author_entry
-  def rowLayout = R.layout.author_row
+    //Use the same layout for the header
+    def headerLayout = R.layout.author_row
+    def listLayout = R.layout.entity_list
+    def displayLayout = None
+    def entryLayout = R.layout.author_entry
+    def rowLayout = R.layout.author_row
 
-  def cancelItemString = res.R.string.cancel_item
-  def editItemString = R.string.edit_author
-  def addItemString = R.string.add_author
+    def cancelItemString = res.R.string.cancel_item
+    def editItemString = R.string.edit_author
+    def addItemString = R.string.add_author
 
-  def activityClass = classOf[AuthorActivity]
-  def listActivityClass = classOf[AuthorListActivity]
+    def activityClass = classOf[AuthorActivity]
+    def listActivityClass = classOf[AuthorListActivity]
+  }
 }
 
-class AuthorListActivity extends CrudListActivity(AuthorCrudType, SampleApplication)
+class AuthorListActivity extends CrudListActivity(SampleApplication.AuthorCrudType, SampleApplication)
 class AuthorActivity extends CrudActivity(AuthorCrudType, SampleApplication)

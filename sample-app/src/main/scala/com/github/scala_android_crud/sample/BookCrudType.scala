@@ -14,40 +14,44 @@ import java.util.Date
  * @book pabstec
  */
 
-object BookCrudType extends SQLiteCrudType {
-  def entityName = "Book"
+trait BookContext {
+  def AuthorCrudType: CrudType
 
-  val authorIdField = foreignKey(AuthorCrudType)
+  object BookCrudType extends SQLiteCrudType {
+    def entityName = "Book"
 
-  def fields = List(
-    authorIdField,
+    val authorIdField = foreignKey(AuthorCrudType)
 
-    persisted[String]("name") + viewId(R.id.name, textView),
+    def fields = List(
+      authorIdField,
 
-    persisted[Genre.Value]("genre")(enumStringType[Genre.Value](Genre)) +
-          viewId(R.id.genre, enumerationSpinner(Genre)),
+      persisted[String]("name") + viewId(R.id.name, textView),
 
-    persisted[Int]("edition") + viewId(R.id.edition, formatted[Int](textView)),
+      persisted[Genre.Value]("genre")(enumStringType[Genre.Value](Genre)) +
+            viewId(R.id.genre, enumerationSpinner(Genre)),
 
-    persisted[Date]("publishDate") +
-      viewId[Date](R.id.publishDate, datePicker + formatted(dateValueFormat, textView))
-  )
+      persisted[Int]("edition") + viewId(R.id.edition, formatted[Int](textView)),
 
-  def activityClass = classOf[BookActivity]
+      persisted[Date]("publishDate") +
+        viewId[Date](R.id.publishDate, datePicker + formatted(dateValueFormat, textView))
+    )
 
-  def listActivityClass = classOf[BookListActivity]
+    def activityClass = classOf[BookActivity]
 
-  def entryLayout = R.layout.book_entry
-  def rowLayout = R.layout.book_row
-  //Use the same layout for the header
-  def headerLayout = R.layout.book_row
-  def listLayout = R.layout.entity_list
-  def displayLayout = None
+    def listActivityClass = classOf[BookListActivity]
 
-  def cancelItemString = res.R.string.cancel_item
-  def editItemString = R.string.edit_book
-  def addItemString = R.string.add_book
+    def entryLayout = R.layout.book_entry
+    def rowLayout = R.layout.book_row
+    //Use the same layout for the header
+    def headerLayout = R.layout.book_row
+    def listLayout = R.layout.entity_list
+    def displayLayout = None
+
+    def cancelItemString = res.R.string.cancel_item
+    def editItemString = R.string.edit_book
+    def addItemString = R.string.add_book
+  }
 }
 
-class BookListActivity extends CrudListActivity(BookCrudType, SampleApplication)
-class BookActivity extends CrudActivity(BookCrudType, SampleApplication)
+class BookListActivity extends CrudListActivity(SampleApplication.BookCrudType, SampleApplication)
+class BookActivity extends CrudActivity(SampleApplication.BookCrudType, SampleApplication)
