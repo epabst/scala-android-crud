@@ -11,7 +11,7 @@ import org.scalatest.mock.EasyMockSugar
 
 
 /**
- * A behavior specification for {@link PortableField}, {@link CursorField}, and {@link ViewField}.
+ * A behavior specification for {@link PortableField}.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 2/9/11
  * Time: 7:59 PM
@@ -27,11 +27,9 @@ class PortableFieldSpec extends Spec with ShouldMatchers with EasyMockSugar {
       val a1 = field[MyEntity,String](_.string, _.string_=)
       val a2 = field[MyEntity,Int](_.number, _.number_=)
       val stringField =
-        flow[MyEntity, OtherEntity, String](_.string, _.name_=) +
         field[MyEntity,String](_.string, _.string_=) +
         readOnly[OtherEntity,String](_.name) +
-        writeOnly[MyEntity,String](_.string_=) +
-        field[OtherEntity,String](_.name, _.name_=)
+        writeOnly[OtherEntity,String](_.name_=)
       val intField = field[MyEntity,Int](_.number, _.number_=)
       val readOnlyField = readOnly[MyEntity,Int](_.number)
     }
@@ -80,7 +78,7 @@ class PortableFieldSpec extends Spec with ShouldMatchers with EasyMockSugar {
     it("should copy from one to multiple") {
       val stringField =
         readOnly[OtherEntity,String](_.name) +
-        flow[MyEntity, OtherEntity, String](_.string, _.name_=) +
+        writeOnly[OtherEntity, String](_.name_=) +
         field[MyEntity,String](_.string, _.string_=)
 
       val myEntity1 = new MyEntity("my1", 1)

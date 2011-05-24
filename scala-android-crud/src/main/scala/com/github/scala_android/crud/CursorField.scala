@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.database.Cursor
 import android.provider.BaseColumns
 import com.github.triangle._
+import PortableField._
 import android.os.Bundle
 import monitor.Logging
 
@@ -32,9 +33,9 @@ object CursorField extends PlatformTypes {
  */
 class CursorField[T](val name: String)(implicit val persistedType: PersistedType[T]) extends DelegatingPortableField[T] with Logging {
   protected val delegate =
-    PortableField.flow[Cursor,ContentValues,T](getFromCursor, setIntoContentValues) +
-    PortableField.field[Bundle,T](b => persistedType.getValue(b, name), b => v => persistedType.putValue(b, name, v)) +
-    PortableField.mapField[T](name)
+    readOnly[Cursor,T](getFromCursor) + writeOnly[ContentValues,T](setIntoContentValues) +
+    field[Bundle,T](b => persistedType.getValue(b, name), b => v => persistedType.putValue(b, name, v)) +
+    mapField[T](name)
 
   private def getFromCursor(cursor: Cursor) = {
     val columnIndex = cursor.getColumnIndex(name)

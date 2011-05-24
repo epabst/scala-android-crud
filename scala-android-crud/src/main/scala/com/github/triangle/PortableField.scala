@@ -303,18 +303,6 @@ trait NoTransformer[T] extends NoSetter[T] {
 }
 
 /**
- * {@PortableField} support for getting and setting a value if <code>readable</code> and <code>writable</code>
- * are of the types R and W respectively.
- * @param T the value type
- * @param R the Readable type to get the value out of
- * @param W the Writable type to put the value into
- */
-abstract class FlowField[R,W,T](implicit readableManifest: ClassManifest[R], _writableManifest: ClassManifest[W])
-        extends FieldGetter[R,T] with FieldSetter[W,T] with TransformerUsingSetter[T] {
-  protected def writableManifest = _writableManifest
-}
-
-/**
  * Factory methods for basic PortableFields.  This should be imported as PortableField._.
  */
 object PortableField {
@@ -332,6 +320,8 @@ object PortableField {
                    (implicit typeManifest: ClassManifest[R]): FieldGetter[R,T] = {
     new FieldGetter[R,T] with NoSetter[T] with NoTransformer[T] {
       def get(readable: R) = getter1(readable)
+
+      override def toString = "readOnly[" + typeManifest.erasure.getSimpleName + "]"
     }
   }
 
@@ -342,22 +332,35 @@ object PortableField {
     override def toString = "identifyField[" + typeManifest.erasure.getSimpleName + "]"
   }
 
-  /** Defines write-only field for a Writable type. */
-  def writeOnly[W,T](setter1: W => T => Unit, clearer: W => Unit = {_: W => })
-                    (implicit typeManifest: ClassManifest[W]): FieldSetter[W,T] = {
+  /** Defines write-only field for a Writable type with Option as the type. */
+  def writeOnlyOpt[W,T](setter1: W => Option[T] => Unit)
+                       (implicit typeManifest: ClassManifest[W]): FieldSetter[W,T] = {
     new FieldSetter[W,T] {
       protected def writableManifest = typeManifest
 
       def set(writable: W, valueOpt: Option[T]) {
-        valueOpt match {
-          case Some(value) => setter1(writable)(value)
-          case None => clearer(writable)
-        }
+        setter1(writable)(valueOpt)
       }
 
       def getter = emptyPartialFunction
+
+      override def toString = "writeOnlyOpt[" + typeManifest.erasure.getSimpleName + "]"
     }
   }
+
+  /**
+   * Defines write-only field for a Writable type.
+   * The setter operates on a value directly, rather than on an Option.
+   * The clearer is used when the value is None.
+   */
+  def writeOnly[W,T](setter1: W => T => Unit, clearer: W => Unit = {_: W => })
+                    (implicit typeManifest: ClassManifest[W]): FieldSetter[W,T] =
+    writeOnlyOpt[W,T](writable => { valueOpt =>
+      valueOpt match {
+        case Some(value) => setter1(writable)(value)
+        case None => clearer(writable)
+      }
+    })
 
   /**
    * {@PortableField} support for transforming a subject using a value if <code>subject</code> is of type S.
@@ -380,42 +383,6 @@ object PortableField {
     override def toString = "default(" + value + ")"
   }
 
-  def flowOpt[R,W,T](getter1: R => Option[T], setter1: W => Option[T] => Unit)
-                    (implicit readableManifest: ClassManifest[R], writableManifest: ClassManifest[W]): FlowField[R,W,T] = {
-    new FlowField[R,W,T] {
-      def get(readable: R) = getter1(readable)
-
-      def set(writable: W, valueOpt: Option[T]) {
-        setter1(writable)(valueOpt)
-      }
-
-      override def toString = {
-        if (readableManifest == writableManifest) {
-          "field[" + readableManifest.erasure.getSimpleName + "]"
-        } else {
-          "flow[" + readableManifest.erasure.getSimpleName + "," + writableManifest.erasure.getSimpleName + "]"
-        }
-      }
-    }
-  }
-
-  /**
-   * Defines a flow for a field value from a Readable type to a Writable type.
-   * The value never actually is taken directly from the Readable and set in the Writable.
-   * It is copied to and from other objects.
-   * @param R the Readable type to get the value out of
-   * @param W the Writable type to put the value into
-   * @param T the value type
-   */
-  def flow[R,W,T](getter1: R => Option[T], setter1: W => T => Unit, clearer: W => Unit = {_: W => })
-                 (implicit readableManifest: ClassManifest[R], writableManifest: ClassManifest[W]): FlowField[R,W,T] =
-    flowOpt[R,W,T](getter1, writable => { valueOpt =>
-      valueOpt match {
-        case Some(value) => setter1(writable)(value)
-        case None => clearer(writable)
-      }
-    })
-
   /**
    * Defines PortableField for  a field value using a getter, setter and clearer.
    * The setter operates on a value directly, rather than on an Option.
@@ -424,7 +391,8 @@ object PortableField {
    * @param T the value type
    */
   def field[M,T](getter: M => Option[T], setter: M => T => Unit, clearer: M => Unit = {_: M => })
-                (implicit typeManifest: ClassManifest[M]): FlowField[M,M,T] = flow[M,M,T](getter, setter, clearer)
+                (implicit typeManifest: ClassManifest[M]): PortableField[T] =
+    readOnly[M,T](getter) + writeOnly[M,T](setter, clearer)
 
   /**
    * Defines PortableField for a field value using a setter and getter, both operating on an Option.
@@ -432,7 +400,8 @@ object PortableField {
    * @param T the value type
    */
   def fieldOpt[M,T](getter: M => Option[T], setter: M => Option[T] => Unit)
-                   (implicit typeManifest: ClassManifest[M]): FlowField[M,M,T] = flowOpt[M,M,T](getter, setter)
+                   (implicit typeManifest: ClassManifest[M]): PortableField[T] =
+    readOnly[M,T](getter) + writeOnlyOpt[M,T](setter)
 
   def mapField[T](name: String): PortableField[T] = new DelegatingPortableField[T] {
     val delegate = readOnly[Map[String,_ <: T],T](_.get(name)) + writeOnly[mutable.Map[String,_ >: T],T](m => v => m.put(name, v), _.remove(name)) +
