@@ -7,6 +7,7 @@ import org.scalatest.Spec
 import com.github.triangle.PortableField._
 import scala.collection.{immutable,mutable}
 import mutable.Buffer
+import org.scalatest.mock.EasyMockSugar
 
 
 /**
@@ -17,7 +18,7 @@ import mutable.Buffer
  */
 
 @RunWith(classOf[JUnitRunner])
-class PortableFieldSpec extends Spec with ShouldMatchers {
+class PortableFieldSpec extends Spec with ShouldMatchers with EasyMockSugar {
   describe("PortableField") {
     class MyEntity(var string: String, var number: Int)
     class OtherEntity(var name: String, var boolean: Boolean)
@@ -103,7 +104,7 @@ class PortableFieldSpec extends Spec with ShouldMatchers {
       stringField.copy(otherEntity2, new Object) should be (false)
     }
 
-    it("should get from the first applicable item") {
+    it("should use the first applicable field variation with the first applicable item") {
       val myEntity1 = new MyEntity("my1", 1)
       val otherEntity1 = new OtherEntity("other1", false)
       val stringField = mapField[String]("stringValue") +
@@ -111,13 +112,13 @@ class PortableFieldSpec extends Spec with ShouldMatchers {
         field[MyEntity,String](_.string, _.string_=)
       stringField.getterFromItem.isDefinedAt(List(myEntity1, otherEntity1)) should be (true)
       stringField.getterFromItem.isDefinedAt(List(new Object)) should be (false)
-      stringField.getterFromItem(List(myEntity1, otherEntity1)) should be (Some("my1"))
+      stringField.getterFromItem(List(myEntity1, otherEntity1)) should be (Some("other1"))
       stringField.getterFromItem(List(otherEntity1, myEntity1)) should be (Some("other1"))
       stringField.getFromItemOrReturn(List(myEntity1), Some("n/a")) should be (Some("my1"))
       stringField.getFromItemOrReturn(List(new Object), Some("n/a")) should be (Some("n/a"))
       val mutableMap = mutable.Map.empty[String, Any]
       stringField.copyFromItem(List(myEntity1, otherEntity1), mutableMap) should be (true)
-      mutableMap("stringValue") should be ("my1")
+      mutableMap("stringValue") should be ("other1")
     }
 
     it("should get from the first applicable item with Some value") {
@@ -208,6 +209,19 @@ class PortableFieldSpec extends Spec with ShouldMatchers {
       //qualified to point out that it's immutable
       val result = formattedField.transformer(immutable.Map.empty[String,Int])(4)
       result.get("countString") should be (Some("4"))
+    }
+
+    it("should use getterForItem on each Field added together") {
+      val mockField = mock[PortableField[String]]
+      val field = mapField[String]("foo") + mockField
+      expecting {
+        call(mockField.getterFromItem).andReturn({
+          case List(Unit, "String") => Some("success")
+        }).anyTimes
+      }
+      whenExecuting(mockField) {
+        field.getterFromItem(List(Unit, "String")) should be (Some("success"))
+      }
     }
   }
 }
