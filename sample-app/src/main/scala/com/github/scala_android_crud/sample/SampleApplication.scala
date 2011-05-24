@@ -12,8 +12,8 @@ import com.github.scala_android.crud.{SQLiteCrudType, CrudBackupAgent, CrudAppli
 object SampleApplication extends CrudApplication with AuthorContext with BookContext {
   val name = "Sample Application"
 
-  object AuthorCrudType extends AuthorCrudType with SQLiteCrudType
-  object BookCrudType extends BookCrudType with SQLiteCrudType
+  val AuthorCrudType = new AuthorCrudType with SQLiteCrudType
+  val BookCrudType = new BookCrudType with SQLiteCrudType
 
   def allEntities = List(AuthorCrudType, BookCrudType)
 }

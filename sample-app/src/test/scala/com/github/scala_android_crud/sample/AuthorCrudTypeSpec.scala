@@ -16,6 +16,11 @@ import org.scalatest.junit.JUnitRunner
  */
 @RunWith(classOf[JUnitRunner])
 class AuthorCrudTypeSpec extends Spec with ShouldMatchers with EasyMockSugar {
+  it("should have the right children") {
+    SampleApplication.AuthorCrudType.childEntities(SampleApplication) should
+            be (List[CrudType](SampleApplication.BookCrudType))
+  }
+
   it("should calculate the book count") {
     val crudContext = mock[CrudContext]
     whenExecuting(crudContext) {
