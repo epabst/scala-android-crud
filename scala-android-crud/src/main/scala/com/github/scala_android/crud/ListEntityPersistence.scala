@@ -1,7 +1,7 @@
 package com.github.scala_android.crud
 
 import scala.collection.mutable
-import CursorField._
+import com.github.scala_android.crud.model.IdPk._
 
 /**
  * EntityPersistence for a simple generated List.
@@ -11,7 +11,7 @@ import CursorField._
  */
 
 trait ListEntityPersistence[T <: AnyRef] extends CrudPersistence {
-  def getId(entity: T): ID = persistedId(entity)
+  def getId(entity: T): ID = idField(entity)
 
   def find(id: ID): Option[T] = {
     findAll(newCriteria).find(entity => id == getId(entity))
@@ -44,7 +44,7 @@ trait ListBufferEntityPersistence[T <: AnyRef] extends ListEntityPersistence[T] 
       nextId += 1
       nextId
     }
-    persistedId.setter(item)(Some(newId));
+    idField.setter(item)(Some(newId));
     buffer += item.asInstanceOf[T]
     newId
   }

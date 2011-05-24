@@ -380,24 +380,13 @@ object PortableField {
     override def toString = "default(" + value + ")"
   }
 
-  /**
-   * Defines a flow for a field value from a Readable type to a Writable type.
-   * The value never actually is taken directly from the Readable and set in the Writable.
-   * It is copied to and from other objects.
-   * @param R the Readable type to get the value out of
-   * @param W the Writable type to put the value into
-   * @param T the value type
-   */
-  def flow[R,W,T](getter1: R => Option[T], setter1: W => T => Unit, clearer: W => Unit = {_: W => })
-                 (implicit readableManifest: ClassManifest[R], writableManifest: ClassManifest[W]): FlowField[R,W,T] = {
+  def flowOpt[R,W,T](getter1: R => Option[T], setter1: W => Option[T] => Unit)
+                    (implicit readableManifest: ClassManifest[R], writableManifest: ClassManifest[W]): FlowField[R,W,T] = {
     new FlowField[R,W,T] {
       def get(readable: R) = getter1(readable)
 
       def set(writable: W, valueOpt: Option[T]) {
-        valueOpt match {
-          case Some(value) => setter1(writable)(value)
-          case None => clearer(writable)
-        }
+        setter1(writable)(valueOpt)
       }
 
       override def toString = {
@@ -411,12 +400,39 @@ object PortableField {
   }
 
   /**
-   *  Defines PortableField for a field value using a setter and getter.
+   * Defines a flow for a field value from a Readable type to a Writable type.
+   * The value never actually is taken directly from the Readable and set in the Writable.
+   * It is copied to and from other objects.
+   * @param R the Readable type to get the value out of
+   * @param W the Writable type to put the value into
+   * @param T the value type
+   */
+  def flow[R,W,T](getter1: R => Option[T], setter1: W => T => Unit, clearer: W => Unit = {_: W => })
+                 (implicit readableManifest: ClassManifest[R], writableManifest: ClassManifest[W]): FlowField[R,W,T] =
+    flowOpt[R,W,T](getter1, writable => { valueOpt =>
+      valueOpt match {
+        case Some(value) => setter1(writable)(value)
+        case None => clearer(writable)
+      }
+    })
+
+  /**
+   * Defines PortableField for  a field value using a getter, setter and clearer.
+   * The setter operates on a value directly, rather than on an Option.
+   * The clearer is used when the value is None.
    * @param M any mutable type
    * @param T the value type
    */
   def field[M,T](getter: M => Option[T], setter: M => T => Unit, clearer: M => Unit = {_: M => })
-                 (implicit typeManifest: ClassManifest[M]): FlowField[M,M,T] = flow[M,M,T](getter, setter, clearer)
+                (implicit typeManifest: ClassManifest[M]): FlowField[M,M,T] = flow[M,M,T](getter, setter, clearer)
+
+  /**
+   * Defines PortableField for a field value using a setter and getter, both operating on an Option.
+   * @param M any mutable type
+   * @param T the value type
+   */
+  def fieldOpt[M,T](getter: M => Option[T], setter: M => Option[T] => Unit)
+                   (implicit typeManifest: ClassManifest[M]): FlowField[M,M,T] = flowOpt[M,M,T](getter, setter)
 
   def mapField[T](name: String): PortableField[T] = new DelegatingPortableField[T] {
     val delegate = readOnly[Map[String,_ <: T],T](_.get(name)) + writeOnly[mutable.Map[String,_ >: T],T](m => v => m.put(name, v), _.remove(name)) +
