@@ -27,16 +27,18 @@ trait AuthorContext {
 
       persisted[String]("name") + viewId(R.id.name, textView),
 
-      viewId(R.id.bookCount, formatted[Int](textView)) + new FieldTuple2(persistedId, crudContextField) with CalculatedField[Int] {
-        def calculate = { case Values(Some(authorId), Some(crudContext)) =>
-          println("calculating bookCount with authorId=" + authorId + " and " + crudContext)
-          BookCrudType.withEntityPersistence(crudContext, { persistence =>
-            val criteria = BookCrudType.transform(persistence.newCriteria, Map(BookCrudType.authorIdField.fieldName -> authorId))
-            val books = persistence.findAsIterator(criteria)
-            Some(books.size)
-          })
-        }
-      }
+      viewId(R.id.bookCount, formatted[Int](textView)) +
+              mapField[Int]("bookCount") +
+              new FieldTuple2(persistedId, crudContextField) with CalculatedField[Int] {
+                def calculate = { case Values(Some(authorId), Some(crudContext)) =>
+                  println("calculating bookCount with authorId=" + authorId + " and " + crudContext)
+                  BookCrudType.withEntityPersistence(crudContext, { persistence =>
+                    val criteria = BookCrudType.transform(persistence.newCriteria, Map(BookCrudType.authorIdField.fieldName -> authorId))
+                    val books = persistence.findAsIterator(criteria)
+                    Some(books.size)
+                  })
+                }
+              }
     )
 
     //Use the same layout for the header
