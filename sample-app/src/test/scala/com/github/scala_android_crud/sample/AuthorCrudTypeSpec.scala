@@ -9,7 +9,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 /**
- * todo A ... 
+ * A behavior specification for {@link AuthorCrudType}.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 5/21/11
  * Time: 9:17 PM
