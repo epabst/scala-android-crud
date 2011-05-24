@@ -20,24 +20,22 @@ class AuthorCrudTypeSpec extends Spec with ShouldMatchers with EasyMockSugar {
     val crudContext = mock[CrudContext]
     whenExecuting(crudContext) {
       val context = new AuthorContext {
-        val bookPersistence = new ListBufferEntityPersistence[Map[String, Any]] {
-          def entityType = AuthorCrudType
+        val bookPersistence: ListBufferEntityPersistence[Map[String,Any]] = new ListBufferEntityPersistence[Map[String, Any]] {
+          def entityType = BookCrudType
         }
 
         val BookCrudType = new HiddenEntityType with GeneratedCrudType[Map[String,Any]] {
           def entityName = "Book"
           val authorIdField = foreignKey(AuthorCrudType)
           def fields = List(authorIdField)
-          def openEntityPersistence(crudContext: CrudContext) = {
-            bookPersistence
-          }
+          def openEntityPersistence(crudContext: CrudContext) = bookPersistence
         }
 
         object AuthorCrudType extends AuthorCrudType with GeneratedCrudType[Map[String,Any]] {
           def openEntityPersistence(crudContext: CrudContext) = throw new UnsupportedOperationException
         }
       }
-      context.BookCrudType.openEntityPersistence(null).buffer += Map.empty[String,Any] += Map.empty[String,Any]
+      context.bookPersistence.buffer += Map.empty[String,Any] += Map.empty[String,Any]
 
       val authorData = context.AuthorCrudType.transformWithItem(Map.empty[String,Any], List(Map[String,Any](persistedId.name -> 100L), crudContext))
       authorData should be (Map[String,Any](persistedId.name -> 100L, "bookCount" -> 2))
