@@ -144,12 +144,17 @@ trait PortableField[T] extends BaseField with Logging {
   def transformer[S <: AnyRef]: PartialFunction[S,Option[T] => S]
 
   private def transformUsingGetFunction[S <: AnyRef,F <: AnyRef](get: PartialFunction[F,Option[T]], initial: S, data: F) = {
-    if (get.isDefinedAt(data) && transformer.isDefinedAt(initial)) {
-      val value = get(data)
-      debug("Transforming " + initial + " with value " + value + " for field " + this)
-      transformer(initial)(value)
+    if (get.isDefinedAt(data)) {
+      if (transformer.isDefinedAt(initial)) {
+        val value = get(data)
+        debug("Transforming " + initial + " with value " + value + " for field " + this)
+        transformer(initial)(value)
+      } else {
+        debug("Unable to transform " + initial + " with " + data + " for field " + this + " because of transformer.")
+        initial
+      }
     } else {
-      debug("Unable to transform " + initial + " with " + data + " for field " + this + ".")
+      debug("Unable to transform " + initial + " with " + data + " for field " + this + " because of getter.")
       initial
     }
   }
@@ -324,7 +329,11 @@ object PortableField {
   }
 
   /** Defines a read-only field for returning the readable item itself (as an Option). */
-  def identityField[R <: AnyRef](implicit typeManifest: ClassManifest[R]) = readOnly[R,R](readable => Some(readable))
+  def identityField[R <: AnyRef](implicit typeManifest: ClassManifest[R]) = new DelegatingPortableField[R] {
+    val delegate = readOnly[R,R](readable => Some(readable))
+
+    override def toString = "identifyField[" + typeManifest.erasure.getSimpleName + "]"
+  }
 
   /** Defines write-only field for a Writable type. */
   def writeOnly[W,T](setter1: W => T => Unit, clearer: W => Unit = {_: W => })
@@ -419,6 +428,8 @@ object PortableField {
         field.transformer(subject)(value.map(format.toString _))
       }
     }
+
+    override def toString = "formatted(" + format + ", " + field + ")"
   }
 
   /**

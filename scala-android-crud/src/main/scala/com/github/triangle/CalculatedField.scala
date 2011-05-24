@@ -23,4 +23,6 @@ trait CalculatedField[T] extends PortableField[T] with NoTransformer[T] with Fie
   def getter = {
     case from if getterFromItem.isDefinedAt(List(from)) => getterFromItem(List(from))
   }
+
+  override def toString = "FieldTuple(" + productIterator.mkString(",") + ") with CalculatedField"
 }
