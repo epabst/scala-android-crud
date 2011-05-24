@@ -80,4 +80,13 @@ class FieldTupleSpec extends Spec with ShouldMatchers {
     val tuple = new FieldTuple7(intField, stringField, doubleField, stringField, intField, doubleField, intField)
     Unit match { case tuple.Values(Some(10), Some("Hello"), Some(11.0), Some("Hello"), Some(10), Some(11.0), Some(10)) => "ok"; case _ => fail() }
   }
+
+  it("should work with a CalculatedField") {
+    val field = new FieldTuple2(intField, identityField[String]) with CalculatedField[String] {
+      def calculate = {
+        case Values(Some(integer), Some(string)) => Some(string + integer)
+      }
+    }
+    field.getterFromItem(List[AnyRef](Unit, "A String")) should be (Some("A String10"))
+  }
 }
