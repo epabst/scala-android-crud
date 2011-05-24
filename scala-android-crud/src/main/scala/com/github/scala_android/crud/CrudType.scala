@@ -64,6 +64,10 @@ trait CrudType extends FieldList with PlatformTypes {
    * May be overridden to modify the list of actions.
    */
   def getListActions(actionFactory: UIActionFactory): List[UIAction[Unit]] = {
+    getReadOnlyListActions(actionFactory) ::: actionFactory.startCreate(this) :: Nil
+  }
+
+  protected def getReadOnlyListActions(actionFactory: UIActionFactory): List[UIAction[Unit]] = {
     val thisEntity = this;
     (foreignKeys match {
       //exactly one parent w/o a display page
@@ -75,7 +79,7 @@ trait CrudType extends FieldList with PlatformTypes {
                   parentEntity.childEntities(actionFactory.application).filter(_ != thisEntity))
       }
       case _ => Nil
-    }) ::: actionFactory.startCreate(this) :: Nil
+    })
   }
 
   /**
@@ -84,9 +88,11 @@ trait CrudType extends FieldList with PlatformTypes {
    * May be overridden to modify the list of actions.
    */
   def getEntityActions(actionFactory: UIActionFactory): List[UIAction[ID]] =
+    getReadOnlyEntityActions(actionFactory) ::: List(actionFactory.startUpdate(this), actionFactory.startDelete(this))
+
+  protected def getReadOnlyEntityActions(actionFactory: UIActionFactory): List[UIAction[ID]] =
     displayLayout.map(_ => actionFactory.display(this)).toList :::
-            displayChildEntityLists[ID](actionFactory, id => id, childEntities(actionFactory.application)) :::
-            List(actionFactory.startUpdate(this), actionFactory.startDelete(this))
+            displayChildEntityLists[ID](actionFactory, id => id, childEntities(actionFactory.application)) ::: Nil
 
   /**
    * Instantiates a data buffer which can be saved by EntityPersistence.

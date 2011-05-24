@@ -35,19 +35,9 @@ trait GeneratedCrudType[T <: AnyRef] extends CrudType {
 
   def refreshAfterSave(crudContext: CrudContext) {}
 
-  override def getListActions(actionFactory: UIActionFactory) = foreignKeys match {
-    //exactly one parent w/o a display page
-    case foreignKey :: Nil if !foreignKey.entityType.hasDisplayPage => {
-      val parentEntity = foreignKey.entityType
-      val getForeignKey = { _: Unit => foreignKey(actionFactory.currentIntent) }
-      actionFactory.adapt(actionFactory.startUpdate(parentEntity), getForeignKey) ::
-              parentEntity.displayChildEntityLists(actionFactory, getForeignKey, childEntities(actionFactory.application))
-    }
-    case _ => Nil
-  }
+  override def getListActions(actionFactory: UIActionFactory) = super.getReadOnlyListActions(actionFactory)
 
-  override def getEntityActions(actionFactory: UIActionFactory): List[UIAction[ID]] =
-    displayLayout.map(_ => actionFactory.display(this)).toList
+  override def getEntityActions(actionFactory: UIActionFactory) = super.getReadOnlyEntityActions(actionFactory)
 
   override val cancelItemString = R.string.cancel_item
 }
