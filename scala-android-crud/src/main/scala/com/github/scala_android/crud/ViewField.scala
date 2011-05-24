@@ -42,7 +42,7 @@ object ViewField extends PlatformTypes {
     override def toString = "viewId(" + viewResourceId + ", " + childViewField + ")"
   }
 
-  val textView: PortableField[String] = field[TextView,String](v => toOption(v.getText.toString.trim), _.setText, _.setText(""))
+  val textView: PortableField[String] = fieldDirect[TextView,String](v => toOption(v.getText.toString.trim), _.setText, _.setText(""))
 
   def viewId[T](viewResourceId: ViewKey, childViewField: PortableField[T]): ViewIdField[T] = {
     new ViewIdField[T](viewResourceId, childViewField)
@@ -50,7 +50,7 @@ object ViewField extends PlatformTypes {
 
   private def toOption(string: String): Option[String] = if (string == "") None else Some(string)
 
-  implicit val datePicker: PortableField[Date] = field[DatePicker,Date](
+  implicit val datePicker: PortableField[Date] = fieldDirect[DatePicker,Date](
     v => Some(new GregorianCalendar(v.getYear, v.getMonth, v.getDayOfMonth).getTime),
     v => date => {
       val calendar = new GregorianCalendar()
@@ -58,13 +58,13 @@ object ViewField extends PlatformTypes {
       v.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
     })
 
-  val calendarDatePicker: PortableField[Calendar] = field[DatePicker,Calendar](
+  val calendarDatePicker: PortableField[Calendar] = fieldDirect[DatePicker,Calendar](
     v => Some(new GregorianCalendar(v.getYear, v.getMonth, v.getDayOfMonth)),
     v => calendar => v.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)))
 
   def enumerationSpinner[E <: Ordered[_]](enum: Enumeration): PortableField[E] = {
     val valueArray: Array[E] = enum.values.toArray.asInstanceOf[Array[E]]
-    field[Spinner,E](v => Option(v.getSelectedItem.asInstanceOf[E]), spinner => value => {
+    fieldDirect[Spinner,E](v => Option(v.getSelectedItem.asInstanceOf[E]), spinner => value => {
       //don't do it again if already done from a previous time
       if (spinner.getAdapter == null) {
         spinner.setAdapter(new ArrayAdapter[E](spinner.getContext, _root_.android.R.layout.simple_spinner_item, valueArray))

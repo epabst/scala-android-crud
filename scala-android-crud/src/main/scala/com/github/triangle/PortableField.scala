@@ -333,8 +333,8 @@ object PortableField {
   }
 
   /** Defines write-only field for a Writable type with Option as the type. */
-  def writeOnlyOpt[W,T](setter1: W => Option[T] => Unit)
-                       (implicit typeManifest: ClassManifest[W]): FieldSetter[W,T] = {
+  def writeOnly[W,T](setter1: W => Option[T] => Unit)
+                    (implicit typeManifest: ClassManifest[W]): FieldSetter[W,T] = {
     new FieldSetter[W,T] {
       protected def writableManifest = typeManifest
 
@@ -344,7 +344,7 @@ object PortableField {
 
       def getter = emptyPartialFunction
 
-      override def toString = "writeOnlyOpt[" + typeManifest.erasure.getSimpleName + "]"
+      override def toString = "writeOnly[" + typeManifest.erasure.getSimpleName + "]"
     }
   }
 
@@ -353,9 +353,9 @@ object PortableField {
    * The setter operates on a value directly, rather than on an Option.
    * The clearer is used when the value is None.
    */
-  def writeOnly[W,T](setter1: W => T => Unit, clearer: W => Unit = {_: W => })
-                    (implicit typeManifest: ClassManifest[W]): FieldSetter[W,T] =
-    writeOnlyOpt[W,T](writable => { valueOpt =>
+  def writeOnlyDirect[W,T](setter1: W => T => Unit, clearer: W => Unit = {_: W => })
+                          (implicit typeManifest: ClassManifest[W]): FieldSetter[W,T] =
+    writeOnly[W,T](writable => { valueOpt =>
       valueOpt match {
         case Some(value) => setter1(writable)(value)
         case None => clearer(writable)
@@ -366,15 +366,27 @@ object PortableField {
    * {@PortableField} support for transforming a subject using a value if <code>subject</code> is of type S.
    * @param S the Subject type to transform using the value
    */
-  def transformOnly[S <: AnyRef,T](theTransform: S => T => S, clearer: S => S)(implicit typeManifest: ClassManifest[S]): PortableField[T] =
+  def transformOnly[S <: AnyRef,T](theTransform: S => Option[T] => S)(implicit typeManifest: ClassManifest[S]): PortableField[T] =
     new PortableField[T] with NoSetter[T] with NoGetter[T] {
       def transformer[S1] = {
-        case subject: S if typeManifest.erasure.isInstance(subject) => _ match {
-          case Some(value) => theTransform(subject)(value).asInstanceOf[S1]
-          case None => clearer(subject).asInstanceOf[S1]
-        }
+        case subject: S if typeManifest.erasure.isInstance(subject) => value =>
+          theTransform(subject)(value).asInstanceOf[S1]
       }
     }
+
+  /**
+   * {@PortableField} support for transforming a subject using a value if <code>subject</code> is of type S.
+   * theTransform operates on a value directly, rather than on an Option.
+   * The clearer is used when the value is None.
+   * @param S the Subject type to transform using the value
+   */
+  def transformOnlyDirect[S <: AnyRef,T](theTransform: S => T => S, clearer: S => S)(implicit typeManifest: ClassManifest[S]): PortableField[T] =
+    transformOnly[S,T](subject => { valueOpt =>
+      valueOpt match {
+        case Some(value) => theTransform(subject)(value).asInstanceOf[S]
+        case None => clearer(subject).asInstanceOf[S]
+      }
+    })
 
   /** Defines a default for a field value, used when copied from {@link Unit}. */
   def default[T](value: => T): PortableField[T] = new PortableField[T] with NoSetter[T] with NoTransformer[T] {
@@ -390,22 +402,22 @@ object PortableField {
    * @param M any mutable type
    * @param T the value type
    */
-  def field[M,T](getter: M => Option[T], setter: M => T => Unit, clearer: M => Unit = {_: M => })
-                (implicit typeManifest: ClassManifest[M]): PortableField[T] =
-    readOnly[M,T](getter) + writeOnly[M,T](setter, clearer)
+  def fieldDirect[M,T](getter: M => Option[T], setter: M => T => Unit, clearer: M => Unit = {_: M => })
+                      (implicit typeManifest: ClassManifest[M]): PortableField[T] =
+    readOnly[M,T](getter) + writeOnlyDirect[M,T](setter, clearer)
 
   /**
    * Defines PortableField for a field value using a setter and getter, both operating on an Option.
    * @param M any mutable type
    * @param T the value type
    */
-  def fieldOpt[M,T](getter: M => Option[T], setter: M => Option[T] => Unit)
-                   (implicit typeManifest: ClassManifest[M]): PortableField[T] =
-    readOnly[M,T](getter) + writeOnlyOpt[M,T](setter)
+  def field[M,T](getter: M => Option[T], setter: M => Option[T] => Unit)
+                (implicit typeManifest: ClassManifest[M]): PortableField[T] =
+    readOnly[M,T](getter) + writeOnly[M,T](setter)
 
   def mapField[T](name: String): PortableField[T] = new DelegatingPortableField[T] {
-    val delegate = readOnly[Map[String,_ <: T],T](_.get(name)) + writeOnly[mutable.Map[String,_ >: T],T](m => v => m.put(name, v), _.remove(name)) +
-            transformOnly[immutable.Map[String,_ >: T],T](map => value => map + (name -> value), _ - name)
+    val delegate = readOnly[Map[String,_ <: T],T](_.get(name)) + writeOnlyDirect[mutable.Map[String,_ >: T],T](m => v => m.put(name, v), _.remove(name)) +
+            transformOnlyDirect[immutable.Map[String,_ >: T],T](map => value => map + (name -> value), _ - name)
 
     override def toString = "mapField(" + name + ")"
   }

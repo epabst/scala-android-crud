@@ -32,7 +32,7 @@ class ViewFieldSpec extends ShouldMatchers with EasyMockSugar {
     val stringField =
       persisted[String]("name") +
       viewId(101, textView) +
-      viewId(102, field[MyView,String](_.status, _.status_=))
+      viewId(102, fieldDirect[MyView,String](_.status, _.status_=))
   }
 
   @Test
@@ -52,7 +52,7 @@ class ViewFieldSpec extends ShouldMatchers with EasyMockSugar {
     whenExecuting(viewGroup, view1, view2, view3) {
       val stringField =
         viewId(101, textView) +
-        viewId(102, field[TextView,String](v => Option(v.getText.toString), _.setText, _.setText("Please Fill")))
+        viewId(102, fieldDirect[TextView,String](v => Option(v.getText.toString), _.setText, _.setText("Please Fill")))
       stringField.setValue(viewGroup, None)
 
       val intField = viewId(103, formatted[Int](textView))
@@ -69,8 +69,8 @@ class ViewFieldSpec extends ShouldMatchers with EasyMockSugar {
       call(group.findViewById(56)).andReturn(view).anyTimes
     }
     whenExecuting(context, group, view) {
-      val stringField = field[MyEntity,String](_.string, _.string_=) +
-        viewId(56, field[Spinner,String](
+      val stringField = fieldDirect[MyEntity,String](_.string, _.string_=) +
+        viewId(56, fieldDirect[Spinner,String](
           _ => throw new IllegalStateException("should not be called"),
           _ => throw new IllegalStateException("should not be called")))
       val myEntity1 = new MyEntity("my1", 1)
@@ -83,8 +83,8 @@ class ViewFieldSpec extends ShouldMatchers with EasyMockSugar {
   def itShouldOnlyCopyToAndFromViewByIdIfIdIsFound() {
     val context = mock[Context]
     whenExecuting(context) {
-      val stringField = field[MyEntity,String](_.string, _.string_=) +
-        viewId(56, field[Spinner,String](
+      val stringField = fieldDirect[MyEntity,String](_.string, _.string_=) +
+        viewId(56, fieldDirect[Spinner,String](
           _ => throw new IllegalStateException("should not be called"),
           _ => throw new IllegalStateException("should not be called")))
       val myEntity1 = new MyEntity("my1", 1)
@@ -101,7 +101,7 @@ class ViewFieldSpec extends ShouldMatchers with EasyMockSugar {
   def itShouldHandleUnparseableValues() {
     val context = mock[Context]
     whenExecuting(context) {
-      val intField = formatted[Int](textView) + field[MyEntity,Int](_.number, _.number_=)
+      val intField = formatted[Int](textView) + fieldDirect[MyEntity,Int](_.number, _.number_=)
       val view = new TextView(context)
       view.setText("twenty")
       intField.getter(view) should be (None)

@@ -24,18 +24,18 @@ class PortableFieldSpec extends Spec with ShouldMatchers with EasyMockSugar {
     class OtherEntity(var name: String, var boolean: Boolean)
 
     it("should be easily instantiable for an Entity") {
-      val a1 = field[MyEntity,String](_.string, _.string_=)
-      val a2 = field[MyEntity,Int](_.number, _.number_=)
+      val a1 = fieldDirect[MyEntity,String](_.string, _.string_=)
+      val a2 = fieldDirect[MyEntity,Int](_.number, _.number_=)
       val stringField =
-        field[MyEntity,String](_.string, _.string_=) +
+        fieldDirect[MyEntity,String](_.string, _.string_=) +
         readOnly[OtherEntity,String](_.name) +
-        writeOnly[OtherEntity,String](_.name_=)
-      val intField = field[MyEntity,Int](_.number, _.number_=)
+        writeOnlyDirect[OtherEntity,String](_.name_=)
+      val intField = fieldDirect[MyEntity,Int](_.number, _.number_=)
       val readOnlyField = readOnly[MyEntity,Int](_.number)
     }
 
     it("should set defaults") {
-      val stringField = field[MyEntity,String](_.string, _.string_=) + default("Hello")
+      val stringField = fieldDirect[MyEntity,String](_.string, _.string_=) + default("Hello")
 
       val myEntity1 = new MyEntity("my1", 15)
       stringField.copy(Unit, myEntity1) should be (true)
@@ -78,8 +78,8 @@ class PortableFieldSpec extends Spec with ShouldMatchers with EasyMockSugar {
     it("should copy from one to multiple") {
       val stringField =
         readOnly[OtherEntity,String](_.name) +
-        writeOnly[OtherEntity, String](_.name_=) +
-        field[MyEntity,String](_.string, _.string_=)
+        writeOnlyDirect[OtherEntity, String](_.name_=) +
+        fieldDirect[MyEntity,String](_.string, _.string_=)
 
       val myEntity1 = new MyEntity("my1", 1)
       val otherEntity1 = new OtherEntity("other1", false)
@@ -106,8 +106,8 @@ class PortableFieldSpec extends Spec with ShouldMatchers with EasyMockSugar {
       val myEntity1 = new MyEntity("my1", 1)
       val otherEntity1 = new OtherEntity("other1", false)
       val stringField = mapField[String]("stringValue") +
-        field[OtherEntity,String](_.name, _.name_=) +
-        field[MyEntity,String](_.string, _.string_=)
+        fieldDirect[OtherEntity,String](_.name, _.name_=) +
+        fieldDirect[MyEntity,String](_.string, _.string_=)
       stringField.getterFromItem.isDefinedAt(List(myEntity1, otherEntity1)) should be (true)
       stringField.getterFromItem.isDefinedAt(List(new Object)) should be (false)
       stringField.getterFromItem(List(myEntity1, otherEntity1)) should be (Some("other1"))
@@ -131,8 +131,8 @@ class PortableFieldSpec extends Spec with ShouldMatchers with EasyMockSugar {
       fieldWithDeprecatedName.getterFromItem(List(immutable.Map[String,Any]("size" -> 4))) should be (Some(4))
     }
 
-    it("writeOnly should call clearer if no value") {
-      val stringField = writeOnly[Buffer[String],String]({ b => v => b += v; Unit }, _.clear())
+    it("writeOnlyDirect should call clearer if no value") {
+      val stringField = writeOnlyDirect[Buffer[String],String]({ b => v => b += v; Unit }, _.clear())
       val buffer = Buffer("hello")
       stringField.setValue(buffer, None)
       buffer should be ('empty)
@@ -169,7 +169,7 @@ class PortableFieldSpec extends Spec with ShouldMatchers with EasyMockSugar {
 
     it("all transformers of a field should be used") {
       val stringField = mapField[String]("greeting") +
-              transformOnly[immutable.Map[String,String],String](map => ignored => map + ("greeting" -> map("greeting").toUpperCase), map => map)
+              transformOnlyDirect[immutable.Map[String,String],String](map => ignored => map + ("greeting" -> map("greeting").toUpperCase), map => map)
       //qualified to point out that it's immutable
       val result = stringField.transformer(immutable.Map.empty[String,String])(Some("hello"))
       result.get("greeting") should be (Some("HELLO"))
@@ -177,7 +177,7 @@ class PortableFieldSpec extends Spec with ShouldMatchers with EasyMockSugar {
 
     it("should transform using an initial and some data") {
       val stringField = mapField[String]("greeting") +
-              transformOnly[immutable.Map[String,String],String](map => ignored => map + ("greeting" -> map("greeting").toUpperCase), map => map)
+              transformOnlyDirect[immutable.Map[String,String],String](map => ignored => map + ("greeting" -> map("greeting").toUpperCase), map => map)
       //qualified to point out that it's immutable
       val result = stringField.transform(initial = immutable.Map.empty[String,String], data = immutable.Map("greeting" -> "hello", "ignored" -> "foo"))
       result should be (immutable.Map[String,String]("greeting" -> "HELLO"))

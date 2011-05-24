@@ -15,5 +15,5 @@ trait IdPk extends PlatformTypes {
 }
 
 object IdPk extends PlatformTypes {
-  val idField = fieldOpt[IdPk,ID](_.id, _.id_=) + CursorField.persistedId
+  val idField = field[IdPk,ID](_.id, _.id_=) + CursorField.persistedId
 }
