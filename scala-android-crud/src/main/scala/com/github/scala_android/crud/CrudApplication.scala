@@ -1,5 +1,7 @@
 package com.github.scala_android.crud
 
+import monitor.Logging
+
 /**
  * An Application that works with {@link CrudType}s.
  * @author Eric Pabst (epabst@gmail.com)
@@ -7,7 +9,9 @@ package com.github.scala_android.crud
  * Time: 4:50 PM
  */
 
-trait CrudApplication {
+trait CrudApplication extends Logging {
+  verbose("Instantiated CrudApplication: " + this)
+
   def name: String
 
   //this will be used for programmatic uses such as a database name

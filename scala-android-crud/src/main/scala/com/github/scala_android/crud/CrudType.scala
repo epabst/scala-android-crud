@@ -4,6 +4,7 @@ import android.widget.ListAdapter
 import android.app.Activity
 import android.net.Uri
 import com.github.triangle.{FieldList, BaseField}
+import monitor.Logging
 
 /**
  * An entity configuration that provides all custom information needed to
@@ -12,7 +13,9 @@ import com.github.triangle.{FieldList, BaseField}
  * Date: 2/23/11
  * Time: 3:24 PM
  */
-trait CrudType extends FieldList with PlatformTypes {
+trait CrudType extends FieldList with PlatformTypes with Logging {
+  verbose("Instantiated CrudType: " + this)
+
   //this is the type used for internationalized strings
   def entityName: String
 
@@ -44,8 +47,15 @@ trait CrudType extends FieldList with PlatformTypes {
    * The list of entities that refer to this one.
    * Those entities should have a foreignKey in their fields list, if persisted.
    */
-  def childEntities(application: CrudApplication): List[CrudType] =
-    application.allEntities.filter(_.parentEntities.contains(this))
+  def childEntities(application: CrudApplication): List[CrudType] = {
+    val self = this
+    verbose("childEntities: allEntities=" + application.allEntities + " self=" + self)
+    application.allEntities.filter { entity =>
+      val entityParents = entity.parentEntities
+      verbose("childEntities: parents of " + entity + " are " + entityParents)
+      entityParents.contains(self)
+    }
+  }
 
   def displayChildEntityLists[T](actionFactory: UIActionFactory, idGetter: T => ID,
                                  childEntities: List[CrudType]): List[UIAction[T]] =
@@ -57,7 +67,7 @@ trait CrudType extends FieldList with PlatformTypes {
 
   def findId(uri: Uri): Option[ID] = new EntityUriSegment(entityName).findId(uri)
 
-  override def toString = entityName
+  override def toString() = entityName
 
   /**
    * Gets the actions that a user can perform from a list of the entities.
