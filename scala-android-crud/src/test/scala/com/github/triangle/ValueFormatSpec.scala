@@ -2,7 +2,7 @@ package com.github.triangle
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.matchers.MustMatchers
 import org.scalatest.Spec
 import java.text.NumberFormat
 import ValueFormat._
@@ -15,24 +15,24 @@ import ValueFormat._
  */
 
 @RunWith(classOf[JUnitRunner])
-class ValueFormatSpec extends Spec with ShouldMatchers {
+class ValueFormatSpec extends Spec with MustMatchers {
   describe("BasicValueFormat") {
-    it("should convert between basic types") {
-      itShouldConvertBetweenTypes[Long](123)
-      itShouldConvertBetweenTypes[Int](123)
-      itShouldConvertBetweenTypes[Short](123)
-      itShouldConvertBetweenTypes[Byte](123)
-      itShouldConvertBetweenTypes[Double](3232.11)
-      itShouldConvertBetweenTypes[Float](2.3f)
-      itShouldConvertBetweenTypes[Boolean](true)
+    it("must convert between basic types") {
+      itMustConvertBetweenTypes[Long](123)
+      itMustConvertBetweenTypes[Int](123)
+      itMustConvertBetweenTypes[Short](123)
+      itMustConvertBetweenTypes[Byte](123)
+      itMustConvertBetweenTypes[Double](3232.11)
+      itMustConvertBetweenTypes[Float](2.3f)
+      itMustConvertBetweenTypes[Boolean](true)
     }
 
-    def itShouldConvertBetweenTypes[T <: AnyVal](value: T)(implicit m: Manifest[T]) {
+    def itMustConvertBetweenTypes[T <: AnyVal](value: T)(implicit m: Manifest[T]) {
       val format = new BasicValueFormat[T]
-      itShouldFormatAndParse(format, value)
+      itMustFormatAndParse(format, value)
     }
 
-    it("should fail to construct if no type specified") {
+    it("must fail to construct if no type specified") {
       intercept[IllegalArgumentException] {
         new BasicValueFormat[AnyVal]
       }
@@ -40,67 +40,67 @@ class ValueFormatSpec extends Spec with ShouldMatchers {
   }
 
   describe("TextValueFormat") {
-    it("should convert numbers") {
-      itShouldParseNumbers[Long](123)
-      itShouldParseNumbers[Int](123)
-      itShouldParseNumbers[Short](123)
-      itShouldParseNumbers[Byte](123)
+    it("must convert numbers") {
+      itMustParseNumbers[Long](123)
+      itMustParseNumbers[Int](123)
+      itMustParseNumbers[Short](123)
+      itMustParseNumbers[Byte](123)
     }
 
-    it("should return None if unable to parse") {
+    it("must return None if unable to parse") {
       val format = new TextValueFormat[Int](NumberFormat.getIntegerInstance)
-      format.toValue("blah") should be (None)
+      format.toValue("blah") must be (None)
     }
 
-    def itShouldParseNumbers[T](value: T)(implicit m: Manifest[T]) {
+    def itMustParseNumbers[T](value: T)(implicit m: Manifest[T]) {
       val format = new TextValueFormat[T](NumberFormat.getIntegerInstance)
-      itShouldFormatAndParse(format, value)
+      itMustFormatAndParse(format, value)
     }
   }
 
   describe("currencyValueFormat") {
     val format = currencyValueFormat
 
-    it("should handle parse various number formats") {
-      format.toValue("$1.00").get should be(1.0)
-      format.toValue("$1").get should be(1.0)
-      format.toValue("1.00").get should be(1.0)
-      format.toValue("1").get should be(1.0)
-      format.toValue("-1.00").get should be(-1.0)
-      format.toValue("-1").get should be(-1.0)
-      format.toValue("($1.00)").get should be(-1.0)
-      format.toValue("($1)").get should be(-1.0)
+    it("must handle parse various number formats") {
+      format.toValue("$1.00").get must be(1.0)
+      format.toValue("$1").get must be(1.0)
+      format.toValue("1.00").get must be(1.0)
+      format.toValue("1").get must be(1.0)
+      format.toValue("-1.00").get must be(-1.0)
+      format.toValue("-1").get must be(-1.0)
+      format.toValue("($1.00)").get must be(-1.0)
+      format.toValue("($1)").get must be(-1.0)
       //do these later if desired
-      format.toValue("(1.00)") should be(None)
-      format.toValue("(1)") should be(None)
-      format.toValue("-$1.00") should be(None)
-      format.toValue("-$1") should be(None)
+      format.toValue("(1.00)") must be(None)
+      format.toValue("(1)") must be(None)
+      format.toValue("-$1.00") must be(None)
+      format.toValue("-$1") must be(None)
     }
 
-    it("should format correctly") {
-      format.toString(1234.2) should be ("1,234.20")
-      format.toString(1234.22324) should be ("1,234.22")
+    it("must format correctly") {
+      format.toString(1234.2) must be ("1,234.20")
+      format.toString(1234.22324) must be ("1,234.22")
     }
   }
 
   describe("currencyDisplayValueFormat") {
     val format = currencyDisplayValueFormat
 
-    it("should handle parse various number formats") {
-      format.toValue("$1.00").get should be(1.0)
-      format.toValue("$1").get should be(1.0)
-      format.toValue("1.00") should be(None)
-      format.toValue("($1.00)").get should be(-1.0)
-      format.toValue("($1)").get should be(-1.0)
+    it("must handle parse various number formats") {
+      format.toValue("$1.00").get must be(1.0)
+      format.toValue("$1").get must be(1.0)
+      format.toValue("1.00") must be(None)
+      format.toValue("($1.00)").get must be(-1.0)
+      format.toValue("($1)").get must be(-1.0)
       //do these later if desired
-      format.toValue("(1.00)") should be(None)
-      format.toValue("-$1.00") should be(None)
-      format.toValue("-$1") should be(None)
+      format.toValue("(1.00)") must be(None)
+      format.toValue("-$1.00") must be(None)
+      format.toValue("-$1") must be(None)
     }
 
-    it("should format correctly") {
-      format.toString(1234.2) should be ("$1,234.20")
-      format.toString(1234.22324) should be ("$1,234.22")
+    it("must format correctly") {
+      format.toString(1234.2) must be ("$1,234.20")
+      format.toString(1234.22324) must be ("$1,234.22")
     }
   }
 
@@ -111,17 +111,17 @@ class ValueFormatSpec extends Spec with ShouldMatchers {
     }
     val format = enumFormat[MyEnum.Value](MyEnum)
 
-    it("should handle formatting/parsing") {
-      format.toString(MyEnum.A) should be ("A")
-      format.toString(MyEnum.B) should be ("B")
-      itShouldFormatAndParse(format, MyEnum.A)
-      itShouldFormatAndParse(format, MyEnum.B)
-      format.toValue("") should be (None)
+    it("must handle formatting/parsing") {
+      format.toString(MyEnum.A) must be ("A")
+      format.toString(MyEnum.B) must be ("B")
+      itMustFormatAndParse(format, MyEnum.A)
+      itMustFormatAndParse(format, MyEnum.B)
+      format.toValue("") must be (None)
     }
   }
 
-  def itShouldFormatAndParse[T](format: ValueFormat[T], value: T) {
+  def itMustFormatAndParse[T](format: ValueFormat[T], value: T) {
     val string = format.toString(value)
-    format.toValue(string).get should be (value)
+    format.toValue(string).get must be (value)
   }
 }

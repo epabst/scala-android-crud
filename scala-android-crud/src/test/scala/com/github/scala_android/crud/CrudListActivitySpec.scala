@@ -8,7 +8,7 @@ import org.scalatest.mock.EasyMockSugar
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import scala.collection.mutable.Map
 import com.xtremelabs.robolectric.tester.android.view.TestMenu
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.matchers.MustMatchers
 import android.view.{MenuItem, View, ContextMenu}
 
 /**
@@ -18,7 +18,7 @@ import android.view.{MenuItem, View, ContextMenu}
  * Time: 6:22 PM
  */
 @RunWith(classOf[RobolectricTestRunner])
-class CrudListActivitySpec extends EasyMockSugar with ShouldMatchers with MyEntityTesting {
+class CrudListActivitySpec extends EasyMockSugar with MustMatchers with MyEntityTesting {
   @Test
   def shouldAllowAdding {
     val persistence = mock[CrudPersistence]
@@ -34,10 +34,10 @@ class CrudListActivitySpec extends EasyMockSugar with ShouldMatchers with MyEnti
       activity.onCreateOptionsMenu(menu)
       val item0 = menu.getItem(0)
       val drawable = item0.getIcon
-      item0.getTitle.toString should be ("Add")
-      menu.size should be (1)
+      item0.getTitle.toString must be ("Add")
+      menu.size must be (1)
 
-      activity.onOptionsItemSelected(item0) should be (true)
+      activity.onOptionsItemSelected(item0) must be (true)
     }
   }
 
@@ -103,10 +103,10 @@ class CrudListActivitySpec extends EasyMockSugar with ShouldMatchers with MyEnti
       activity.setIntent(new Intent(Intent.ACTION_MAIN))
       activity.onCreate(null)
       activity.onPause()
-      entityType.refreshCount should be (0)
+      entityType.refreshCount must be (0)
 
       activity.onResume()
-      entityType.refreshCount should be (1)
+      entityType.refreshCount must be (1)
     }
   }
 

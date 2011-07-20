@@ -2,7 +2,7 @@ package com.github.scala_android.crud
 
 import org.junit.runner.RunWith
 import scala.collection.mutable
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.matchers.MustMatchers
 import org.scalatest.Spec
 import com.github.scala_android.crud.CursorField._
 import com.github.triangle.PortableField
@@ -21,10 +21,10 @@ import org.junit.Test
  */
 
 @RunWith(classOf[RobolectricTestRunner])
-class GeneratedCrudTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
+class GeneratedCrudTypeSpec extends Spec with MustMatchers with MyEntityTesting {
 
   @Test
-  def itShouldCreateListAdapterWithIntentUsedForCriteria() {
+  def itMustCreateListAdapterWithIntentUsedForCriteria() {
     val listPersistence = mock[ListEntityPersistence[mutable.Map[String,Any]]]
     val crudContext = mock[CrudContext]
     val activity = mock[Activity]
@@ -42,7 +42,7 @@ class GeneratedCrudTypeSpec extends Spec with ShouldMatchers with MyEntityTestin
         def openEntityPersistence(crudContext: CrudContext) = listPersistence
       }
       val listAdapter = generatedType.createListAdapter(listPersistence, crudContext, activity)
-      listAdapter.getCount should be (0)
+      listAdapter.getCount must be (0)
     }
   }
 }

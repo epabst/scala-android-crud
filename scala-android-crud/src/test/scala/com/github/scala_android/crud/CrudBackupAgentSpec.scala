@@ -3,7 +3,7 @@ package com.github.scala_android.crud
 import org.junit.Test
 import org.junit.runner.RunWith
 import com.xtremelabs.robolectric.RobolectricTestRunner
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.matchers.MustMatchers
 import android.widget.ListAdapter
 import scala.collection.mutable
 import org.easymock.{IAnswer, EasyMock}
@@ -21,21 +21,21 @@ import android.os.ParcelFileDescriptor
  * Time: 6:22 PM
  */
 @RunWith(classOf[RobolectricTestRunner])
-class CrudBackupAgentSpec extends MyEntityTesting with ShouldMatchers {
+class CrudBackupAgentSpec extends MyEntityTesting with MustMatchers {
   @Test
   def calculatedIteratorShouldWork() {
     val values = List("a", "b", "c").toIterator
     val iterator = new CalculatedIterator[String] {
       def calculateNextValue() = if (values.hasNext) Some(values.next()) else None
     }
-    iterator.next() should be ("a")
-    iterator.hasNext should be (true)
-    iterator.hasNext should be (true)
-    iterator.next() should be ("b")
-    iterator.hasNext should be (true)
-    iterator.next() should be ("c")
-    iterator.hasNext should be (false)
-    iterator.hasNext should be (false)
+    iterator.next() must be ("a")
+    iterator.hasNext must be (true)
+    iterator.hasNext must be (true)
+    iterator.next() must be ("b")
+    iterator.hasNext must be (true)
+    iterator.next() must be ("c")
+    iterator.hasNext must be (false)
+    iterator.hasNext must be (false)
   }
 
   @Test
@@ -45,7 +45,7 @@ class CrudBackupAgentSpec extends MyEntityTesting with ShouldMatchers {
     map.put("age", 35)
     val bytes = marshall(map)
     val copy = unmarshall(bytes)
-    copy should be (map)
+    copy must be (map)
   }
 
   @Test
@@ -85,8 +85,8 @@ class CrudBackupAgentSpec extends MyEntityTesting with ShouldMatchers {
       backupAgent.onBackup(state0, backupTarget, state1)
       backupAgent.onDestroy()
 
-      persistenceB.findAll(persistenceB.newCriteria).size should be (0)
-      persistence2B.findAll(persistence2B.newCriteria).size should be (0)
+      persistenceB.findAll(persistenceB.newCriteria).size must be (0)
+      persistence2B.findAll(persistence2B.newCriteria).size must be (0)
 
       val backupAgentB = new CrudBackupAgent(applicationB)
       backupAgentB.onCreate()
@@ -94,12 +94,12 @@ class CrudBackupAgentSpec extends MyEntityTesting with ShouldMatchers {
       backupAgentB.onDestroy()
 
       val allB = persistenceB.findAll(persistenceB.newCriteria)
-      allB.size should be (2)
-      allB.map(persistenceB.getId) should be (List(100L, 101L))
+      allB.size must be (2)
+      allB.map(persistenceB.getId) must be (List(100L, 101L))
 
       val all2B = persistence2B.findAll(persistence2B.newCriteria)
-      all2B.size should be (2)
-      all2B.map(persistence2B.getId) should be (List(101L, 104L))
+      all2B.size must be (2)
+      all2B.map(persistence2B.getId) must be (List(101L, 104L))
     }
   }
 

@@ -2,7 +2,7 @@ package com.github.scala_android.crud
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.matchers.MustMatchers
 import org.scalatest.Spec
 
 /**
@@ -13,21 +13,21 @@ import org.scalatest.Spec
  */
 
 @RunWith(classOf[JUnitRunner])
-class CrudContextSpec extends Spec with ShouldMatchers {
+class CrudContextSpec extends Spec with MustMatchers {
 
   describe("ContextVar") {
-    it("should retain its value for the same CrudContext") {
+    it("must retain its value for the same CrudContext") {
       object myVar extends ContextVar[String]
       val crudContext = new CrudContext(null, null)
       val crudContext2 = new CrudContext(null, null)
-      myVar.get(crudContext) should be (None)
+      myVar.get(crudContext) must be (None)
       myVar.set(crudContext, "hello")
-      myVar.get(crudContext) should be (Some("hello"))
-      myVar.get(crudContext2) should be (None)
-      myVar.get(crudContext) should be (Some("hello"))
+      myVar.get(crudContext) must be (Some("hello"))
+      myVar.get(crudContext2) must be (None)
+      myVar.get(crudContext) must be (Some("hello"))
     }
 
-    it("clear should clear the value for the same CrudContext") {
+    it("clear must clear the value for the same CrudContext") {
       object myVar extends ContextVar[String]
       val myVar2 = new ContextVar[String]
       val crudContext = new CrudContext(null, null)
@@ -35,13 +35,13 @@ class CrudContextSpec extends Spec with ShouldMatchers {
       myVar.set(crudContext, "hello")
       myVar2.set(crudContext, "howdy")
 
-      myVar.clear(crudContext2) should be (None)
-      myVar.get(crudContext) should be (Some("hello"))
+      myVar.clear(crudContext2) must be (None)
+      myVar.get(crudContext) must be (Some("hello"))
 
-      myVar.clear(crudContext) should be (Some("hello"))
-      myVar.get(crudContext) should be (None)
+      myVar.clear(crudContext) must be (Some("hello"))
+      myVar.get(crudContext) must be (None)
 
-      myVar2.clear(crudContext) should be (Some("howdy"))
+      myVar2.clear(crudContext) must be (Some("howdy"))
     }
   }
 }

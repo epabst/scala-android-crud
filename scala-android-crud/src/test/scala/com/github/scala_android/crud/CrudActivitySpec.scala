@@ -5,7 +5,7 @@ import org.junit.runner.RunWith
 import org.scalatest.mock.EasyMockSugar
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import scala.collection.mutable.Map
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.matchers.MustMatchers
 import ActivityUIActionFactory._
 import android.widget.ListAdapter
 
@@ -16,7 +16,7 @@ import android.widget.ListAdapter
  * Time: 6:22 PM
  */
 @RunWith(classOf[RobolectricTestRunner])
-class CrudActivitySpec extends EasyMockSugar with ShouldMatchers with MyEntityTesting {
+class CrudActivitySpec extends EasyMockSugar with MustMatchers with MyEntityTesting {
   @Test
   def shouldAllowAdding {
     val persistence = mock[CrudPersistence]
@@ -61,8 +61,8 @@ class CrudActivitySpec extends EasyMockSugar with ShouldMatchers with MyEntityTe
       activity.onCreate(null)
       val viewData = Map[String,Any]()
       entityType.copyFields(activity, viewData)
-      viewData.get("name") should be (Some("Bob"))
-      viewData.get("age") should be (Some(25))
+      viewData.get("name") must be (Some("Bob"))
+      viewData.get("age") must be (Some(25))
 
       activity.onPause()
     }

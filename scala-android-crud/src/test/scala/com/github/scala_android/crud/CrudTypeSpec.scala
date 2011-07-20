@@ -3,7 +3,7 @@ package com.github.scala_android.crud
 import org.junit.runner.RunWith
 import scala.collection.mutable
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.matchers.MustMatchers
 import org.scalatest.Spec
 import com.github.scala_android.crud.CursorField._
 import org.easymock.EasyMock
@@ -19,9 +19,9 @@ import android.widget.ListAdapter
  */
 
 @RunWith(classOf[JUnitRunner])
-class CrudTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
+class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting {
 
-  it("should derive parent entities from foreignKey fields") {
+  it("must derive parent entities from foreignKey fields") {
     val persistence = mock[CrudPersistence]
     val listAdapter = mock[ListAdapter]
     whenExecuting(persistence, listAdapter) {
@@ -30,7 +30,7 @@ class CrudTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
       val entityType3 = new MyEntityType(persistence, listAdapter) {
         override val fields = foreignKey(entityType1) :: foreignKey(entityType2) :: super.fields
       }
-      entityType3.parentEntities should be (List(entityType1, entityType2))
+      entityType3.parentEntities must be (List(entityType1, entityType2))
     }
   }
 
@@ -46,7 +46,7 @@ class CrudTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
   val displayChild2List = namedMock[UIAction[EntityUriSegment]]("displayChild2List")
   val adaptedDisplayChild2List = namedMock[UIAction[ID]]("adaptedDisplayChild2List")
 
-  it("should get the correct entity actions with child entities") {
+  it("must get the correct entity actions with child entities") {
     val persistence = mock[CrudPersistence]
     val actionFactory = mock[UIActionFactory]
     val application = mock[CrudApplication]
@@ -66,12 +66,12 @@ class CrudTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
       call(actionFactory.startDelete(childEntity)).andReturn(startDeleteChild)
     }
     whenExecuting(actionFactory, persistence, application) {
-      childEntity.getEntityActions(actionFactory) should be (List(startUpdateChild, startDeleteChild))
-      parentEntity.getEntityActions(actionFactory) should be (List(adaptedDisplayChildList, startUpdateParent, startDeleteParent))
+      childEntity.getEntityActions(actionFactory) must be (List(startUpdateChild, startDeleteChild))
+      parentEntity.getEntityActions(actionFactory) must be (List(adaptedDisplayChildList, startUpdateParent, startDeleteParent))
     }
   }
 
-  it("should get the correct list actions with child entities") {
+  it("must get the correct list actions with child entities") {
     val persistence = mock[CrudPersistence]
     val actionFactory = mock[UIActionFactory]
     val application = mock[CrudApplication]
@@ -96,12 +96,12 @@ class CrudTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
       call(actionFactory.adapt[ID,EntityUriSegment](eql(displayChild2List), notNull())).andStubReturn(adaptedDisplayChild2List)
     }
     whenExecuting(actionFactory, persistence, application) {
-      parentEntity.getListActions(actionFactory) should be (List(startCreateParent))
-      childEntity.getListActions(actionFactory) should be (List(startCreateChild))
+      parentEntity.getListActions(actionFactory) must be (List(startCreateParent))
+      childEntity.getListActions(actionFactory) must be (List(startCreateChild))
     }
   }
 
-  it("should get the correct list actions with child entities w/ no parent display") {
+  it("must get the correct list actions with child entities w/ no parent display") {
     val persistence = mock[CrudPersistence]
     val actionFactory = mock[UIActionFactory]
     val application = mock[CrudApplication]
@@ -126,12 +126,12 @@ class CrudTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
       call(actionFactory.adapt[ID,EntityUriSegment](eql(displayChild2List), notNull())).andReturn(adaptedDisplayChild2List)
     }
     whenExecuting(actionFactory, persistence, application) {
-      parentEntity.getListActions(actionFactory) should be (List(startCreateParent))
-      childEntity.getListActions(actionFactory) should be (List(adaptedStartUpdateParent, adaptedDisplayChild2List, startCreateChild))
+      parentEntity.getListActions(actionFactory) must be (List(startCreateParent))
+      childEntity.getListActions(actionFactory) must be (List(adaptedStartUpdateParent, adaptedDisplayChild2List, startCreateChild))
     }
   }
 
-  it("should delete with undo possibility") {
+  it("must delete with undo possibility") {
     val persistence = mock[CrudPersistence]
     val actionFactory = mock[UIActionFactory]
     val application = mock[CrudApplication]
@@ -159,7 +159,7 @@ class CrudTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
     }
   }
 
-  it("undo of delete should work") {
+  it("undo of delete must work") {
     val persistence = mock[CrudPersistence]
     val actionFactory = mock[UIActionFactory]
     val application = mock[CrudApplication]
@@ -181,7 +181,7 @@ class CrudTypeSpec extends Spec with ShouldMatchers with MyEntityTesting {
       call(actionFactory.addUndoableDelete(eql(entity), notNull[Undoable[ID]])).andAnswer(answer {
         val currentArguments = EasyMock.getCurrentArguments
         val undoable = currentArguments(1).asInstanceOf[Undoable[ID]]
-        undoable.undo() should be(id2)
+        undoable.undo() must be(id2)
       })
     }
     whenExecuting(actionFactory, persistence, application) {

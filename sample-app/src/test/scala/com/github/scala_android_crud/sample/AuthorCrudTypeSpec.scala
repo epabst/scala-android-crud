@@ -1,7 +1,7 @@
 package com.github.scala_android_crud.sample
 
 import org.scalatest.Spec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.EasyMockSugar
 import com.github.scala_android.crud.CursorField._
 import com.github.scala_android.crud._
@@ -15,13 +15,13 @@ import org.scalatest.junit.JUnitRunner
  * Time: 9:17 PM
  */
 @RunWith(classOf[JUnitRunner])
-class AuthorCrudTypeSpec extends Spec with ShouldMatchers with EasyMockSugar {
-  it("should have the right children") {
-    SampleApplication.AuthorCrudType.childEntities(SampleApplication) should
+class AuthorCrudTypeSpec extends Spec with MustMatchers with EasyMockSugar {
+  it("must have the right children") {
+    SampleApplication.AuthorCrudType.childEntities(SampleApplication) must
             be (List[CrudType](SampleApplication.BookCrudType))
   }
 
-  it("should calculate the book count") {
+  it("must calculate the book count") {
     val crudContext = mock[CrudContext]
     whenExecuting(crudContext) {
       val context = new AuthorContext {
@@ -43,7 +43,7 @@ class AuthorCrudTypeSpec extends Spec with ShouldMatchers with EasyMockSugar {
       context.bookPersistence.buffer += Map.empty[String,Any] += Map.empty[String,Any]
 
       val authorData = context.AuthorCrudType.transformWithItem(Map.empty[String,Any], List(Map[String,Any](persistedId.name -> 100L), crudContext))
-      authorData should be (Map[String,Any](persistedId.name -> 100L, "bookCount" -> 2))
+      authorData must be (Map[String,Any](persistedId.name -> 100L, "bookCount" -> 2))
     }
   }
 }

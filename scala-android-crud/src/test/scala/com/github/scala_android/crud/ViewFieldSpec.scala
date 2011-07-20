@@ -1,7 +1,7 @@
 package com.github.scala_android.crud
 
 import org.junit.runner.RunWith
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.matchers.MustMatchers
 import com.github.triangle.PortableField
 import com.github.triangle.PortableField._
 import com.github.scala_android.crud.CursorField._
@@ -22,11 +22,11 @@ import android.content.{Intent, Context}
  */
 
 @RunWith(classOf[RobolectricTestRunner])
-class ViewFieldSpec extends ShouldMatchers with EasyMockSugar {
+class ViewFieldSpec extends MustMatchers with EasyMockSugar {
   class MyEntity(var string: String, var number: Int)
 
   @Test
-  def itShouldBeEasilyInstantiableForAView() {
+  def itMustBeEasilyInstantiableForAView() {
     class MyView(context: Context, var status: String) extends View(context)
 
     val stringField =
@@ -36,7 +36,7 @@ class ViewFieldSpec extends ShouldMatchers with EasyMockSugar {
   }
 
   @Test
-  def itShouldClearTheViewIfEmpty() {
+  def itMustClearTheViewIfEmpty() {
     val viewGroup = mock[View]
     val view1 = mock[TextView]
     val view2 = mock[TextView]
@@ -61,7 +61,7 @@ class ViewFieldSpec extends ShouldMatchers with EasyMockSugar {
   }
 
   @Test
-  def itShouldOnlyCopyToAndFromViewByIdIfTheRightType() {
+  def itMustOnlyCopyToAndFromViewByIdIfTheRightType() {
     val context = mock[Context]
     val group = mock[View]
     val view = mock[TextView]
@@ -71,92 +71,92 @@ class ViewFieldSpec extends ShouldMatchers with EasyMockSugar {
     whenExecuting(context, group, view) {
       val stringField = fieldDirect[MyEntity,String](_.string, _.string_=) +
         viewId(56, fieldDirect[Spinner,String](
-          _ => throw new IllegalStateException("should not be called"),
-          _ => throw new IllegalStateException("should not be called")))
+          _ => throw new IllegalStateException("must not be called"),
+          _ => throw new IllegalStateException("must not be called")))
       val myEntity1 = new MyEntity("my1", 1)
-      stringField.copy(myEntity1, group) should be (false)
-      stringField.copy(group, myEntity1) should be (false)
+      stringField.copy(myEntity1, group) must be (false)
+      stringField.copy(group, myEntity1) must be (false)
     }
   }
 
   @Test
-  def itShouldOnlyCopyToAndFromViewByIdIfIdIsFound() {
+  def itMustOnlyCopyToAndFromViewByIdIfIdIsFound() {
     val context = mock[Context]
     whenExecuting(context) {
       val stringField = fieldDirect[MyEntity,String](_.string, _.string_=) +
         viewId(56, fieldDirect[Spinner,String](
-          _ => throw new IllegalStateException("should not be called"),
-          _ => throw new IllegalStateException("should not be called")))
+          _ => throw new IllegalStateException("must not be called"),
+          _ => throw new IllegalStateException("must not be called")))
       val myEntity1 = new MyEntity("my1", 1)
       val group = new LinearLayout(context)
       val view = new Spinner(context)
       view.setId(100)
       group.addView(view)
-      stringField.copy(myEntity1, group) should be (false)
-      stringField.copy(group, myEntity1) should be (false)
+      stringField.copy(myEntity1, group) must be (false)
+      stringField.copy(group, myEntity1) must be (false)
     }
   }
 
   @Test
-  def itShouldHandleUnparseableValues() {
+  def itMustHandleUnparseableValues() {
     val context = mock[Context]
     whenExecuting(context) {
       val intField = formatted[Int](textView) + fieldDirect[MyEntity,Int](_.number, _.number_=)
       val view = new TextView(context)
       view.setText("twenty")
-      intField.getter(view) should be (None)
+      intField.getter(view) must be (None)
 
       val entity = new MyEntity("my1", 30)
       val result = intField.copy(view, entity)
-      result should be (true)
-      entity.number should be (30)
+      result must be (true)
+      entity.number must be (30)
     }
   }
 
   @Test
-  def itShouldGetTheIdForAnEntityNameFromTheIntent() {
+  def itMustGetTheIdForAnEntityNameFromTheIntent() {
     val field = intentId("foo")
     val intent = new Intent(null, ActivityUIActionFactory.toUri("hello", "1", "foo", "4", "bar", "3"))
-    field.getter(intent) should be (Some(4))
+    field.getter(intent) must be (Some(4))
 
     val intent2 = new Intent(null, ActivityUIActionFactory.toUri("hello", "1", "foo"))
-    field.getter(intent2) should be (None)
+    field.getter(intent2) must be (None)
 
     val intent3 = new Intent(null, ActivityUIActionFactory.toUri("hello"))
-    field.getter(intent3) should be (None)
+    field.getter(intent3) must be (None)
 
     val intent4 = new Intent(null, ActivityUIActionFactory.toUri())
-    field.getter(intent4) should be (None)
+    field.getter(intent4) must be (None)
 
     val intent5 = new Intent(null, ActivityUIActionFactory.toUri("4"))
-    field.getter(intent5) should be (None)
+    field.getter(intent5) must be (None)
   }
 
   @Test
-  def itShouldConvertNullToNone() {
+  def itMustConvertNullToNone() {
     val context = mock[Context]
     whenExecuting(context) {
       val field = textView
       val view = new TextView(context)
       view.setText(null)
-      field.getter(view) should be (None)
+      field.getter(view) must be (None)
 
       view.setText("")
-      field.getter(view) should be (None)
+      field.getter(view) must be (None)
     }
   }
 
   @Test
-  def itShouldTrimStrings() {
+  def itMustTrimStrings() {
     val context = mock[Context]
     whenExecuting(context) {
       val field = textView
       val view = new TextView(context)
       view.setText("  ")
-      field.getter(view) should be (None)
+      field.getter(view) must be (None)
 
       view.setText(" hello world ")
-      field.getter(view) should be (Some("hello world"))
+      field.getter(view) must be (Some("hello world"))
     }
   }
 }
