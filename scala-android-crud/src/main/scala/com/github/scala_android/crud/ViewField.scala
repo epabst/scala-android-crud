@@ -14,7 +14,7 @@ import java.util.{Calendar, Date, GregorianCalendar}
  * Date: 2/16/11
  * Time: 6:30 AM
  */
-
+//todo run all UI read/write operations on the UI thread!!!
 object ViewField extends PlatformTypes {
   private class ChildViewById(viewResourceId: ViewKey) {
     def unapply(target: Any): Option[View] = target match {
