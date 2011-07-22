@@ -6,16 +6,31 @@ import collection._
 /** A trait for {@link PortableField} for convenience such as when defining a List of heterogeneous Fields. */
 trait BaseField {
   /**
+   * Copies this field, the same as {@link #copy(AnyRef,AnyRef)} except that
+   * the copying from <code>from</code> happens immediately (on the current thread),
+   * and the returned PortableValue can copy into the target on a separate thread, if desired..
+   * It's a clean separation so that each step of the copy only accesses one of the objects.
+   * @returns a PortableValue that copies the value into its parameter
+   */
+  def copyFrom(from: AnyRef): PortableValue
+
+  /**
+   * Copies this field from the first applicable item in <code>fromItems</code>.
+   * @returns a PortableValue that copies the value into its parameter
+   */
+  def copyFromItem(fromItems: List[AnyRef]): PortableValue
+
+  /**
    * Copies this field from <code>from</code> to <code>to</code>.
    * @returns true if successfully set a value
    */
-  def copy(from: AnyRef, to: AnyRef): Boolean
+  def copy(from: AnyRef, to: AnyRef): Boolean = copyFrom(from).copyTo(to)
 
   /**
    * Copies this field from the first applicable item in <code>fromItems</code> to <code>to</code>.
    * @returns true if successfully set a value
    */
-  def copyFromItem(fromItems: List[AnyRef], to: AnyRef): Boolean
+  def copyFromItem(fromItems: List[AnyRef], to: AnyRef): Boolean = copyFromItem(fromItems).copyTo(to)
 
   /**
    * Transforms the <code>initial</code> subject using the <code>data</code> for this field..
@@ -44,6 +59,22 @@ trait BaseField {
       case None => None
     }
   }
+}
+
+trait PortableValue {
+  /** True if this has a value. */
+  def isDefined: Boolean
+
+  /**
+   * Copies this value to <code>to</code>.
+   * @returns true if it successfully set a value
+   */
+  def copyTo(to: AnyRef): Boolean
+
+  /**
+   * Copies this value to <code>to</code> without seeing if the setter isDefinedAt that <code>to</code>.
+   */
+  protected[triangle] def copyToDefinedAt(to: AnyRef)
 }
 
 /**
@@ -165,25 +196,61 @@ trait PortableField[T] extends BaseField with Logging {
   //inherited
   def transformWithItem[S <: AnyRef](initial: S, dataItems: List[AnyRef]) = transformUsingGetFunction[S,List[AnyRef]](getterFromItem, initial, dataItems)
 
-  def copy(from: AnyRef, to: AnyRef): Boolean = {
-    copyUsingGetFunction(getter, from, to)
+  def copyFrom(from: AnyRef) = copyFromUsingGetFunction(getter, from)
+
+  def copyFromItem(fromItems: List[AnyRef]) = copyFromUsingGetFunction(getterFromItem, fromItems)
+
+  override def copy(from: AnyRef, to: AnyRef): Boolean = {
+    copyUsingGetFunctionCheckingSetterFirst(getter, from, to)
   }
 
   //inherited
-  def copyFromItem(fromItems: List[AnyRef], to: AnyRef): Boolean = {
-    copyUsingGetFunction(getterFromItem, fromItems, to)
+  override def copyFromItem(fromItems: List[AnyRef], to: AnyRef): Boolean = {
+    copyUsingGetFunctionCheckingSetterFirst(getterFromItem, fromItems, to)
   }
 
-  private def copyUsingGetFunction[F <: AnyRef](get: PartialFunction[F,Option[T]], from: F, to: AnyRef): Boolean = {
-    val defined = get.isDefinedAt(from) && setter.isDefinedAt(to)
-    if (defined) {
-      val value = get(from)
-      debug("Copying " + value + " from " + from + " to " + to + " for field " + this)
-      setter(to)(value)
+  private def copyUsingGetFunctionCheckingSetterFirst[F <: AnyRef](get: PartialFunction[F,Option[T]], from: F, to: AnyRef): Boolean = {
+    if (setter.isDefinedAt(to)) {
+      val portableValue = copyFromUsingGetFunction(get, from)
+      val valueDefined = portableValue.isDefined
+      if (valueDefined) portableValue.copyToDefinedAt(to)
+      valueDefined
     } else {
-      debug("Unable to copy field " + this + " from " + from + " to " + to + ".")
+      debug("Unable to copy field " + this + " from " + from + " to " + to + " due to setter.")
+      false
     }
-    defined
+  }
+
+  private def copyFromUsingGetFunction[F <: AnyRef](get: PartialFunction[F,Option[T]], from: F): PortableValue = {
+    if (get.isDefinedAt(from)) {
+      val value = get(from)
+      val field = this
+      new PortableValue {
+        def isDefined = true
+
+        def copyTo(to: AnyRef) = {
+          val defined = setter.isDefinedAt(to)
+          if (defined) copyToDefinedAt(to)
+          defined
+        }
+
+        protected[triangle] def copyToDefinedAt(to: AnyRef) {
+          debug("Copying " + value + " from " + from + " to " + to + " for field " + field)
+          setter(to)(value)
+        }
+      }
+    } else {
+      new PortableValue {
+        def isDefined = false
+
+        def copyTo(to: AnyRef) = {
+          debug("Unable to copy field " + this + " from " + from + " to " + to + " due to getter.")
+          false
+        }
+
+        protected[triangle] def copyToDefinedAt(to: AnyRef) { new IllegalStateException("value not available") }
+      }
+    }
   }
 
   /**

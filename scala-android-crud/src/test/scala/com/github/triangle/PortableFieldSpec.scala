@@ -5,9 +5,11 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.Spec
 import com.github.triangle.PortableField._
-import scala.collection.{immutable,mutable}
-import mutable.Buffer
 import org.scalatest.mock.EasyMockSugar
+import java.util.concurrent.ConcurrentHashMap
+import collection.{immutable, mutable}
+import mutable.Buffer
+import collection.JavaConversions._
 
 
 /**
@@ -73,6 +75,22 @@ class PortableFieldSpec extends Spec with MustMatchers with EasyMockSugar {
       stringField.getter.isDefinedAt(new Object) must be (false)
       stringField.copy(new Object, map) must be (false)
       map.get("greeting") must be (Some("Hola"))
+    }
+
+    it("must get a defined PortableValue if getter isDefinedAt") {
+      val stringField = default("Hello")
+      stringField.getter(Unit) must be (Some("Hello"))
+      val portableValue: PortableValue = stringField.copyFrom(Unit)
+      portableValue.isDefined must be (true)
+    }
+
+    it("must get an undefined PortableValue if getter !isDefinedAt") {
+      val stringField = default("Hello") + mapField("greeting")
+      val portableValue: PortableValue = stringField.copyFrom("string")
+      portableValue.isDefined must be (false)
+
+      val map = mutable.Map[String,Any]()
+      portableValue.copyTo(map) must be (false)
     }
 
     it("must copy from one to multiple") {
