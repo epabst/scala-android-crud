@@ -38,7 +38,7 @@ trait CrudPersistence extends EntityPersistence {
   def findAsIterator[T <: AnyRef](criteria: AnyRef, instantiateItem: () => T): Iterator[T] =
     toIterator(findAll(criteria)).map(entity => {
       val result = instantiateItem()
-      entityType.copyFields(entity, result)
+      entityType.copy(entity, result)
       result
     })
 }

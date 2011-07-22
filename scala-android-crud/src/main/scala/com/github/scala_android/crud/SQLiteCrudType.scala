@@ -42,13 +42,13 @@ trait SQLiteCrudType extends CrudType {
   def createListAdapter(persistence: SQLiteEntityPersistence, crudContext: CrudContext, activity: Activity): ResourceCursorAdapter = {
     val contextItems = List(activity.getIntent, crudContext, Unit)
     val criteria = persistence.newCriteria
-    copyFields(activity.getIntent, criteria)
+    copy(activity.getIntent, criteria)
     val cursor = persistence.findAll(criteria)
     cursorVarForListAdapter.set(crudContext, cursor)
     activity.startManagingCursor(cursor)
     new ResourceCursorAdapter(activity, rowLayout, cursor) {
       def bindView(view: View, context: Context, cursor: Cursor) {
-        copyFieldsFromItem(cursor :: contextItems, view)
+        copyFromItem(cursor :: contextItems, view)
       }
     }
   }

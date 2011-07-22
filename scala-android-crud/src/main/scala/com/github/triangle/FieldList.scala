@@ -5,22 +5,28 @@ import scala.collection._
 /**
  * A trait that has a list of Fields.  The only requirement is that <code>fields</code> be defined.
  * It has helpful methods that can operate on them.
+ * It implements BaseField in order to use copy methods that return a PortableValue which represents a composite value.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 4/21/11
  * Time: 1:36 AM
  */
-trait FieldList extends Traversable[BaseField] {
+trait FieldList extends Traversable[BaseField] with BaseField {
 
   protected def fields: Traversable[BaseField]
 
   def foreach[U](f: (BaseField) => U) { fields.foreach(f) }
 
-  def copyFields(from: AnyRef, to: AnyRef) {
-    fields.foreach(_.copy(from, to))
-  }
+  def copyFrom(from: AnyRef) = copyFromUsingCopyMethod(_.copyFrom, from)
 
-  def copyFieldsFromItem(fromItems: List[AnyRef], to: AnyRef) {
-    fields.foreach(_.copyFromItem(fromItems, to))
+  def copyFromItem(fromItems: List[AnyRef]) = copyFromUsingCopyMethod(_.copyFromItem, fromItems)
+
+  private def copyFromUsingCopyMethod[A](baseFieldCopyMethod: BaseField => (A => PortableValue), from: A): PortableValue = {
+    val portableValues = fields.map(f => baseFieldCopyMethod(f)(from))
+    new PortableValue {
+      def copyTo(to: AnyRef) { portableValues.foreach(_.copyTo(to)) }
+
+      protected[triangle] def copyToDefinedAt(to: AnyRef) { portableValues.foreach(_.copyToDefinedAt(to)) }
+    }
   }
 
   def transform[S <: AnyRef](initial: S, data: AnyRef): S = {

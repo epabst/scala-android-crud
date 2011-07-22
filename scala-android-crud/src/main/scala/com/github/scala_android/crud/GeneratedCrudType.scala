@@ -15,7 +15,7 @@ trait GeneratedCrudType[T <: AnyRef] extends CrudType {
     val listPersistence = persistence.asInstanceOf[ListEntityPersistence[T]]
     val list: List[T] = {
       val criteria = listPersistence.newCriteria
-      copyFields(activity.getIntent, criteria)
+      copy(activity.getIntent, criteria)
       listPersistence.findAll(criteria)
     }
 
@@ -28,7 +28,7 @@ trait GeneratedCrudType[T <: AnyRef] extends CrudType {
     def getView(position: Int, convertView: View, parent: ViewGroup): View = {
       val contextItems = List(activity.getIntent, crudContext, Unit)
       val view = if (convertView == null) activity.getLayoutInflater.inflate(rowLayout, parent, false) else convertView
-      copyFieldsFromItem(list(position) :: contextItems, view)
+      copyFromItem(list(position) :: contextItems, view)
       view
     }
   }

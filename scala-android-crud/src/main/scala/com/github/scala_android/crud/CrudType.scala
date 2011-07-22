@@ -135,7 +135,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging {
   private[crud] def undoableDelete(id: ID, uiActionFactory: UIActionFactory)(persistence: EntityPersistence) {
     persistence.find(id).map { readable =>
       val writable = newWritable
-      copyFields(readable, writable)
+      copy(readable, writable)
       persistence.delete(List(id))
       uiActionFactory.addUndoableDelete(this, new Undoable[ID] {
         def undo(): ID = {

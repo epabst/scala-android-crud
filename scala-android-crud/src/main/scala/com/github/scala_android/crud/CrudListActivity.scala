@@ -43,7 +43,7 @@ class CrudListActivity(val entityType: CrudType, val application: CrudApplicatio
           parentType.withEntityPersistence(crudContext, { persistence =>
             persistence.find(id).map { readable =>
               debug("Copying " + entityType.entityName + "#" + id + " to " + this)
-              entityType.copyFieldsFromItem(readable :: contextItems, this)
+              entityType.copyFromItem(readable :: contextItems, this)
             }
           })
         }

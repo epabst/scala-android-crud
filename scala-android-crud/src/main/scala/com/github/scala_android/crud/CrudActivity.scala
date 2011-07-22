@@ -28,7 +28,7 @@ class CrudActivity(val entityType: CrudType, val application: CrudApplication)
     val contextItems = List(getIntent, crudContext, Unit)
     withPersistence{ persistence =>
       val readableOrUnit: AnyRef = id.map(i => persistence.find(i).get).getOrElse(Unit)
-      entityType.copyFieldsFromItem(readableOrUnit :: contextItems, this)
+      entityType.copyFromItem(readableOrUnit :: contextItems, this)
     }
   }
 
@@ -37,7 +37,7 @@ class CrudActivity(val entityType: CrudType, val application: CrudApplication)
     val contextItems = List(getIntent, Unit)
     val writable = entityType.newWritable
     withPersistence { persistence =>
-      entityType.copyFieldsFromItem(this :: contextItems, writable)
+      entityType.copyFromItem(this :: contextItems, writable)
       persistence.save(id, writable)
     }
     super.onPause()

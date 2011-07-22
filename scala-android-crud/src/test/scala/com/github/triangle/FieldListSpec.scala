@@ -17,7 +17,7 @@ import scala.collection._
 
 @RunWith(classOf[JUnitRunner])
 class FieldListSpec extends Spec with MustMatchers {
-  describe("copyFields") {
+  describe("copy") {
     it("must copy values that apply") {
       val countField = default[Int](10) + mapField("count")
       val priceField = mapField[Double]("price")
@@ -25,12 +25,12 @@ class FieldListSpec extends Spec with MustMatchers {
       val map = mutable.Map[String, Any]()
 
       //copy where only one field has an accessor
-      fields.copyFields(Unit, map)
+      fields.copy(Unit, map)
       map.contains("count") must be (true)
       countField(map) must be (10)
       map.contains("price") must be (false)
 
-      fields.copyFields(mutable.Map("price" -> 300.00), map)
+      fields.copy(mutable.Map("price" -> 300.00), map)
       map.contains("price") must be (true)
       priceField(map) must be (300.00)
       //must have been overwritten because the Map didn't have it
@@ -45,7 +45,7 @@ class FieldListSpec extends Spec with MustMatchers {
       val map = mutable.Map[String, Any]()
 
       val itemList = List(new Object, Unit, Map("count" -> 11, "price" -> 300.0))
-      fields.copyFieldsFromItem(itemList, map)
+      fields.copyFromItem(itemList, map)
       //should use the default since first in the item list
       map.get("count") must be (Some(10))
       map.get("price") must be (Some(300.00))
@@ -58,7 +58,7 @@ class FieldListSpec extends Spec with MustMatchers {
       val map = mutable.Map[String, Any]()
 
       //copy where only one field has an accessor
-      fields.copyFields(Unit, map)
+      fields.copy(Unit, map)
       map.contains("count") must be (true)
       countField(map) must be (10)
       map.contains("price") must be (false)

@@ -85,7 +85,7 @@ class SQLiteCrudTypeSpec extends EasyMockSugar with MustMatchers with Logging {
     whenExecuting(crudContext) {
       val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext)
       val writable = TestEntityType.newWritable
-      TestEntityType.copyFields(Unit, writable)
+      TestEntityType.copy(Unit, writable)
       val id = persistence.save(None, writable)
       val cursors = List(
         persistence.findAll(persistence.newCriteria),
@@ -113,12 +113,12 @@ class SQLiteCrudTypeSpec extends EasyMockSugar with MustMatchers with Logging {
       listAdapter.getCount must be (0)
 
       val writable = TestEntityType.newWritable
-      TestEntityType.copyFields(Unit, writable)
+      TestEntityType.copy(Unit, writable)
       val id = TestEntityType.withEntityPersistence(crudContext, _.save(None, writable))
       //it must have refreshed the listAdapter
       listAdapter.getCount must be (if (runningOnRealAndroid) 1 else 0)
 
-      TestEntityType.copyFields(Map("age" -> 50), writable)
+      TestEntityType.copy(Map("age" -> 50), writable)
       listAdapter.registerDataSetObserver(observer)
       TestEntityType.withEntityPersistence(crudContext, _.save(Some(id), writable))
       //it must have refreshed the listAdapter (notified the observer)

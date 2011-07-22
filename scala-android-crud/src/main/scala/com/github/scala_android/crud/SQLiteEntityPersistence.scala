@@ -92,7 +92,7 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudType, crudContext: CrudC
     }
     notifyDataChanged()
     val map = mutable.Map[String,Any]()
-    entityType.copyFields(contentValues, map)
+    entityType.copy(contentValues, map)
     val bytes = CrudBackupAgent.marshall(map)
     debug("Scheduled backup which will include " + entityType.entityName + "#" + id + ": size " + bytes.size + " bytes")
     id

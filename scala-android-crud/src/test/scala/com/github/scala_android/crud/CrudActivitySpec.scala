@@ -35,7 +35,7 @@ class CrudActivitySpec extends EasyMockSugar with MustMatchers with MyEntityTest
       activity.setIntent(constructIntent(UpdateActionString, uri, activity, entityType.activityClass))
       activity.onCreate(null)
       val viewData = Map[String,Any]()
-      entityType.copyFields(entity, activity)
+      entityType.copy(entity, activity)
       activity.onPause()
     }
   }
@@ -60,7 +60,7 @@ class CrudActivitySpec extends EasyMockSugar with MustMatchers with MyEntityTest
       activity.setIntent(constructIntent(UpdateActionString, uri, activity, entityType.activityClass))
       activity.onCreate(null)
       val viewData = Map[String,Any]()
-      entityType.copyFields(activity, viewData)
+      entityType.copy(activity, viewData)
       viewData.get("name") must be (Some("Bob"))
       viewData.get("age") must be (Some(25))
 
