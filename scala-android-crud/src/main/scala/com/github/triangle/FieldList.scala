@@ -10,18 +10,17 @@ import scala.collection._
  * Time: 1:36 AM
  */
 trait FieldList extends Traversable[BaseField] {
-  import FieldList.toFieldList
 
   protected def fields: Traversable[BaseField]
 
   def foreach[U](f: (BaseField) => U) { fields.foreach(f) }
 
-  def copyFields(from: AnyRef, to: AnyRef): FieldList = {
-    toFieldList(fields.flatMap(f => if (f.copy(from, to)) None else Some(f)))
+  def copyFields(from: AnyRef, to: AnyRef) {
+    fields.foreach(_.copy(from, to))
   }
 
-  def copyFieldsFromItem(fromItems: List[AnyRef], to: AnyRef): FieldList = {
-    toFieldList(fields.flatMap(f => if (f.copyFromItem(fromItems, to)) None else Some(f)))
+  def copyFieldsFromItem(fromItems: List[AnyRef], to: AnyRef) {
+    fields.foreach(_.copyFromItem(fromItems, to))
   }
 
   def transform[S <: AnyRef](initial: S, data: AnyRef): S = {

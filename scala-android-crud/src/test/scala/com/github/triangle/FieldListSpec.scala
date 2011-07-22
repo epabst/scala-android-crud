@@ -58,16 +58,10 @@ class FieldListSpec extends Spec with MustMatchers {
       val map = mutable.Map[String, Any]()
 
       //copy where only one field has an accessor
-      val resultOfCopy: FieldList = fields.copyFields(Unit, map)
+      fields.copyFields(Unit, map)
       map.contains("count") must be (true)
       countField(map) must be (10)
       map.contains("price") must be (false)
-      resultOfCopy.toList must be (List(priceField))
-
-      resultOfCopy.copyFields(mutable.Map("price" -> 300.00), map).size must be (0)
-      map.contains("price") must be (true)
-      priceField(map) must be (300.00)
-      countField(map) must be (10)
     }
 
     it("must transform using each Field") {

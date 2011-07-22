@@ -74,8 +74,8 @@ class ViewFieldSpec extends MustMatchers with EasyMockSugar {
           _ => throw new IllegalStateException("must not be called"),
           _ => throw new IllegalStateException("must not be called")))
       val myEntity1 = new MyEntity("my1", 1)
-      stringField.copy(myEntity1, group) must be (false)
-      stringField.copy(group, myEntity1) must be (false)
+      stringField.copy(myEntity1, group) //does nothing
+      stringField.copy(group, myEntity1) //does nothing
     }
   }
 
@@ -92,8 +92,8 @@ class ViewFieldSpec extends MustMatchers with EasyMockSugar {
       val view = new Spinner(context)
       view.setId(100)
       group.addView(view)
-      stringField.copy(myEntity1, group) must be (false)
-      stringField.copy(group, myEntity1) must be (false)
+      stringField.copy(myEntity1, group) //does nothing
+      stringField.copy(group, myEntity1) //does nothing
     }
   }
 
@@ -107,8 +107,7 @@ class ViewFieldSpec extends MustMatchers with EasyMockSugar {
       intField.getter(view) must be (None)
 
       val entity = new MyEntity("my1", 30)
-      val result = intField.copy(view, entity)
-      result must be (true)
+      intField.copy(view, entity)
       entity.number must be (30)
     }
   }
