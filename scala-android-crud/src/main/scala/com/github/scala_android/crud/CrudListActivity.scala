@@ -7,7 +7,6 @@ import android.net.Uri
 import android.view.{ContextMenu, View, MenuItem, Menu}
 import android.view.ContextMenu.ContextMenuInfo
 import android.widget.AdapterView.AdapterContextMenuInfo
-import scala.actors.Futures.future
 import com.github.triangle.{JavaUtil, PortableValue}
 import JavaUtil.toRunnable
 

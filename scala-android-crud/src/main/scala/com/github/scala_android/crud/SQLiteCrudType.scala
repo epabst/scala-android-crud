@@ -9,7 +9,6 @@ import monitor.Logging
 import android.database.sqlite.{SQLiteDatabase, SQLiteOpenHelper}
 import android.provider.BaseColumns
 import com.github.triangle.JavaUtil.toRunnable
-import scala.actors.Futures.future
 
 /**
  * A CrudType for SQLite.

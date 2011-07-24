@@ -5,7 +5,6 @@ import _root_.android.view.{Menu, MenuItem}
 import android.os.Bundle
 import com.github.triangle.BasicValueFormat
 import com.github.triangle.JavaUtil.toRunnable
-import scala.actors.Futures.future
 
 /**
  * A generic ListActivity for CRUD operations

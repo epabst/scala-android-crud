@@ -10,7 +10,7 @@ import monitor.Logging
  * Time: 7:01 PM
  */
 
-trait BaseCrudActivity extends Activity with PlatformTypes with Logging {
+trait BaseCrudActivity extends Activity with PlatformTypes with Logging with Timing {
   def entityType: CrudType
 
   def application: CrudApplication

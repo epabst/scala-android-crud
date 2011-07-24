@@ -13,7 +13,7 @@ import monitor.Logging
  * Date: 2/23/11
  * Time: 3:24 PM
  */
-trait CrudType extends FieldList with PlatformTypes with Logging {
+trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
   verbose("Instantiated CrudType: " + this)
 
   //this is the type used for internationalized strings

@@ -5,7 +5,6 @@ import android.widget.BaseAdapter
 import android.view.{ViewGroup, View}
 import android.app.Activity
 import com.github.triangle.PortableField.identityField
-import scala.actors.Futures.future
 import com.github.triangle.JavaUtil.toRunnable
 
 trait GeneratedCrudType[T <: AnyRef] extends CrudType {

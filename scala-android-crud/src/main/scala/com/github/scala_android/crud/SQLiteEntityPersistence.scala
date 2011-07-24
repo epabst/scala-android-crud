@@ -9,7 +9,6 @@ import scala.None
 import collection.mutable.SynchronizedQueue
 import android.app.backup.BackupManager
 import collection.mutable
-import actors.Futures.future
 
 /**
  * EntityPersistence for SQLite.

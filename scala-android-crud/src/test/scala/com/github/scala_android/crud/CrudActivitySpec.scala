@@ -56,7 +56,9 @@ class CrudActivitySpec extends EasyMockSugar with MustMatchers with MyEntityTest
     }
     whenExecuting(persistence, listAdapter, application) {
       import ActivityUIActionFactory._
-      val activity = new CrudActivity(entityType, application)
+      val activity = new CrudActivity(entityType, application) {
+        override def future[T](body: => T) = new ReadyFuture[T](body)
+      }
       activity.setIntent(constructIntent(UpdateActionString, uri, activity, entityType.activityClass))
       activity.onCreate(null)
       val viewData = Map[String,Any]()

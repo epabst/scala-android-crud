@@ -7,7 +7,7 @@ package com.github.scala_android.crud
  * Time: 4:12 PM
  */
 
-trait EntityPersistence extends PlatformTypes {
+trait EntityPersistence extends PlatformTypes with Timing {
   def newCriteria: AnyRef
 
   def findAll(criteria: AnyRef): AnyRef
