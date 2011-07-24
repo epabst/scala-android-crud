@@ -5,6 +5,8 @@ import android.widget.BaseAdapter
 import android.view.{ViewGroup, View}
 import android.app.Activity
 import com.github.triangle.PortableField.identityField
+import scala.actors.Futures.future
+import com.github.triangle.JavaUtil.toRunnable
 
 trait GeneratedCrudType[T <: AnyRef] extends CrudType {
   def newWritable = throw new UnsupportedOperationException("not supported")
@@ -28,7 +30,10 @@ trait GeneratedCrudType[T <: AnyRef] extends CrudType {
     def getView(position: Int, convertView: View, parent: ViewGroup): View = {
       val contextItems = List(activity.getIntent, crudContext, Unit)
       val view = if (convertView == null) activity.getLayoutInflater.inflate(rowLayout, parent, false) else convertView
-      copyFromItem(list(position) :: contextItems, view)
+      future {
+        val portableValue = copyFrom(list(position) :: contextItems)
+        view.post { portableValue.copyTo(view) }
+      }
       view
     }
   }

@@ -7,6 +7,9 @@ import android.net.Uri
 import android.view.{ContextMenu, View, MenuItem, Menu}
 import android.view.ContextMenu.ContextMenuInfo
 import android.widget.AdapterView.AdapterContextMenuInfo
+import scala.actors.Futures.future
+import com.github.triangle.{JavaUtil, PortableValue}
+import JavaUtil.toRunnable
 
 /**
  * A generic ListActivity for CRUD operations
@@ -34,21 +37,26 @@ class CrudListActivity(val entityType: CrudType, val application: CrudApplicatio
 
     // If no data was given in the intent (because we were started
     // as a MAIN activity), then use our default content provider.
-    if (getIntent.getData == null) getIntent.setData(defaultContentUri);
-    val contextItems = List(getIntent, crudContext, Unit)
-    //copy each parent Entity's data to the Activity if identified in the Intent's URI
-    entityType.parentEntities.foreach(_ match {
-      case parentType: CrudType =>
-        parentType.findId(getIntent.getData).map { id =>
-          parentType.withEntityPersistence(crudContext, { persistence =>
-            persistence.find(id).map { readable =>
-              debug("Copying " + entityType.entityName + "#" + id + " to " + this)
-              entityType.copyFromItem(readable :: contextItems, this)
-            }
-          })
-        }
-    })
-
+    val intent = getIntent
+    future {
+      if (intent.getData == null) intent.setData(defaultContentUri);
+      val contextItems = List(intent, crudContext, Unit)
+      //copy each parent Entity's data to the Activity if identified in the Intent's URI
+      val portableValues: List[PortableValue] = entityType.parentEntities.flatMap(_ match {
+        case parentType: CrudType =>
+          parentType.findId(intent.getData).flatMap { id =>
+            parentType.withEntityPersistence(crudContext, { persistence =>
+              persistence.find(id).map { readable =>
+                debug("Copying " + entityType.entityName + "#" + id + " to " + this)
+                entityType.copyFromItem(readable :: contextItems)
+              }
+            })
+          }
+      })
+      runOnUiThread {
+        portableValues.foreach(_.copyTo(this))
+      }
+    }
     val view = getListView;
 		view.setHeaderDividersEnabled(true);
 		view.addHeaderView(getLayoutInflater.inflate(entityType.headerLayout, null));

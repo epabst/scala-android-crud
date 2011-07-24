@@ -8,6 +8,8 @@ import android.app.Activity
 import monitor.Logging
 import android.database.sqlite.{SQLiteDatabase, SQLiteOpenHelper}
 import android.provider.BaseColumns
+import com.github.triangle.JavaUtil.toRunnable
+import scala.actors.Futures.future
 
 /**
  * A CrudType for SQLite.
@@ -40,15 +42,19 @@ trait SQLiteCrudType extends CrudType {
     createListAdapter(persistence.asInstanceOf[SQLiteEntityPersistence], crudContext, activity)
 
   def createListAdapter(persistence: SQLiteEntityPersistence, crudContext: CrudContext, activity: Activity): ResourceCursorAdapter = {
-    val contextItems = List(activity.getIntent, crudContext, Unit)
+    val intent = activity.getIntent
+    val contextItems = List(intent, crudContext, Unit)
     val criteria = persistence.newCriteria
-    copy(activity.getIntent, criteria)
+    copy(intent, criteria)
     val cursor = persistence.findAll(criteria)
     cursorVarForListAdapter.set(crudContext, cursor)
     activity.startManagingCursor(cursor)
     new ResourceCursorAdapter(activity, rowLayout, cursor) {
       def bindView(view: View, context: Context, cursor: Cursor) {
-        copyFromItem(cursor :: contextItems, view)
+        future {
+          val portableValue = copyFromItem(cursor :: contextItems)
+          view.post { portableValue.copyTo(view) }
+        }
       }
     }
   }

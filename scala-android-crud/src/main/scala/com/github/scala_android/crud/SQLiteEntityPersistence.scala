@@ -9,6 +9,7 @@ import scala.None
 import collection.mutable.SynchronizedQueue
 import android.app.backup.BackupManager
 import collection.mutable
+import actors.Futures.future
 
 /**
  * EntityPersistence for SQLite.
@@ -101,9 +102,13 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudType, crudContext: CrudC
   def delete(ids: List[ID]) {
     ids.foreach { id =>
       database.delete(entityType.entityName, BaseColumns._ID + "=" + id, Nil.toArray)
-      DeletedEntityIdCrudType.recordDeletion(entityType, id, crudContext.context)
     }
-    notifyDataChanged()
+    future {
+      ids.foreach { id =>
+        DeletedEntityIdCrudType.recordDeletion(entityType, id, crudContext.context)
+      }
+      notifyDataChanged()
+    }
   }
 
   def close() {

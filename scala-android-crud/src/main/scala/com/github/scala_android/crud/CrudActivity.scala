@@ -4,6 +4,8 @@ import _root_.android.app.Activity
 import _root_.android.view.{Menu, MenuItem}
 import android.os.Bundle
 import com.github.triangle.BasicValueFormat
+import com.github.triangle.JavaUtil.toRunnable
+import scala.actors.Futures.future
 
 /**
  * A generic ListActivity for CRUD operations
@@ -26,9 +28,12 @@ class CrudActivity(val entityType: CrudType, val application: CrudApplication)
 
     setContentView(entityType.entryLayout)
     val contextItems = List(getIntent, crudContext, Unit)
-    withPersistence{ persistence =>
-      val readableOrUnit: AnyRef = id.map(i => persistence.find(i).get).getOrElse(Unit)
-      entityType.copyFromItem(readableOrUnit :: contextItems, this)
+    future {
+      withPersistence { persistence =>
+        val readableOrUnit: AnyRef = id.map(i => persistence.find(i).get).getOrElse(Unit)
+        val portableValue = entityType.copyFromItem(readableOrUnit :: contextItems)
+        runOnUiThread { portableValue.copyTo(this) }
+      }
     }
   }
 
