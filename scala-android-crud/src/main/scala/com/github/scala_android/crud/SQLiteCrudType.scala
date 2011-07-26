@@ -50,8 +50,10 @@ trait SQLiteCrudType extends CrudType {
     activity.startManagingCursor(cursor)
     new ResourceCursorAdapter(activity, rowLayout, cursor) {
       def bindView(view: View, context: Context, cursor: Cursor) {
+        //copy from the cursor immediately since it will be advanced to the next row quickly.
+        val cursorValues = transform(Map[String,Any](), cursor)
         future {
-          val portableValue = copyFromItem(cursor :: contextItems)
+          val portableValue = copyFromItem(cursorValues :: contextItems)
           view.post { portableValue.copyTo(view) }
         }
       }
