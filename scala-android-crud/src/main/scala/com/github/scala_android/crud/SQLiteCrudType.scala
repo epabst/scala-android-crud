@@ -50,6 +50,8 @@ trait SQLiteCrudType extends CrudType {
     activity.startManagingCursor(cursor)
     new ResourceCursorAdapter(activity, rowLayout, cursor) {
       def bindView(view: View, context: Context, cursor: Cursor) {
+        //set the default values immediately instead of showing the column header names
+        copy(Unit, view)
         //copy from the cursor immediately since it will be advanced to the next row quickly.
         val cursorValues = transform(Map[String,Any](), cursor)
         future {
