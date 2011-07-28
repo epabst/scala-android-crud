@@ -8,11 +8,12 @@ import PortableField._
 import ViewField._
 import CursorField._
 import android.content.Intent
-import org.easymock.IAnswer
-import org.easymock.classextension.EasyMock
-import android.widget.{ListAdapter, TextView}
+import org.easymock.EasyMock
+import android.widget.ListAdapter
 import res.R
-import android.app.Activity
+import android.app.ListActivity
+import org.easymock.IAnswer
+import scala.collection.JavaConversions._
 
 /**
  * An object mother pattern for getting CrudType instances.
@@ -40,7 +41,9 @@ trait MyEntityTesting extends EasyMockSugar {
 
     def openEntityPersistence(crudContext: CrudContext) = persistence
 
-    def createListAdapter(persistence: CrudPersistence, crudContext: CrudContext, activity: Activity) = listAdapter
+    def setListAdapter(persistence: CrudPersistence, crudContext: CrudContext, activity: ListActivity) {
+      activity.setListAdapter(listAdapter)
+    }
 
     def refreshAfterSave(crudContext: CrudContext) {
       refreshCount += 1
@@ -52,6 +55,17 @@ trait MyEntityTesting extends EasyMockSugar {
   def namedMock[T <: AnyRef](name: String)(implicit manifest: Manifest[T]): T = {
     EasyMock.createMock(name, manifest.erasure.asInstanceOf[Class[T]])
   }
+
+  class CapturingAnswer[T](result: => T) extends IAnswer[T] {
+    var params: List[Any] = Nil
+
+    def answer() = {
+      params = EasyMock.getCurrentArguments.toList
+      result
+    }
+  }
+
+  def capturingAnswer[T](result: => T): CapturingAnswer[T] = new CapturingAnswer({ result })
 
   def answer[T](result: => T) = new IAnswer[T] {
     def answer = result

@@ -1,10 +1,9 @@
 package com.github.scala_android.crud
 
-import android.widget.ListAdapter
-import android.app.Activity
 import android.net.Uri
 import com.github.triangle.{FieldList, BaseField}
 import monitor.Logging
+import android.app.ListActivity
 
 /**
  * An entity configuration that provides all custom information needed to
@@ -118,13 +117,13 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
     finally persistence.close()
   }
 
-  final def createListAdapter(crudContext: CrudContext, activity: Activity): ListAdapter = {
+  final def setListAdapter(crudContext: CrudContext, activity: ListActivity) {
     val persistence = openEntityPersistence(crudContext)
     persistenceVarForListAdapter.set(crudContext, persistence)
-    createListAdapter(persistence, crudContext, activity)
+    setListAdapter(persistence, crudContext, activity)
   }
 
-  def createListAdapter(persistence: CrudPersistence, crudContext: CrudContext, activity: Activity): ListAdapter
+  def setListAdapter(persistence: CrudPersistence, crudContext: CrudContext, activity: ListActivity)
 
   def refreshAfterSave(crudContext: CrudContext)
 

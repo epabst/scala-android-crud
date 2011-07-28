@@ -2,7 +2,7 @@ package com.github.scala_android.crud
 
 import res.R
 import com.github.triangle.BaseField
-import android.app.Activity
+import android.app.ListActivity
 
 /**
  * A simple CrudType for testing.
@@ -19,8 +19,9 @@ object MyCrudType extends CrudType with StubEntityType {
 
   def refreshAfterSave(crudContext: CrudContext) {}
 
-  def createListAdapter(persistence: CrudPersistence, crudContext: CrudContext, activity: Activity) =
+  def setListAdapter(persistence: CrudPersistence, crudContext: CrudContext, activity: ListActivity) {
     throw new UnsupportedOperationException
+  }
 
   def openEntityPersistence(crudContext: CrudContext) = throw new UnsupportedOperationException
 

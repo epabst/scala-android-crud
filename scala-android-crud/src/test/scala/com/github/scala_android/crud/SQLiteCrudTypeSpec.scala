@@ -5,17 +5,19 @@ import monitor.Logging
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.scalatest.mock.EasyMockSugar
-import org.easymock.EasyMock.isA
+import org.easymock.EasyMock._
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.scalatest.matchers.MustMatchers
 import com.github.triangle._
 import CursorField._
 import PortableField._
 import res.R
-import android.app.Activity
 import android.net.Uri
 import android.content.{Intent, Context}
 import android.database.{Cursor, DataSetObserver}
+import android.app.ListActivity
+import android.widget.ListAdapter
+import scala.collection._
 
 /**
  * A test for {@link SQLiteCrudType}.
@@ -24,7 +26,7 @@ import android.database.{Cursor, DataSetObserver}
  * Time: 6:22 PM
  */
 @RunWith(classOf[RobolectricTestRunner])
-class SQLiteCrudTypeSpec extends EasyMockSugar with MustMatchers with Logging {
+class SQLiteCrudTypeSpec extends EasyMockSugar with MustMatchers with Logging with MyEntityTesting {
   val runningOnRealAndroid: Boolean = try {
     debug("Seeing if running on Real Android...")
     Class.forName("com.xtremelabs.robolectric.RobolectricTestRunner")
@@ -100,16 +102,19 @@ class SQLiteCrudTypeSpec extends EasyMockSugar with MustMatchers with Logging {
 
   @Test
   def shouldRefreshCursorWhenDeletingAndSaving() {
-    val activity = mock[Activity]
+    val activity = mock[ListActivity]
     val observer = mock[DataSetObserver]
+    val listAdapterCapture = capturingAnswer[Unit] { Unit }
     expecting {
       call(activity.getIntent).andReturn(new Intent("foo", Uri.EMPTY)).anyTimes
       call(activity.startManagingCursor(isA(classOf[Cursor]))).asStub()
       if (runningOnRealAndroid) call(observer.onChanged())
+      call(activity.setListAdapter(notNull())).andAnswer(listAdapterCapture)
     }
     whenExecuting(activity, observer) {
       val crudContext = new CrudContext(activity, TestApplication)
-      val listAdapter = TestEntityType.createListAdapter(crudContext, activity)
+      TestEntityType.setListAdapter(crudContext, activity)
+      val listAdapter = listAdapterCapture.params(0).asInstanceOf[ListAdapter]
       listAdapter.getCount must be (0)
 
       val writable = TestEntityType.newWritable

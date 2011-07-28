@@ -4,11 +4,11 @@ import android.database.Cursor
 import android.content.{ContentValues, Context}
 import android.widget.ResourceCursorAdapter
 import android.view.View
-import android.app.Activity
 import monitor.Logging
 import android.database.sqlite.{SQLiteDatabase, SQLiteOpenHelper}
 import android.provider.BaseColumns
 import com.github.triangle.JavaUtil.toRunnable
+import android.app.ListActivity
 
 /**
  * A CrudType for SQLite.
@@ -37,10 +37,11 @@ trait SQLiteCrudType extends CrudType {
 
   val cursorVarForListAdapter = new ContextVar[Cursor]
 
-  def createListAdapter(persistence: CrudPersistence, crudContext: CrudContext, activity: Activity): ResourceCursorAdapter =
-    createListAdapter(persistence.asInstanceOf[SQLiteEntityPersistence], crudContext, activity)
+  def setListAdapter(persistence: CrudPersistence, crudContext: CrudContext, activity: ListActivity) {
+    setListAdapter(persistence.asInstanceOf[SQLiteEntityPersistence], crudContext, activity)
+  }
 
-  def createListAdapter(persistence: SQLiteEntityPersistence, crudContext: CrudContext, activity: Activity): ResourceCursorAdapter = {
+  def setListAdapter(persistence: SQLiteEntityPersistence, crudContext: CrudContext, activity: ListActivity) {
     val intent = activity.getIntent
     val contextItems = List(intent, crudContext, Unit)
     val criteria = persistence.newCriteria
@@ -48,7 +49,7 @@ trait SQLiteCrudType extends CrudType {
     val cursor = persistence.findAll(criteria)
     cursorVarForListAdapter.set(crudContext, cursor)
     activity.startManagingCursor(cursor)
-    new ResourceCursorAdapter(activity, rowLayout, cursor) {
+    activity.setListAdapter(new ResourceCursorAdapter(activity, rowLayout, cursor) {
       def bindView(view: View, context: Context, cursor: Cursor) {
         //set the default values immediately instead of showing the column header names
         copy(Unit, view)
@@ -59,7 +60,7 @@ trait SQLiteCrudType extends CrudType {
           view.post { portableValue.copyTo(view) }
         }
       }
-    }
+    })
   }
 
   def refreshAfterSave(crudContext: CrudContext) {
