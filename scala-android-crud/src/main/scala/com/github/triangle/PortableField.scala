@@ -69,6 +69,12 @@ trait PortableValue {
    * Copies this value to <code>to</code> without seeing if the setter isDefinedAt that <code>to</code>.
    */
   protected[triangle] def copyToDefinedAt(to: AnyRef)
+
+  /**
+   * Transforms the <code>initial</code> subject using this value.
+   * @returns the transformed subject, which could be the initial instance
+   */
+  def transform[S <: AnyRef](initial: S): S
 }
 
 /**
@@ -168,27 +174,22 @@ trait PortableField[T] extends BaseField with Logging {
    */
   def transformer[S <: AnyRef]: PartialFunction[S,Option[T] => S]
 
-  private def transformUsingGetFunction[S <: AnyRef,F <: AnyRef](get: PartialFunction[F,Option[T]], initial: S, data: F) = {
-    if (get.isDefinedAt(data)) {
-      if (transformer.isDefinedAt(initial)) {
-        val value = get(data)
-        debug("Transforming " + initial + " with value " + value + " for field " + this)
-        transformer(initial)(value)
-      } else {
-        debug("Unable to transform " + initial + " with " + data + " for field " + this + " because of transformer.")
-        initial
-      }
+  private def transformUsingGetFunctionCheckingTransformerFirst[S <: AnyRef,F <: AnyRef](get: PartialFunction[F,Option[T]], initial: S, data: F) = {
+    if (transformer.isDefinedAt(initial)) {
+      copyFromUsingGetFunction(get, data).transform(initial)
     } else {
-      debug("Unable to transform " + initial + " with " + data + " for field " + this + " because of getter.")
+      debug("Unable to transform " + initial + " with " + data + " for field " + this + " because of transformer.")
       initial
     }
   }
 
   //inherited
-  def transform[S <: AnyRef](initial: S, data: AnyRef) = transformUsingGetFunction[S,AnyRef](getter, initial, data)
+  def transform[S <: AnyRef](initial: S, data: AnyRef) =
+    transformUsingGetFunctionCheckingTransformerFirst[S,AnyRef](getter, initial, data)
 
   //inherited
-  def transformWithItem[S <: AnyRef](initial: S, dataItems: List[AnyRef]) = transformUsingGetFunction[S,List[AnyRef]](getterFromItem, initial, dataItems)
+  def transformWithItem[S <: AnyRef](initial: S, dataItems: List[AnyRef]) =
+    transformUsingGetFunctionCheckingTransformerFirst[S,List[AnyRef]](getterFromItem, initial, dataItems)
 
   def copyFrom(from: AnyRef) = copyFromUsingGetFunction(getter, from)
 
@@ -226,6 +227,11 @@ trait PortableField[T] extends BaseField with Logging {
           debug("Copying " + value + " from " + from + " to " + to + " for field " + field)
           setter(to)(value)
         }
+
+        def transform[S <: AnyRef](initial: S): S = {
+          debug("Transforming " + initial + " with value " + value + " for field " + this)
+          transformer(initial)(value)
+        }
       }
     } else {
       new PortableValue {
@@ -234,6 +240,11 @@ trait PortableField[T] extends BaseField with Logging {
         }
 
         protected[triangle] def copyToDefinedAt(to: AnyRef) { new IllegalStateException("value not available") }
+
+        def transform[S <: AnyRef](initial: S): S = {
+          debug("Unable to transform " + initial + " with " + from + " for field " + this + " because of getter.")
+          initial
+        }
       }
     }
   }

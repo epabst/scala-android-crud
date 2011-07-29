@@ -26,6 +26,10 @@ trait FieldList extends Traversable[BaseField] with BaseField {
       def copyTo(to: AnyRef) { portableValues.foreach(_.copyTo(to)) }
 
       protected[triangle] def copyToDefinedAt(to: AnyRef) { portableValues.foreach(_.copyToDefinedAt(to)) }
+
+      def transform[S <: AnyRef](initial: S): S = {
+        portableValues.foldLeft(initial)((subject, portableValue) => portableValue.transform(subject))
+      }
     }
   }
 
