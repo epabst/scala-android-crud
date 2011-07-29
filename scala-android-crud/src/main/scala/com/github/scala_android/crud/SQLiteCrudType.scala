@@ -1,6 +1,5 @@
 package com.github.scala_android.crud
 
-import android.database.Cursor
 import android.content.{ContentValues, Context}
 import android.widget.ResourceCursorAdapter
 import android.view.View
@@ -9,6 +8,8 @@ import android.database.sqlite.{SQLiteDatabase, SQLiteOpenHelper}
 import android.provider.BaseColumns
 import com.github.triangle.JavaUtil.toRunnable
 import android.app.ListActivity
+import com.github.triangle.PortableValue
+import android.database.{ContentObserver, Cursor}
 
 /**
  * A CrudType for SQLite.
@@ -41,6 +42,20 @@ trait SQLiteCrudType extends CrudType {
     setListAdapter(persistence.asInstanceOf[SQLiteEntityPersistence], crudContext, activity)
   }
 
+  private def findPortableValue(activity: ListActivity, position: Long): Option[PortableValue] =
+    Option[Map[Long,PortableValue]](activity.getListView.getTag.asInstanceOf[Map[Long,PortableValue]]).flatMap(_.get(position))
+
+  private def setPortableValue(activity: ListActivity, position: Long, portableValue: PortableValue) {
+    val listView = activity.getListView
+    val map = Option[Map[Long,PortableValue]](listView.getTag.asInstanceOf[Map[Long,PortableValue]]).getOrElse(Map.empty[Long,PortableValue]) +
+            (position -> portableValue)
+    listView.setTag(map)
+  }
+
+  private def clearPortableValues(activity: ListActivity) {
+    activity.getListView.setTag(null)
+  }
+
   def setListAdapter(persistence: SQLiteEntityPersistence, crudContext: CrudContext, activity: ListActivity) {
     val intent = activity.getIntent
     val contextItems = List(intent, crudContext, Unit)
@@ -49,15 +64,29 @@ trait SQLiteCrudType extends CrudType {
     val cursor = persistence.findAll(criteria)
     cursorVarForListAdapter.set(crudContext, cursor)
     activity.startManagingCursor(cursor)
+    val observer = new ContentObserver(null) {
+      override def onChange(selfChange: Boolean) {
+        activity.runOnUiThread { clearPortableValues(activity) }
+        super.onChange(selfChange)
+      }
+    }
+    cursor.registerContentObserver(observer)
     activity.setListAdapter(new ResourceCursorAdapter(activity, rowLayout, cursor) {
       def bindView(view: View, context: Context, cursor: Cursor) {
-        //set the default values immediately instead of showing the column header names
-        copy(Unit, view)
-        //copy from the cursor immediately since it will be advanced to the next row quickly.
-        val cursorValues = transform(Map[String,Any](), cursor)
-        future {
-          val portableValue = copyFromItem(cursorValues :: contextItems)
-          view.post { portableValue.copyTo(view) }
+        val position = cursor.getPosition
+        //set the cached or default values immediately instead of showing the column header names
+        val cachedValue = findPortableValue(activity, position)
+        cachedValue.getOrElse(copyFrom(Unit)).copyTo(view)
+        if (cachedValue.isEmpty) {
+          //copy from the cursor immediately since it will be advanced to the next row quickly.
+          val cursorValues = transform(Map[String,Any](), cursor)
+          future {
+            val portableValue = copyFromItem(cursorValues :: contextItems)
+            activity.runOnUiThread {
+              setPortableValue(activity, position, portableValue)
+              notifyDataSetChanged()
+            }
+          }
         }
       }
     })
