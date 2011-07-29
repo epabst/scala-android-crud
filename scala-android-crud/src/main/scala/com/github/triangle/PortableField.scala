@@ -43,7 +43,7 @@ trait BaseField {
   def transformWithItem[S <: AnyRef](initial: S, dataItems: List[AnyRef]): S
 
   /**
-   * Traverses all of the PortableFieldes in this PortableField, returning the desired information.
+   * Traverses all of the PortableFields in this PortableField, returning the desired information.
    * Anything not matched will be traversed deeper, if possible, or else ignored.
    * <pre>
    *   flatMap {
