@@ -27,7 +27,7 @@ trait SQLiteCrudType extends CrudType {
       id
     }
 
-    override def delete(ids: List[ID]) {
+    override def delete(ids: Seq[ID]) {
       super.delete(ids)
       debug("requerying after delete")
       cursorVarForListAdapter.get(crudContext).map(_.requery())

@@ -4,33 +4,31 @@ import scala.collection.mutable
 import com.github.scala_android.crud.model.IdPk._
 
 /**
- * EntityPersistence for a simple generated List.
+ * EntityPersistence for a simple generated Seq.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 3/11/11
  * Time: 5:05 PM
  */
 
-trait ListEntityPersistence[T <: AnyRef] extends CrudPersistence {
+trait SeqEntityPersistence[T <: AnyRef] extends CrudPersistence {
   def getId(entity: T): ID = idField(entity)
 
   def find(id: ID): Option[T] = {
     findAll(newCriteria).find(entity => id == getId(entity))
   }
 
-  def findAll(criteria: AnyRef): List[T]
+  def findAll(criteria: AnyRef): Seq[T]
 
-  def toIterator(list: AnyRef) = toIterator(list.asInstanceOf[List[T]])
-
-  def toIterator(list: List[T]) = list.toIterator
+  def toIterator(seq: AnyRef) = seq.asInstanceOf[Seq[T]].toIterator
 
   def save(id: Option[ID], data: AnyRef): ID = throw new UnsupportedOperationException("write not supported")
 
-  def delete(ids: List[ID]) { throw new UnsupportedOperationException("delete not supported") }
+  def delete(ids: Seq[ID]) { throw new UnsupportedOperationException("delete not supported") }
 
   def close() {}
 }
 
-trait ListBufferEntityPersistence[T <: AnyRef] extends ListEntityPersistence[T] {
+trait ListBufferEntityPersistence[T <: AnyRef] extends SeqEntityPersistence[T] {
   val buffer = mutable.ListBuffer[T]()
 
   var nextId = 10000L
@@ -49,7 +47,7 @@ trait ListBufferEntityPersistence[T <: AnyRef] extends ListEntityPersistence[T] 
     newId
   }
 
-  override def delete(ids: List[ID]) {
+  override def delete(ids: Seq[ID]) {
     ids.foreach(id => find(id).map(entity => buffer -= entity))
   }
 }

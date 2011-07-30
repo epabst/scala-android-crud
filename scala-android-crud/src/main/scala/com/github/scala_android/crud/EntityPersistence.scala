@@ -23,11 +23,11 @@ trait EntityPersistence extends PlatformTypes with Timing {
   def save(id: Option[ID], writable: AnyRef): ID
 
   /**
-   * Delete a list of entities by ID.
+   * Delete a seq of entities by ID.
    * This should NOT delete child entities because that would make the "undo" functionality incomplete.
    * Instead, assume that the CrudType will handle deleting all child entities explicitly.
    */
-  def delete(ids: List[ID])
+  def delete(ids: Seq[ID])
 
   def close()
 }

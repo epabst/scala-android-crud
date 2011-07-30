@@ -26,26 +26,26 @@ class GeneratedCrudTypeSpec extends Spec with MustMatchers with MyEntityTesting 
 
   @Test
   def itMustCreateListAdapterWithIntentUsedForCriteria() {
-    val listPersistence = mock[ListEntityPersistence[mutable.Map[String,Any]]]
+    val seqPersistence = mock[SeqEntityPersistence[mutable.Map[String,Any]]]
     val crudContext = mock[CrudContext]
     val activity = mock[ListActivity]
     val listAdapterCapture = capturingAnswer[Unit] { Unit }
-    val otherType = new MyEntityType(listPersistence, mock[ListAdapter])
+    val otherType = new MyEntityType(seqPersistence, mock[ListAdapter])
     val foreign = foreignKey(otherType)
     val generatedType = new GeneratedCrudType[mutable.Map[String,Any]] with StubEntityType {
       def entityName = "Generated"
       def fields = List(foreign)
-      def openEntityPersistence(crudContext: CrudContext) = listPersistence
+      def openEntityPersistence(crudContext: CrudContext) = seqPersistence
     }
     expecting {
       call(activity.getIntent).andReturn(new Intent("List", toUri(otherType.entityName, "123")))
-      call(listPersistence.newCriteria).andReturn(mutable.Map[String,Any]())
-      call(listPersistence.findAll(mutable.Map[String,Any](foreign.fieldName -> 123L))).andReturn(List.empty)
+      call(seqPersistence.newCriteria).andReturn(mutable.Map[String,Any]())
+      call(seqPersistence.findAll(mutable.Map[String,Any](foreign.fieldName -> 123L))).andReturn(List.empty)
       call(activity.setListAdapter(notNull())).andAnswer(listAdapterCapture)
-      call(listPersistence.entityType).andStubReturn(generatedType)
+      call(seqPersistence.entityType).andStubReturn(generatedType)
     }
-    whenExecuting(listPersistence, crudContext, activity) {
-      generatedType.setListAdapter(listPersistence, crudContext, activity)
+    whenExecuting(seqPersistence, crudContext, activity) {
+      generatedType.setListAdapter(seqPersistence, crudContext, activity)
       val listAdapter = listAdapterCapture.params(0).asInstanceOf[ListAdapter]
       listAdapter.getCount must be (0)
     }

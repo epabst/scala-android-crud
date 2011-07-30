@@ -9,29 +9,29 @@ import android.widget.BaseAdapter
 trait GeneratedCrudType[T <: AnyRef] extends CrudType {
   def newWritable = throw new UnsupportedOperationException("not supported")
 
-  def openEntityPersistence(crudContext: CrudContext): ListEntityPersistence[T]
+  def openEntityPersistence(crudContext: CrudContext): SeqEntityPersistence[T]
 
-  class ListPersistenceAdapter[T <: AnyRef](listPersistence: ListEntityPersistence[T], crudContext: CrudContext, activity: ListActivity)
+  class SeqPersistenceAdapter[T <: AnyRef](seqPersistence: SeqEntityPersistence[T], crudContext: CrudContext, activity: ListActivity)
           extends BaseAdapter with AdapterCaching {
     val intent = activity.getIntent
     val contextItems = List(intent, crudContext, Unit)
-    val list: List[T] = listPersistence.findAll(listPersistence.entityType.transform(listPersistence.newCriteria, intent))
+    val seq: Seq[T] = seqPersistence.findAll(seqPersistence.entityType.transform(seqPersistence.newCriteria, intent))
 
-    def getCount: Int = list.size
+    def getCount: Int = seq.size
 
-    def getItemId(position: Int): ID = listPersistence.getId(list(position))
+    def getItemId(position: Int): ID = seqPersistence.getId(getItem(position))
 
-    def getItem(position: Int) = list(position)
+    def getItem(position: Int) = seq(position)
 
     def getView(position: Int, convertView: View, parent: ViewGroup): View = {
       val view = if (convertView == null) activity.getLayoutInflater.inflate(rowLayout, parent, false) else convertView
-      bindViewFromCacheOrItems(view, list(position) :: contextItems, position, activity)
+      bindViewFromCacheOrItems(view, getItem(position) :: contextItems, position, activity)
       view
     }
   }
 
   def setListAdapter(persistence: CrudPersistence, crudContext: CrudContext, activity: ListActivity) {
-    activity.setListAdapter(new ListPersistenceAdapter[T](persistence.asInstanceOf[ListEntityPersistence[T]], crudContext, activity))
+    activity.setListAdapter(new SeqPersistenceAdapter[T](persistence.asInstanceOf[SeqEntityPersistence[T]], crudContext, activity))
   }
 
   def refreshAfterSave(crudContext: CrudContext) {}
