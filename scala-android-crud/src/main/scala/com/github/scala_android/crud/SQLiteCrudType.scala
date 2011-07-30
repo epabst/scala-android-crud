@@ -6,11 +6,8 @@ import android.view.View
 import monitor.Logging
 import android.database.sqlite.{SQLiteDatabase, SQLiteOpenHelper}
 import android.provider.BaseColumns
-import com.github.triangle.JavaUtil.toRunnable
 import android.app.ListActivity
-import com.github.triangle.PortableValue
-import android.database.{ContentObserver, Cursor}
-import actors.Future
+import android.database.Cursor
 
 /**
  * A CrudType for SQLite.
@@ -43,52 +40,17 @@ trait SQLiteCrudType extends CrudType {
     setListAdapter(persistence.asInstanceOf[SQLiteEntityPersistence], crudContext, activity)
   }
 
-  private def findFuturePortableValue(activity: ListActivity, position: Long): Option[Future[PortableValue]] =
-    Option(activity.getListView.getTag.asInstanceOf[Map[Long, Future[PortableValue]]]).flatMap(_.get(position))
-
-  private def findReadyValue[T](future: Future[T]): Option[T] = if (future.isSet) Some(future()) else None
-
-  private def setFuturePortableValue(activity: ListActivity, position: Long, futurePortableValue: Future[PortableValue]) {
-    val listView = activity.getListView
-    val map = Option(listView.getTag.asInstanceOf[Map[Long,Future[PortableValue]]]).getOrElse(Map.empty[Long,Future[PortableValue]]) +
-            (position -> futurePortableValue)
-    listView.setTag(map)
-  }
-
-  private def clearPortableValues(activity: ListActivity) {
-    activity.getListView.setTag(null)
-  }
-
   def setListAdapter(persistence: SQLiteEntityPersistence, crudContext: CrudContext, activity: ListActivity) {
     val intent = activity.getIntent
     val contextItems = List(intent, crudContext, Unit)
-    val criteria = persistence.newCriteria
-    copy(intent, criteria)
-    val cursor = persistence.findAll(criteria)
+    val cursor = persistence.findAll(transform(persistence.newCriteria, intent))
     cursorVarForListAdapter.set(crudContext, cursor)
     activity.startManagingCursor(cursor)
-    val observer = new ContentObserver(null) {
-      override def onChange(selfChange: Boolean) {
-        activity.runOnUiThread { clearPortableValues(activity) }
-        super.onChange(selfChange)
-      }
-    }
-    cursor.registerContentObserver(observer)
-    activity.setListAdapter(new ResourceCursorAdapter(activity, rowLayout, cursor) {
+    activity.setListAdapter(new ResourceCursorAdapter(activity, rowLayout, cursor) with AdapterCaching {
+      cursor.registerContentObserver(cacheClearingObserver(activity))
+
       def bindView(view: View, context: Context, cursor: Cursor) {
-        val position: Long = cursor.getPosition
-        val futureValue: Option[Future[PortableValue]] = findFuturePortableValue(activity, position)
-        //set the cached or default values immediately instead of showing the column header names
-        futureValue.flatMap(findReadyValue(_)).getOrElse(copyFrom(Unit)).copyTo(view)
-        if (futureValue.isEmpty) {
-          //copy from the cursor immediately since it will be advanced to the next row quickly.
-          val cursorValues = transform(Map[String,Any](), cursor)
-          setFuturePortableValue(activity, position, future {
-            val portableValue = copyFromItem(cursorValues :: contextItems)
-            activity.runOnUiThread { notifyDataSetChanged() }
-            portableValue
-          })
-        }
+        bindViewFromCacheOrItems(view, transform(Map[String,Any](), cursor) :: contextItems, cursor.getPosition, activity)
       }
     })
   }

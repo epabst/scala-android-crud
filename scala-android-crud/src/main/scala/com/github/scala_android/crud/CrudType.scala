@@ -1,9 +1,14 @@
 package com.github.scala_android.crud
 
 import android.net.Uri
-import com.github.triangle.{FieldList, BaseField}
 import monitor.Logging
 import android.app.ListActivity
+import android.view.View
+import actors.Future
+import com.github.triangle.{PortableValue, FieldList, BaseField}
+import com.github.triangle.JavaUtil._
+import android.database.ContentObserver
+import android.widget.BaseAdapter
 
 /**
  * An entity configuration that provides all custom information needed to
@@ -115,6 +120,42 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
     val persistence = openEntityPersistence(crudContext)
     try f(persistence)
     finally persistence.close()
+  }
+
+  trait AdapterCaching { self: BaseAdapter =>
+    private def findCachedFuturePortableValue(activity: ListActivity, position: Long): Option[Future[PortableValue]] =
+      Option(activity.getListView.getTag.asInstanceOf[Map[Long, Future[PortableValue]]]).flatMap(_.get(position))
+
+    private def cacheFuturePortableValue(activity: ListActivity, position: Long, futurePortableValue: Future[PortableValue]) {
+      val listView = activity.getListView
+      val map = Option(listView.getTag.asInstanceOf[Map[Long,Future[PortableValue]]]).getOrElse(Map.empty[Long,Future[PortableValue]]) +
+              (position -> futurePortableValue)
+      listView.setTag(map)
+    }
+
+    def cacheClearingObserver(activity: ListActivity) = new ContentObserver(null) {
+      override def onChange(selfChange: Boolean) {
+        activity.runOnUiThread { activity.getListView.setTag(null) }
+        super.onChange(selfChange)
+      }
+    }
+
+    private def findReadyValue[T](future: Future[T]): Option[T] = if (future.isSet) Some(future()) else None
+
+    protected def bindViewFromCacheOrItems(view: View, itemsToCopyAtPosition: => List[AnyRef], position: Long, activity: ListActivity) {
+      val cachedFutureValue: Option[Future[PortableValue]] = findCachedFuturePortableValue(activity, position)
+      //set the cached or default values immediately instead of showing the column header names
+      cachedFutureValue.flatMap(findReadyValue(_)).getOrElse(copyFrom(Unit)).copyTo(view)
+      if (cachedFutureValue.isEmpty) {
+        //copy immediately since in the case of a Cursor, it will be advanced to the next row quickly.
+        val positionItems: List[AnyRef] = itemsToCopyAtPosition
+        cacheFuturePortableValue(activity, position, future {
+          val portableValue = copyFromItem(positionItems)
+          activity.runOnUiThread { notifyDataSetChanged() }
+          portableValue
+        })
+      }
+    }
   }
 
   final def setListAdapter(crudContext: CrudContext, activity: ListActivity) {

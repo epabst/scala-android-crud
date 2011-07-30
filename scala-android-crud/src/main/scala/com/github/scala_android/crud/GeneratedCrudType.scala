@@ -4,7 +4,6 @@ import res.R
 import android.widget.BaseAdapter
 import android.view.{ViewGroup, View}
 import com.github.triangle.PortableField.identityField
-import com.github.triangle.JavaUtil.toRunnable
 import android.app.ListActivity
 
 trait GeneratedCrudType[T <: AnyRef] extends CrudType {
@@ -13,13 +12,10 @@ trait GeneratedCrudType[T <: AnyRef] extends CrudType {
   def openEntityPersistence(crudContext: CrudContext): ListEntityPersistence[T]
 
   def setListAdapter(persistence: CrudPersistence, crudContext: CrudContext, activity: ListActivity) {
-    activity.setListAdapter(new BaseAdapter() {
+    val contextItems = List(activity.getIntent, crudContext, Unit)
+    activity.setListAdapter(new BaseAdapter() with AdapterCaching {
       val listPersistence = persistence.asInstanceOf[ListEntityPersistence[T]]
-      val list: List[T] = {
-        val criteria = listPersistence.newCriteria
-        copy(activity.getIntent, criteria)
-        listPersistence.findAll(criteria)
-      }
+      val list: List[T] = listPersistence.findAll(transform(listPersistence.newCriteria, activity.getIntent))
 
       def getCount: Int = list.size
 
@@ -28,12 +24,8 @@ trait GeneratedCrudType[T <: AnyRef] extends CrudType {
       def getItem(position: Int) = list(position)
 
       def getView(position: Int, convertView: View, parent: ViewGroup): View = {
-        val contextItems = List(activity.getIntent, crudContext, Unit)
         val view = if (convertView == null) activity.getLayoutInflater.inflate(rowLayout, parent, false) else convertView
-        future {
-          val portableValue = copyFrom(list(position) :: contextItems)
-          view.post { portableValue.copyTo(view) }
-        }
+        bindViewFromCacheOrItems(view, list(position) :: contextItems, position, activity)
         view
       }
     })
