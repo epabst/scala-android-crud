@@ -319,12 +319,16 @@ trait DelegatingPortableField[T] extends PortableField[T] {
   }
 }
 
+trait SubjectField { self: PortableField[_] =>
+  def subjectManifest: ClassManifest[_]
+}
+
 /**
  * {@PortableField} support for getting a value as an Option if <code>subject</code> is of type S.
  * @param T the value type
  * @param S the Readable type to get the value out of
  */
-abstract class FieldGetter[S,T](implicit subjectManifest: ClassManifest[S]) extends PortableField[T] with Logging {
+abstract class FieldGetter[S,T](implicit val subjectManifest: ClassManifest[S]) extends PortableField[T] with SubjectField with Logging {
   /** An abstract method that must be implemented by subtypes. */
   def get(subject: S): Option[T]
 
@@ -350,8 +354,8 @@ trait TransformerUsingSetter[T] extends PortableField[T] {
  * This is a trait so that it can be mixed with FieldGetter.
  * @param S the Writable type to put the value into
  */
-trait FieldSetter[S,T] extends PortableField[T] with TransformerUsingSetter[T] with Logging {
-  protected def subjectManifest: ClassManifest[S]
+trait FieldSetter[S,T] extends PortableField[T] with SubjectField with TransformerUsingSetter[T] with Logging {
+  def subjectManifest: ClassManifest[S]
 
   /** An abstract method that must be implemented by subtypes. */
   def set(subject: S, value: Option[T])
@@ -397,9 +401,9 @@ object PortableField {
 
   /** Defines write-only field for a Writable type with Option as the type. */
   def writeOnly[S,T](setter1: S => Option[T] => Unit)
-                    (implicit subjectManifest: ClassManifest[S]): FieldSetter[S,T] = {
+                    (implicit _subjectManifest: ClassManifest[S]): FieldSetter[S,T] = {
     new FieldSetter[S,T] {
-      protected def subjectManifest = subjectManifest
+      def subjectManifest = _subjectManifest
 
       def set(subject: S, valueOpt: Option[T]) {
         setter1(subject)(valueOpt)
@@ -434,12 +438,14 @@ object PortableField {
    * {@PortableField} support for transforming a subject using a value if <code>subject</code> is of type S.
    * @param S the Subject type to transform using the value
    */
-  def transformOnly[S <: AnyRef,T](theTransform: S => Option[T] => S)(implicit subjectManifest: ClassManifest[S]): PortableField[T] =
-    new PortableField[T] with NoSetter[T] with NoGetter[T] {
+  def transformOnly[S <: AnyRef,T](theTransform: S => Option[T] => S)(implicit _subjectManifest: ClassManifest[S]): PortableField[T] =
+    new PortableField[T] with SubjectField with NoSetter[T] with NoGetter[T] {
       def transformer[S1] = {
         case subject: S if subjectManifest.erasure.isInstance(subject) => value =>
           theTransform(subject)(value).asInstanceOf[S1]
       }
+
+      def subjectManifest = _subjectManifest
 
       override def toString = "transformOnly[" + subjectManifest.erasure.getSimpleName + "]"
     }
