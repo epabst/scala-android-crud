@@ -2,6 +2,7 @@ package com.github.triangle
 
 import java.text.{ParsePosition, Format, NumberFormat}
 import java.util.{Calendar, Date}
+import scala.Enumeration
 
 /**
  * A value format.
@@ -19,8 +20,7 @@ trait ValueFormat[T] {
 class BasicValueFormat[T <: AnyVal]()(implicit m: Manifest[T]) extends ValueFormat[T] {
 
   private val converter: String => Option[T] = {
-    val classManifest = m.asInstanceOf[ClassManifest[T]]
-    classManifest.erasure match {
+    m.erasure match {
       case x: Class[_] if (x == classOf[Int]) => convert(_.toInt)
       case x: Class[_] if (x == classOf[Long]) => convert(_.toLong)
       case x: Class[_] if (x == classOf[Short]) => convert(_.toShort)
@@ -87,10 +87,10 @@ object ValueFormat {
     }
   }
 
-  def enumFormat[T](enum: Enumeration): ValueFormat[T] = new ValueFormat[T] {
+  def enumFormat[T <: Enumeration#Value](enum: Enumeration): ValueFormat[T] = new ValueFormat[T] {
     override def toString(enumValue: T) = enumValue.toString
 
-    def toValue(s: String) = enum.valueOf(s).map(_.asInstanceOf[T])
+    def toValue(s: String) = enum.values.find(_.toString == s).map(_.asInstanceOf[T])
   }
 
   lazy val currencyValueFormat = new FlexibleValueFormat[Double](amountFormats)
