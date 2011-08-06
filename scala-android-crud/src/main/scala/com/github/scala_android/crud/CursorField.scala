@@ -18,14 +18,14 @@ object CursorField extends PlatformTypes {
   val persistedId = persisted[ID](BaseColumns._ID)
 
   def persistedFields(fields: FieldList): List[CursorField[_]] = {
-    fields.fieldFlatMap[CursorField[_]] {
-      case cursorField: CursorField[_] => List(cursorField)
+    fields.deepCollect[CursorField[_]] {
+      case cursorField: CursorField[_] => cursorField
     }
   }
 
   def persistedFieldsPlusId(fields: FieldList): List[CursorField[_]] = {
-    persistedId :: fields.fieldFlatMap[CursorField[_]] {
-      case cursorField: CursorField[_] => List(cursorField)
+    persistedId :: fields.deepCollect[CursorField[_]] {
+      case cursorField: CursorField[_] => cursorField
     }
   }
 
@@ -66,5 +66,5 @@ class ForeignKey(val entityType: CrudType) extends PlatformTypes with Delegating
 
   protected val delegate = persisted[ID](fieldName) + intentId(entityType.entityName) + sqliteCriteria[ID](fieldName)
 
-  override def toString = "foreignKey(" + entityType.getClass.getSimpleName + ")"
+  override def toString = "foreignKey(" + entityType.entityName + ")"
 }

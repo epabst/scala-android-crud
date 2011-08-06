@@ -23,9 +23,9 @@ object CrudUIGenerator {
   }
 
   def viewFields(fields: FieldList): List[SubjectField] = {
-    fields.fieldFlatMap[SubjectField] {
+    fields.deepCollect[SubjectField] {
       case subjectField: SubjectField if classOf[View].isAssignableFrom(subjectField.subjectManifest.erasure) => {
-        List(subjectField)
+        subjectField
       }
     }
   }

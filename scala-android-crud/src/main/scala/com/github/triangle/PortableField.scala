@@ -46,17 +46,13 @@ trait BaseField {
    * Traverses all of the PortableFields in this PortableField, returning the desired information.
    * Anything not matched will be traversed deeper, if possible, or else ignored.
    * <pre>
-   *   flatMap {
-   *     case foo: BarField => List(foo.myInfo)
+   *   deepCollect {
+   *     case foo: BarField => foo.myInfo
    *   }
    * </pre>
    */
-  def flatMap[B](f: PartialFunction[BaseField, Traversable[B]]): Traversable[B] = {
-    f.lift(this) match {
-      case Some(t: Traversable[B]) => t
-      case None => None
-    }
-  }
+  // Default implementation only checks this field.  This should be overridden for any field wrapping other fields.
+  def deepCollect[R](f: PartialFunction[BaseField, R]): List[R] = f.lift(this).toList
 }
 
 trait PortableValue {
@@ -294,12 +290,9 @@ trait PortableField[T] extends BaseField with Logging {
         }
       }
 
-      override def flatMap[B](f: PartialFunction[BaseField, Traversable[B]]) = {
+      override def deepCollect[R](f: PartialFunction[BaseField, R]) = {
         val lifted = f.lift
-        List(self, other).flatMap(field => lifted(field) match {
-          case Some(t: Traversable[B]) => t
-          case None => field.flatMap(f)
-        })
+        List(self, other).flatMap(field => lifted(field).map(List(_)).getOrElse(field.deepCollect(f)))
       }
     }
   }
@@ -312,9 +305,7 @@ trait PortableField[T] extends BaseField with Logging {
 trait FieldWithDelegate[T] extends PortableField[T] {
   protected def delegate: BaseField
 
-  override def flatMap[B](f: PartialFunction[BaseField, Traversable[B]]) = {
-    f.lift(this).getOrElse(delegate.flatMap(f))
-  }
+  override def deepCollect[R](f: PartialFunction[BaseField, R]) = f.lift(this).map(List(_)).getOrElse(delegate.deepCollect(f))
 }
 
 /**

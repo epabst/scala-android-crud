@@ -41,8 +41,7 @@ trait FieldList extends Traversable[BaseField] with BaseField {
     fields.foldLeft(initial)((subject, field) => field.transformWithItem(subject, dataItems))
   }
 
-  def fieldFlatMap[B](f: PartialFunction[BaseField, Traversable[B]]): List[B] =
-    fields.flatMap(_.flatMap(f)).toList
+  override def deepCollect[B](f: PartialFunction[BaseField, B]) = fields.toList.flatMap(_.deepCollect(f))
 }
 
 object FieldList {

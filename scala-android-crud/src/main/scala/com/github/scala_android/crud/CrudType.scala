@@ -41,8 +41,8 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
   def deleteItemString: SKey = res.R.string.delete_item
   def cancelItemString: SKey
 
-  lazy val foreignKeys: List[ForeignKey] = fieldFlatMap {
-    case foreignKey: ForeignKey => Some(foreignKey)
+  lazy val foreignKeys: List[ForeignKey] = deepCollect {
+    case foreignKey: ForeignKey => foreignKey
   }
 
   lazy val parentEntities: List[CrudType] = foreignKeys.map(_.entityType)
