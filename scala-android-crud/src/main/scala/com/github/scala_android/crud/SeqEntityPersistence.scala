@@ -42,8 +42,7 @@ trait ListBufferEntityPersistence[T <: AnyRef] extends SeqEntityPersistence[T] {
       nextId += 1
       nextId
     }
-    idField.setter(item)(Some(newId));
-    buffer += item.asInstanceOf[T]
+    buffer += idField.transformer(item.asInstanceOf[T])(Some(newId));
     newId
   }
 

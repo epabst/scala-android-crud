@@ -18,12 +18,18 @@ object CursorField extends PlatformTypes {
   val persistedId = persisted[ID](BaseColumns._ID)
 
   def persistedFields(fields: FieldList): List[CursorField[_]] = {
+    fields.fieldFlatMap[CursorField[_]] {
+      case cursorField: CursorField[_] => List(cursorField)
+    }
+  }
+
+  def persistedFieldsPlusId(fields: FieldList): List[CursorField[_]] = {
     persistedId :: fields.fieldFlatMap[CursorField[_]] {
       case cursorField: CursorField[_] => List(cursorField)
     }
   }
 
-  def queryFieldNames(fields: FieldList): List[String] = persistedFields(fields).map(_.name)
+  def queryFieldNames(fields: FieldList): List[String] = persistedFieldsPlusId(fields).map(_.name)
 
   def sqliteCriteria[T](name: String) = PortableField.writeOnlyDirect[SQLiteCriteria,T](criteria => value => criteria.selection = name + "=" + value)
 }
