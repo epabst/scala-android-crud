@@ -26,8 +26,10 @@ object ViewField extends PlatformTypes {
 
   /** PortableField for a View resource within a given parent View */
   class ViewIdField[T](val viewResourceId: ViewKey, childViewField: PortableField[T])
-          extends PortableField[T] with TransformerUsingSetter[T] {
+          extends FieldWithDelegate[T] with TransformerUsingSetter[T] {
     private object ChildView extends ChildViewById(viewResourceId)
+
+    protected def delegate = childViewField
 
     def getter = {
       case ChildView(childView) if childViewField.getter.isDefinedAt(childView) =>

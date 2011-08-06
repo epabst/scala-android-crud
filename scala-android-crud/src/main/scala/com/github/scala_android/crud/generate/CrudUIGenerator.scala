@@ -18,11 +18,10 @@ object CrudUIGenerator {
     crudType.fields.foreach { field =>
       val persistedFields = CursorField.persistedFields(FieldList(field))
       val viewFields = this.viewFields(FieldList(field))
-      println("For " + field + ": persisted: " + persistedFields + " / view: " + viewFields)
+      println("For " + field + ":\n   persisted: " + persistedFields + " / view: " + viewFields)
     }
   }
 
-  //todo test this
   def viewFields(fields: FieldList): List[SubjectField] = {
     fields.fieldFlatMap[SubjectField] {
       case subjectField: SubjectField if classOf[View].isAssignableFrom(subjectField.subjectManifest.erasure) => {

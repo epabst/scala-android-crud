@@ -305,7 +305,22 @@ trait PortableField[T] extends BaseField with Logging {
   }
 }
 
-trait DelegatingPortableField[T] extends PortableField[T] {
+/**
+ * Any PortableField that contains another PortableField should extend this.
+ * @see DelegatingPortableField
+ */
+trait FieldWithDelegate[T] extends PortableField[T] {
+  protected def delegate: BaseField
+
+  override def flatMap[B](f: PartialFunction[BaseField, Traversable[B]]) = {
+    f.lift(this).getOrElse(delegate.flatMap(f))
+  }
+}
+
+/**
+ * A FieldWithDelegate that delegates directly to its delegate field.
+ */
+trait DelegatingPortableField[T] extends FieldWithDelegate[T] {
   protected def delegate: PortableField[T]
 
   def getter = delegate.getter
@@ -313,10 +328,6 @@ trait DelegatingPortableField[T] extends PortableField[T] {
   def setter = delegate.setter
 
   def transformer[S <: AnyRef] = delegate.transformer
-
-  override def flatMap[B](f: PartialFunction[BaseField, Traversable[B]]) = {
-    f.lift(this).getOrElse(delegate.flatMap(f))
-  }
 }
 
 trait SubjectField { self: PortableField[_] =>
@@ -488,8 +499,10 @@ object PortableField {
    * @param T the value type
    */
   def field[S,T](getter1: S => Option[T], setter1: S => Option[T] => Unit)
-                (implicit subjectManifest: ClassManifest[S]): PortableField[T] = new DelegatingPortableField[T] {
+                (implicit _subjectManifest: ClassManifest[S]): PortableField[T] = new DelegatingPortableField[T] with SubjectField {
     val delegate = readOnly[S,T](getter1) + writeOnly[S,T](setter1)
+
+    def subjectManifest = _subjectManifest
 
     override def toString = "field[" + subjectManifest.erasure.getSimpleName + "]"
   }
@@ -501,7 +514,10 @@ object PortableField {
     override def toString = "mapField(" + name + ")"
   }
 
-  def formatted[T](format: ValueFormat[T], field: PortableField[String]) = new PortableField[T] {
+  def formatted[T](format: ValueFormat[T], field: PortableField[String]) = new FieldWithDelegate[T] {
+    protected def delegate = field
+
+
     def getter = field.getter.andThen(value => value.flatMap(format.toValue(_)))
 
     def setter = field.setter.andThen(setter => setter.compose(value => value.map(format.toString _)))
