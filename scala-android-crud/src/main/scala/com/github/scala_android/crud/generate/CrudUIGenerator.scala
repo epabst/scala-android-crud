@@ -1,9 +1,9 @@
 package com.github.scala_android.crud.generate
 
-//import tools.nsc.io.{Directory, Path}
-import com.github.scala_android.crud.{ViewField, CursorField, CrudType}
-import com.github.triangle.{SubjectField, FieldList}
+import com.github.scala_android.crud.{CursorField, CrudType}
 import android.view.View
+import com.github.scala_android.crud.ViewField.ViewIdField
+import com.github.triangle.{BaseField, SubjectField, FieldList}
 
 /**
  * A UI Generator for a CrudTypes.
@@ -16,17 +16,25 @@ object CrudUIGenerator {
   def generateLayouts(crudType: CrudType) {//}, baseOutputDirectory: Path = Directory.Current.get) {
     println("Generating layout for " + crudType)
     crudType.fields.foreach { field =>
-      val persistedFields = CursorField.persistedFields(FieldList(field))
-      val viewFields = this.viewFields(FieldList(field))
-      println("For " + field + ":\n   persisted: " + persistedFields + " / view: " + viewFields)
+      val viewIdFields = this.viewIdFields(field)
+      val viewFields = this.viewFields(FieldList.toFieldList(viewIdFields))
+      val persistedFields = CursorField.persistedFields(field)
+      println("For " + field + ":\n    viewIds: " + viewIdFields.map(_.viewResourceId).mkString(",") + " / view: " + viewFields +
+              " / persisted: " + persistedFields)
     }
   }
 
-  def viewFields(fields: FieldList): List[SubjectField] = {
-    fields.deepCollect[SubjectField] {
+  def viewFields(field: BaseField): List[SubjectField] = {
+    field.deepCollect[SubjectField] {
       case subjectField: SubjectField if classOf[View].isAssignableFrom(subjectField.subjectManifest.erasure) => {
         subjectField
       }
+    }
+  }
+
+  def viewIdFields(field: BaseField): List[ViewIdField[_]] = {
+    field.deepCollect[ViewIdField[_]] {
+      case viewIdField: ViewIdField[_] => viewIdField
     }
   }
 }

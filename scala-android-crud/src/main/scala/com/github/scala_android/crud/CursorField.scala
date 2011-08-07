@@ -17,7 +17,7 @@ object CursorField extends PlatformTypes {
 
   val persistedId = persisted[ID](BaseColumns._ID)
 
-  def persistedFields(fields: FieldList): List[CursorField[_]] = {
+  def persistedFields(fields: BaseField): List[CursorField[_]] = {
     fields.deepCollect[CursorField[_]] {
       case cursorField: CursorField[_] => cursorField
     }
