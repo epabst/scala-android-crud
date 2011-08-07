@@ -1,9 +1,12 @@
 package com.github.scala_android.crud.generate
 
-import com.github.scala_android.crud.{CursorField, CrudType}
 import android.view.View
 import com.github.scala_android.crud.ViewField.ViewIdField
 import com.github.triangle.{BaseField, SubjectField, FieldList}
+import com.github.scala_android.crud.{PlatformTypes, CursorField, CrudType}
+import java.lang.reflect.{Modifier, Field}
+import com.github.scala_android.crud.monitor.Logging
+import java.lang.IllegalStateException
 
 /**
  * A UI Generator for a CrudTypes.
@@ -12,16 +15,44 @@ import com.github.triangle.{BaseField, SubjectField, FieldList}
  * Time: 3:19 PM
  */
 
-object CrudUIGenerator {
+object CrudUIGenerator extends PlatformTypes with Logging {
   def generateLayouts(crudType: CrudType) {//}, baseOutputDirectory: Path = Directory.Current.get) {
+    generateLayouts(crudType, detectResourceIdClasses(crudType.getClass))
+  }
+
+  private[generate] def detectResourceIdClasses(clazz: Class[_]): Seq[Class[_]] = {
+    Seq(classOf[android.R.id], classOf[com.github.scala_android.crud.res.R.id]) ++ findResourceIdClass(clazz.getClassLoader, clazz.getPackage.getName).toList
+  }
+
+  private[generate] def findResourceIdClass(classLoader: ClassLoader, packageName: String): Option[Class[_]] = {
+    try { Some(classLoader.loadClass(packageName + ".R$id")) }
+    catch { case e: ClassNotFoundException =>
+      val parentPackagePieces = packageName.split('.').dropRight(1)
+      if (parentPackagePieces.isEmpty) None else findResourceIdClass(classLoader, parentPackagePieces.mkString("."))
+    }
+  }
+
+  def generateLayouts(crudType: CrudType, resourceIdClasses: Seq[Class[_]]) {
     println("Generating layout for " + crudType)
     crudType.fields.foreach { field =>
       val viewIdFields = this.viewIdFields(field)
-      val viewFields = this.viewFields(FieldList.toFieldList(viewIdFields))
+      val viewFieldsWithId = this.viewFields(FieldList.toFieldList(viewIdFields))
+      val otherViewFields = this.viewFields(field).filterNot(viewFieldsWithId.contains)
+      val viewResourceIds = viewIdFields.map(_.viewResourceId).map { id =>
+        findFieldWithIntValue(resourceIdClasses, id).map(_.getName).getOrElse {
+          throw new IllegalStateException("Unable to find R.id with value " + id)
+        }
+      }
       val persistedFields = CursorField.persistedFields(field)
-      println("For " + field + ":\n    viewIds: " + viewIdFields.map(_.viewResourceId).mkString(",") + " / view: " + viewFields +
-              " / persisted: " + persistedFields)
+      println("viewIds: " + viewResourceIds + " tied to " +
+              viewFieldsWithId + "  /  other views: " + otherViewFields + "  /  persisted: " + persistedFields)
     }
+  }
+
+  private def findFieldWithIntValue(classes: Seq[Class[_]], value: Int): Option[Field] = {
+    classes.view.flatMap { c =>
+      c.getDeclaredFields.find { field => Modifier.isStatic(field.getModifiers) &&  field.getInt(null) == value }
+    }.headOption
   }
 
   def viewFields(field: BaseField): List[SubjectField] = {
