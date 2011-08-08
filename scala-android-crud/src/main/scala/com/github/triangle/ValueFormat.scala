@@ -17,10 +17,10 @@ trait ValueFormat[T] {
   def toValue(s: String): Option[T]
 }
 
-class BasicValueFormat[T <: AnyVal]()(implicit m: Manifest[T]) extends ValueFormat[T] {
+class BasicValueFormat[T <: AnyVal]()(implicit val manifest: Manifest[T]) extends ValueFormat[T] {
 
   private val converter: String => Option[T] = {
-    m.erasure match {
+    manifest.erasure match {
       case x: Class[_] if (x == classOf[Int]) => convert(_.toInt)
       case x: Class[_] if (x == classOf[Long]) => convert(_.toLong)
       case x: Class[_] if (x == classOf[Short]) => convert(_.toShort)

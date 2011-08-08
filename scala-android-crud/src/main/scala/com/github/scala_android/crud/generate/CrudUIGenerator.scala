@@ -7,6 +7,7 @@ import com.github.scala_android.crud.{PlatformTypes, CursorField, CrudType}
 import java.lang.reflect.{Modifier, Field}
 import com.github.scala_android.crud.monitor.Logging
 import java.lang.IllegalStateException
+import com.github.scala_android.crud.model.IdPk
 
 /**
  * A UI Generator for a CrudTypes.
@@ -34,7 +35,8 @@ object CrudUIGenerator extends PlatformTypes with Logging {
 
   def generateLayouts(crudType: CrudType, resourceIdClasses: Seq[Class[_]]) {
     println("Generating layout for " + crudType)
-    crudType.fields.foreach { field =>
+    val excludedFields = List(CursorField.persistedId, IdPk.idField)
+    crudType.fields.filterNot(excludedFields.contains).foreach { field =>
       val viewIdFields = this.viewIdFields(field)
       val viewFieldsWithId = this.viewFields(FieldList.toFieldList(viewIdFields))
       val otherViewFields = this.viewFields(field).filterNot(viewFieldsWithId.contains)
@@ -43,9 +45,11 @@ object CrudUIGenerator extends PlatformTypes with Logging {
           throw new IllegalStateException("Unable to find R.id with value " + id)
         }
       }
-      val persistedFields = CursorField.persistedFields(field)
+      val foreignKeys = CursorField.foreignKeys(field)
+      val persistedFieldsInForeignKeys = foreignKeys.flatMap(CursorField.persistedFields(_))
+      val otherPersistedFields = CursorField.persistedFields(field).filterNot(persistedFieldsInForeignKeys.contains)
       println("viewIds: " + viewResourceIds + " tied to " +
-              viewFieldsWithId + "  /  other views: " + otherViewFields + "  /  persisted: " + persistedFields)
+              viewFieldsWithId + "  /  other views: " + otherViewFields + "  /  foreignKeys: " + foreignKeys + " / other persisted: " + otherPersistedFields)
     }
   }
 
