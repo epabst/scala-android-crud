@@ -371,6 +371,22 @@ trait NoTransformer[T] extends NoSetter[T] {
   def transformer[S <: AnyRef] = PortableField.emptyPartialFunction
 }
 
+case class FormattedField[T](format: ValueFormat[T], field: PortableField[String]) extends FieldWithDelegate[T] {
+  protected def delegate = field
+
+  def getter = field.getter.andThen(value => value.flatMap(format.toValue(_)))
+
+  def setter = field.setter.andThen(setter => setter.compose(value => value.map(format.toString _)))
+
+  def transformer[S <: AnyRef] = {
+    case subject if field.transformer[S].isDefinedAt(subject) => { value =>
+      field.transformer(subject)(value.map(format.toString _))
+    }
+  }
+
+  override def toString = "formatted(" + format + ", " + field + ")"
+}
+
 /**
  * Factory methods for basic PortableFields.  This should be imported as PortableField._.
  */
@@ -505,22 +521,7 @@ object PortableField {
     override def toString = "mapField(" + name + ")"
   }
 
-  def formatted[T](format: ValueFormat[T], field: PortableField[String]) = new FieldWithDelegate[T] {
-    protected def delegate = field
-
-
-    def getter = field.getter.andThen(value => value.flatMap(format.toValue(_)))
-
-    def setter = field.setter.andThen(setter => setter.compose(value => value.map(format.toString _)))
-
-    def transformer[S <: AnyRef] = {
-      case subject if field.transformer[S].isDefinedAt(subject) => { value =>
-        field.transformer(subject)(value.map(format.toString _))
-      }
-    }
-
-    override def toString = "formatted(" + format + ", " + field + ")"
-  }
+  def formatted[T](format: ValueFormat[T], field: PortableField[String]) = new FormattedField(format, field)
 
   /**
    * formatted replacement for primitive values.
