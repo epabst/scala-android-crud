@@ -22,7 +22,7 @@ object CrudUIGenerator extends PlatformTypes with Logging {
   }
 
   private[generate] def detectResourceIdClasses(clazz: Class[_]): Seq[Class[_]] = {
-    Seq(classOf[android.R.id], classOf[com.github.scala_android.crud.res.R.id]) ++ findResourceIdClass(clazz.getClassLoader, clazz.getPackage.getName).toList
+    findResourceIdClass(clazz.getClassLoader, clazz.getPackage.getName).toSeq ++ Seq(classOf[android.R.id], classOf[com.github.scala_android.crud.res.R.id])
   }
 
   private[generate] def findResourceIdClass(classLoader: ClassLoader, packageName: String): Option[Class[_]] = {
