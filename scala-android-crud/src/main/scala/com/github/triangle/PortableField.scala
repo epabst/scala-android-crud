@@ -526,5 +526,5 @@ object PortableField {
    * formatted replacement for primitive values.
    */
   def formatted[T <: AnyVal](field: PortableField[String])(implicit m: Manifest[T]): PortableField[T] =
-    formatted(new BasicValueFormat[T](), field)
+    formatted(ValueFormat.basicFormat[T], field)
 }

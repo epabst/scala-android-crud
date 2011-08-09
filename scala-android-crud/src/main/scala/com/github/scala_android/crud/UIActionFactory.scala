@@ -4,7 +4,8 @@ import android.app.Activity
 import android.net.Uri
 import android.content.{Context, Intent}
 import collection.JavaConversions
-import com.github.triangle.{BasicValueFormat, PortableField}
+import com.github.triangle.PortableField
+import com.github.triangle.ValueFormat.basicFormat
 
 /**
  * A Factory for UIActions.
@@ -183,7 +184,7 @@ object ActivityUIActionFactory extends PlatformTypes {
 
 case class EntityUriSegment(entityName: String, detail: String*) extends PlatformTypes {
   import JavaConversions._
-  private val idFormat = new BasicValueFormat[ID]()
+  private val idFormat = basicFormat[ID]
 
   def specifyInUri(currentUri: Uri): Uri =
     replacePathSegments(currentUri, _.takeWhile(_ != entityName) ::: entityName :: detail.toList)

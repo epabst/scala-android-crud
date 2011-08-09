@@ -3,7 +3,7 @@ package com.github.scala_android.crud
 import _root_.android.app.Activity
 import _root_.android.view.{Menu, MenuItem}
 import android.os.Bundle
-import com.github.triangle.BasicValueFormat
+import com.github.triangle.ValueFormat.basicFormat
 import com.github.triangle.JavaUtil.toRunnable
 
 /**
@@ -19,7 +19,7 @@ import com.github.triangle.JavaUtil.toRunnable
 class CrudActivity(val entityType: CrudType, val application: CrudApplication)
   extends Activity with BaseCrudActivity {
 
-  private val idFormat = new BasicValueFormat[ID]()
+  private val idFormat = basicFormat[ID]
   def id: Option[ID] = idFormat.toValue(getIntent.getData.getLastPathSegment)
 
   override def onCreate(savedInstanceState: Bundle) {

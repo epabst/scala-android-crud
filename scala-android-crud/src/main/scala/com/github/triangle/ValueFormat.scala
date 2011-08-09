@@ -17,32 +17,6 @@ trait ValueFormat[T] {
   def toValue(s: String): Option[T]
 }
 
-class BasicValueFormat[T <: AnyVal]()(implicit val manifest: Manifest[T]) extends ValueFormat[T] {
-
-  private val converter: String => Option[T] = {
-    manifest.erasure match {
-      case x: Class[_] if (x == classOf[Int]) => convert(_.toInt)
-      case x: Class[_] if (x == classOf[Long]) => convert(_.toLong)
-      case x: Class[_] if (x == classOf[Short]) => convert(_.toShort)
-      case x: Class[_] if (x == classOf[Byte]) => convert(_.toByte)
-      case x: Class[_] if (x == classOf[Double]) => convert(_.toDouble)
-      case x: Class[_] if (x == classOf[Float]) => convert(_.toFloat)
-      case x: Class[_] if (x == classOf[Boolean]) => convert(_.toBoolean)
-      case _ => throw new IllegalArgumentException("Unknown primitive type: " + classManifest.erasure)
-    }
-  }
-
-  private def convert(f: String => AnyVal)(s: String): Option[T] = {
-    try {
-      Some(f(s).asInstanceOf[T])
-    } catch {
-      case e: IllegalArgumentException => None
-    }
-  }
-
-  def toValue(s: String): Option[T] = converter(s)
-}
-
 class TextValueFormat[T](format: Format, obj2Value: (Object) => T = {(v: Object) => v.asInstanceOf[T]}) extends ValueFormat[T] {
   override def toString(value: T) = format.format(value)
 
@@ -92,6 +66,35 @@ object ValueFormat {
 
     def toValue(s: String) = enum.values.find(_.toString == s).map(_.asInstanceOf[T])
   }
+
+  def basicFormat[T <: AnyVal](implicit manifest: Manifest[T]): ValueFormat[T] = {
+    val converter: String => T = {
+      manifest.erasure match {
+        case x: Class[_] if (x == classOf[Int]) => _.toInt.asInstanceOf[T]
+        case x: Class[_] if (x == classOf[Long]) => _.toLong.asInstanceOf[T]
+        case x: Class[_] if (x == classOf[Short]) => _.toShort.asInstanceOf[T]
+        case x: Class[_] if (x == classOf[Byte]) => _.toByte.asInstanceOf[T]
+        case x: Class[_] if (x == classOf[Double]) => _.toDouble.asInstanceOf[T]
+        case x: Class[_] if (x == classOf[Float]) => _.toFloat.asInstanceOf[T]
+        case x: Class[_] if (x == classOf[Boolean]) => _.toBoolean.asInstanceOf[T]
+        case _ => throw new IllegalArgumentException("Unknown primitive type: " + classManifest.erasure)
+      }
+    }
+    format(converter, _.toString)
+  }
+
+  def format[T](convertFromString: String => T, convertToString: T => String): ValueFormat[T] =
+    formatOption[T](s => {
+      try { Some(convertFromString(s)) }
+      catch { case e: IllegalArgumentException => None }
+    }, convertToString)
+
+  def formatOption[T](convertFromString: String => Option[T], convertToString: T => String): ValueFormat[T] =
+    new ValueFormat[T] {
+      def toValue(s: String) = convertFromString(s)
+
+      override def toString(value: T) = convertToString(value)
+    }
 
   lazy val currencyValueFormat = new FlexibleValueFormat[Double](amountFormats)
   lazy val currencyDisplayValueFormat = new TextValueFormat[Double](currencyFormat, _.asInstanceOf[Number].doubleValue)

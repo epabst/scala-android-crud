@@ -16,7 +16,7 @@ import ValueFormat._
 
 @RunWith(classOf[JUnitRunner])
 class ValueFormatSpec extends Spec with MustMatchers {
-  describe("BasicValueFormat") {
+  describe("basicFormat") {
     it("must convert between basic types") {
       itMustConvertBetweenTypes[Long](123)
       itMustConvertBetweenTypes[Int](123)
@@ -28,13 +28,13 @@ class ValueFormatSpec extends Spec with MustMatchers {
     }
 
     def itMustConvertBetweenTypes[T <: AnyVal](value: T)(implicit m: Manifest[T]) {
-      val format = new BasicValueFormat[T]
+      val format = ValueFormat.basicFormat[T]
       itMustFormatAndParse(format, value)
     }
 
     it("must fail to construct if no type specified") {
       intercept[IllegalArgumentException] {
-        new BasicValueFormat[AnyVal]
+        basicFormat[AnyVal]
       }
     }
   }
