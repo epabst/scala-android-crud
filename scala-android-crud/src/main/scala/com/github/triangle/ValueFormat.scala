@@ -30,13 +30,7 @@ class TextValueFormat[T](format: Format, obj2Value: (Object) => T = {(v: Object)
 class FlexibleValueFormat[T](formats: List[ValueFormat[T]]) extends ValueFormat[T] {
   override def toString(value: T) = formats.headOption.map(_.toString(value)).getOrElse(super.toString(value))
 
-  def toValue(s: String): Option[T] = {
-    for (format <- formats) {
-      val value = format.toValue(s)
-      if (value.isDefined) return value
-    }
-    None
-  }
+  def toValue(s: String): Option[T] = formats.view.flatMap(_.toValue(s)).headOption
 }
 
 object ValueFormat {
