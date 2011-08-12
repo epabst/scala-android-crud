@@ -38,9 +38,7 @@ class CrudBackupAgentSpec extends MyEntityTesting with MustMatchers {
 
   @Test
   def shouldMarshallAndUnmarshall() {
-    val map = mutable.Map[String,Any]()
-    map.put("name", "George")
-    map.put("age", 35)
+    val map = Map[String,Any]("name" -> "George", "age" -> 35)
     val bytes = marshall(map)
     val copy = unmarshall(bytes)
     copy must be (map)
@@ -103,7 +101,7 @@ class CrudBackupAgentSpec extends MyEntityTesting with MustMatchers {
 
   def saveRestoreItem(restoreItems: mutable.ListBuffer[RestoreItem]): IAnswer[Unit] = answer {
     val currentArguments = EasyMock.getCurrentArguments
-    currentArguments(1).asInstanceOf[Option[mutable.Map[String,Any]]].foreach { map =>
+    currentArguments(1).asInstanceOf[Option[Map[String,Any]]].foreach { map =>
       restoreItems += RestoreItem(currentArguments(0).asInstanceOf[String], map)
     }
   }

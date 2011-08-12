@@ -5,7 +5,6 @@ import common.Logging
 import persistence.CursorField._
 import android.os.ParcelFileDescriptor
 import java.io.{ObjectInputStream, ByteArrayInputStream, ObjectOutputStream, ByteArrayOutputStream}
-import scala.collection.mutable
 import scala.collection.JavaConversions._
 import java.util.{Map => JMap,HashMap}
 import android.content.Context
@@ -13,7 +12,7 @@ import android.content.Context
 object CrudBackupAgent {
   private val backupStrategyVersion: Int = 1
 
-  private[crud] def marshall(map: mutable.Map[String,Any]): Array[Byte] = {
+  private[crud] def marshall(map: Map[String,Any]): Array[Byte] = {
     val out = new ByteArrayOutputStream
     try {
       val objectStream = new ObjectOutputStream(out)
@@ -25,12 +24,12 @@ object CrudBackupAgent {
     } finally out.close()
   }
 
-  private[crud] def unmarshall(bytes: Array[Byte]): mutable.Map[String,Any] = {
+  private[crud] def unmarshall(bytes: Array[Byte]): Map[String,Any] = {
     val objectStream = new ObjectInputStream(new ByteArrayInputStream(bytes))
     try {
       val strategyVersion = objectStream.readInt()
       if (strategyVersion != backupStrategyVersion) throw new IllegalStateException
-      objectStream.readObject().asInstanceOf[JMap[String,Any]]
+      objectStream.readObject().asInstanceOf[JMap[String,Any]].toMap
     } finally objectStream.close()
   }
 }
@@ -48,7 +47,7 @@ import CrudBackupAgent._
 class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Logging {
   final def onBackup(oldState: ParcelFileDescriptor, data: BackupDataOutput, newState: ParcelFileDescriptor) {
     onBackup(oldState, new BackupTarget {
-      def writeEntity(key: String, mapOpt: Option[mutable.Map[String,Any]]) {
+      def writeEntity(key: String, mapOpt: Option[Map[String,Any]]) {
         debug("Backing up " + key + " <- " + mapOpt)
         mapOpt match {
           case Some(map) =>
@@ -76,8 +75,7 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Log
     entityType.withEntityPersistence[Unit](crudContext, persistence => {
       val all = persistence.findAll(persistence.newCriteria)
       persistence.toIterator(all).foreach(entity => {
-        val map = mutable.Map[String,Any]()
-        entityType.copy(entity, map)
+        val map = entityType.transform(Map[String,Any](), entity)
         val id = persistedId(entity)
         data.writeEntity(entityType.entityName + "#" + id, Some(map))
       })
@@ -126,8 +124,7 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Log
   def onRestore(entityType: CrudType, restoreItem: RestoreItem, crudContext: CrudContext) {
     debug("Restoring " + restoreItem.key + " <- " + restoreItem.map)
     val id = restoreItem.key.substring(restoreItem.key.lastIndexOf("#") + 1).toLong
-    val writable = entityType.newWritable
-    entityType.copy(restoreItem.map, writable)
+    val writable = entityType.transform(entityType.newWritable, restoreItem.map)
     entityType.withEntityPersistence(crudContext, _.save(Some(id), writable))
     Unit
   }
@@ -155,10 +152,10 @@ private[crud] trait CalculatedIterator[T] extends Iterator[T] {
 }
 
 trait BackupTarget {
-  def writeEntity(key: String, map: Option[mutable.Map[String,Any]])
+  def writeEntity(key: String, map: Option[Map[String,Any]])
 }
 
-case class RestoreItem(key: String, map: mutable.Map[String,Any])
+case class RestoreItem(key: String, map: Map[String,Any])
 
 /**
  * Helps prevent restoring entities that the user deleted when an onRestore operation happens.
@@ -189,8 +186,7 @@ object DeletedEntityIdCrudType extends SQLiteCrudType with HiddenEntityType {
    */
   def recordDeletion(entityType: CrudType, id: ID, context: Context) {
     val crudContext = new CrudContext(context, application)
-    val writable = newWritable
-    copy(Map(entityNameField.name -> entityType.entityName, entityIdField.name -> id), writable)
+    val writable = transform(newWritable, Map(entityNameField.name -> entityType.entityName, entityIdField.name -> id))
     withEntityPersistence(crudContext, { persistence =>
       persistence.save(None, writable)
     })

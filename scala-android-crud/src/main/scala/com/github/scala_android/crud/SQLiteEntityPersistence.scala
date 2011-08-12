@@ -9,7 +9,6 @@ import persistence.{SQLiteCriteria, CursorField, CrudPersistence}
 import scala.None
 import collection.mutable.SynchronizedQueue
 import android.app.backup.BackupManager
-import collection.mutable
 
 /**
  * EntityPersistence for SQLite.
@@ -92,8 +91,7 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudType, crudContext: CrudC
       }
     }
     notifyDataChanged()
-    val map = mutable.Map[String,Any]()
-    entityType.copy(contentValues, map)
+    val map = entityType.transform(Map[String,Any](), contentValues)
     val bytes = CrudBackupAgent.marshall(map)
     debug("Scheduled backup which will include " + entityType.entityName + "#" + id + ": size " + bytes.size + " bytes")
     id
