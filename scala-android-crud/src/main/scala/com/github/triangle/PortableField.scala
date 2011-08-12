@@ -95,7 +95,7 @@ trait PortableValue {
  * @see #getter
  * @see #setter
  */
-trait PortableField[T] extends BaseField with Logging {
+trait PortableField[T] extends BaseField with Logging { self =>
   /**
    * PartialFunction for getting an optional value from an AnyRef.
    */
@@ -225,22 +225,26 @@ trait PortableField[T] extends BaseField with Logging {
         }
 
         def transform[S <: AnyRef](initial: S): S = {
-          debug("Transforming " + initial + " with value " + value + " for field " + this)
+          debug("Transforming " + initial + " with value " + value + " for field " + self)
           transformer(initial)(value)
         }
+
+        override def toString = "PortableValue(" + value + ")"
       }
     } else {
       new PortableValue {
         def copyTo(to: AnyRef) {
-          debug("Unable to copy field " + this + " from " + from + " to " + to + " due to getter.")
+          debug("Unable to copy field " + self + " from " + from + " to " + to + " due to getter.")
         }
 
         protected[triangle] def copyToDefinedAt(to: AnyRef) { new IllegalStateException("value not available") }
 
         def transform[S <: AnyRef](initial: S): S = {
-          debug("Unable to transform " + initial + " with " + from + " for field " + this + " because of getter.")
+          debug("Unable to transform " + initial + " with " + from + " for field " + self + " because of getter.")
           initial
         }
+
+        override def toString = "PortableValue(Nothing from " + self + ")"
       }
     }
   }
@@ -249,7 +253,6 @@ trait PortableField[T] extends BaseField with Logging {
    * Adds two PortableField objects together.
    */
   def +(other: PortableField[T]): PortableField[T] = {
-    val self = this
     new PortableField[T] {
       override def toString = self + " + " + other
 

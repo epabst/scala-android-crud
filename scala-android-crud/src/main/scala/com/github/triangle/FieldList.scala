@@ -30,6 +30,8 @@ trait FieldList extends Traversable[BaseField] with BaseField {
       def transform[S <: AnyRef](initial: S): S = {
         portableValues.foldLeft(initial)((subject, portableValue) => portableValue.transform(subject))
       }
+
+      override def toString = "PortableValue(" + portableValues.mkString(",") + ")"
     }
   }
 
