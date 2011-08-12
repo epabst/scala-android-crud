@@ -48,7 +48,7 @@ trait SQLiteCrudType extends CrudType {
     cursorVarForListAdapter.set(crudContext, cursor)
     activity.startManagingCursor(cursor)
     activity.setListAdapter(new ResourceCursorAdapter(activity, rowLayout, cursor) with AdapterCaching {
-      cursor.registerContentObserver(cacheClearingObserver(activity))
+      cursor.registerDataSetObserver(cacheClearingObserver(activity))
 
       def bindView(view: View, context: Context, cursor: Cursor) {
         bindViewFromCacheOrItems(view, transform(Map[String,Any](), cursor) :: contextItems, cursor.getPosition, activity)

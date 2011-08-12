@@ -6,10 +6,10 @@ import android.view.View
 import actors.Future
 import com.github.triangle.{PortableValue, FieldList, BaseField}
 import com.github.triangle.JavaUtil._
-import android.database.ContentObserver
 import android.widget.BaseAdapter
 import common.{Timing, PlatformTypes, Logging}
 import persistence.{EntityPersistence, CrudPersistence}
+import android.database.DataSetObserver
 
 /**
  * An entity configuration that provides all custom information needed to
@@ -132,12 +132,14 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
       val map = Option(listView.getTag.asInstanceOf[Map[Long,Future[PortableValue]]]).getOrElse(Map.empty[Long,Future[PortableValue]]) +
               (position -> futurePortableValue)
       listView.setTag(map)
+      verbose("Added value at position " + position + " to the cache for " + activity)
     }
 
-    def cacheClearingObserver(activity: ListActivity) = new ContentObserver(null) {
-      override def onChange(selfChange: Boolean) {
+    def cacheClearingObserver(activity: ListActivity) = new DataSetObserver {
+      override def onChanged() {
+        verbose("Clearing ListView cache in " + activity + " since DataSet changed")
         activity.runOnUiThread { activity.getListView.setTag(null) }
-        super.onChange(selfChange)
+        super.onChanged()
       }
     }
 
@@ -146,7 +148,10 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
     protected def bindViewFromCacheOrItems(view: View, itemsToCopyAtPosition: => List[AnyRef], position: Long, activity: ListActivity) {
       val cachedFutureValue: Option[Future[PortableValue]] = findCachedFuturePortableValue(activity, position)
       //set the cached or default values immediately instead of showing the column header names
-      cachedFutureValue.flatMap(findReadyValue(_)).getOrElse(copyFrom(Unit)).copyTo(view)
+      cachedFutureValue.flatMap(findReadyValue(_)).getOrElse {
+        verbose("cache miss for " + activity + " at position " + position)
+        copyFrom(Unit)
+      }.copyTo(view)
       if (cachedFutureValue.isEmpty) {
         //copy immediately since in the case of a Cursor, it will be advanced to the next row quickly.
         val positionItems: List[AnyRef] = itemsToCopyAtPosition
