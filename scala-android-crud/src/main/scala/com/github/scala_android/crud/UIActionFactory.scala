@@ -6,6 +6,8 @@ import android.content.{Context, Intent}
 import collection.JavaConversions
 import com.github.triangle.PortableField
 import com.github.triangle.ValueFormat.basicFormat
+import common.PlatformTypes
+import persistence.CrudPersistence
 
 /**
  * A Factory for UIActions.

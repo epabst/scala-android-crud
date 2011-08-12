@@ -1,7 +1,7 @@
-package com.github.scala_android.crud
+package com.github.scala_android.crud.persistence
 
 import scala.collection.mutable
-import com.github.scala_android.crud.model.IdPk._
+import IdPk._
 
 /**
  * EntityPersistence for a simple generated Seq.

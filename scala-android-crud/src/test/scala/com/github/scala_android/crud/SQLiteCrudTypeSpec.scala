@@ -1,7 +1,7 @@
 package com.github.scala_android.crud
 
 import android.provider.BaseColumns
-import monitor.Logging
+import common.Logging
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.scalatest.mock.EasyMockSugar
@@ -9,7 +9,7 @@ import org.easymock.EasyMock._
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.scalatest.matchers.MustMatchers
 import com.github.triangle._
-import CursorField._
+import persistence.CursorField._
 import PortableField._
 import res.R
 import android.net.Uri

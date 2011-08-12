@@ -3,11 +3,11 @@ package com.github.scala_android.crud.generate
 import android.view.View
 import com.github.scala_android.crud.ViewField.ViewIdField
 import com.github.triangle.{BaseField, SubjectField, FieldList}
-import com.github.scala_android.crud.{PlatformTypes, CursorField, CrudType}
 import java.lang.reflect.{Modifier, Field}
-import com.github.scala_android.crud.monitor.Logging
 import java.lang.IllegalStateException
-import com.github.scala_android.crud.model.IdPk
+import com.github.scala_android.crud.common.{PlatformTypes, Logging}
+import com.github.scala_android.crud.persistence.{IdPk, CursorField}
+import com.github.scala_android.crud.{ForeignKey, CrudType}
 
 /**
  * A UI Generator for a CrudTypes.
@@ -45,7 +45,7 @@ object CrudUIGenerator extends PlatformTypes with Logging {
           throw new IllegalStateException("Unable to find R.id with value " + id)
         }
       }
-      val foreignKeys = CursorField.foreignKeys(field)
+      val foreignKeys = ForeignKey.foreignKeys(field)
       val persistedFieldsInForeignKeys = foreignKeys.flatMap(CursorField.persistedFields(_))
       val otherPersistedFields = CursorField.persistedFields(field).filterNot(persistedFieldsInForeignKeys.contains)
       println("viewIds: " + viewResourceIds + " tied to " +

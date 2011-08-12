@@ -1,7 +1,6 @@
 package com.github.scala_android.crud
 
 import android.net.Uri
-import monitor.Logging
 import android.app.ListActivity
 import android.view.View
 import actors.Future
@@ -9,6 +8,8 @@ import com.github.triangle.{PortableValue, FieldList, BaseField}
 import com.github.triangle.JavaUtil._
 import android.database.ContentObserver
 import android.widget.BaseAdapter
+import common.{Timing, PlatformTypes, Logging}
+import persistence.{EntityPersistence, CrudPersistence}
 
 /**
  * An entity configuration that provides all custom information needed to
@@ -87,7 +88,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
       //exactly one parent w/o a display page
       case foreignKey :: Nil if !foreignKey.entityType.hasDisplayPage => {
         val parentEntity = foreignKey.entityType
-        val getForeignKey = { _: Unit => foreignKey(actionFactory.currentIntent) }
+        val getForeignKey = { _: Unit => foreignKey.apply(actionFactory.currentIntent) }
         actionFactory.adapt(actionFactory.startUpdate(parentEntity), getForeignKey) ::
                 parentEntity.displayChildEntityLists(actionFactory, getForeignKey,
                   parentEntity.childEntities(actionFactory.application).filter(_ != thisEntity))

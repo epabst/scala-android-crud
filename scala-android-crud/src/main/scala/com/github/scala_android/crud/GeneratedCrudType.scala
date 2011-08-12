@@ -1,5 +1,6 @@
 package com.github.scala_android.crud
 
+import persistence.{CrudPersistence, SeqEntityPersistence}
 import res.R
 import android.view.{ViewGroup, View}
 import com.github.triangle.PortableField.identityField

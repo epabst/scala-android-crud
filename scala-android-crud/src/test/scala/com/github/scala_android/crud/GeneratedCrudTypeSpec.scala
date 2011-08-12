@@ -1,17 +1,16 @@
 package com.github.scala_android.crud
 
 import org.junit.runner.RunWith
+import persistence.SeqEntityPersistence
 import scala.collection.mutable
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.Spec
-import com.github.scala_android.crud.CursorField._
-import com.github.triangle.PortableField
 import android.widget.ListAdapter
 import android.content.Intent
 import ActivityUIActionFactory._
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.junit.Test
-import android.app.{ListActivity, Activity}
+import android.app.ListActivity
 import org.easymock.EasyMock._
 
 /**
@@ -31,7 +30,7 @@ class GeneratedCrudTypeSpec extends Spec with MustMatchers with MyEntityTesting 
     val activity = mock[ListActivity]
     val listAdapterCapture = capturingAnswer[Unit] { Unit }
     val otherType = new MyEntityType(seqPersistence, mock[ListAdapter])
-    val foreign = foreignKey(otherType)
+    val foreign = ForeignKey(otherType)
     val generatedType = new GeneratedCrudType[mutable.Map[String,Any]] with StubEntityType {
       def entityName = "Generated"
       def fields = List(foreign)

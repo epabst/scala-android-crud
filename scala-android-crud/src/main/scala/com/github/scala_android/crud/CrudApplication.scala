@@ -1,6 +1,6 @@
 package com.github.scala_android.crud
 
-import monitor.Logging
+import common.Logging
 
 /**
  * An Application that works with {@link CrudType}s.

@@ -1,4 +1,7 @@
-package com.github.scala_android.crud
+package com.github.scala_android.crud.persistence
+
+import com.github.triangle.FieldList
+import com.github.scala_android.crud.common.{Timing, PlatformTypes}
 
 /**
  * Persistence support for an entity.
@@ -33,7 +36,7 @@ trait EntityPersistence extends PlatformTypes with Timing {
 }
 
 trait CrudPersistence extends EntityPersistence {
-  def entityType: CrudType
+  def entityType: FieldList
 
   def findAsIterator[T <: AnyRef](criteria: AnyRef, instantiateItem: () => T): Iterator[T] =
     toIterator(findAll(criteria)).map(entity => {

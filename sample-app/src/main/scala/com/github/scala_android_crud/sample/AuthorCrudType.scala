@@ -1,8 +1,7 @@
 package com.github.scala_android_crud.sample
 
 import com.github.scala_android.crud._
-import CursorField._
-import monitor.Logging
+import persistence.CursorField._
 import ViewField._
 import com.github.triangle._
 import PortableField._

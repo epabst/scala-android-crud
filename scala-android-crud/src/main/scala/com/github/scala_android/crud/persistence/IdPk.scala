@@ -1,8 +1,8 @@
-package com.github.scala_android.crud.model
+package com.github.scala_android.crud.persistence
 
 import com.github.triangle.PortableField._
-import com.github.scala_android.crud.{CursorField, PlatformTypes}
 import com.github.triangle.PortableField
+import com.github.scala_android.crud.common.PlatformTypes
 
 /**
  * A trait with a primary key

@@ -4,7 +4,8 @@ import android.provider.BaseColumns
 import android.database.sqlite.SQLiteDatabase
 import android.database.Cursor
 import android.content.ContentValues
-import com.github.scala_android.crud.monitor.Logging
+import com.github.scala_android.crud.common.Logging
+import persistence.{SQLiteCriteria, CursorField, CrudPersistence}
 import scala.None
 import collection.mutable.SynchronizedQueue
 import android.app.backup.BackupManager
@@ -115,6 +116,3 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudType, crudContext: CrudC
     database.close()
   }
 }
-
-class SQLiteCriteria(var selection: String = null, var selectionArgs: Array[String] = Nil.toArray,
-                     var groupBy: String = null, var having: String = null, var orderBy: String = null)

@@ -1,16 +1,14 @@
 package com.github.scala_android.crud
 
 import android.app.backup.{BackupDataOutput, BackupDataInput, BackupAgent}
-import monitor.Logging
-import CursorField._
+import common.Logging
+import persistence.CursorField._
 import android.os.ParcelFileDescriptor
 import java.io.{ObjectInputStream, ByteArrayInputStream, ObjectOutputStream, ByteArrayOutputStream}
 import scala.collection.mutable
 import scala.collection.JavaConversions._
 import java.util.{Map => JMap,HashMap}
-import com.github.triangle.PortableField
-import android.database.Cursor
-import android.content.{Context, ContentValues}
+import android.content.Context
 
 object CrudBackupAgent {
   private val backupStrategyVersion: Int = 1

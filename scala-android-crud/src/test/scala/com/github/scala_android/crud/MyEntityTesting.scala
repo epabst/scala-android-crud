@@ -1,12 +1,13 @@
 package com.github.scala_android.crud
 
 import org.scalatest.mock.EasyMockSugar
+import persistence.{CrudPersistence, ListBufferEntityPersistence}
 import scala.collection.mutable
 import mutable.Map
 import com.github.triangle._
 import PortableField._
 import ViewField._
-import CursorField._
+import persistence.CursorField._
 import android.content.Intent
 import org.easymock.EasyMock
 import android.widget.ListAdapter

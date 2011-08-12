@@ -1,4 +1,4 @@
-package com.github.scala_android.crud
+package com.github.scala_android.crud.common
 
 import actors.{InputChannel, Future}
 

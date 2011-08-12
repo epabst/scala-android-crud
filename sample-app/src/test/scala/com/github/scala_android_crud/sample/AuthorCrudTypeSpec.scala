@@ -3,10 +3,11 @@ package com.github.scala_android_crud.sample
 import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.EasyMockSugar
-import com.github.scala_android.crud.CursorField._
+import com.github.scala_android.crud.persistence.CursorField._
 import com.github.scala_android.crud._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import persistence.ListBufferEntityPersistence
 
 /**
  * A behavior specification for {@link AuthorCrudType}.
@@ -31,7 +32,7 @@ class AuthorCrudTypeSpec extends Spec with MustMatchers with EasyMockSugar {
 
         val BookCrudType = new HiddenEntityType with GeneratedCrudType[Map[String,Any]] {
           def entityName = "Book"
-          val authorIdField = foreignKey(AuthorCrudType)
+          val authorIdField = ForeignKey(AuthorCrudType)
           def fields = List(authorIdField)
           def openEntityPersistence(crudContext: CrudContext) = bookPersistence
         }

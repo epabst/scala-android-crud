@@ -1,4 +1,4 @@
-package com.github.scala_android.crud
+package com.github.scala_android.crud.common
 
 /**
  * A single place to specify types that could vary between different platforms.

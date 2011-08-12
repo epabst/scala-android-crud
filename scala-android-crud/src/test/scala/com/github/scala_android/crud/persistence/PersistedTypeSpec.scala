@@ -1,4 +1,4 @@
-package com.github.scala_android.crud
+package com.github.scala_android.crud.persistence
 
 import org.junit.runner.RunWith
 import org.scalatest.matchers.MustMatchers

@@ -1,4 +1,4 @@
-package com.github.scala_android.crud
+package com.github.scala_android.crud.persistence
 
 import android.content.ContentValues
 import android.database.Cursor
@@ -6,14 +6,15 @@ import android.provider.BaseColumns
 import com.github.triangle._
 import PortableField._
 import android.os.Bundle
-import monitor.Logging
+import com.github.scala_android.crud.common.{PlatformTypes, Logging}
+
+class SQLiteCriteria(var selection: String = null, var selectionArgs: Array[String] = Nil.toArray,
+                     var groupBy: String = null, var having: String = null, var orderBy: String = null)
 
 object CursorField extends PlatformTypes {
   def persisted[T](name: String)(implicit persistedType: PersistedType[T]): CursorField[T] = {
     new CursorField[T](name)(persistedType)
   }
-
-  def foreignKey[ID](entityType: CrudType) = new ForeignKey(entityType)
 
   val persistedId = persisted[ID](BaseColumns._ID)
 
@@ -27,10 +28,6 @@ object CursorField extends PlatformTypes {
     persistedId :: field.deepCollect[CursorField[_]] {
       case cursorField: CursorField[_] => cursorField
     }
-  }
-
-  def foreignKeys(field: BaseField): List[ForeignKey] = field.deepCollect {
-    case foreignKey: ForeignKey => foreignKey
   }
 
   def queryFieldNames(fields: FieldList): List[String] = persistedFieldsPlusId(fields).map(_.name)
@@ -60,15 +57,4 @@ class CursorField[T](val name: String)(implicit val persistedType: PersistedType
   private def setIntoContentValues(contentValues: ContentValues)(value: T) { persistedType.putValue(contentValues, name, value) }
 
   override def toString = "persisted(\"" + name + "\")"
-}
-
-import CursorField._
-import ViewField.intentId
-
-class ForeignKey(val entityType: CrudType) extends PlatformTypes with DelegatingPortableField[ID] {
-  val fieldName = entityType.entityName.toLowerCase + BaseColumns._ID
-
-  protected val delegate = persisted[ID](fieldName) + intentId(entityType.entityName) + sqliteCriteria[ID](fieldName)
-
-  override def toString = "foreignKey(" + entityType.entityName + ")"
 }

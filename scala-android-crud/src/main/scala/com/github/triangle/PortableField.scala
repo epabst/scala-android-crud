@@ -1,6 +1,6 @@
 package com.github.triangle
 
-import com.github.scala_android.crud.monitor.Logging
+import com.github.scala_android.crud.common.Logging
 import collection._
 
 /** A trait for {@link PortableField} for convenience such as when defining a List of heterogeneous Fields. */
@@ -79,8 +79,8 @@ trait PortableValue {
  * Example:
  * <pre>
  * import com.github.triangle.PortableField._
- * import com.github.scala_android.crud.CursorField._
- * import com.github.scala_android.crud.PersistedType._
+ * import com.github.scala_android.crud.persistence.CursorField._
+ * import com.github.scala_android.crud.persistence.PersistedType._
  * import com.github.scala_android.crud.ViewField._
  *
  * val fields = List(

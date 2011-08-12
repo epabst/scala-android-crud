@@ -1,4 +1,4 @@
-package com.github.scala_android.crud
+package com.github.scala_android.crud.persistence
 
 import android.database.Cursor
 import android.content.ContentValues

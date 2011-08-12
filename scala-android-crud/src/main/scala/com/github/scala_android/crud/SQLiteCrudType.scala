@@ -3,11 +3,12 @@ package com.github.scala_android.crud
 import android.content.{ContentValues, Context}
 import android.widget.ResourceCursorAdapter
 import android.view.View
-import monitor.Logging
+import common.Logging
 import android.database.sqlite.{SQLiteDatabase, SQLiteOpenHelper}
 import android.provider.BaseColumns
 import android.app.ListActivity
 import android.database.Cursor
+import persistence.{CrudPersistence, CursorField}
 
 /**
  * A CrudType for SQLite.

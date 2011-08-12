@@ -1,4 +1,4 @@
-package com.github.scala_android.crud.monitor
+package com.github.scala_android.crud.common
 
 import android.util.Log
 

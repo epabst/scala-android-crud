@@ -1,7 +1,8 @@
 package com.github.scala_android.crud
 
 import android.app.Activity
-import monitor.Logging
+import common.{Timing, PlatformTypes, Logging}
+import persistence.CrudPersistence
 
 /**
  * Support for the different Crud Activity's.
@@ -27,7 +28,7 @@ trait BaseCrudActivity extends Activity with PlatformTypes with Logging with Tim
     try {
       f(persistence)
     } finally {
-      persistence.close
+      persistence.close()
     }
   }
 

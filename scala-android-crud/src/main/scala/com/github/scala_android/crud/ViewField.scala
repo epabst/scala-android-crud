@@ -5,6 +5,7 @@ import _root_.android.content.Intent
 import _root_.android.view.View
 import _root_.android.widget.{ArrayAdapter, Spinner, DatePicker, TextView}
 import com.github.triangle._
+import common.PlatformTypes
 import PortableField._
 import java.util.{Calendar, Date, GregorianCalendar}
 

@@ -1,9 +1,11 @@
 package com.github.scala_android.crud
 
+import common.ReadyFuture
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.scalatest.mock.EasyMockSugar
 import com.xtremelabs.robolectric.RobolectricTestRunner
+import persistence.CrudPersistence
 import scala.collection.mutable.Map
 import org.scalatest.matchers.MustMatchers
 import ActivityUIActionFactory._
@@ -18,7 +20,7 @@ import android.widget.ListAdapter
 @RunWith(classOf[RobolectricTestRunner])
 class CrudActivitySpec extends EasyMockSugar with MustMatchers with MyEntityTesting {
   @Test
-  def shouldAllowAdding {
+  def shouldAllowAdding() {
     val persistence = mock[CrudPersistence]
     val listAdapter = mock[ListAdapter]
     val entityType = new MyEntityType(persistence, listAdapter)
@@ -34,14 +36,13 @@ class CrudActivitySpec extends EasyMockSugar with MustMatchers with MyEntityTest
       val activity = new CrudActivity(entityType, application)
       activity.setIntent(constructIntent(UpdateActionString, uri, activity, entityType.activityClass))
       activity.onCreate(null)
-      val viewData = Map[String,Any]()
       entityType.copy(entity, activity)
       activity.onPause()
     }
   }
 
   @Test
-  def shouldAllowUpdating {
+  def shouldAllowUpdating() {
     val persistence = mock[CrudPersistence]
     val listAdapter = mock[ListAdapter]
     val entityType = new MyEntityType(persistence, listAdapter)
@@ -71,13 +72,13 @@ class CrudActivitySpec extends EasyMockSugar with MustMatchers with MyEntityTest
   }
 
   @Test
-  def withPersistenceShouldClosePersistence {
+  def withPersistenceShouldClosePersistence() {
     val persistence = mock[CrudPersistence]
     val listAdapter = mock[ListAdapter]
     val application = mock[CrudApplication]
     expecting {
       call(persistence.findAll(Unit)).andReturn(List[Map[String,Any]]())
-      call(persistence.close)
+      call(persistence.close())
     }
     whenExecuting(persistence, listAdapter, application) {
       val entityType = new MyEntityType(persistence, listAdapter)
@@ -87,12 +88,12 @@ class CrudActivitySpec extends EasyMockSugar with MustMatchers with MyEntityTest
   }
 
   @Test
-  def withPersistenceShouldClosePersistenceWithFailure {
+  def withPersistenceShouldClosePersistenceWithFailure() {
     val persistence = mock[CrudPersistence]
     val listAdapter = mock[ListAdapter]
     val application = mock[CrudApplication]
     expecting {
-      call(persistence.close)
+      call(persistence.close())
     }
     whenExecuting(persistence, listAdapter, application) {
       val entityType = new MyEntityType(persistence, listAdapter)
