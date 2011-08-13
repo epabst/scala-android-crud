@@ -40,7 +40,7 @@ class SQLiteCrudTypeSpec extends EasyMockSugar with MustMatchers with Logging wi
   }
   object TestEntityType extends SQLiteCrudType {
     def entityName = "Person"
-    val fields = List(persisted[Int]("age") + default(21))
+    val valueFields = List(persisted[Int]("age") + default(21))
 
     val listLayout = R.layout.entity_list
     val headerLayout = R.layout.test_row

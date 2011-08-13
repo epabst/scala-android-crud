@@ -21,9 +21,7 @@ trait AuthorContext {
   abstract class AuthorCrudType extends CrudType {
     def entityName = "Author"
 
-    def fields = List(
-      persistedId,
-
+    def valueFields = List(
       persisted[String]("name") + viewId(R.id.name, textView),
 
       viewId(R.id.bookCount, formatted[Int](textView)) +

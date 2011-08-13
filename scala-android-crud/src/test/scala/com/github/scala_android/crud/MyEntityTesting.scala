@@ -32,7 +32,7 @@ trait MyEntityTesting extends EasyMockSugar {
           extends StubEntityType {
     var refreshCount = 0
 
-    def fields: List[BaseField] = List(
+    def valueFields = List[BaseField](
       persisted[String]("name") + viewId(R.id.name, textView),
       persisted[Int]("age") + viewId(R.id.age, formatted[Int](textView)),
       //here to test a non-UI field

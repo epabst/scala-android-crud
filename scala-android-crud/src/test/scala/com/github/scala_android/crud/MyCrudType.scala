@@ -14,7 +14,7 @@ import android.app.ListActivity
 object MyCrudType extends CrudType with StubEntityType {
   def entityName = "MyEntity"
 
-  def fields = List[BaseField]()
+  def valueFields = List[BaseField]()
 
   def cancelItemString = R.string.cancel_item
 

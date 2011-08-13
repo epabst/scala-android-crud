@@ -294,8 +294,12 @@ trait PortableField[T] extends BaseField with Logging { self =>
       }
 
       override def deepCollect[R](f: PartialFunction[BaseField, R]) = {
-        val lifted = f.lift
-        List(self, other).flatMap(field => lifted(field).map(List(_)).getOrElse(field.deepCollect(f)))
+        super.deepCollect(f) match {
+          case Nil =>
+            val lifted = f.lift
+            List(self, other).flatMap(field => lifted(field).map(List(_)).getOrElse(field.deepCollect(f)))
+          case x => x
+        }
       }
     }
   }

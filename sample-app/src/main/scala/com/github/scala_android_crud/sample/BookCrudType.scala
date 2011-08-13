@@ -24,7 +24,7 @@ trait BookContext {
 
     val authorIdField = ForeignKey(AuthorCrudType)
 
-    def fields = List(
+    def valueFields = List(
       authorIdField,
 
       persisted[String]("name") + viewId(R.id.name, textView),

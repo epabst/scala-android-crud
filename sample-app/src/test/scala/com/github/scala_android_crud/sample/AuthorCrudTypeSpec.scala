@@ -33,7 +33,7 @@ class AuthorCrudTypeSpec extends Spec with MustMatchers with EasyMockSugar {
         val BookCrudType = new HiddenEntityType with GeneratedCrudType[Map[String,Any]] {
           def entityName = "Book"
           val authorIdField = ForeignKey(AuthorCrudType)
-          def fields = List(authorIdField)
+          def valueFields = List(authorIdField)
           def openEntityPersistence(crudContext: CrudContext) = bookPersistence
         }
 

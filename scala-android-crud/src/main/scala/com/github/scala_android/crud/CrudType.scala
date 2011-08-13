@@ -8,9 +8,9 @@ import com.github.triangle.{PortableValue, FieldList, BaseField}
 import com.github.triangle.JavaUtil._
 import android.widget.BaseAdapter
 import common.{Timing, PlatformTypes, Logging}
-import persistence.{EntityPersistence, CrudPersistence}
 import android.database.DataSetObserver
 import android.content.Intent
+import persistence.{IdPk, EntityPersistence, CrudPersistence}
 
 /**
  * An entity configuration that provides all custom information needed to
@@ -25,7 +25,15 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
   //this is the type used for internationalized strings
   def entityName: String
 
-  def fields: List[BaseField]
+  /**
+   * These are all of the entity's fields, which includes IdPk.idField and the valueFields.
+   */
+  final lazy val fields: List[BaseField] = IdPk.idField +: valueFields
+
+  /**
+   * The fields other than the primary key.
+   */
+  def valueFields: List[BaseField]
 
   def headerLayout: LayoutKey
   def listLayout: LayoutKey
