@@ -5,6 +5,7 @@ import _root_.android.view.{Menu, MenuItem}
 import android.os.Bundle
 import com.github.triangle.ValueFormat.basicFormat
 import com.github.triangle.JavaUtil.toRunnable
+import persistence.CrudPersistence
 
 /**
  * A generic ListActivity for CRUD operations
@@ -20,7 +21,7 @@ class CrudActivity(val entityType: CrudType, val application: CrudApplication)
   extends Activity with BaseCrudActivity {
 
   private val idFormat = basicFormat[ID]
-  def id: Option[ID] = idFormat.toValue(getIntent.getData.getLastPathSegment)
+  def id: Option[ID] = Option(getIntent).flatMap(intent => idFormat.toValue(intent.getData.getLastPathSegment))
 
   override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)
@@ -41,10 +42,15 @@ class CrudActivity(val entityType: CrudType, val application: CrudApplication)
     val contextItems = List(getIntent, Unit)
     val writable = entityType.newWritable
     withPersistence { persistence =>
-      entityType.copyFromItem(this :: contextItems, writable)
-      persistence.save(id, writable)
+      val transformedWritable = entityType.transformWithItem(writable, this :: contextItems)
+      saveForOnPause(persistence, transformedWritable)
     }
     super.onPause()
+  }
+
+  private[crud] def saveForOnPause(persistence: CrudPersistence, writable: AnyRef) {
+    try { persistence.save(id, writable) }
+    catch { case e => error("onPause: Unable to store " + writable, e) }
   }
 
   override def onCreateOptionsMenu(menu: Menu): Boolean = {

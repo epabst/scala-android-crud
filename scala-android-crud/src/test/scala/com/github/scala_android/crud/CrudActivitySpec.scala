@@ -10,6 +10,7 @@ import scala.collection.mutable.Map
 import org.scalatest.matchers.MustMatchers
 import ActivityUIActionFactory._
 import android.widget.ListAdapter
+import java.lang.IllegalStateException
 
 /**
  * A test for {@link CrudListActivity}.
@@ -104,6 +105,22 @@ class CrudActivitySpec extends EasyMockSugar with MustMatchers with MyEntityTest
       } catch {
         case e: IllegalArgumentException => "expected"
       }
+    }
+  }
+
+  @Test
+  def onPauseShouldLogAnyExceptionWhenSaving() {
+    val persistence = mock[CrudPersistence]
+    val listAdapter = mock[ListAdapter]
+    val application = mock[CrudApplication]
+    expecting {
+      call(persistence.save(None, "unsaveable data")).andThrow(new IllegalStateException("intentional"))
+    }
+    whenExecuting(persistence, listAdapter, application) {
+      val entityType = new MyEntityType(persistence, listAdapter)
+      val activity = new CrudActivity(entityType, application)
+      //should not throw an exception
+      activity.saveForOnPause(persistence, "unsaveable data")
     }
   }
 }
