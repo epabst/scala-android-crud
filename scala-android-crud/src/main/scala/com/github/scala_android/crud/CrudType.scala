@@ -10,6 +10,7 @@ import android.widget.BaseAdapter
 import common.{Timing, PlatformTypes, Logging}
 import persistence.{EntityPersistence, CrudPersistence}
 import android.database.DataSetObserver
+import android.content.Intent
 
 /**
  * An entity configuration that provides all custom information needed to
@@ -71,6 +72,16 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
   def activityClass: Class[_ <: CrudActivity]
 
   def findId(uri: Uri): Option[ID] = new EntityUriSegment(entityName).findId(uri)
+
+  def copyFromPersistedEntity(intentWithId: Intent, crudContext: CrudContext): Option[PortableValue] = {
+    findId(intentWithId.getData).flatMap { id =>
+      val contextItems = List(intentWithId, crudContext, Unit)
+      withEntityPersistence(crudContext, _.find(id).map { readable =>
+        debug("Copying " + entityName + "#" + id + " to " + this)
+        copyFromItem(readable :: contextItems)
+      })
+    }
+  }
 
   override def toString() = entityName
 

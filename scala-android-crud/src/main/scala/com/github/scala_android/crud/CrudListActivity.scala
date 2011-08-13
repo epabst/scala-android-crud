@@ -39,18 +39,9 @@ class CrudListActivity(val entityType: CrudType, val application: CrudApplicatio
     val intent = getIntent
     future {
       if (intent.getData == null) intent.setData(defaultContentUri);
-      val contextItems = List(intent, crudContext, Unit)
       //copy each parent Entity's data to the Activity if identified in the Intent's URI
       val portableValues: List[PortableValue] = entityType.parentEntities.flatMap(_ match {
-        case parentType: CrudType =>
-          parentType.findId(intent.getData).flatMap { id =>
-            parentType.withEntityPersistence(crudContext, { persistence =>
-              persistence.find(id).map { readable =>
-                debug("Copying " + entityType.entityName + "#" + id + " to " + this)
-                entityType.copyFromItem(readable :: contextItems)
-              }
-            })
-          }
+        case parentType: CrudType => parentType.copyFromPersistedEntity(intent, crudContext)
       })
       runOnUiThread {
         portableValues.foreach(_.copyTo(this))
