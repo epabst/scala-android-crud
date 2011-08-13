@@ -143,8 +143,6 @@ class PortableFieldSpec extends Spec with MustMatchers with EasyMockSugar {
         stringField.getterFromItem.isDefinedAt(List(new Object)) must be (false)
         stringField.getterFromItem(List(myEntity1, otherEntity1)) must be (Some("other1"))
         stringField.getterFromItem(List(otherEntity1, myEntity1)) must be (Some("other1"))
-        stringField.getFromItemOrReturn(List(myEntity1), Some("n/a")) must be (Some("my1"))
-        stringField.getFromItemOrReturn(List(new Object), Some("n/a")) must be (Some("n/a"))
         val mutableMap = mutable.Map.empty[String, Any]
         stringField.copyFromItem(List(myEntity1, otherEntity1), mutableMap)
         mutableMap("stringValue") must be ("other1")
