@@ -155,10 +155,10 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
     }
 
     def cacheClearingObserver(activity: ListActivity) = new DataSetObserver {
-      override def onChanged() {
-        verbose("Clearing ListView cache in " + activity + " since DataSet changed")
+      override def onInvalidated() {
+        verbose("Clearing ListView cache in " + activity + " since DataSet was invalidated")
         activity.runOnUiThread { activity.getListView.setTag(null) }
-        super.onChanged()
+        super.onInvalidated()
       }
     }
 
