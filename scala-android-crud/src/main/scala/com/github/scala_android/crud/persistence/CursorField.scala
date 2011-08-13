@@ -24,13 +24,7 @@ object CursorField extends PlatformTypes {
     }
   }
 
-  def persistedFieldsPlusId(field: BaseField): List[CursorField[_]] = {
-    persistedId :: field.deepCollect[CursorField[_]] {
-      case cursorField: CursorField[_] => cursorField
-    }
-  }
-
-  def queryFieldNames(fields: FieldList): List[String] = persistedFieldsPlusId(fields).map(_.name)
+  def queryFieldNames(fields: FieldList): List[String] = persistedFields(fields).map(_.name)
 
   def sqliteCriteria[T](name: String) = PortableField.writeOnlyDirect[SQLiteCriteria,T](criteria => value => criteria.selection = name + "=" + value)
 }
