@@ -3,14 +3,14 @@ package com.github.scala_android.crud
 import android.net.Uri
 import android.app.ListActivity
 import android.view.View
-import actors.Future
 import com.github.triangle.{PortableValue, FieldList, BaseField}
 import com.github.triangle.JavaUtil._
-import android.widget.BaseAdapter
 import common.{Timing, PlatformTypes, Logging}
 import android.database.DataSetObserver
 import android.content.Intent
 import persistence.{IdPk, EntityPersistence, CrudPersistence}
+import android.widget.{AdapterView, BaseAdapter}
+import android.graphics.Rect
 
 /**
  * An entity configuration that provides all custom information needed to
@@ -42,6 +42,8 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
   def entryLayout: LayoutKey
 
   final def hasDisplayPage = displayLayout.isDefined
+
+  lazy val unitPortableValue = copyFrom(Unit)
 
   private val persistenceVarForListAdapter = new ContextVar[CrudPersistence]
 
@@ -143,13 +145,13 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
   }
 
   trait AdapterCaching { self: BaseAdapter =>
-    private def findCachedFuturePortableValue(activity: ListActivity, position: Long): Option[Future[PortableValue]] =
-      Option(activity.getListView.getTag.asInstanceOf[Map[Long, Future[PortableValue]]]).flatMap(_.get(position))
+    private def findCachedPortableValue(activity: ListActivity, position: Long): Option[PortableValue] =
+      Option(activity.getListView.getTag.asInstanceOf[Map[Long, PortableValue]]).flatMap(_.get(position))
 
-    private def cacheFuturePortableValue(activity: ListActivity, position: Long, futurePortableValue: Future[PortableValue]) {
+    private def cachePortableValue(activity: ListActivity, position: Long, portableValue: PortableValue) {
       val listView = activity.getListView
-      val map = Option(listView.getTag.asInstanceOf[Map[Long,Future[PortableValue]]]).getOrElse(Map.empty[Long,Future[PortableValue]]) +
-              (position -> futurePortableValue)
+      val map = Option(listView.getTag.asInstanceOf[Map[Long,PortableValue]]).getOrElse(Map.empty[Long,PortableValue]) +
+              (position -> portableValue)
       listView.setTag(map)
       verbose("Added value at position " + position + " to the cache for " + activity)
     }
@@ -162,23 +164,28 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
       }
     }
 
-    private def findReadyValue[T](future: Future[T]): Option[T] = if (future.isSet) Some(future()) else None
-
     protected def bindViewFromCacheOrItems(view: View, itemsToCopyAtPosition: => List[AnyRef], position: Long, activity: ListActivity) {
-      val cachedFutureValue: Option[Future[PortableValue]] = findCachedFuturePortableValue(activity, position)
+      val cachedValue: Option[PortableValue] = findCachedPortableValue(activity, position)
       //set the cached or default values immediately instead of showing the column header names
-      cachedFutureValue.flatMap(findReadyValue(_)).getOrElse {
+      cachedValue.getOrElse {
         verbose("cache miss for " + activity + " at position " + position)
-        copyFrom(Unit)
+        unitPortableValue
       }.copyTo(view)
-      if (cachedFutureValue.isEmpty) {
+      if (cachedValue.isEmpty) {
         //copy immediately since in the case of a Cursor, it will be advanced to the next row quickly.
         val positionItems: List[AnyRef] = itemsToCopyAtPosition
-        cacheFuturePortableValue(activity, position, future {
+        cachePortableValue(activity, position, unitPortableValue)
+        future {
           val portableValue = copyFromItem(positionItems)
-          activity.runOnUiThread { notifyDataSetChanged() }
-          portableValue
-        })
+          cachePortableValue(activity, position, portableValue)
+          activity.runOnUiThread {
+            val parentView = view.getParent.asInstanceOf[AdapterView[_]]
+            // See if the view has been recycled for a different position.
+            if (parentView.getPositionForView(view) == position) {
+              parentView.invalidateChild(view, new Rect(0, 0, view.getWidth, view.getHeight))
+            }
+          }
+        }
       }
     }
   }
