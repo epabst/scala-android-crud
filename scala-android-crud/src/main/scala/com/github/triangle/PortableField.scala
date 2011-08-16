@@ -62,7 +62,7 @@ trait BaseField {
 
   private def truncate(any: Any): String = {
     val string = any.toString
-    string.substring(0, math.min(string.length, 15))
+    string.substring(0, math.min(string.length, 25))
   }
 }
 
