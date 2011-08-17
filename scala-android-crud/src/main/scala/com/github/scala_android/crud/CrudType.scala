@@ -167,18 +167,22 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
     protected def bindViewFromCacheOrItems(view: View, itemsToCopyAtPosition: => List[AnyRef], position: Long, activity: ListActivity) {
       val cachedValue: Option[PortableValue] = findCachedPortableValue(activity, position)
       //set the cached or default values immediately instead of showing the column header names
-      cachedValue.getOrElse {
-        verbose("cache miss for " + activity + " at position " + position)
-        unitPortableValue
-      }.copyTo(view)
+      cachedValue match {
+        case Some(portableValue) =>
+          verbose("cache hit for " + activity + " at position " + position)
+          portableValue.copyTo(view)
+        case None =>
+          verbose("cache miss for " + activity + " at position " + position)
+          unitPortableValue.copyTo(view)
+      }
       if (cachedValue.isEmpty) {
         //copy immediately since in the case of a Cursor, it will be advanced to the next row quickly.
         val positionItems: List[AnyRef] = itemsToCopyAtPosition
         cachePortableValue(activity, position, unitPortableValue)
         future {
           val portableValue = copyFromItem(positionItems)
-          cachePortableValue(activity, position, portableValue)
           activity.runOnUiThread {
+            cachePortableValue(activity, position, portableValue)
             val parentView = view.getParent.asInstanceOf[AdapterView[_]]
             // See if the view has been recycled for a different position.
             if (parentView.getPositionForView(view) == position) {

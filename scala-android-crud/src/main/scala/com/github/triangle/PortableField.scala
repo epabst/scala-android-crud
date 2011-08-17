@@ -217,7 +217,7 @@ trait PortableField[T] extends BaseField with Logging { self =>
         }
 
         def transform[S <: AnyRef](initial: S): S = {
-          debug("About to " + transform_with_forField_message(initial, " value " + value, self))
+          debug("About to " + transform_with_forField_message(initial, "value " + value, self))
           transformer(initial)(value)
         }
 
