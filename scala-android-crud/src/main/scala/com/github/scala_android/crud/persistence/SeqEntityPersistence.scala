@@ -21,9 +21,9 @@ trait SeqEntityPersistence[T <: AnyRef] extends CrudPersistence {
 
   def toIterator(seq: AnyRef) = seq.asInstanceOf[Seq[T]].toIterator
 
-  def save(id: Option[ID], data: AnyRef): ID = throw new UnsupportedOperationException("write not supported")
+  protected def doSave(id: Option[ID], data: AnyRef): ID = throw new UnsupportedOperationException("write not supported")
 
-  def delete(ids: Seq[ID]) { throw new UnsupportedOperationException("delete not supported") }
+  protected def doDelete(ids: Seq[ID]) { throw new UnsupportedOperationException("delete not supported") }
 
   def close() {}
 }
@@ -37,7 +37,7 @@ trait ListBufferEntityPersistence[T <: AnyRef] extends SeqEntityPersistence[T] {
 
   def findAll(criteria: AnyRef) = buffer.toList
 
-  override def save(id: Option[ID], item: AnyRef) = {
+  override protected def doSave(id: Option[ID], item: AnyRef) = {
     val newId = id.getOrElse {
       nextId += 1
       nextId
@@ -46,7 +46,7 @@ trait ListBufferEntityPersistence[T <: AnyRef] extends SeqEntityPersistence[T] {
     newId
   }
 
-  override def delete(ids: Seq[ID]) {
+  override protected def doDelete(ids: Seq[ID]) {
     ids.foreach(id => find(id).map(entity => buffer -= entity))
   }
 }

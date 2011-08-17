@@ -68,26 +68,25 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudType, crudContext: CrudC
     debug("Notified BackupManager that data changed.")
   }
 
-  def save(idOption: Option[ID], contentValues: AnyRef): ID = save(idOption, contentValues.asInstanceOf[ContentValues])
-
-  def save(idOption: Option[ID], contentValues: ContentValues): ID = {
+  protected def doSave(idOption: Option[ID], writable: AnyRef): ID = {
+    val contentValues = writable.asInstanceOf[ContentValues]
     val id = idOption match {
       case None => {
         info("Adding " + entityType.entityName + " with " + contentValues)
         database.insert(entityType.entityName, null, contentValues)
       }
-      case Some(id) => {
-        info("Updating " + entityType.entityName + " #" + id + " with " + contentValues)
-        val rowCount = database.update(entityType.entityName, contentValues, BaseColumns._ID + "=" + id, null)
+      case Some(givenId) => {
+        info("Updating " + entityType.entityName + " #" + givenId + " with " + contentValues)
+        val rowCount = database.update(entityType.entityName, contentValues, BaseColumns._ID + "=" + givenId, null)
         if (rowCount == 0) {
-          contentValues.put(BaseColumns._ID, id)
-          info("Added " + entityType.entityName + " #" + id + " with " + contentValues + " since id is not present yet")
+          contentValues.put(BaseColumns._ID, givenId)
+          info("Added " + entityType.entityName + " #" + givenId + " with " + contentValues + " since id is not present yet")
           val resultingId = database.insert(entityType.entityName, null, contentValues)
-          if (id != resultingId)
-            throw new IllegalStateException("id changed from " + id + " to " + resultingId +
-                    " when restoring " + entityType.entityName + " #" + id + " with " + contentValues)
+          if (givenId != resultingId)
+            throw new IllegalStateException("id changed from " + givenId + " to " + resultingId +
+                    " when restoring " + entityType.entityName + " #" + givenId + " with " + contentValues)
         }
-        id
+        givenId
       }
     }
     notifyDataChanged()
@@ -97,7 +96,7 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudType, crudContext: CrudC
     id
   }
 
-  def delete(ids: Seq[ID]) {
+  protected def doDelete(ids: Seq[ID]) {
     ids.foreach { id =>
       database.delete(entityType.entityName, BaseColumns._ID + "=" + id, Nil.toArray)
     }

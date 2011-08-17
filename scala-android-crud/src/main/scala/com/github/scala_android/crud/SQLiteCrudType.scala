@@ -21,15 +21,15 @@ trait SQLiteCrudType extends CrudType {
   def newWritable = new ContentValues
 
   def openEntityPersistence(crudContext: CrudContext) = new SQLiteEntityPersistence(this, crudContext) {
-    override def save(idOption: Option[ID], contentValues: ContentValues): ID = {
-      val id = super.save(idOption, contentValues)
+    override def doSave(idOption: Option[ID], contentValues: ContentValues): ID = {
+      val id = super.doSave(idOption, contentValues)
       debug("requerying after " + (if (idOption.isDefined) "updating" else "adding"))
       cursorVarForListAdapter.get(crudContext).map(_.requery())
       id
     }
 
-    override def delete(ids: Seq[ID]) {
-      super.delete(ids)
+    override protected def doDelete(ids: Seq[ID]) {
+      super.doDelete(ids)
       debug("requerying after delete")
       cursorVarForListAdapter.get(crudContext).map(_.requery())
     }
