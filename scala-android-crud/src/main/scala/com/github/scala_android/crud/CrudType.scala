@@ -8,8 +8,8 @@ import com.github.triangle.JavaUtil._
 import common.{Timing, PlatformTypes, Logging}
 import android.database.DataSetObserver
 import android.content.Intent
-import persistence.{IdPk, EntityPersistence, CrudPersistence}
 import android.widget.{ListAdapter, BaseAdapter}
+import persistence.{PersistenceListener, IdPk, EntityPersistence, CrudPersistence}
 
 /**
  * An entity configuration that provides all custom information needed to
@@ -193,14 +193,22 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
     val persistence = openEntityPersistence(crudContext)
     persistenceVarForListAdapter.set(crudContext, persistence)
     setListAdapter(persistence, crudContext, activity)
+    val listAdapter = activity.getListAdapter
+    persistence.addListener(new PersistenceListener {
+      def onSave(id: ID) { refreshAfterDataChanged(listAdapter) }
+
+      def onDelete(ids: Seq[ID]) { refreshAfterDataChanged(listAdapter) }
+    })
   }
 
   def setListAdapter(persistence: CrudPersistence, crudContext: CrudContext, activity: ListActivity)
 
-  def refreshAfterSave(listAdapter: ListAdapter)
+  def refreshAfterDataChanged(listAdapter: ListAdapter)
 
   def destroyContextVars(crudContext: CrudContext) {
-    persistenceVarForListAdapter.clear(crudContext).map(_.close())
+    persistenceVarForListAdapter.clear(crudContext).map { persistence =>
+      persistence.close()
+    }
   }
 
   private[crud] def undoableDelete(id: ID, uiActionFactory: UIActionFactory)(persistence: EntityPersistence) {

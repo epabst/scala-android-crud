@@ -46,7 +46,7 @@ trait MyEntityTesting extends EasyMockSugar {
       activity.setListAdapter(listAdapter)
     }
 
-    def refreshAfterSave(crudContext: CrudContext) {
+    def refreshAfterDataChanged(listAdapter: ListAdapter) {
       refreshCount += 1
     }
 

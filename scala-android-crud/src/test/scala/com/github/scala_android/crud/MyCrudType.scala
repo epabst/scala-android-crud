@@ -4,6 +4,7 @@ import persistence.CrudPersistence
 import res.R
 import com.github.triangle.BaseField
 import android.app.ListActivity
+import android.widget.ListAdapter
 
 /**
  * A simple CrudType for testing.
@@ -18,7 +19,7 @@ object MyCrudType extends CrudType with StubEntityType {
 
   def cancelItemString = R.string.cancel_item
 
-  def refreshAfterSave(crudContext: CrudContext) {}
+  def refreshAfterDataChanged(listAdapter: ListAdapter) {}
 
   def setListAdapter(persistence: CrudPersistence, crudContext: CrudContext, activity: ListActivity) {
     throw new UnsupportedOperationException

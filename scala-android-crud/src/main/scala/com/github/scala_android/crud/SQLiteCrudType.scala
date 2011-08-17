@@ -7,8 +7,8 @@ import android.database.sqlite.{SQLiteDatabase, SQLiteOpenHelper}
 import android.provider.BaseColumns
 import android.app.ListActivity
 import android.database.Cursor
-import persistence.{CrudPersistence, CursorField}
 import android.widget.{CursorAdapter, ListAdapter, ResourceCursorAdapter}
+import persistence.{CrudPersistence, CursorField}
 
 /**
  * A CrudType for SQLite.
@@ -20,22 +20,7 @@ import android.widget.{CursorAdapter, ListAdapter, ResourceCursorAdapter}
 trait SQLiteCrudType extends CrudType {
   def newWritable = new ContentValues
 
-  def openEntityPersistence(crudContext: CrudContext) = new SQLiteEntityPersistence(this, crudContext) {
-    override def doSave(idOption: Option[ID], contentValues: ContentValues): ID = {
-      val id = super.doSave(idOption, contentValues)
-      debug("requerying after " + (if (idOption.isDefined) "updating" else "adding"))
-      cursorVarForListAdapter.get(crudContext).map(_.requery())
-      id
-    }
-
-    override protected def doDelete(ids: Seq[ID]) {
-      super.doDelete(ids)
-      debug("requerying after delete")
-      cursorVarForListAdapter.get(crudContext).map(_.requery())
-    }
-  }
-
-  val cursorVarForListAdapter = new ContextVar[Cursor]
+  def openEntityPersistence(crudContext: CrudContext) = new SQLiteEntityPersistence(this, crudContext)
 
   def setListAdapter(persistence: CrudPersistence, crudContext: CrudContext, activity: ListActivity) {
     setListAdapter(persistence.asInstanceOf[SQLiteEntityPersistence], crudContext, activity)
@@ -45,7 +30,6 @@ trait SQLiteCrudType extends CrudType {
     val intent = activity.getIntent
     val contextItems = List(intent, crudContext, Unit)
     val cursor = persistence.findAll(transform(persistence.newCriteria, intent))
-    cursorVarForListAdapter.set(crudContext, cursor)
     activity.startManagingCursor(cursor)
     activity.setListAdapter(new ResourceCursorAdapter(activity, rowLayout, cursor) with AdapterCaching {
       cursor.registerDataSetObserver(cacheClearingObserver(activity))
@@ -56,18 +40,13 @@ trait SQLiteCrudType extends CrudType {
     })
   }
 
-  def refreshAfterSave(listAdapter: ListAdapter) {
+  def refreshAfterDataChanged(listAdapter: ListAdapter) {
     listAdapter match {
       case cursorAdapter: CursorAdapter => cursorAdapter.getCursor.requery()
     }
   }
 
   def getDatabaseSetup(crudContext: CrudContext): SQLiteOpenHelper = new GeneratedDatabaseSetup(crudContext)
-
-  override def destroyContextVars(crudContext: CrudContext) {
-    cursorVarForListAdapter.clear(crudContext).map(_.close())
-    super.destroyContextVars(crudContext)
-  }
 }
 
 class GeneratedDatabaseSetup(crudContext: CrudContext) extends SQLiteOpenHelper(crudContext.context, crudContext.application.nameId, null, 1) with Logging {

@@ -35,7 +35,7 @@ trait GeneratedCrudType[T <: AnyRef] extends CrudType {
     activity.setListAdapter(new SeqPersistenceAdapter[T](persistence.asInstanceOf[SeqEntityPersistence[T]], crudContext, activity))
   }
 
-  def refreshAfterSave(listAdapter: ListAdapter) {}
+  def refreshAfterDataChanged(listAdapter: ListAdapter) {}
 
   override def getListActions(actionFactory: UIActionFactory) = super.getReadOnlyListActions(actionFactory)
 
