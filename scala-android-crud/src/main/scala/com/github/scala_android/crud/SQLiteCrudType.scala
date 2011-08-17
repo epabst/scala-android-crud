@@ -1,7 +1,6 @@
 package com.github.scala_android.crud
 
 import android.content.{ContentValues, Context}
-import android.widget.ResourceCursorAdapter
 import android.view.View
 import common.Logging
 import android.database.sqlite.{SQLiteDatabase, SQLiteOpenHelper}
@@ -9,6 +8,7 @@ import android.provider.BaseColumns
 import android.app.ListActivity
 import android.database.Cursor
 import persistence.{CrudPersistence, CursorField}
+import android.widget.{CursorAdapter, ListAdapter, ResourceCursorAdapter}
 
 /**
  * A CrudType for SQLite.
@@ -56,8 +56,10 @@ trait SQLiteCrudType extends CrudType {
     })
   }
 
-  def refreshAfterSave(crudContext: CrudContext) {
-    cursorVarForListAdapter.get(crudContext).map(_.requery)
+  def refreshAfterSave(listAdapter: ListAdapter) {
+    listAdapter match {
+      case cursorAdapter: CursorAdapter => cursorAdapter.getCursor.requery()
+    }
   }
 
   def getDatabaseSetup(crudContext: CrudContext): SQLiteOpenHelper = new GeneratedDatabaseSetup(crudContext)

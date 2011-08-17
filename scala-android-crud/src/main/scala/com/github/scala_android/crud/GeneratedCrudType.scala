@@ -5,7 +5,7 @@ import res.R
 import android.view.{ViewGroup, View}
 import com.github.triangle.PortableField.identityField
 import android.app.ListActivity
-import android.widget.BaseAdapter
+import android.widget.{ListAdapter, BaseAdapter}
 
 trait GeneratedCrudType[T <: AnyRef] extends CrudType {
   def newWritable = throw new UnsupportedOperationException("not supported")
@@ -35,7 +35,7 @@ trait GeneratedCrudType[T <: AnyRef] extends CrudType {
     activity.setListAdapter(new SeqPersistenceAdapter[T](persistence.asInstanceOf[SeqEntityPersistence[T]], crudContext, activity))
   }
 
-  def refreshAfterSave(crudContext: CrudContext) {}
+  def refreshAfterSave(listAdapter: ListAdapter) {}
 
   override def getListActions(actionFactory: UIActionFactory) = super.getReadOnlyListActions(actionFactory)
 

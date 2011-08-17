@@ -9,7 +9,7 @@ import common.{Timing, PlatformTypes, Logging}
 import android.database.DataSetObserver
 import android.content.Intent
 import persistence.{IdPk, EntityPersistence, CrudPersistence}
-import android.widget.BaseAdapter
+import android.widget.{ListAdapter, BaseAdapter}
 
 /**
  * An entity configuration that provides all custom information needed to
@@ -197,7 +197,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
 
   def setListAdapter(persistence: CrudPersistence, crudContext: CrudContext, activity: ListActivity)
 
-  def refreshAfterSave(crudContext: CrudContext)
+  def refreshAfterSave(listAdapter: ListAdapter)
 
   def destroyContextVars(crudContext: CrudContext) {
     persistenceVarForListAdapter.clear(crudContext).map(_.close())
@@ -205,8 +205,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
 
   private[crud] def undoableDelete(id: ID, uiActionFactory: UIActionFactory)(persistence: EntityPersistence) {
     persistence.find(id).map { readable =>
-      val writable = newWritable
-      copy(readable, writable)
+      val writable = transform(newWritable, readable)
       persistence.delete(List(id))
       uiActionFactory.addUndoableDelete(this, new Undoable[ID] {
         def undo(): ID = {

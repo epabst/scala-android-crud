@@ -63,7 +63,7 @@ class CrudListActivity(val entityType: CrudType, val application: CrudApplicatio
 
   override def onResume() {
     verbose("onResume")
-    entityType.refreshAfterSave(crudContext)
+    entityType.refreshAfterSave(getListAdapter)
     super.onResume()
   }
 
