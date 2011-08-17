@@ -184,10 +184,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
           activity.runOnUiThread {
             cachePortableValue(activity, position, portableValue)
             val parentView = view.getParent.asInstanceOf[AdapterView[_]]
-            // See if the view has been recycled for a different position.
-            if (parentView.getPositionForView(view) == position) {
-              parentView.invalidateChild(view, new Rect(0, 0, view.getWidth, view.getHeight))
-            }
+            parentView.invalidate()
           }
         }
       }
