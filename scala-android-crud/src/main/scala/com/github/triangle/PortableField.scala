@@ -221,7 +221,7 @@ trait PortableField[T] extends BaseField with Logging { self =>
           transformer(initial)(value)
         }
 
-        override def toString = "PortableValue(" + value + ")"
+        override def toString = value.toString
       }
     } else {
       new PortableValue {
@@ -236,7 +236,7 @@ trait PortableField[T] extends BaseField with Logging { self =>
           initial
         }
 
-        override def toString = "PortableValue(Nothing from " + self + ")"
+        override def toString = "Nothing (from " + self + ")"
       }
     }
   }

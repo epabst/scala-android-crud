@@ -169,7 +169,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
       //set the cached or default values immediately instead of showing the column header names
       cachedValue match {
         case Some(portableValue) =>
-          verbose("cache hit for " + activity + " at position " + position)
+          verbose("cache hit for " + activity + " at position " + position + ": " + portableValue)
           portableValue.copyTo(view)
         case None =>
           verbose("cache miss for " + activity + " at position " + position)

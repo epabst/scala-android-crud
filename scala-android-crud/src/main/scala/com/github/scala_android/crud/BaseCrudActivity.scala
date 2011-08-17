@@ -37,4 +37,6 @@ trait BaseCrudActivity extends Activity with PlatformTypes with Logging with Tim
   }
 
   lazy val actionFactory = new ActivityUIActionFactory(this, crudContext.application)
+
+  override def toString = getClass.getSimpleName + "@" + System.identityHashCode(this)
 }
