@@ -9,8 +9,7 @@ import common.{Timing, PlatformTypes, Logging}
 import android.database.DataSetObserver
 import android.content.Intent
 import persistence.{IdPk, EntityPersistence, CrudPersistence}
-import android.widget.{AdapterView, BaseAdapter}
-import android.graphics.Rect
+import android.widget.BaseAdapter
 
 /**
  * An entity configuration that provides all custom information needed to
@@ -183,8 +182,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
           val portableValue = copyFromItem(positionItems)
           activity.runOnUiThread {
             cachePortableValue(activity, position, portableValue)
-            val parentView = view.getParent.asInstanceOf[AdapterView[_]]
-            parentView.invalidate()
+            notifyDataSetChanged()
           }
         }
       }
