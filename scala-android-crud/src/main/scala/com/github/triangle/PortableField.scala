@@ -61,7 +61,7 @@ trait BaseField {
     "transform " + truncate(initial) + " with " + truncate(data) + " for field " + truncate(field)
 
   private def truncate(any: Any): String = {
-    val string = any.toString
+    val string = String.valueOf(any)
     string.substring(0, math.min(string.length, 25))
   }
 }

@@ -1,6 +1,5 @@
 package com.github.scala_android.crud
 
-import org.scalatest.mock.EasyMockSugar
 import persistence.{CrudPersistence, ListBufferEntityPersistence}
 import scala.collection.mutable
 import mutable.Map
@@ -9,12 +8,9 @@ import PortableField._
 import ViewField._
 import persistence.CursorField._
 import android.content.Intent
-import org.easymock.EasyMock
 import android.widget.ListAdapter
 import res.R
 import android.app.ListActivity
-import org.easymock.IAnswer
-import scala.collection.JavaConversions._
 
 /**
  * An object mother pattern for getting CrudType instances.
@@ -42,7 +38,7 @@ trait MyEntityTesting {
 
     def openEntityPersistence(crudContext: CrudContext) = persistence
 
-    def setListAdapter(persistence: CrudPersistence, crudContext: CrudContext, activity: ListActivity) {
+    def setListAdapter(findAllResult: AnyRef, contextItems: List[AnyRef], activity: ListActivity) {
       activity.setListAdapter(listAdapter)
     }
 

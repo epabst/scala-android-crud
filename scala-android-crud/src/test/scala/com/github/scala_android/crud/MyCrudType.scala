@@ -21,7 +21,7 @@ object MyCrudType extends CrudType with StubEntityType {
 
   def refreshAfterDataChanged(listAdapter: ListAdapter) {}
 
-  def setListAdapter(persistence: CrudPersistence, crudContext: CrudContext, activity: ListActivity) {
+  def setListAdapter(findAllResult: AnyRef, contextItems: List[AnyRef], activity: ListActivity) {
     throw new UnsupportedOperationException
   }
 

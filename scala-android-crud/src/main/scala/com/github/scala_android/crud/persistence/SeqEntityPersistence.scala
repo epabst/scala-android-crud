@@ -11,10 +11,8 @@ import IdPk._
  */
 
 trait SeqEntityPersistence[T <: AnyRef] extends CrudPersistence {
-  def getId(entity: T): ID = idField(entity)
-
   def find(id: ID): Option[T] = {
-    findAll(newCriteria).find(entity => id == getId(entity))
+    findAll(newCriteria).find(entity => id == idField(entity))
   }
 
   def findAll(criteria: AnyRef): Seq[T]

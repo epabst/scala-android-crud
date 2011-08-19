@@ -11,6 +11,7 @@ import EasyMock.notNull
 import com.github.triangle.PortableField._
 import CrudBackupAgent._
 import android.os.ParcelFileDescriptor
+import com.github.scala_android.crud.persistence.IdPk.idField
 
 /**
  * A test for {@link CrudBackupAgent}.
@@ -91,11 +92,11 @@ class CrudBackupAgentSpec extends MyEntityTesting with MustMatchers with CrudEas
 
       val allB = persistenceB.findAll(persistenceB.newCriteria)
       allB.size must be (2)
-      allB.map(persistenceB.getId) must be (List(100L, 101L))
+      allB.map(idField(_)) must be (List(100L, 101L))
 
       val all2B = persistence2B.findAll(persistence2B.newCriteria)
       all2B.size must be (2)
-      all2B.map(persistence2B.getId) must be (List(101L, 104L))
+      all2B.map(idField(_)) must be (List(101L, 104L))
     }
   }
 

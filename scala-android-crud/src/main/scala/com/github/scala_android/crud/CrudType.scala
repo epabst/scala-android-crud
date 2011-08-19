@@ -201,7 +201,13 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
     })
   }
 
-  def setListAdapter(persistence: CrudPersistence, crudContext: CrudContext, activity: ListActivity)
+  def setListAdapter(persistence: CrudPersistence, crudContext: CrudContext, activity: ListActivity) {
+    val intent = activity.getIntent
+    val findAllResult = persistence.findAll(transform(persistence.newCriteria, intent))
+    setListAdapter(findAllResult, List(intent, crudContext, Unit), activity)
+  }
+
+  def setListAdapter(findAllResult: AnyRef, contextItems: List[AnyRef], activity: ListActivity)
 
   def refreshAfterDataChanged(listAdapter: ListAdapter)
 

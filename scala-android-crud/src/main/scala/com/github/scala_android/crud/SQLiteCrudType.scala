@@ -2,13 +2,9 @@ package com.github.scala_android.crud
 
 import android.content.{ContentValues, Context}
 import android.view.View
-import common.Logging
-import android.database.sqlite.{SQLiteDatabase, SQLiteOpenHelper}
-import android.provider.BaseColumns
 import android.app.ListActivity
 import android.database.Cursor
 import android.widget.{CursorAdapter, ListAdapter, ResourceCursorAdapter}
-import persistence.{CrudPersistence, CursorField}
 
 /**
  * A CrudType for SQLite.
@@ -22,14 +18,8 @@ trait SQLiteCrudType extends CrudType {
 
   def openEntityPersistence(crudContext: CrudContext) = new SQLiteEntityPersistence(this, crudContext)
 
-  def setListAdapter(persistence: CrudPersistence, crudContext: CrudContext, activity: ListActivity) {
-    setListAdapter(persistence.asInstanceOf[SQLiteEntityPersistence], crudContext, activity)
-  }
-
-  def setListAdapter(persistence: SQLiteEntityPersistence, crudContext: CrudContext, activity: ListActivity) {
-    val intent = activity.getIntent
-    val contextItems = List(intent, crudContext, Unit)
-    val cursor = persistence.findAll(transform(persistence.newCriteria, intent))
+  def setListAdapter(findAllResult: AnyRef, contextItems: List[AnyRef], activity: ListActivity) {
+    val cursor = findAllResult.asInstanceOf[Cursor]
     activity.startManagingCursor(cursor)
     activity.setListAdapter(new ResourceCursorAdapter(activity, rowLayout, cursor) with AdapterCaching {
       cursor.registerDataSetObserver(cacheClearingObserver(activity))
@@ -44,35 +34,5 @@ trait SQLiteCrudType extends CrudType {
     listAdapter match {
       case cursorAdapter: CursorAdapter => cursorAdapter.getCursor.requery()
     }
-  }
-
-  def getDatabaseSetup(crudContext: CrudContext): SQLiteOpenHelper = new GeneratedDatabaseSetup(crudContext)
-}
-
-class GeneratedDatabaseSetup(crudContext: CrudContext) extends SQLiteOpenHelper(crudContext.context, crudContext.application.nameId, null, 1) with Logging {
-
-  def onCreate(db: SQLiteDatabase) {
-    val application = crudContext.application
-    for (val entityType <- application.allEntities) {
-      val buffer = new StringBuffer
-      buffer.append("CREATE TABLE IF NOT EXISTS ").append(entityType.entityName).append(" (").
-          append(BaseColumns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT")
-      CursorField.persistedFields(entityType).filter(_.name != BaseColumns._ID).foreach { persisted =>
-        buffer.append(", ").append(persisted.name).append(" ").append(persisted.persistedType.sqliteType)
-      }
-      buffer.append(")")
-      execSQL(db, buffer.toString)
-    }
-  }
-
-  private def execSQL(db: SQLiteDatabase, sql: String) {
-    debug("execSQL: " + sql)
-    db.execSQL(sql)
-  }
-
-  def onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-    // Steps to upgrade the database for the new version ...
-    // This shouldn't be necessary here since a new database is created when
-    // a new version of the application is installed.
   }
 }

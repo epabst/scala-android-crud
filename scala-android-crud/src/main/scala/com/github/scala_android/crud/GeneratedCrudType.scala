@@ -1,26 +1,25 @@
 package com.github.scala_android.crud
 
-import persistence.{CrudPersistence, SeqEntityPersistence}
+import persistence.{IdPk, SeqEntityPersistence}
 import res.R
 import android.view.{ViewGroup, View}
 import com.github.triangle.PortableField.identityField
 import android.app.ListActivity
 import android.widget.{ListAdapter, BaseAdapter}
+import IdPk.idField
 
 trait GeneratedCrudType[T <: AnyRef] extends CrudType {
   def newWritable = throw new UnsupportedOperationException("not supported")
 
   def openEntityPersistence(crudContext: CrudContext): SeqEntityPersistence[T]
 
-  class SeqPersistenceAdapter[T <: AnyRef](seqPersistence: SeqEntityPersistence[T], crudContext: CrudContext, activity: ListActivity)
+  class SeqPersistenceAdapter[T <: AnyRef](findAllResult: AnyRef, contextItems: List[AnyRef], activity: ListActivity)
           extends BaseAdapter with AdapterCaching {
-    val intent = activity.getIntent
-    val contextItems = List(intent, crudContext, Unit)
-    val seq: Seq[T] = seqPersistence.findAll(seqPersistence.entityType.transform(seqPersistence.newCriteria, intent))
+    val seq: Seq[T] = findAllResult.asInstanceOf[Seq[T]]
 
     def getCount: Int = seq.size
 
-    def getItemId(position: Int): ID = seqPersistence.getId(getItem(position))
+    def getItemId(position: Int): ID = idField(getItem(position))
 
     def getItem(position: Int) = seq(position)
 
@@ -31,8 +30,8 @@ trait GeneratedCrudType[T <: AnyRef] extends CrudType {
     }
   }
 
-  def setListAdapter(persistence: CrudPersistence, crudContext: CrudContext, activity: ListActivity) {
-    activity.setListAdapter(new SeqPersistenceAdapter[T](persistence.asInstanceOf[SeqEntityPersistence[T]], crudContext, activity))
+  def setListAdapter(findAllResult: AnyRef, contextItems: List[AnyRef], activity: ListActivity) {
+    activity.setListAdapter(new SeqPersistenceAdapter[T](findAllResult, contextItems, activity))
   }
 
   def refreshAfterDataChanged(listAdapter: ListAdapter) {}
