@@ -19,7 +19,7 @@ import android.os.ParcelFileDescriptor
  * Time: 6:22 PM
  */
 @RunWith(classOf[RobolectricTestRunner])
-class CrudBackupAgentSpec extends MyEntityTesting with MustMatchers {
+class CrudBackupAgentSpec extends MyEntityTesting with MustMatchers with CrudEasyMockSugar {
   @Test
   def calculatedIteratorShouldWork() {
     val values = List("a", "b", "c").toIterator

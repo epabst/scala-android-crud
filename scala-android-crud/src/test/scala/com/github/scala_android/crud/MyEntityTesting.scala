@@ -23,7 +23,7 @@ import scala.collection.JavaConversions._
  * Time: 11:06 PM
  */
 
-trait MyEntityTesting extends EasyMockSugar {
+trait MyEntityTesting {
   class MyEntityPersistence extends ListBufferEntityPersistence[Map[String,Any]] {
     def entityType = throw new UnsupportedOperationException
   }
@@ -52,25 +52,4 @@ trait MyEntityTesting extends EasyMockSugar {
 
     val cancelItemString = R.string.cancel_item
   }
-
-  def namedMock[T <: AnyRef](name: String)(implicit manifest: Manifest[T]): T = {
-    EasyMock.createMock(name, manifest.erasure.asInstanceOf[Class[T]])
-  }
-
-  class CapturingAnswer[T](result: => T) extends IAnswer[T] {
-    var params: List[Any] = Nil
-
-    def answer() = {
-      params = EasyMock.getCurrentArguments.toList
-      result
-    }
-  }
-
-  def capturingAnswer[T](result: => T): CapturingAnswer[T] = new CapturingAnswer({ result })
-
-  def answer[T](result: => T) = new IAnswer[T] {
-    def answer = result
-  }
-
-  def eql[T](value: T): T = org.easymock.EasyMock.eq(value)
 }

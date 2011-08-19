@@ -20,7 +20,7 @@ import com.github.triangle.PortableField._
  */
 
 @RunWith(classOf[JUnitRunner])
-class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting {
+class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with CrudEasyMockSugar {
 
   it("must force having an id field on subtypes") {
     val crudType = new MyEntityType(null, null) {

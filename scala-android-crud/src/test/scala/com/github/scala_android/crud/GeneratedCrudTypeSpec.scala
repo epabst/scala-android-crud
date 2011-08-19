@@ -21,7 +21,7 @@ import org.easymock.EasyMock._
  */
 
 @RunWith(classOf[RobolectricTestRunner])
-class GeneratedCrudTypeSpec extends Spec with MustMatchers with MyEntityTesting {
+class GeneratedCrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with CrudEasyMockSugar {
 
   @Test
   def itMustCreateListAdapterWithIntentUsedForCriteria() {

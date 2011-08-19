@@ -13,7 +13,7 @@ import org.scalatest.matchers.MustMatchers
  * Time: 6:22 PM
  */
 @RunWith(classOf[RobolectricTestRunner])
-class ActivityUIActionFactorySpec extends MyEntityTesting with MustMatchers {
+class ActivityUIActionFactorySpec extends MyEntityTesting with MustMatchers with CrudEasyMockSugar {
   //todo determine if shadowing, and run tests on real Android device as well.
   val isShadowing = true
 
