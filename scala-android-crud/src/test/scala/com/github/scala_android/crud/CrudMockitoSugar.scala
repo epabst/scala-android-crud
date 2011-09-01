@@ -34,5 +34,9 @@ trait CrudMockitoSugar extends MockitoSugar {
     def answer(invocation: InvocationOnMock) = result
   }
 
+  def answerWithInvocation[T](result: InvocationOnMock => T) = new Answer[T] {
+    def answer(invocation: InvocationOnMock) = result(invocation)
+  }
+
   def eql[T](value: T): T = Matchers.eq(value)
 }

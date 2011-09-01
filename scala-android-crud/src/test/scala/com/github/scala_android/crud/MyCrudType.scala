@@ -12,7 +12,9 @@ import android.widget.ListAdapter
  * Date: 3/15/11
  * Time: 10:40 PM
  */
-object MyCrudType extends CrudType with StubEntityType {
+object MyCrudType extends MyCrudType
+
+class MyCrudType extends CrudType with StubEntityType {
   def entityName = "MyEntity"
 
   def valueFields = List[BaseField]()
@@ -25,9 +27,9 @@ object MyCrudType extends CrudType with StubEntityType {
     throw new UnsupportedOperationException
   }
 
-  def openEntityPersistence(crudContext: CrudContext) = throw new UnsupportedOperationException
+  def openEntityPersistence(crudContext: CrudContext): CrudPersistence = throw new UnsupportedOperationException
 
-  def newWritable = throw new UnsupportedOperationException
+  def newWritable: AnyRef = throw new UnsupportedOperationException
 }
 
 trait StubEntityType extends CrudType {

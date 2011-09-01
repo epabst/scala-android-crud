@@ -4,10 +4,11 @@ import _root_.android.content.Intent
 import action.EntityUriSegment
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito._
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.scalatest.matchers.MustMatchers
 import android.net.Uri
-import com.github.scala_android.crud.MyCrudType
+import persistence.CrudPersistence
 
 /**
  * A test for {@link CrudListActivity}.
@@ -16,7 +17,7 @@ import com.github.scala_android.crud.MyCrudType
  * Time: 6:22 PM
  */
 @RunWith(classOf[RobolectricTestRunner])
-class CrudTypeActionsSpec extends MyEntityTesting with MustMatchers with CrudEasyMockSugar {
+class CrudTypeActionsSpec extends MyEntityTesting with MustMatchers with CrudMockitoSugar {
   //todo determine if shadowing, and run tests on real Android device as well.
   val isShadowing = true
 
@@ -80,16 +81,14 @@ class CrudTypeActionsSpec extends MyEntityTesting with MustMatchers with CrudEas
   @Test
   def deleteActionShouldBeUndoable() {
     val currentActivity = mock[CrudActivity]
-    val application = mock[CrudApplication]
-    val entityType = MyCrudType
+    val persistence = mock[CrudPersistence]
+    val entityType = new MyCrudType {
+      override def newWritable = Unit
+      override def openEntityPersistence(crudContext: CrudContext) = persistence
+    }
     val id = 345L
-    expecting {
-      call(entityType.deleteItemString).andReturn(5)
-      call(entityType.startDelete(id, currentActivity))
-    }
-    whenExecuting(entityType, currentActivity, application) {
-      entityType.deleteAction.invoke(EntityUriSegment(entityType.entityName, id.toString).specifyInUri(Uri.EMPTY), currentActivity)
-    }
+    stub(persistence.find(id)).toReturn(Some(Unit))
+    entityType.deleteAction.invoke(EntityUriSegment(entityType.entityName, id.toString).specifyInUri(Uri.EMPTY), currentActivity)
   }
 
   @Test
