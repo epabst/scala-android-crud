@@ -50,16 +50,15 @@ object Action {
 }
 
 trait StartActivityAction extends Action {
-  def determineIntent(uri: Uri, activity: Activity): Intent
+  def action: String
+
+  def activityClass: Class[_ <: Activity]
+
+  def determineIntent(uri: Uri, activity: Activity): Intent = Action.constructIntent(action, uri, activity, activityClass)
 
   def invoke(uri: Uri, activity: Activity) {
     activity.startActivity(determineIntent(uri, activity))
   }
-}
-
-class StartNamedActivityAction(val action: String, val icon: Option[PlatformTypes#ImgKey], val title: Option[PlatformTypes#SKey],
-                               val activityClass: Class[_ <: Activity]) extends Action with StartActivityAction {
-  def determineIntent(uri: Uri, activity: Activity) = Action.constructIntent(action, uri, activity, activityClass)
 }
 
 case class EntityUriSegment(entityName: String, detail: String*) extends PlatformTypes {
@@ -84,16 +83,23 @@ case class EntityUriSegment(entityName: String, detail: String*) extends Platfor
   }
 }
 
-class StartEntityActivityAction(entityUriSegment: EntityUriSegment, action: String,
-                                icon: Option[PlatformTypes#ImgKey], title: Option[PlatformTypes#SKey],
-                                activityClass: Class[_ <: Activity]) extends StartNamedActivityAction(action, icon, title, activityClass) {
+//final to guarantee equality is correct
+final case class StartNamedActivityAction(action: String,
+                                          icon: Option[PlatformTypes#ImgKey], title: Option[PlatformTypes#SKey],
+                                          activityClass: Class[_ <: Activity]) extends StartActivityAction
+
+//final to guarantee equality is correct
+final case class StartEntityActivityAction(entityUriSegment: EntityUriSegment, action: String,
+                                           icon: Option[PlatformTypes#ImgKey], title: Option[PlatformTypes#SKey],
+                                           activityClass: Class[_ <: Activity]) extends StartActivityAction {
   override def determineIntent(uri: Uri, activity: Activity): Intent =
     super.determineIntent(entityUriSegment.specifyInUri(uri), activity)
 }
 
-class StartEntityIdActivityAction(entityName: String, action: String,
-                                  icon: Option[PlatformTypes#ImgKey], title: Option[PlatformTypes#SKey],
-                                  activityClass: Class[_ <: Activity]) extends StartNamedActivityAction(action, icon, title, activityClass) {
+//final to guarantee equality is correct
+final case class StartEntityIdActivityAction(entityName: String, action: String,
+                                             icon: Option[PlatformTypes#ImgKey], title: Option[PlatformTypes#SKey],
+                                             activityClass: Class[_ <: Activity]) extends StartActivityAction {
   val entityUriSegmentWithoutId = EntityUriSegment(entityName)
 
   override def determineIntent(uri: Uri, activity: Activity) =
