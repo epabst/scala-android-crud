@@ -2,6 +2,7 @@ package com.github.scala_android.crud
 
 import _root_.android.widget.ListView
 import _root_.android.app.ListActivity
+import action.Action
 import android.os.Bundle
 import android.net.Uri
 import android.view.{ContextMenu, View, MenuItem, Menu}
@@ -67,7 +68,7 @@ class CrudListActivity(val entityType: CrudType, val application: CrudApplicatio
     super.onResume()
   }
 
-  protected def contextMenuActions: List[UIAction[ID]] = entityType.getEntityActions(actionFactory) match {
+  protected def contextMenuActions: List[Action] = entityType.getEntityActions(application) match {
     case _ :: tail => tail.filter(_.title.isDefined)
     case Nil => Nil
   }
@@ -80,23 +81,19 @@ class CrudListActivity(val entityType: CrudType, val application: CrudApplicatio
 
   override def onContextItemSelected(item: MenuItem) = {
     val actions = contextMenuActions
-    val action = actions(item.getItemId)
     val info = item.getMenuInfo.asInstanceOf[AdapterContextMenuInfo]
-    action.apply(info.id)
+    actions(item.getItemId).invoke(uriWithId(info.id), this)
     true
   }
 
-  protected def optionsMenuActions: List[UIAction[Unit]] =
-    entityType.getListActions(actionFactory).filter(action => action.title.isDefined || action.icon.isDefined)
+  protected def optionsMenuActions: List[Action] =
+    entityType.getListActions(application).filter(action => action.title.isDefined || action.icon.isDefined)
 
   override def onCreateOptionsMenu(menu: Menu): Boolean = {
     val listActions = optionsMenuActions
     for (action <- listActions) {
-      val menuItem = if (action.title.isDefined) {
-        menu.add(0, listActions.indexOf(action), listActions.indexOf(action), action.title.get)
-      } else {
-        menu.add(0, listActions.indexOf(action), listActions.indexOf(action), "")
-      }
+      val index = listActions.indexOf(action)
+      val menuItem = action.title.map(menu.add(0, index, index, _)).getOrElse(menu.add(0, index, index, ""))
       action.icon.map(icon => menuItem.setIcon(icon))
     }
     true
@@ -105,13 +102,13 @@ class CrudListActivity(val entityType: CrudType, val application: CrudApplicatio
   override def onOptionsItemSelected(item: MenuItem): Boolean = {
     val listActions = optionsMenuActions
     val action = listActions(item.getItemId)
-    action.apply(Unit)
+    action.invoke(currentUri, this)
     true
   }
 
   override def onListItemClick(l: ListView, v: View, position: Int, id: ID) {
     if (id >= 0) {
-      entityType.getEntityActions(actionFactory).headOption.map(_(id)).getOrElse {
+      entityType.getEntityActions(application).headOption.map(_.invoke(uriWithId(id), this)).getOrElse {
         warn("There are no entity actions defined for " + entityType)
       }
     } else {

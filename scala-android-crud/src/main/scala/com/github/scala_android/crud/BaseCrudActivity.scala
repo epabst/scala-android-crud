@@ -1,8 +1,10 @@
 package com.github.scala_android.crud
 
+import action.EntityUriSegment
 import android.app.Activity
 import common.{Timing, PlatformTypes, Logging}
 import persistence.CrudPersistence
+import android.net.Uri
 
 /**
  * Support for the different Crud Activity's.
@@ -15,6 +17,10 @@ trait BaseCrudActivity extends Activity with PlatformTypes with Logging with Tim
   def entityType: CrudType
 
   def application: CrudApplication
+
+  def currentUri: Uri = getIntent.getData
+
+  def uriWithId(id: ID): Uri = EntityUriSegment(entityType.entityName, id.toString).specifyInUri(currentUri)
 
   val crudContext = new CrudContext(this, application)
 
@@ -35,8 +41,6 @@ trait BaseCrudActivity extends Activity with PlatformTypes with Logging with Tim
   def addUndoableDelete(entityType: CrudType, undoable: Undoable[ID]) {
     //todo implement
   }
-
-  lazy val actionFactory = new ActivityUIActionFactory(this, crudContext.application)
 
   override def toString = getClass.getSimpleName + "@" + System.identityHashCode(this)
 }

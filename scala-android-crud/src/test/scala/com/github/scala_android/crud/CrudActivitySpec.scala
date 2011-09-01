@@ -1,5 +1,6 @@
 package com.github.scala_android.crud
 
+import action.{StartNamedActivityAction, Action}
 import common.ReadyFuture
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -8,7 +9,7 @@ import com.xtremelabs.robolectric.RobolectricTestRunner
 import persistence.CrudPersistence
 import scala.collection.mutable.Map
 import org.scalatest.matchers.MustMatchers
-import ActivityUIActionFactory._
+import Action._
 import android.widget.ListAdapter
 import java.lang.IllegalStateException
 
@@ -35,7 +36,7 @@ class CrudActivitySpec extends EasyMockSugar with MustMatchers with MyEntityTest
     }
     whenExecuting(persistence, listAdapter, application) {
       val activity = new CrudActivity(entityType, application)
-      activity.setIntent(constructIntent(UpdateActionString, uri, activity, entityType.activityClass))
+      activity.setIntent(Action.constructIntent(UpdateActionName, uri, activity, entityType.activityClass))
       activity.onCreate(null)
       entityType.copy(entity, activity)
       activity.onPause()
@@ -57,11 +58,10 @@ class CrudActivitySpec extends EasyMockSugar with MustMatchers with MyEntityTest
       call(persistence.close())
     }
     whenExecuting(persistence, listAdapter, application) {
-      import ActivityUIActionFactory._
       val activity = new CrudActivity(entityType, application) {
         override def future[T](body: => T) = new ReadyFuture[T](body)
       }
-      activity.setIntent(constructIntent(UpdateActionString, uri, activity, entityType.activityClass))
+      activity.setIntent(constructIntent(UpdateActionName, uri, activity, entityType.activityClass))
       activity.onCreate(null)
       val viewData = Map[String,Any]()
       entityType.copy(activity, viewData)

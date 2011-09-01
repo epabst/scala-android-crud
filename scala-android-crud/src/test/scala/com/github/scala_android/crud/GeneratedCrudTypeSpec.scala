@@ -7,7 +7,7 @@ import org.scalatest.matchers.MustMatchers
 import org.scalatest.Spec
 import android.widget.ListAdapter
 import android.content.Intent
-import ActivityUIActionFactory._
+import com.github.scala_android.crud.action.Action.toUri
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.junit.Test
 import android.app.ListActivity

@@ -4,10 +4,12 @@ import _root_.android.app.Activity
 import _root_.android.content.Intent
 import _root_.android.view.View
 import _root_.android.widget.{ArrayAdapter, Spinner, DatePicker, TextView}
+import action.EntityUriSegment
 import com.github.triangle._
 import common.PlatformTypes
 import PortableField._
 import java.util.{Calendar, Date, GregorianCalendar}
+import android.net.Uri
 
 /**
  * PortableField for Views.
@@ -79,5 +81,10 @@ object ViewField extends PlatformTypes {
   def intentId(entityName: String): FieldGetter[Intent,ID] = {
     val uriSegment = EntityUriSegment(entityName)
     PortableField.readOnly[Intent,ID](intent => uriSegment.findId(intent.getData))
+  }
+
+  def uriId(entityName: String): FieldGetter[Uri,ID] = {
+    val uriSegment = EntityUriSegment(entityName)
+    PortableField.readOnly[Uri,ID](uri => uriSegment.findId(uri))
   }
 }

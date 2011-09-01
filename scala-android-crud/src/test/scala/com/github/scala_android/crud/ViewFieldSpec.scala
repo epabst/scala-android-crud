@@ -11,6 +11,7 @@ import android.widget.{Spinner, LinearLayout, TextView}
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.junit.Test
 import android.content.{Intent, Context}
+import com.github.scala_android.crud.action.Action.toUri
 
 
 /**
@@ -115,19 +116,19 @@ class ViewFieldSpec extends MustMatchers with EasyMockSugar {
   @Test
   def itMustGetTheIdForAnEntityNameFromTheIntent() {
     val field = intentId("foo")
-    val intent = new Intent(null, ActivityUIActionFactory.toUri("hello", "1", "foo", "4", "bar", "3"))
+    val intent = new Intent(null, toUri("hello", "1", "foo", "4", "bar", "3"))
     field.getter(intent) must be (Some(4))
 
-    val intent2 = new Intent(null, ActivityUIActionFactory.toUri("hello", "1", "foo"))
+    val intent2 = new Intent(null, toUri("hello", "1", "foo"))
     field.getter(intent2) must be (None)
 
-    val intent3 = new Intent(null, ActivityUIActionFactory.toUri("hello"))
+    val intent3 = new Intent(null, toUri("hello"))
     field.getter(intent3) must be (None)
 
-    val intent4 = new Intent(null, ActivityUIActionFactory.toUri())
+    val intent4 = new Intent(null, toUri())
     field.getter(intent4) must be (None)
 
-    val intent5 = new Intent(null, ActivityUIActionFactory.toUri("4"))
+    val intent5 = new Intent(null, toUri("4"))
     field.getter(intent5) must be (None)
   }
 

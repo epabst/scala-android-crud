@@ -1,15 +1,19 @@
 package com.github.scala_android.crud
 
+import action._
 import android.net.Uri
-import android.app.ListActivity
 import android.view.View
-import com.github.triangle.{PortableValue, FieldList, BaseField}
 import com.github.triangle.JavaUtil._
 import common.{Timing, PlatformTypes, Logging}
 import android.database.DataSetObserver
 import android.content.Intent
 import android.widget.{ListAdapter, BaseAdapter}
 import persistence.{PersistenceListener, IdPk, EntityPersistence, CrudPersistence}
+import Action._
+import android.app.{Activity, ListActivity}
+import com.github.scala_android.crud.ViewField._
+import com.github.triangle.{PortableField, PortableValue, FieldList, BaseField}
+import PortableField.toSome
 
 /**
  * An entity configuration that provides all custom information needed to
@@ -28,6 +32,8 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
    * These are all of the entity's fields, which includes IdPk.idField and the valueFields.
    */
   final lazy val fields: List[BaseField] = IdPk.idField +: valueFields
+
+  lazy val intentIdField = intentId(entityName) + uriId(entityName)
 
   /**
    * The fields other than the primary key.
@@ -72,10 +78,42 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
     }
   }
 
-  def displayChildEntityLists[T](actionFactory: UIActionFactory, idGetter: T => ID,
-                                 childEntities: List[CrudType]): List[UIAction[T]] =
-    childEntities.map(entity => actionFactory.adapt(actionFactory.displayList(entity), (value: T) =>
-      Some(EntityUriSegment(entityName, idGetter(value).toString))))
+  /**
+   * Gets the action to display a UI for a user to fill in data for creating an entity.
+   * The target Activity should copy Unit into the UI using entityType.copy to populate defaults.
+   */
+  lazy val createAction = new StartEntityActivityAction(EntityUriSegment(entityName), CreateActionName,
+    android.R.drawable.ic_menu_add, addItemString, activityClass)
+
+  /**
+   * Gets the action to display the list that matches the criteria copied from criteriaSource using entityType.copy.
+   */
+  lazy val listAction = new StartEntityActivityAction(EntityUriSegment(entityName), ListActionName,
+    None, listItemsString, listActivityClass)
+
+  protected def entityAction(action: String, icon: Option[PlatformTypes#ImgKey], title: Option[PlatformTypes#SKey],
+                             activityClass: Class[_ <: Activity]) =
+    new StartEntityIdActivityAction(entityName, action, icon, title, activityClass)
+
+  /**
+   * Gets the action to display the entity given the id in the Uri.
+   */
+  lazy val displayAction = entityAction(DisplayActionName, None, None, activityClass)
+
+  /**
+   * Gets the action to display a UI for a user to edit data for an entity given its id in the Uri.
+   */
+  lazy val updateAction = entityAction(UpdateActionName, android.R.drawable.ic_menu_edit, editItemString, activityClass)
+
+  lazy val deleteAction = new RunnableAction(android.R.drawable.ic_menu_delete, deleteItemString) {
+    def invoke(uri: Uri, activity: Activity) {
+      activity match {
+        case crudActivity: BaseCrudActivity =>
+          startDelete(EntityUriSegment(entityName).findId(uri).get, crudActivity)
+      }
+    }
+  }
+
 
   def listActivityClass: Class[_ <: CrudListActivity]
   def activityClass: Class[_ <: CrudActivity]
@@ -98,20 +136,16 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
    * Gets the actions that a user can perform from a list of the entities.
    * May be overridden to modify the list of actions.
    */
-  def getListActions(actionFactory: UIActionFactory): List[UIAction[Unit]] = {
-    getReadOnlyListActions(actionFactory) ::: actionFactory.startCreate(this) :: Nil
-  }
+  def getListActions(application: CrudApplication): List[Action] =
+    getReadOnlyListActions(application) ::: createAction :: Nil
 
-  protected def getReadOnlyListActions(actionFactory: UIActionFactory): List[UIAction[Unit]] = {
+  protected def getReadOnlyListActions(application: CrudApplication): List[Action] = {
     val thisEntity = this;
     (foreignKeys match {
       //exactly one parent w/o a display page
       case foreignKey :: Nil if !foreignKey.entityType.hasDisplayPage => {
         val parentEntity = foreignKey.entityType
-        val getForeignKey = { _: Unit => foreignKey.apply(actionFactory.currentIntent) }
-        actionFactory.adapt(actionFactory.startUpdate(parentEntity), getForeignKey) ::
-                parentEntity.displayChildEntityLists(actionFactory, getForeignKey,
-                  parentEntity.childEntities(actionFactory.application).filter(_ != thisEntity))
+        parentEntity.updateAction :: parentEntity.childEntities(application).filter(_ != thisEntity).map(_.listAction)
       }
       case _ => Nil
     })
@@ -122,12 +156,11 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
    * The first one is the one that will be used when the item is clicked on.
    * May be overridden to modify the list of actions.
    */
-  def getEntityActions(actionFactory: UIActionFactory): List[UIAction[ID]] =
-    getReadOnlyEntityActions(actionFactory) ::: List(actionFactory.startUpdate(this), actionFactory.startDelete(this))
+  def getEntityActions(application: CrudApplication): List[Action] =
+    getReadOnlyEntityActions(application) ::: List(updateAction, deleteAction)
 
-  protected def getReadOnlyEntityActions(actionFactory: UIActionFactory): List[UIAction[ID]] =
-    displayLayout.map(_ => actionFactory.display(this)).toList :::
-            displayChildEntityLists[ID](actionFactory, id => id, childEntities(actionFactory.application)) ::: Nil
+  protected def getReadOnlyEntityActions(application: CrudApplication): List[Action] =
+    displayLayout.map(_ => displayAction).toList ::: childEntities(application).map(_.listAction)
 
   /**
    * Instantiates a data buffer which can be saved by EntityPersistence.
@@ -217,11 +250,11 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
     }
   }
 
-  private[crud] def undoableDelete(id: ID, uiActionFactory: UIActionFactory)(persistence: EntityPersistence) {
+  private[crud] def undoableDelete(id: ID, activity: BaseCrudActivity)(persistence: EntityPersistence) {
     persistence.find(id).map { readable =>
       val writable = transform(newWritable, readable)
       persistence.delete(List(id))
-      uiActionFactory.addUndoableDelete(this, new Undoable[ID] {
+      activity.addUndoableDelete(this, new Undoable[ID] {
         def undo(): ID = {
           persistence.save(None, writable)
         }
@@ -236,8 +269,8 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
   /**
    * Delete an entity by ID with an undo option.  It can be overridden to do a confirmation box if desired.
    */
-  def startDelete(id: ID, uiActionFactory: UIActionFactory) {
-    uiActionFactory.withEntityPersistence(this, undoableDelete(id, uiActionFactory))
+  def startDelete(id: ID, activity: BaseCrudActivity) {
+    withEntityPersistence(activity.crudContext, undoableDelete(id, activity))
   }
 }
 

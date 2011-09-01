@@ -2,7 +2,6 @@ package com.github.scala_android.crud
 
 import common.PlatformTypes
 import persistence.CursorField._
-import ViewField.intentId
 import android.provider.BaseColumns
 import com.github.triangle.{BaseField, DelegatingPortableField}
 
@@ -15,7 +14,7 @@ import com.github.triangle.{BaseField, DelegatingPortableField}
 case class ForeignKey(entityType: CrudType) extends PlatformTypes with DelegatingPortableField[ID] {
   val fieldName = entityType.entityName.toLowerCase + BaseColumns._ID
 
-  protected val delegate = persisted[ID](fieldName) + intentId(entityType.entityName) + sqliteCriteria[ID](fieldName)
+  protected val delegate = persisted[ID](fieldName) + entityType.intentIdField + sqliteCriteria[ID](fieldName)
 
   override def toString = "ForeignKey(" + entityType.entityName + ")"
 }

@@ -1,5 +1,6 @@
 package com.github.scala_android.crud
 
+import action.EntityUriSegment
 import org.junit.Test
 import org.junit.runner.RunWith
 import com.xtremelabs.robolectric.RobolectricTestRunner

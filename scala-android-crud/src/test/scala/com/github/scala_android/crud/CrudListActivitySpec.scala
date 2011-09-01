@@ -62,7 +62,7 @@ class CrudListActivitySpec extends MustMatchers with MyEntityTesting with CrudMo
     val ignoredMenuInfo: ContextMenu.ContextMenuInfo = null
 
     val entityType = new MyEntityType(persistence, listAdapter) {
-      override def getEntityActions(actionFactory: UIActionFactory) = Nil
+      override def getEntityActions(application: CrudApplication) = Nil
     }
     val activity = new CrudListActivity(entityType, application)
     //shouldn't do anything

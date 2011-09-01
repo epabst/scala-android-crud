@@ -44,21 +44,8 @@ class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with Crud
     }
   }
 
-  val startCreateParent = namedMock[UIAction[Unit]]("startCreateParent")
-  val startUpdateParent = namedMock[UIAction[ID]]("startUpdateParent")
-  val adaptedStartUpdateParent = namedMock[UIAction[Unit]]("adaptedStartUpdateParent")
-  val startDeleteParent = namedMock[UIAction[ID]]("startDeleteParent")
-  val displayChildList = namedMock[UIAction[EntityUriSegment]]("displayChildList")
-  val adaptedDisplayChildList = namedMock[UIAction[ID]]("adaptedDisplayChildList")
-  val startCreateChild = namedMock[UIAction[Unit]]("startCreateChild")
-  val startUpdateChild = namedMock[UIAction[Unit]]("startUpdateChild")
-  val startDeleteChild = namedMock[UIAction[ID]]("startDeleteChild")
-  val displayChild2List = namedMock[UIAction[EntityUriSegment]]("displayChild2List")
-  val adaptedDisplayChild2List = namedMock[UIAction[ID]]("adaptedDisplayChild2List")
-
   it("must get the correct entity actions with child entities") {
     val persistence = mock[CrudPersistence]
-    val actionFactory = mock[UIActionFactory]
     val application = mock[CrudApplication]
     val listAdapter = mock[ListAdapter]
     val parentEntity = new MyEntityType(persistence, listAdapter)
@@ -66,24 +53,16 @@ class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with Crud
       override lazy val valueFields = ForeignKey(parentEntity) :: super.valueFields
     }
     expecting {
-      call(actionFactory.application).andReturn(application).anyTimes
       call(application.allEntities).andReturn(List(parentEntity, childEntity)).anyTimes
-      call(actionFactory.displayList(childEntity)).andReturn(displayChildList)
-      call(actionFactory.adapt[ID,EntityUriSegment](eql(displayChildList), notNull())).andReturn(adaptedDisplayChildList)
-      call(actionFactory.startUpdate(parentEntity)).andReturn(startUpdateParent)
-      call(actionFactory.startDelete(parentEntity)).andReturn(startDeleteParent)
-      call(actionFactory.startUpdate(childEntity)).andReturn(startUpdateChild)
-      call(actionFactory.startDelete(childEntity)).andReturn(startDeleteChild)
     }
-    whenExecuting(actionFactory, persistence, application) {
-      childEntity.getEntityActions(actionFactory) must be (List(startUpdateChild, startDeleteChild))
-      parentEntity.getEntityActions(actionFactory) must be (List(adaptedDisplayChildList, startUpdateParent, startDeleteParent))
+    whenExecuting(persistence, application) {
+      childEntity.getEntityActions(application) must be (List(childEntity.updateAction, childEntity.deleteAction))
+      parentEntity.getEntityActions(application) must be (List(childEntity.listAction, parentEntity.updateAction, parentEntity.deleteAction))
     }
   }
 
   it("must get the correct list actions with child entities") {
     val persistence = mock[CrudPersistence]
-    val actionFactory = mock[UIActionFactory]
     val application = mock[CrudApplication]
     val listAdapter = mock[ListAdapter]
     val parentEntity = new MyEntityType(persistence, listAdapter) {
@@ -96,24 +75,16 @@ class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with Crud
       override lazy val valueFields = ForeignKey(parentEntity) :: super.valueFields
     }
     expecting {
-      call(actionFactory.application).andReturn(application).anyTimes
       call(application.allEntities).andReturn(List(parentEntity, childEntity, childEntity2)).anyTimes
-      call(actionFactory.startCreate(parentEntity)).andReturn(startCreateParent)
-      call(actionFactory.startCreate(childEntity)).andReturn(startCreateChild)
-      call(actionFactory.displayList(childEntity)).andStubReturn(displayChildList)
-      call(actionFactory.adapt[ID,EntityUriSegment](eql(displayChildList), notNull())).andStubReturn(adaptedDisplayChildList)
-      call(actionFactory.displayList(childEntity2)).andStubReturn(displayChild2List)
-      call(actionFactory.adapt[ID,EntityUriSegment](eql(displayChild2List), notNull())).andStubReturn(adaptedDisplayChild2List)
     }
-    whenExecuting(actionFactory, persistence, application) {
-      parentEntity.getListActions(actionFactory) must be (List(startCreateParent))
-      childEntity.getListActions(actionFactory) must be (List(startCreateChild))
+    whenExecuting(persistence, application) {
+      parentEntity.getListActions(application) must be (List(parentEntity.createAction))
+      childEntity.getListActions(application) must be (List(childEntity.createAction))
     }
   }
 
   it("must get the correct list actions with child entities w/ no parent display") {
     val persistence = mock[CrudPersistence]
-    val actionFactory = mock[UIActionFactory]
     val application = mock[CrudApplication]
     val listAdapter = mock[ListAdapter]
     var parentEntity = new MyEntityType(persistence, listAdapter)
@@ -124,78 +95,57 @@ class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with Crud
       override lazy val valueFields = ForeignKey(parentEntity) :: super.valueFields
     }
     expecting {
-      call(actionFactory.application).andReturn(application).anyTimes
       call(application.allEntities).andReturn(List(parentEntity, childEntity, childEntity2)).anyTimes
-      call(actionFactory.startCreate(parentEntity)).andReturn(startCreateParent)
-      call(actionFactory.startUpdate(parentEntity)).andReturn(startUpdateParent)
-      call(actionFactory.adapt[Unit,ID](eql(startUpdateParent), notNull())).andReturn(adaptedStartUpdateParent)
-      call(actionFactory.startCreate(childEntity)).andReturn(startCreateChild)
-      call(actionFactory.displayList(childEntity)).andStubReturn(displayChildList)
-      call(actionFactory.adapt[ID,EntityUriSegment](eql(displayChildList), notNull())).andStubReturn(adaptedDisplayChildList)
-      call(actionFactory.displayList(childEntity2)).andReturn(displayChild2List)
-      call(actionFactory.adapt[ID,EntityUriSegment](eql(displayChild2List), notNull())).andReturn(adaptedDisplayChild2List)
     }
-    whenExecuting(actionFactory, persistence, application) {
-      parentEntity.getListActions(actionFactory) must be (List(startCreateParent))
-      childEntity.getListActions(actionFactory) must be (List(adaptedStartUpdateParent, adaptedDisplayChild2List, startCreateChild))
+    whenExecuting(persistence, application) {
+      parentEntity.getListActions(application) must be (List(parentEntity.createAction))
+      childEntity.getListActions(application) must be (List(parentEntity.updateAction, childEntity2.listAction, childEntity.createAction))
     }
   }
 
   it("must delete with undo possibility") {
     val persistence = mock[CrudPersistence]
-    val actionFactory = mock[UIActionFactory]
     val application = mock[CrudApplication]
     val listAdapter = mock[ListAdapter]
+    val activity = mock[BaseCrudActivity]
     var entity = new MyEntityType(persistence, listAdapter)
     val readable = mutable.Map[String,Any]()
     val id = 345L
     expecting {
-      call(actionFactory.withEntityPersistence(eql(entity), notNull[CrudPersistence => Unit]())).andAnswer(answer {
-        val currentArguments = EasyMock.getCurrentArguments
-        val f = currentArguments(1).asInstanceOf[CrudPersistence => Unit]
-        f(persistence)
-      })
-      call(actionFactory.application).andReturn(application).anyTimes
       call(persistence.find(id)).andReturn(Some(readable))
       call(persistence.delete(List(id)))
-      call(actionFactory.addUndoableDelete(eql(entity), notNull[Undoable[ID]])).andAnswer(answer {
+      call(activity.addUndoableDelete(eql(entity), notNull[Undoable[ID]])).andAnswer(answer {
         val currentArguments = EasyMock.getCurrentArguments
         val undoable = currentArguments(1).asInstanceOf[Undoable[ID]]
         undoable.close()
       })
     }
-    whenExecuting(actionFactory, persistence, application) {
-      entity.startDelete(id, actionFactory)
+    whenExecuting(activity, persistence, application) {
+      entity.startDelete(id, activity)
     }
   }
 
   it("undo of delete must work") {
     val persistence = mock[CrudPersistence]
-    val actionFactory = mock[UIActionFactory]
     val application = mock[CrudApplication]
+    val activity = mock[CrudActivity]
     val listAdapter = mock[ListAdapter]
     var entity = new MyEntityType(persistence, listAdapter)
     val readable = mutable.Map[String,Any]("name" -> "George")
     val id = 345L
     val id2 = 444L
     expecting {
-      call(actionFactory.withEntityPersistence(eql(entity), notNull[CrudPersistence => Unit]())).andAnswer(answer {
-        val currentArguments = EasyMock.getCurrentArguments
-        val f = currentArguments(1).asInstanceOf[CrudPersistence => Unit]
-        f(persistence)
-      })
-      call(actionFactory.application).andReturn(application).anyTimes
       call(persistence.find(id)).andReturn(Some(readable))
       call(persistence.delete(List(id)))
       call(persistence.save(None, mutable.Map("name" -> "George"))).andReturn(id2)
-      call(actionFactory.addUndoableDelete(eql(entity), notNull[Undoable[ID]])).andAnswer(answer {
+      call(activity.addUndoableDelete(eql(entity), notNull[Undoable[ID]])).andAnswer(answer {
         val currentArguments = EasyMock.getCurrentArguments
         val undoable = currentArguments(1).asInstanceOf[Undoable[ID]]
         undoable.undo() must be(id2)
       })
     }
-    whenExecuting(actionFactory, persistence, application) {
-      entity.startDelete(id, actionFactory)
+    whenExecuting(activity, persistence, application) {
+      entity.startDelete(id, activity)
     }
   }
 }
