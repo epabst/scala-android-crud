@@ -88,10 +88,17 @@ final case class StartNamedActivityAction(action: String,
                                           icon: Option[PlatformTypes#ImgKey], title: Option[PlatformTypes#SKey],
                                           activityClass: Class[_ <: Activity]) extends StartActivityAction
 
+trait EntityAction extends Action {
+  def entityName: String
+  def action: String
+}
+
 //final to guarantee equality is correct
 final case class StartEntityActivityAction(entityUriSegment: EntityUriSegment, action: String,
                                            icon: Option[PlatformTypes#ImgKey], title: Option[PlatformTypes#SKey],
-                                           activityClass: Class[_ <: Activity]) extends StartActivityAction {
+                                           activityClass: Class[_ <: Activity]) extends StartActivityAction with EntityAction {
+  def entityName = entityUriSegment.entityName
+
   override def determineIntent(uri: Uri, activity: Activity): Intent =
     super.determineIntent(entityUriSegment.specifyInUri(uri), activity)
 }
@@ -99,7 +106,7 @@ final case class StartEntityActivityAction(entityUriSegment: EntityUriSegment, a
 //final to guarantee equality is correct
 final case class StartEntityIdActivityAction(entityName: String, action: String,
                                              icon: Option[PlatformTypes#ImgKey], title: Option[PlatformTypes#SKey],
-                                             activityClass: Class[_ <: Activity]) extends StartActivityAction {
+                                             activityClass: Class[_ <: Activity]) extends StartActivityAction with EntityAction {
   val entityUriSegmentWithoutId = EntityUriSegment(entityName)
 
   override def determineIntent(uri: Uri, activity: Activity) =

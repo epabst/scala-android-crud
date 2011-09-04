@@ -1,6 +1,7 @@
 package com.github.scala_android.crud
 
 import _root_.android.app.Activity
+import action.EntityAction
 import android.os.Bundle
 import com.github.triangle.ValueFormat.basicFormat
 import com.github.triangle.JavaUtil.toRunnable
@@ -47,5 +48,8 @@ class CrudActivity(val entityType: CrudType, val application: CrudApplication) e
     catch { case e => error("onPause: Unable to store " + writable, e) }
   }
 
-  protected def applicableActions = entityType.getEntityActions(application)
+  protected def applicableActions = entityType.getEntityActions(application).filter {
+    case action: EntityAction => action.entityName != entityType.entityName || action.action != getIntent.getAction
+    case _ => true
+  }
 }
