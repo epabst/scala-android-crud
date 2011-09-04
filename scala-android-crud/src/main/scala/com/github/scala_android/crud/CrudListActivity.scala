@@ -5,7 +5,7 @@ import _root_.android.app.ListActivity
 import action.Action
 import android.os.Bundle
 import android.net.Uri
-import android.view.{ContextMenu, View, MenuItem, Menu}
+import android.view.{ContextMenu, View, MenuItem}
 import android.view.ContextMenu.ContextMenuInfo
 import android.widget.AdapterView.AdapterContextMenuInfo
 import com.github.triangle.{JavaUtil, PortableValue}
@@ -16,10 +16,6 @@ import JavaUtil.toRunnable
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 2/3/11
  * Time: 7:06 AM
- * @param Q the query criteria type
- * @param L the type of findAll (e.g. Cursor)
- * @param R the type to read from (e.g. Cursor)
- * @param W the type to write to (e.g. ContentValues)
  */
 class CrudListActivity(val entityType: CrudType, val application: CrudApplication)
   extends ListActivity with BaseCrudActivity {
@@ -86,25 +82,7 @@ class CrudListActivity(val entityType: CrudType, val application: CrudApplicatio
     true
   }
 
-  protected def optionsMenuActions: List[Action] =
-    entityType.getListActions(application).filter(action => action.title.isDefined || action.icon.isDefined)
-
-  override def onCreateOptionsMenu(menu: Menu): Boolean = {
-    val listActions = optionsMenuActions
-    for (action <- listActions) {
-      val index = listActions.indexOf(action)
-      val menuItem = action.title.map(menu.add(0, index, index, _)).getOrElse(menu.add(0, index, index, ""))
-      action.icon.map(icon => menuItem.setIcon(icon))
-    }
-    true
-  }
-
-  override def onOptionsItemSelected(item: MenuItem): Boolean = {
-    val listActions = optionsMenuActions
-    val action = listActions(item.getItemId)
-    action.invoke(currentUri, this)
-    true
-  }
+  protected def applicableActions = entityType.getListActions(application)
 
   override def onListItemClick(l: ListView, v: View, position: Int, id: ID) {
     if (id >= 0) {
