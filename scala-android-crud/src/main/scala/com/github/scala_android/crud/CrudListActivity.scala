@@ -4,7 +4,6 @@ import _root_.android.widget.ListView
 import _root_.android.app.ListActivity
 import action.Action
 import android.os.Bundle
-import android.net.Uri
 import android.view.{ContextMenu, View, MenuItem}
 import android.view.ContextMenu.ContextMenuInfo
 import android.widget.AdapterView.AdapterContextMenuInfo
@@ -20,12 +19,6 @@ import JavaUtil.toRunnable
 class CrudListActivity(val entityType: CrudType, val application: CrudApplication)
   extends ListActivity with BaseCrudActivity {
 
-  val ADD_DIALOG_ID = 100
-  val EDIT_DIALOG_ID = 101
-
-  lazy val contentProviderAuthority = this.getClass.getPackage.toString
-  lazy val defaultContentUri = Uri.parse("content://" + contentProviderAuthority + "/" + entityType.entityName);
-
   override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)
 
@@ -35,7 +28,6 @@ class CrudListActivity(val entityType: CrudType, val application: CrudApplicatio
     // as a MAIN activity), then use our default content provider.
     val intent = getIntent
     future {
-      if (intent.getData == null) intent.setData(defaultContentUri);
       //copy each parent Entity's data to the Activity if identified in the Intent's URI
       val portableValues: List[PortableValue] = entityType.parentEntities.flatMap(_ match {
         case parentType: CrudType => parentType.copyFromPersistedEntity(intent, crudContext)

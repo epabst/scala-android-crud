@@ -6,6 +6,7 @@ import common.{Timing, PlatformTypes, Logging}
 import persistence.CrudPersistence
 import android.net.Uri
 import android.view.{MenuItem, Menu}
+import android.os.Bundle
 
 /**
  * Support for the different Crud Activity's.
@@ -19,6 +20,9 @@ trait BaseCrudActivity extends Activity with PlatformTypes with Logging with Tim
 
   def application: CrudApplication
 
+  lazy val contentProviderAuthority = application.getClass.getPackage.toString
+  lazy val defaultContentUri = Uri.parse("content://" + contentProviderAuthority + "/" + entityType.entityName);
+
   def currentUri: Uri = getIntent.getData
 
   def uriWithId(id: ID): Uri = EntityUriSegment(entityType.entityName, id.toString).specifyInUri(currentUri)
@@ -26,6 +30,12 @@ trait BaseCrudActivity extends Activity with PlatformTypes with Logging with Tim
   val crudContext = new CrudContext(this, application)
 
   override lazy val logTag = classOf[BaseCrudActivity].getName + "(" + entityType.entityName + ")"
+
+  override def onCreate(savedInstanceState: Bundle) {
+    super.onCreate(savedInstanceState)
+    val intent = getIntent
+    if (intent.getData == null) intent.setData(defaultContentUri)
+  }
 
   protected def applicableActions: List[Action]
 
