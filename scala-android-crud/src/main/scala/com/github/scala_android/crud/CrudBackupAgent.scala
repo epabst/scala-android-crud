@@ -1,7 +1,7 @@
 package com.github.scala_android.crud
 
 import android.app.backup.{BackupDataOutput, BackupDataInput, BackupAgent}
-import common.Logging
+import com.github.triangle.Logging
 import persistence.CursorField._
 import android.os.ParcelFileDescriptor
 import java.io.{ObjectInputStream, ByteArrayInputStream, ObjectOutputStream, ByteArrayOutputStream}

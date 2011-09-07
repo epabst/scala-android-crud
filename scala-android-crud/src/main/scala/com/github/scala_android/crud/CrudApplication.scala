@@ -1,6 +1,6 @@
 package com.github.scala_android.crud
 
-import common.Logging
+import com.github.triangle.Logging
 
 /**
  * An Application that works with {@link CrudType}s.
@@ -10,7 +10,7 @@ import common.Logging
  */
 
 trait CrudApplication extends Logging {
-  verbose("Instantiated CrudApplication: " + this)
+  trace("Instantiated CrudApplication: " + this)
 
   def name: String
 

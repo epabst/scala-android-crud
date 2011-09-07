@@ -3,7 +3,7 @@ package com.github.scala_android.crud
 import android.provider.BaseColumns
 import android.database.Cursor
 import android.content.ContentValues
-import com.github.scala_android.crud.common.Logging
+import com.github.triangle.Logging
 import persistence.{SQLiteCriteria, CursorField, CrudPersistence}
 import scala.None
 import collection.mutable.SynchronizedQueue

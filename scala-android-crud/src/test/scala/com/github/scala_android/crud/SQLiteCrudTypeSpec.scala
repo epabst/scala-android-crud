@@ -1,7 +1,7 @@
 package com.github.scala_android.crud
 
 import android.provider.BaseColumns
-import common.Logging
+import com.github.triangle.Logging
 import org.junit.Test
 import org.junit.runner.RunWith
 import com.xtremelabs.robolectric.RobolectricTestRunner

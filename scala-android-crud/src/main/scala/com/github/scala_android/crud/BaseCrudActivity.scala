@@ -2,7 +2,8 @@ package com.github.scala_android.crud
 
 import action.{Action, EntityUriSegment}
 import android.app.Activity
-import common.{Timing, PlatformTypes, Logging}
+import common.{Timing, PlatformTypes}
+import com.github.triangle.Logging
 import persistence.CrudPersistence
 import android.net.Uri
 import android.view.{MenuItem, Menu}

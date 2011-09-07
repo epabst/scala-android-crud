@@ -2,12 +2,12 @@ package com.github.scala_android.crud.generate
 
 import android.view.View
 import com.github.scala_android.crud.ViewField.ViewIdField
-import com.github.triangle.{BaseField, SubjectField, FieldList}
 import java.lang.reflect.{Modifier, Field}
 import java.lang.IllegalStateException
-import com.github.scala_android.crud.common.{PlatformTypes, Logging}
+import com.github.scala_android.crud.common.PlatformTypes
 import com.github.scala_android.crud.persistence.{IdPk, CursorField}
 import com.github.scala_android.crud.{ForeignKey, CrudType}
+import com.github.triangle.{Logging, BaseField, SubjectField, FieldList}
 
 /**
  * A UI Generator for a CrudTypes.

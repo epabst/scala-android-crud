@@ -6,7 +6,7 @@ import android.provider.BaseColumns
 import com.github.triangle._
 import PortableField._
 import android.os.Bundle
-import com.github.scala_android.crud.common.{PlatformTypes, Logging}
+import com.github.scala_android.crud.common.PlatformTypes
 
 class SQLiteCriteria(var selection: String = null, var selectionArgs: Array[String] = Nil.toArray,
                      var groupBy: String = null, var having: String = null, var orderBy: String = null)

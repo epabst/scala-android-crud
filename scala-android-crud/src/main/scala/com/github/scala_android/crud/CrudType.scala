@@ -4,7 +4,7 @@ import action._
 import android.net.Uri
 import android.view.View
 import com.github.triangle.JavaUtil._
-import common.{Timing, PlatformTypes, Logging}
+import common.{Timing, PlatformTypes}
 import android.database.DataSetObserver
 import android.content.Intent
 import android.widget.{ListAdapter, BaseAdapter}
@@ -12,9 +12,8 @@ import persistence.{PersistenceListener, IdPk, EntityPersistence, CrudPersistenc
 import Action._
 import android.app.{Activity, ListActivity}
 import com.github.scala_android.crud.ViewField._
-import com.github.triangle.{PortableField, PortableValue, FieldList, BaseField}
+import com.github.triangle._
 import PortableField.toSome
-
 /**
  * An entity configuration that provides all custom information needed to
  * implement CRUD on the entity.  This shouldn't depend on the platform (e.g. android).
@@ -23,7 +22,7 @@ import PortableField.toSome
  * Time: 3:24 PM
  */
 trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
-  verbose("Instantiated CrudType: " + this)
+  trace("Instantiated CrudType: " + this)
 
   //this is the type used for internationalized strings
   def entityName: String
@@ -70,10 +69,10 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
    */
   def childEntities(application: CrudApplication): List[CrudType] = {
     val self = this
-    verbose("childEntities: allEntities=" + application.allEntities + " self=" + self)
+    trace("childEntities: allEntities=" + application.allEntities + " self=" + self)
     application.allEntities.filter { entity =>
       val entityParents = entity.parentEntities
-      verbose("childEntities: parents of " + entity + " are " + entityParents)
+      trace("childEntities: parents of " + entity + " are " + entityParents)
       entityParents.contains(self)
     }
   }
@@ -185,12 +184,12 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
       val map = Option(listView.getTag.asInstanceOf[Map[Long,PortableValue]]).getOrElse(Map.empty[Long,PortableValue]) +
               (position -> portableValue)
       listView.setTag(map)
-      verbose("Added value at position " + position + " to the cache for " + activity)
+      trace("Added value at position " + position + " to the cache for " + activity)
     }
 
     def cacheClearingObserver(activity: ListActivity) = new DataSetObserver {
       override def onInvalidated() {
-        verbose("Clearing ListView cache in " + activity + " since DataSet was invalidated")
+        trace("Clearing ListView cache in " + activity + " since DataSet was invalidated")
         activity.runOnUiThread { activity.getListView.setTag(null) }
         super.onInvalidated()
       }
@@ -201,10 +200,10 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
       //set the cached or default values immediately instead of showing the column header names
       cachedValue match {
         case Some(portableValue) =>
-          verbose("cache hit for " + activity + " at position " + position + ": " + portableValue)
+          trace("cache hit for " + activity + " at position " + position + ": " + portableValue)
           portableValue.copyTo(view)
         case None =>
-          verbose("cache miss for " + activity + " at position " + position)
+          trace("cache miss for " + activity + " at position " + position)
           unitPortableValue.copyTo(view)
       }
       if (cachedValue.isEmpty) {
