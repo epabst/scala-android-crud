@@ -48,8 +48,10 @@ object CrudUIGenerator extends PlatformTypes with Logging {
       val foreignKeys = ForeignKey.foreignKeys(field)
       val persistedFieldsInForeignKeys = foreignKeys.flatMap(CursorField.persistedFields(_))
       val otherPersistedFields = CursorField.persistedFields(field).filterNot(persistedFieldsInForeignKeys.contains)
+      val persistedFieldsWithTypes = otherPersistedFields.map(p => p.toString + ":" + p.persistedType.valueManifest.erasure.getSimpleName)
       println("viewIds: " + viewResourceIds + " tied to " +
-              viewFieldsWithId + "  /  other views: " + otherViewFields + "  /  foreignKeys: " + foreignKeys + " / other persisted: " + otherPersistedFields)
+              viewFieldsWithId + "  /  other views: " + otherViewFields + "  /  foreignKeys: " + foreignKeys +
+              " / other persisted: " + persistedFieldsWithTypes)
     }
   }
 
