@@ -57,6 +57,17 @@
       <version>${scala.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-android</artifactId>
+      <version>1.5.8</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.triangle</groupId>
+      <artifactId>triangle</artifactId>
+      <version>0.3-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest</artifactId>
       <version>1.2</version>
