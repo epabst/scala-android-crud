@@ -32,7 +32,7 @@ class ViewFieldSpec extends MustMatchers with EasyMockSugar {
     val stringField =
       persisted[String]("name") +
       viewId(101, textView) +
-      viewId(102, fieldDirect[MyView,String](_.status, _.status_=))
+      viewId(102, fieldDirect[MyView,String](v => v.status, v => v.status = _))
     stringField must not be (null)
   }
 
@@ -53,7 +53,7 @@ class ViewFieldSpec extends MustMatchers with EasyMockSugar {
     whenExecuting(viewGroup, view1, view2, view3) {
       val stringField =
         viewId(101, textView) +
-        viewId(102, fieldDirect[TextView,String](v => Option(v.getText.toString), _.setText, _.setText("Please Fill")))
+        viewId(102, fieldDirect[TextView,String](v => Option(v.getText.toString), v => v.setText(_), _.setText("Please Fill")))
       stringField.setValue(viewGroup, None)
 
       val intField = viewId(103, formatted[Int](textView))
@@ -70,7 +70,7 @@ class ViewFieldSpec extends MustMatchers with EasyMockSugar {
       call(group.findViewById(56)).andReturn(view).anyTimes
     }
     whenExecuting(context, group, view) {
-      val stringField = fieldDirect[MyEntity,String](_.string, _.string_=) +
+      val stringField = fieldDirect[MyEntity,String](e => e.string, e => e.string = _) +
         viewId(56, fieldDirect[Spinner,String](
           _ => throw new IllegalStateException("must not be called"),
           _ => throw new IllegalStateException("must not be called")))
@@ -84,7 +84,7 @@ class ViewFieldSpec extends MustMatchers with EasyMockSugar {
   def itMustOnlyCopyToAndFromViewByIdIfIdIsFound() {
     val context = mock[Context]
     whenExecuting(context) {
-      val stringField = fieldDirect[MyEntity,String](_.string, _.string_=) +
+      val stringField = fieldDirect[MyEntity,String](e => e.string, e => e.string = _) +
         viewId(56, fieldDirect[Spinner,String](
           _ => throw new IllegalStateException("must not be called"),
           _ => throw new IllegalStateException("must not be called")))
@@ -102,7 +102,7 @@ class ViewFieldSpec extends MustMatchers with EasyMockSugar {
   def itMustHandleUnparseableValues() {
     val context = mock[Context]
     whenExecuting(context) {
-      val intField = formatted[Int](textView) + fieldDirect[MyEntity,Int](_.number, _.number_=)
+      val intField = formatted[Int](textView) + fieldDirect[MyEntity,Int](e => e.number, e => e.number = _)
       val view = new TextView(context)
       view.setText("twenty")
       intField.getter(view) must be (None)
