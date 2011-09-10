@@ -36,17 +36,6 @@ class CrudUIGeneratorSpec extends Spec with MustMatchers {
               be (Seq(classOf[R.id], classOf[android.R.id], classOf[com.github.scala_android.crud.res.R.id]))
     }
   }
-
-  describe("toId") {
-    import FieldLayout._
-    it("must strip whitespace") {
-      toId(" an Identifier \t ") must be ("anIdentifier")
-    }
-
-    it("must lowercase the first character") {
-      toId("AnIdentifier") must be ("anIdentifier")
-    }
-  }
 }
 
 object R {

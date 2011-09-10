@@ -10,6 +10,7 @@ import com.github.scala_android.crud.{ForeignKey, CrudType}
 import com.github.triangle._
 import xml.Elem
 import util.Random
+import com.github.scala_android.crud.view.FieldLayout
 
 /**
  * A UI Generator for a CrudTypes.
@@ -174,35 +175,6 @@ object CrudUIGenerator extends PlatformTypes with Logging {
     field.deepCollect[ViewIdField[_]] {
       case viewIdField: ViewIdField[_] => viewIdField
     }
-  }
-}
-
-/**
- * The layout piece for a field.
- * It provides the XML for the part of an Android Layout that corresponds to a single field.
- * Standards attributes are separately added such as android:id and those needed by the parent View.
- */
-abstract class FieldLayout {
-  def displayXml: Elem
-  def editXml: Elem
-}
-
-object FieldLayout {
-  def textLayout(inputType: String) = new FieldLayout {
-    def displayXml = <TextView/>
-    def editXml = <EditText android:inputType={inputType}/>
-  }
-
-  lazy val nameLayout = textLayout("textCapWords")
-  lazy val intLayout = textLayout("number|numberSigned")
-  lazy val doubleLayout = textLayout("numberDecimal|numberSigned")
-  lazy val currencyLayout = textLayout("numberDecimal|numberSigned")
-
-  private[generate] def toId(displayName: String): String = {
-    val id = displayName.collect {
-      case c if Character.isJavaIdentifierPart(c) => c
-    }.dropWhile(!Character.isJavaIdentifierStart(_))
-    id.head.toLower + id.tail
   }
 }
 
