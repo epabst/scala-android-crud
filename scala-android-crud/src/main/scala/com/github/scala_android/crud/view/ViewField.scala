@@ -10,14 +10,18 @@ import com.github.triangle._
 import PortableField._
 import java.util.{Calendar, Date, GregorianCalendar}
 import android.net.Uri
+import FieldLayout._
+import ValueFormat._
 
 /**
  * PortableField for Views.
+ * @param defaultLayout the default layout used as an example and by {@link CrudUIGenerator}.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 2/16/11
  * Time: 6:30 AM
  */
-//todo run all UI read/write operations on the UI thread!!!
+abstract class ViewField[T](val defaultLayout: FieldLayout) extends DelegatingPortableField[T]
+
 object ViewField extends PlatformTypes {
   private class ChildViewById(viewResourceId: ViewKey) {
     def unapply(target: Any): Option[View] = target match {
@@ -47,7 +51,9 @@ object ViewField extends PlatformTypes {
     override def toString = "viewId(" + viewResourceId + ", " + childViewField + ")"
   }
 
-  val textView: PortableField[String] = fieldDirect[TextView,String](v => toOption(v.getText.toString.trim), v => v.setText(_), _.setText(""))
+  val textView: ViewField[String] = new ViewField[String](FieldLayout.nameLayout) {
+    protected def delegate = fieldDirect[TextView,String](v => toOption(v.getText.toString.trim), v => v.setText(_), _.setText(""))
+  }
 
   def viewId[T](viewResourceId: ViewKey, childViewField: PortableField[T]): ViewIdField[T] = {
     new ViewIdField[T](viewResourceId, childViewField)
@@ -55,17 +61,21 @@ object ViewField extends PlatformTypes {
 
   private def toOption(string: String): Option[String] = if (string == "") None else Some(string)
 
-  implicit val datePicker: PortableField[Date] = fieldDirect[DatePicker,Date](
-    v => Some(new GregorianCalendar(v.getYear, v.getMonth, v.getDayOfMonth).getTime),
-    v => date => {
+  val calendarDatePicker: PortableField[Calendar] = new ViewField[Calendar](datePickerLayout) {
+    protected def delegate = formatted(calendarValueFormat, textView) + fieldDirect[DatePicker,Calendar](
+      v => Some(new GregorianCalendar(v.getYear, v.getMonth, v.getDayOfMonth)),
+      v => calendar => v.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)))
+  }
+
+  implicit val datePicker: PortableField[Date] = new ConvertedField[Date,Calendar](calendarDatePicker) {
+    def convert(calendar: Calendar) = calendar.getTime
+
+    def unconvert(date: Date) = {
       val calendar = new GregorianCalendar()
       calendar.setTime(date)
-      v.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
-    })
-
-  val calendarDatePicker: PortableField[Calendar] = fieldDirect[DatePicker,Calendar](
-    v => Some(new GregorianCalendar(v.getYear, v.getMonth, v.getDayOfMonth)),
-    v => calendar => v.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)))
+      calendar
+    }
+  }
 
   def enumerationSpinner[E <: Ordered[_]](enum: Enumeration): PortableField[E] = {
     val valueArray: Array[E] = enum.values.toArray.asInstanceOf[Array[E]]
