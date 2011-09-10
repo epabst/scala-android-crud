@@ -1,12 +1,12 @@
-package com.github.scala_android.crud
+package com.github.scala_android.crud.view
 
 import _root_.android.app.Activity
 import _root_.android.content.Intent
 import _root_.android.view.View
 import _root_.android.widget.{ArrayAdapter, Spinner, DatePicker, TextView}
-import action.EntityUriSegment
+import com.github.scala_android.crud.action.EntityUriSegment
+import com.github.scala_android.crud.common.PlatformTypes
 import com.github.triangle._
-import common.PlatformTypes
 import PortableField._
 import java.util.{Calendar, Date, GregorianCalendar}
 import android.net.Uri
@@ -47,7 +47,7 @@ object ViewField extends PlatformTypes {
     override def toString = "viewId(" + viewResourceId + ", " + childViewField + ")"
   }
 
-  val textView: PortableField[String] = fieldDirect[TextView,String](v => toOption(v.getText.toString.trim), _.setText, _.setText(""))
+  val textView: PortableField[String] = fieldDirect[TextView,String](v => toOption(v.getText.toString.trim), v => v.setText(_), _.setText(""))
 
   def viewId[T](viewResourceId: ViewKey, childViewField: PortableField[T]): ViewIdField[T] = {
     new ViewIdField[T](viewResourceId, childViewField)

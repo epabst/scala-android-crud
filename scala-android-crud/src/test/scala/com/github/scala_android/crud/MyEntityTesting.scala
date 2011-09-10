@@ -5,7 +5,7 @@ import scala.collection.mutable
 import mutable.Map
 import com.github.triangle._
 import PortableField._
-import ViewField._
+import view.ViewField._
 import persistence.CursorField._
 import android.content.Intent
 import android.widget.ListAdapter

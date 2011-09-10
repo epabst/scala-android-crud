@@ -2,7 +2,7 @@ package com.github.scala_android_crud.sample
 
 import com.github.scala_android.crud._
 import persistence.CursorField._
-import ViewField._
+import view.ViewField._
 import com.github.triangle._
 import PortableField._
 import GeneratedCrudType.crudContextField

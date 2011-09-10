@@ -1,10 +1,10 @@
-package com.github.scala_android.crud
+package com.github.scala_android.crud.view
 
 import org.junit.runner.RunWith
 import org.scalatest.matchers.MustMatchers
 import com.github.triangle.PortableField._
 import com.github.scala_android.crud.persistence.CursorField._
-import com.github.scala_android.crud.ViewField._
+import ViewField._
 import android.view.View
 import org.scalatest.mock.EasyMockSugar
 import android.widget.{Spinner, LinearLayout, TextView}

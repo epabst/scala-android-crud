@@ -6,7 +6,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import com.github.triangle.{PortableField, FieldList}
 import PortableField._
-import com.github.scala_android.crud.ViewField._
+import com.github.scala_android.crud.view.ViewField._
 
 /**
  * A behavior specification for {@link CrudUIGenerator}.

@@ -9,7 +9,7 @@ import android.os.Bundle
 
 
 /**
- * A behavior specification for {@link ViewField}.
+ * A behavior specification for {@link PersistedType}.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 2/9/11
  * Time: 7:59 PM

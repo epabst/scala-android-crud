@@ -11,7 +11,7 @@ import android.widget.{ListAdapter, BaseAdapter}
 import persistence.{PersistenceListener, IdPk, EntityPersistence, CrudPersistence}
 import Action._
 import android.app.{Activity, ListActivity}
-import com.github.scala_android.crud.ViewField._
+import com.github.scala_android.crud.view.ViewField._
 import com.github.triangle._
 import PortableField.toSome
 /**

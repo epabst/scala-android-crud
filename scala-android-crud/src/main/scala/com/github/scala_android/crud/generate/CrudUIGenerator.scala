@@ -1,7 +1,7 @@
 package com.github.scala_android.crud.generate
 
 import android.view.View
-import com.github.scala_android.crud.ViewField.ViewIdField
+import com.github.scala_android.crud.view.ViewField.ViewIdField
 import java.lang.reflect.{Modifier, Field}
 import java.lang.IllegalStateException
 import com.github.scala_android.crud.common.PlatformTypes
