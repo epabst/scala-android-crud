@@ -8,9 +8,9 @@ import com.github.scala_android.crud.common.PlatformTypes
 import com.github.scala_android.crud.persistence.{IdPk, CursorField}
 import com.github.scala_android.crud.{ForeignKey, CrudType}
 import com.github.triangle._
-import xml.Elem
 import util.Random
 import com.github.scala_android.crud.view.FieldLayout
+import xml.{PrettyPrinter, Elem}
 
 /**
  * A UI Generator for a CrudTypes.
@@ -21,6 +21,7 @@ import com.github.scala_android.crud.view.FieldLayout
 
 object CrudUIGenerator extends PlatformTypes with Logging {
   private[generate] val random = new Random
+  private[generate] val prettyPrinter = new PrettyPrinter(120, 2)
 
   def generateLayouts(crudType: CrudType) {//}, baseOutputDirectory: Path = Directory.Current.get) {
     generateLayouts(crudType, detectResourceIdClasses(crudType.getClass))
@@ -153,8 +154,8 @@ object CrudUIGenerator extends PlatformTypes with Logging {
   def generateLayouts(crudType: CrudType, resourceIdClasses: Seq[Class[_]]) {
     println("Generating layout for " + crudType)
     val fieldInfos = guessFieldInfos(crudType, resourceIdClasses)
-    println(rowLayout(fieldInfos))
-    println(entryLayout(fieldInfos))
+    println(prettyPrinter.format(rowLayout(fieldInfos)))
+    println(prettyPrinter.format(entryLayout(fieldInfos)))
   }
 
   private def findFieldWithIntValue(classes: Seq[Class[_]], value: Int): Option[Field] = {
