@@ -11,6 +11,7 @@ import com.github.triangle._
 import util.Random
 import com.github.scala_android.crud.view.FieldLayout
 import xml.{PrettyPrinter, Elem}
+import scala.tools.nsc.io.Path
 
 /**
  * A UI Generator for a CrudTypes.
@@ -151,11 +152,24 @@ object CrudUIGenerator extends PlatformTypes with Logging {
     crudType.fields.filterNot(excludedFields.contains).map(guessFieldInfo(_, resourceIdClasses))
   }
 
+  private def writeLayoutFile(name: String, xml: Elem) {
+    val file = (Path("res") / "layout" / (name + ".xml")).toFile
+    file.parent.createDirectory()
+    file.writeAll(prettyPrinter.format(xml))
+    println("Wrote " + file)
+  }
+
+  def toFilename(string: String): String = string.collect {
+    case c if (c.isUpper) => "_" + c.toLower
+    case c if (Character.isJavaLetterOrDigit(c)) => c.toString
+  }.mkString.stripPrefix("_")
+
   def generateLayouts(crudType: CrudType, resourceIdClasses: Seq[Class[_]]) {
     println("Generating layout for " + crudType)
     val fieldInfos = guessFieldInfos(crudType, resourceIdClasses)
-    println(prettyPrinter.format(rowLayout(fieldInfos)))
-    println(prettyPrinter.format(entryLayout(fieldInfos)))
+    val filenamePrefix = toFilename(crudType.entityName)
+    writeLayoutFile(filenamePrefix + "_row", rowLayout(fieldInfos))
+    writeLayoutFile(filenamePrefix + "_entry", entryLayout(fieldInfos))
   }
 
   private def findFieldWithIntValue(classes: Seq[Class[_]], value: Int): Option[Field] = {

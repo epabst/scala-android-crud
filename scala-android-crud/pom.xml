@@ -57,6 +57,11 @@
       <version>${scala.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-compiler</artifactId>
+      <version>${scala.version}</version>
+    </dependency>
+    <dependency>
       <!-- this is before sl4fj-android in the classpath since the android one fails during unit tests w/o the real android -->
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-jdk14</artifactId>
