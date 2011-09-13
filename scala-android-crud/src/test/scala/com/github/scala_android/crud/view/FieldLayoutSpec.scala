@@ -15,14 +15,18 @@ import org.scalatest.matchers.MustMatchers
 @RunWith(classOf[JUnitRunner])
 class FieldLayoutSpec extends Spec with MustMatchers {
 
-  describe("toId") {
+  describe("toDisplayName") {
     import FieldLayout._
-    it("must strip whitespace") {
-      toId(" an Identifier \t ") must be ("anIdentifier")
+    it("must add a space before capital letters") {
+      toDisplayName("anIdentifier").filter(_ == ' ').size must be (1)
     }
 
-    it("must lowercase the first character") {
-      toId("AnIdentifier") must be ("anIdentifier")
+    it("must uppercase the first character") {
+      toDisplayName("anIdentifier") must be ("An Identifier")
+    }
+
+    it("must replace '_' with a space and upper case the next letter") {
+      toDisplayName("a_cool_identifier") must be ("A Cool Identifier")
     }
   }
 }

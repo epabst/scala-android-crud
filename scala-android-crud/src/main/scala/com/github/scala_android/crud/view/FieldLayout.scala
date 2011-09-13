@@ -31,10 +31,20 @@ object FieldLayout {
   }
   lazy val dateTextLayout = textLayout("date")
 
-  private[crud] def toId(displayName: String): String = {
-    val id = displayName.collect {
-      case c if Character.isJavaIdentifierPart(c) => c
-    }.dropWhile(!Character.isJavaIdentifierStart(_))
-    id.head.toLower + id.tail
+  private[crud] def toDisplayName(id: String): String = {
+    var makeUpperCase = true
+    val displayName = id.collect {
+      case c if Character.isUpperCase(c) =>
+        makeUpperCase = false
+        " " + c
+      case '_' =>
+        makeUpperCase = true
+        " "
+      case c if makeUpperCase =>
+        makeUpperCase = false
+        Character.toUpperCase(c)
+      case c => c.toString
+    }.mkString
+    displayName.stripPrefix(" ")
   }
 }

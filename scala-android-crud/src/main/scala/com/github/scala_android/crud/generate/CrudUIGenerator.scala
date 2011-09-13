@@ -147,14 +147,15 @@ object CrudUIGenerator extends PlatformTypes with Logging {
             viewFieldsWithId + "  /  other views: " + otherViewFields + "  /  foreignKeys: " + foreignKeys +
             " / other persisted: " + persistedFieldsWithTypes)
     val persistedFieldOption = otherPersistedFields.headOption
-    val displayName = viewResourceIds.headOption.orElse(persistedFieldOption.map(_.name))
+    val derivedId: Option[String] = viewResourceIds.headOption.orElse(persistedFieldOption.map(_.name))
+    val displayName = derivedId.map(FieldLayout.toDisplayName(_))
     val fieldLayout = field.deepCollect {
       case _: PortableField[Double] => FieldLayout.doubleLayout
       case _: PortableField[String] => FieldLayout.nameLayout
       case _: PortableField[Int] => FieldLayout.intLayout
     }.head
-    ViewFieldInfo(displayName, fieldLayout, foreignKeys.headOption,
-      displayName.map(FieldLayout.toId(_)).getOrElse("field" + random.nextInt()))
+    ViewFieldInfo(displayName, fieldLayout, persistedFieldOption.isDefined, foreignKeys.headOption,
+      derivedId.getOrElse("field" + random.nextInt()))
   }
 
   def guessFieldInfos(crudType: CrudType, resourceIdClasses: Seq[Class[_]]): List[ViewFieldInfo] = {
@@ -181,7 +182,7 @@ object CrudUIGenerator extends PlatformTypes with Logging {
     val displayFields = fieldInfos.filterNot(_.foreignKey.isDefined)
     writeLayoutFile(filenamePrefix + "_header", headerLayout(displayFields))
     writeLayoutFile(filenamePrefix + "_row", rowLayout(displayFields))
-    writeLayoutFile(filenamePrefix + "_entry", entryLayout(fieldInfos.filterNot(_.displayName.isEmpty)))
+    writeLayoutFile(filenamePrefix + "_entry", entryLayout(fieldInfos.filter(_.updateable)))
   }
 
   private def findFieldWithIntValue(classes: Seq[Class[_]], value: Int): Option[Field] = {
@@ -205,4 +206,5 @@ object CrudUIGenerator extends PlatformTypes with Logging {
   }
 }
 
-case class ViewFieldInfo(displayName: Option[String], layout: FieldLayout, foreignKey: Option[ForeignKey], id: String)
+case class ViewFieldInfo(displayName: Option[String], layout: FieldLayout,
+                         updateable: Boolean, foreignKey: Option[ForeignKey], id: String)
