@@ -115,7 +115,7 @@ object CrudUIGenerator extends PlatformTypes with Logging {
   protected def fieldLayoutForEntry(field: ViewFieldInfo, position: Int): Elem = {
     val gravity = "right"
     val textAppearance = "?android:attr/textAppearanceLarge"
-    val attributes = <EditText android:id="@+id/name"/>.attributes
+    val attributes = <EditText android:id={"@+id/" + field.id}/>.attributes
     <TableRow>
       <TextView android:text={field.displayName.get + ":"} android:textAppearance={textAppearance} android:gravity={gravity}/>
       {field.layout.editXml % attributes}
