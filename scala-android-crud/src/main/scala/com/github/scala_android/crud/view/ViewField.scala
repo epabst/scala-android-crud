@@ -51,13 +51,17 @@ object ViewField extends PlatformTypes {
     override def toString = "viewId(" + viewResourceId + ", " + childViewField + ")"
   }
 
-  val textView: ViewField[String] = new ViewField[String](FieldLayout.nameLayout) {
+  val textView: ViewField[String] = new ViewField[String](nameLayout) {
     protected def delegate = fieldDirect[TextView,String](v => toOption(v.getText.toString.trim), v => v.setText(_), _.setText(""))
 
     override def toString = "textView"
   }
-  lazy val currencyView: PortableField[Double] = formatted(currencyValueFormat, textView)
-  lazy val intView: PortableField[Int] = formatted[Int](textView)
+  lazy val currencyView: PortableField[Double] = new ViewField[Double](currencyLayout) {
+    protected def delegate = formatted(currencyValueFormat, textView)
+  }
+  lazy val intView: PortableField[Int] = new ViewField[Int](intLayout) {
+    protected def delegate = formatted[Int](textView)
+  }
 
   def viewId[T](viewResourceId: ViewKey, childViewField: PortableField[T]): ViewIdField[T] = {
     new ViewIdField[T](viewResourceId, childViewField)
