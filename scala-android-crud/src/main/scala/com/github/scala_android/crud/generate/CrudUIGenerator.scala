@@ -122,12 +122,11 @@ object CrudUIGenerator extends PlatformTypes with Logging {
   }
 
   def entryLayout(fields: List[ViewFieldInfo]) = {
-    val entryFields = fields.filterNot(_.displayName.isEmpty)
     <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
                  android:layout_width="fill_parent"
                  android:layout_height="wrap_content"
                  android:stretchColumns="1">
-      {entryFields.map(field => fieldLayoutForEntry(field, entryFields.indexOf(field)))}
+      {fields.map(field => fieldLayoutForEntry(field, fields.indexOf(field)))}
     </TableLayout>
   }
 
@@ -148,15 +147,14 @@ object CrudUIGenerator extends PlatformTypes with Logging {
             viewFieldsWithId + "  /  other views: " + otherViewFields + "  /  foreignKeys: " + foreignKeys +
             " / other persisted: " + persistedFieldsWithTypes)
     val persistedFieldOption = otherPersistedFields.headOption
-    val displayName = persistedFieldOption.map(_.name)
+    val displayName = viewResourceIds.headOption.orElse(persistedFieldOption.map(_.name))
     val fieldLayout = field.deepCollect {
       case _: PortableField[Double] => FieldLayout.doubleLayout
       case _: PortableField[String] => FieldLayout.nameLayout
       case _: PortableField[Int] => FieldLayout.intLayout
     }.head
-    ViewFieldInfo(displayName, fieldLayout, viewResourceIds.headOption.
-            getOrElse(displayName.map(FieldLayout.toId(_)).
-            getOrElse("field" + random.nextInt())))
+    ViewFieldInfo(displayName, fieldLayout, foreignKeys.headOption,
+      displayName.map(FieldLayout.toId(_)).getOrElse("field" + random.nextInt()))
   }
 
   def guessFieldInfos(crudType: CrudType, resourceIdClasses: Seq[Class[_]]): List[ViewFieldInfo] = {
@@ -180,9 +178,10 @@ object CrudUIGenerator extends PlatformTypes with Logging {
     println("Generating layout for " + crudType)
     val fieldInfos = guessFieldInfos(crudType, resourceIdClasses)
     val filenamePrefix = toFilename(crudType.entityName)
-    writeLayoutFile(filenamePrefix + "_row", rowLayout(fieldInfos))
-    writeLayoutFile(filenamePrefix + "_header", headerLayout(fieldInfos))
-    writeLayoutFile(filenamePrefix + "_entry", entryLayout(fieldInfos))
+    val displayFields = fieldInfos.filterNot(_.foreignKey.isDefined)
+    writeLayoutFile(filenamePrefix + "_header", headerLayout(displayFields))
+    writeLayoutFile(filenamePrefix + "_row", rowLayout(displayFields))
+    writeLayoutFile(filenamePrefix + "_entry", entryLayout(fieldInfos.filterNot(_.displayName.isEmpty)))
   }
 
   private def findFieldWithIntValue(classes: Seq[Class[_]], value: Int): Option[Field] = {
@@ -206,4 +205,4 @@ object CrudUIGenerator extends PlatformTypes with Logging {
   }
 }
 
-case class ViewFieldInfo(displayName: Option[String], layout: FieldLayout, id: String)
+case class ViewFieldInfo(displayName: Option[String], layout: FieldLayout, foreignKey: Option[ForeignKey], id: String)
