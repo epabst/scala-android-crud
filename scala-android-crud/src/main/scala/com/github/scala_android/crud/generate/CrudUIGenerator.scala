@@ -181,6 +181,7 @@ object CrudUIGenerator extends PlatformTypes with Logging {
     val fieldInfos = guessFieldInfos(crudType, resourceIdClasses)
     val filenamePrefix = toFilename(crudType.entityName)
     writeLayoutFile(filenamePrefix + "_row", rowLayout(fieldInfos))
+    writeLayoutFile(filenamePrefix + "_header", headerLayout(fieldInfos))
     writeLayoutFile(filenamePrefix + "_entry", entryLayout(fieldInfos))
   }
 
