@@ -10,8 +10,8 @@ import com.github.scala_android.crud.{ForeignKey, CrudType}
 import com.github.triangle._
 import util.Random
 import com.github.scala_android.crud.view.FieldLayout
-import xml.{PrettyPrinter, Elem}
 import scala.tools.nsc.io.Path
+import xml._
 
 /**
  * A UI Generator for a CrudTypes.
@@ -22,7 +22,15 @@ import scala.tools.nsc.io.Path
 
 object CrudUIGenerator extends PlatformTypes with Logging {
   private[generate] val random = new Random
-  private[generate] val prettyPrinter = new PrettyPrinter(120, 2)
+  private[generate] val prettyPrinter = new PrettyPrinter(80, 2) {
+    override protected def traverse(node: Node, namespace: NamespaceBinding, indent: Int) {
+      node match {
+        case Text(text) if text.trim().size == 0 => super.traverse(Text(text.trim()), namespace, indent)
+        case n: Elem if n.child.size == 0 => makeBox(indent, leafTag(n))
+        case _ => super.traverse(node, namespace, indent)
+      }
+    }
+  }
 
   def generateLayouts(crudType: CrudType) {//}, baseOutputDirectory: Path = Directory.Current.get) {
     generateLayouts(crudType, detectResourceIdClasses(crudType.getClass))
@@ -44,7 +52,7 @@ object CrudUIGenerator extends PlatformTypes with Logging {
     val textAppearance = if (position < 2) "?android:attr/textAppearanceLarge" else "?android:attr/textAppearanceSmall"
     val gravity = if (position % 1 == 0) "left" else "right"
     val layoutWidth = if (position % 1 == 0) "wrap_content" else "fill_parent"
-    <TextView android:text={field.displayName} android:gravity={gravity}
+    <TextView android:text={field.displayName.getOrElse("")} android:gravity={gravity}
               android:layout_width={layoutWidth}
               android:layout_height="wrap_content"
               android:paddingRight="3sp"
@@ -108,18 +116,20 @@ object CrudUIGenerator extends PlatformTypes with Logging {
     val textAppearance = "?android:attr/textAppearanceLarge"
     val attributes = <EditText android:id="@+id/name"/>.attributes
     <TableRow>
-      <TextView android:text={field.displayName + ":"} android:textAppearance={textAppearance} android:gravity={gravity}/>
+      <TextView android:text={field.displayName.get + ":"} android:textAppearance={textAppearance} android:gravity={gravity}/>
       {field.layout.editXml % attributes}
     </TableRow>
   }
 
-  def entryLayout(fields: List[ViewFieldInfo]) =
+  def entryLayout(fields: List[ViewFieldInfo]) = {
+    val entryFields = fields.filterNot(_.displayName.isEmpty)
     <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
                  android:layout_width="fill_parent"
                  android:layout_height="wrap_content"
                  android:stretchColumns="1">
-      {fields.map(field => fieldLayoutForEntry(field, fields.indexOf(field)))}
+      {entryFields.map(field => fieldLayoutForEntry(field, entryFields.indexOf(field)))}
     </TableLayout>
+  }
 
   def guessFieldInfo(field: BaseField, resourceIdClasses: Seq[Class[_]]): ViewFieldInfo = {
     val viewIdFields = this.viewIdFields(field)
@@ -138,13 +148,15 @@ object CrudUIGenerator extends PlatformTypes with Logging {
             viewFieldsWithId + "  /  other views: " + otherViewFields + "  /  foreignKeys: " + foreignKeys +
             " / other persisted: " + persistedFieldsWithTypes)
     val persistedFieldOption = otherPersistedFields.headOption
-    val displayName = persistedFieldOption.map(_.name).getOrElse("field" + random.nextInt())
+    val displayName = persistedFieldOption.map(_.name)
     val fieldLayout = field.deepCollect {
       case _: PortableField[Double] => FieldLayout.doubleLayout
       case _: PortableField[String] => FieldLayout.nameLayout
       case _: PortableField[Int] => FieldLayout.intLayout
     }.head
-    ViewFieldInfo(displayName, fieldLayout, FieldLayout.toId(displayName))
+    ViewFieldInfo(displayName, fieldLayout, viewResourceIds.headOption.
+            getOrElse(displayName.map(FieldLayout.toId(_)).
+            getOrElse("field" + random.nextInt())))
   }
 
   def guessFieldInfos(crudType: CrudType, resourceIdClasses: Seq[Class[_]]): List[ViewFieldInfo] = {
@@ -193,4 +205,4 @@ object CrudUIGenerator extends PlatformTypes with Logging {
   }
 }
 
-case class ViewFieldInfo(displayName: String, layout: FieldLayout, id: String)
+case class ViewFieldInfo(displayName: Option[String], layout: FieldLayout, id: String)
