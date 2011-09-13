@@ -11,6 +11,6 @@ import com.github.scala_android.crud.generate.CrudUIGenerator
 
 object GenerateLayouts {
   def main(args: Array[String]) {
-    SampleApplication.allEntities.foreach(CrudUIGenerator.generateLayouts(_))
+    CrudUIGenerator.generateLayouts(SampleApplication)
   }
 }

@@ -6,12 +6,12 @@ import java.lang.reflect.{Modifier, Field}
 import java.lang.IllegalStateException
 import com.github.scala_android.crud.common.PlatformTypes
 import com.github.scala_android.crud.persistence.{IdPk, CursorField}
-import com.github.scala_android.crud.{ForeignKey, CrudType}
 import com.github.triangle._
 import util.Random
 import com.github.scala_android.crud.view.FieldLayout
 import scala.tools.nsc.io.Path
 import xml._
+import com.github.scala_android.crud.{CrudApplication, ForeignKey, CrudType}
 
 /**
  * A UI Generator for a CrudTypes.
@@ -33,8 +33,12 @@ object CrudUIGenerator extends PlatformTypes with Logging {
     }
   }
 
-  def generateLayouts(crudType: CrudType) {//}, baseOutputDirectory: Path = Directory.Current.get) {
+  def generateLayouts(crudType: CrudType) {
     generateLayouts(crudType, detectResourceIdClasses(crudType.getClass))
+  }
+
+  def generateLayouts(application: CrudApplication) {
+    application.allEntities.foreach(generateLayouts(_))
   }
 
   private[generate] def detectResourceIdClasses(clazz: Class[_]): Seq[Class[_]] = {
