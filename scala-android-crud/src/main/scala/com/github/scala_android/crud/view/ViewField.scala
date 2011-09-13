@@ -77,15 +77,22 @@ object ViewField extends PlatformTypes {
     }
   }
 
-  def enumerationSpinner[E <: Ordered[_]](enum: Enumeration): PortableField[E] = {
+  def enumerationSpinner[E <: Enumeration#Value](enum: Enumeration): PortableField[E] = {
     val valueArray: Array[E] = enum.values.toArray.asInstanceOf[Array[E]]
-    fieldDirect[Spinner,E](v => Option(v.getSelectedItem.asInstanceOf[E]), spinner => value => {
-      //don't do it again if already done from a previous time
-      if (spinner.getAdapter == null) {
-        spinner.setAdapter(new ArrayAdapter[E](spinner.getContext, _root_.android.R.layout.simple_spinner_item, valueArray))
-      }
-      spinner.setSelection(valueArray.indexOf(value))
-    })
+    val defaultLayout = new FieldLayout {
+      def displayXml = <TextView/>
+      def editXml = <Spinner android:drawSelectorOnTop = "true"/>
+    }
+    new ViewField[E](defaultLayout) {
+      private val spinnerField: PortableField[E] = fieldDirect[Spinner,E](v => Option(v.getSelectedItem.asInstanceOf[E]), spinner => value => {
+        //don't do it again if already done from a previous time
+        if (spinner.getAdapter == null) {
+          spinner.setAdapter(new ArrayAdapter[E](spinner.getContext, _root_.android.R.layout.simple_spinner_item, valueArray))
+        }
+        spinner.setSelection(valueArray.indexOf(value))
+      })
+      protected def delegate = spinnerField + formatted[E](enumFormat(enum), textView)
+    }
   }
 
   def intentId(entityName: String): FieldGetter[Intent,ID] = {

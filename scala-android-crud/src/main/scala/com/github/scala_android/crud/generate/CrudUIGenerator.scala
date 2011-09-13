@@ -8,10 +8,10 @@ import com.github.scala_android.crud.common.PlatformTypes
 import com.github.scala_android.crud.persistence.{IdPk, CursorField}
 import com.github.triangle._
 import util.Random
-import com.github.scala_android.crud.view.FieldLayout
 import scala.tools.nsc.io.Path
 import xml._
 import com.github.scala_android.crud.{CrudApplication, ForeignKey, CrudType}
+import com.github.scala_android.crud.view.{ViewField, FieldLayout}
 
 /**
  * A UI Generator for a CrudTypes.
@@ -137,8 +137,8 @@ object CrudUIGenerator extends PlatformTypes with Logging {
 
   def guessFieldInfo(field: BaseField, resourceIdClasses: Seq[Class[_]]): ViewFieldInfo = {
     val viewIdFields = this.viewIdFields(field)
-    val viewFieldsWithId = this.viewFields(FieldList.toFieldList(viewIdFields))
-    val otherViewFields = this.viewFields(field).filterNot(viewFieldsWithId.contains)
+    val viewFieldsWithId = this.fieldsWithViewSubject(FieldList.toFieldList(viewIdFields))
+    val otherViewFields = this.fieldsWithViewSubject(field).filterNot(viewFieldsWithId.contains)
     val viewResourceIds = viewIdFields.map(_.viewResourceId).map { id =>
       findFieldWithIntValue(resourceIdClasses, id).map(_.getName).getOrElse {
         throw new IllegalStateException("Unable to find R.id with value " + id)
@@ -154,11 +154,11 @@ object CrudUIGenerator extends PlatformTypes with Logging {
     val persistedFieldOption = otherPersistedFields.headOption
     val derivedId: Option[String] = viewResourceIds.headOption.orElse(persistedFieldOption.map(_.name))
     val displayName = derivedId.map(FieldLayout.toDisplayName(_))
-    val fieldLayout = field.deepCollect {
+    val fieldLayout = viewFields(field).headOption.map(_.defaultLayout).getOrElse(field.deepCollect {
       case _: PortableField[Double] => FieldLayout.doubleLayout
       case _: PortableField[String] => FieldLayout.nameLayout
       case _: PortableField[Int] => FieldLayout.intLayout
-    }.head
+    }.head)
     ViewFieldInfo(displayName, fieldLayout, persistedFieldOption.isDefined, foreignKeys.headOption,
       derivedId.getOrElse("field" + random.nextInt()))
   }
@@ -196,13 +196,18 @@ object CrudUIGenerator extends PlatformTypes with Logging {
     }).headOption
   }
 
-  private[generate] def viewFields(field: BaseField): List[SubjectField] = {
+  private[generate] def fieldsWithViewSubject(field: BaseField): List[SubjectField] = {
     field.deepCollect[SubjectField] {
       case subjectField: SubjectField if classOf[View].isAssignableFrom(subjectField.subjectManifest.erasure) => {
         subjectField
       }
     }
   }
+
+  private[generate] def viewFields(field: BaseField): List[ViewField[_]] =
+    field.deepCollect {
+      case field: ViewField[_] => field
+    }
 
   private[generate] def viewIdFields(field: BaseField): List[ViewIdField[_]] = {
     field.deepCollect[ViewIdField[_]] {

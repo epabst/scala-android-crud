@@ -16,11 +16,11 @@ import com.github.scala_android.crud.view.ViewField._
  */
 @RunWith(classOf[JUnitRunner])
 class CrudUIGeneratorSpec extends Spec with MustMatchers {
-  describe("viewFields") {
+  describe("fieldsWithViewSubject") {
     it("must find all fields whose subject is a View class") {
       val fieldList = FieldList(mapField[String]("foo"), textView, formatted[Int](textView),
         viewId(45, formatted[Double](textView)), datePicker)
-      val fields = CrudUIGenerator.viewFields(fieldList)
+      val fields = CrudUIGenerator.fieldsWithViewSubject(fieldList)
       fields must be (List(textView, textView, textView, datePicker))
     }
   }
