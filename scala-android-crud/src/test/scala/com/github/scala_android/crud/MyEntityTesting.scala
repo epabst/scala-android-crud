@@ -30,7 +30,7 @@ trait MyEntityTesting {
 
     def valueFields = List[BaseField](
       persisted[String]("name") + viewId(R.id.name, textView),
-      persisted[Int]("age") + viewId(R.id.age, formatted[Int](textView)),
+      persisted[Int]("age") + viewId(R.id.age, intView),
       //here to test a non-UI field
       persisted[String]("uri") + readOnly[Intent,String](_.getData.toString))
 

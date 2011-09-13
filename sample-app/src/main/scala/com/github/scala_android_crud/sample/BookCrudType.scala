@@ -30,12 +30,12 @@ trait BookContext {
       persisted[String]("name") + viewId(R.id.name, textView),
 
       persisted[Genre.Value]("genre")(enumStringType[Genre.Value](Genre)) +
-            viewId(R.id.genre, enumerationSpinner(Genre)),
+            viewId(R.id.genre, enumerationView(Genre)),
 
-      persisted[Int]("edition") + viewId(R.id.edition, formatted[Int](textView)),
+      persisted[Int]("edition") + viewId(R.id.edition, intView),
 
       persisted[Date]("publishDate") +
-        viewId[Date](R.id.publishDate, datePicker + formatted(dateValueFormat, textView))
+        viewId[Date](R.id.publishDate, dateView)
     )
 
     def activityClass = classOf[BookActivity]

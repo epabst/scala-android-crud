@@ -56,7 +56,7 @@ class ViewFieldSpec extends MustMatchers with EasyMockSugar {
         viewId(102, fieldDirect[TextView,String](v => Option(v.getText.toString), v => v.setText(_), _.setText("Please Fill")))
       stringField.setValue(viewGroup, None)
 
-      val intField = viewId(103, formatted[Int](textView))
+      val intField = viewId(103, intView)
       intField.setValue(viewGroup, None)
     }
   }
@@ -102,7 +102,7 @@ class ViewFieldSpec extends MustMatchers with EasyMockSugar {
   def itMustHandleUnparseableValues() {
     val context = mock[Context]
     whenExecuting(context) {
-      val intField = formatted[Int](textView) + fieldDirect[MyEntity,Int](e => e.number, e => e.number = _)
+      val intField = intView + fieldDirect[MyEntity,Int](e => e.number, e => e.number = _)
       val view = new TextView(context)
       view.setText("twenty")
       intField.getter(view) must be (None)

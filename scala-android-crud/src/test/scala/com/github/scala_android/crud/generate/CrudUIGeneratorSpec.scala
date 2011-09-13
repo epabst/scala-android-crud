@@ -19,9 +19,9 @@ class CrudUIGeneratorSpec extends Spec with MustMatchers {
   describe("viewFields") {
     it("must find all ViewFields") {
       val fieldList = FieldList(mapField[String]("foo"), textView, formatted[Int](textView),
-        viewId(45, formatted[Double](textView)), datePicker)
+        viewId(45, formatted[Double](textView)), dateView)
       val fields = CrudUIGenerator.viewFields(fieldList)
-      fields must be(List(textView, textView, textView, calendarDatePicker))
+      fields must be(List(textView, textView, textView, calendarDateView))
     }
   }
 

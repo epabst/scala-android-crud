@@ -56,6 +56,8 @@ object ViewField extends PlatformTypes {
 
     override def toString = "textView"
   }
+  lazy val currencyView: PortableField[Double] = formatted(currencyValueFormat, textView)
+  lazy val intView: PortableField[Int] = formatted[Int](textView)
 
   def viewId[T](viewResourceId: ViewKey, childViewField: PortableField[T]): ViewIdField[T] = {
     new ViewIdField[T](viewResourceId, childViewField)
@@ -63,7 +65,7 @@ object ViewField extends PlatformTypes {
 
   private def toOption(string: String): Option[String] = if (string == "") None else Some(string)
 
-  val calendarDatePicker: PortableField[Calendar] = new ViewField[Calendar](datePickerLayout) {
+  val calendarDateView: PortableField[Calendar] = new ViewField[Calendar](datePickerLayout) {
     protected def delegate = formatted(calendarValueFormat, textView) + fieldDirect[DatePicker,Calendar](
       v => Some(new GregorianCalendar(v.getYear, v.getMonth, v.getDayOfMonth)),
       v => calendar => v.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)))
@@ -71,7 +73,7 @@ object ViewField extends PlatformTypes {
     override def toString = "calendarDateView"
   }
 
-  implicit val datePicker: PortableField[Date] = new ConvertedField[Date,Calendar](calendarDatePicker) {
+  implicit val dateView: PortableField[Date] = new ConvertedField[Date,Calendar](calendarDateView) {
     def convert(calendar: Calendar) = calendar.getTime
 
     def unconvert(date: Date) = {
@@ -83,7 +85,7 @@ object ViewField extends PlatformTypes {
     override def toString = "dateView"
   }
 
-  def enumerationSpinner[E <: Enumeration#Value](enum: Enumeration): PortableField[E] = {
+  def enumerationView[E <: Enumeration#Value](enum: Enumeration): PortableField[E] = {
     val valueArray: Array[E] = enum.values.toArray.asInstanceOf[Array[E]]
     val defaultLayout = new FieldLayout {
       def displayXml = <TextView/>
