@@ -21,6 +21,7 @@ import xml._
  */
 
 object CrudUIGenerator extends PlatformTypes with Logging {
+  private val lineSeparator = System.getProperty("line.separator")
   private[generate] val random = new Random
   private[generate] val prettyPrinter = new PrettyPrinter(80, 2) {
     override protected def traverse(node: Node, namespace: NamespaceBinding, indent: Int) {
@@ -166,7 +167,7 @@ object CrudUIGenerator extends PlatformTypes with Logging {
   private def writeLayoutFile(name: String, xml: Elem) {
     val file = (Path("res") / "layout" / (name + ".xml")).toFile
     file.parent.createDirectory()
-    file.writeAll(prettyPrinter.format(xml))
+    file.writeAll("""<?xml version="1.0" encoding="utf-8"?>""", lineSeparator, prettyPrinter.format(xml))
     println("Wrote " + file)
   }
 
