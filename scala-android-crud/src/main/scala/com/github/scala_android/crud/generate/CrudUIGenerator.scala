@@ -81,7 +81,7 @@ object CrudUIGenerator extends PlatformTypes with Logging {
                   android:layout_height="wrap_content"
                   android:minHeight="?android:attr/listPreferredItemHeight"
                   android:orientation="vertical">{
-      fields.sliding(2).map { rowFields =>
+      fields.grouped(2).map { rowFields =>
         <LinearLayout android:layout_width="match_parent"
                       android:layout_height="wrap_content"
                       android:orientation="horizontal">
@@ -101,7 +101,7 @@ object CrudUIGenerator extends PlatformTypes with Logging {
                   android:layout_height="wrap_content"
                   android:minHeight="?android:attr/listPreferredItemHeight"
                   android:orientation="vertical">{
-      fields.sliding(2).map { rowFields =>
+      fields.grouped(2).map { rowFields =>
         <LinearLayout android:layout_width="match_parent"
                       android:layout_height="wrap_content"
                       android:orientation="horizontal">
