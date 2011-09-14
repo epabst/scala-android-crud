@@ -140,7 +140,7 @@ object CrudUIGenerator extends PlatformTypes with Logging {
     val viewFieldsWithId = this.fieldsWithViewSubject(FieldList.toFieldList(viewIdFields))
     val otherViewFields = this.fieldsWithViewSubject(field).filterNot(viewFieldsWithId.contains)
     val viewResourceIds = viewIdFields.map(_.viewResourceId).map { id =>
-      findFieldWithIntValue(resourceIdClasses, id).map(_.getName).getOrElse {
+      findResourceFieldWithIntValue(resourceIdClasses, id).map(_.getName).getOrElse {
         throw new IllegalStateException("Unable to find R.id with value " + id)
       }
     }
@@ -191,11 +191,14 @@ object CrudUIGenerator extends PlatformTypes with Logging {
     if (!updateableFields.isEmpty) writeLayoutFile(filenamePrefix + "_entry", entryLayout(updateableFields))
   }
 
-  private def findFieldWithIntValue(classes: Seq[Class[_]], value: Int): Option[Field] = {
+  private def findMatchingResourceField(classes: Seq[Class[_]], matcher: Field => Boolean): Option[Field] = {
     classes.view.flatMap(_.getDeclaredFields.find { field =>
-      Modifier.isStatic(field.getModifiers) && field.getInt(null) == value
+      Modifier.isStatic(field.getModifiers) && matcher(field)
     }).headOption
   }
+
+  private def findResourceFieldWithIntValue(classes: Seq[Class[_]], value: Int): Option[Field] =
+    findMatchingResourceField(classes, field => field.getInt(null) == value)
 
   private[generate] def fieldsWithViewSubject(field: BaseField): List[SubjectField] = {
     field.deepCollect[SubjectField] {
