@@ -187,7 +187,8 @@ object CrudUIGenerator extends PlatformTypes with Logging {
     val displayFields = fieldInfos.filterNot(_.foreignKey.isDefined)
     writeLayoutFile(filenamePrefix + "_header", headerLayout(displayFields))
     writeLayoutFile(filenamePrefix + "_row", rowLayout(displayFields))
-    writeLayoutFile(filenamePrefix + "_entry", entryLayout(fieldInfos.filter(_.updateable)))
+    val updateableFields = fieldInfos.filter(_.updateable)
+    if (!updateableFields.isEmpty) writeLayoutFile(filenamePrefix + "_entry", entryLayout(updateableFields))
   }
 
   private def findFieldWithIntValue(classes: Seq[Class[_]], value: Int): Option[Field] = {
