@@ -39,6 +39,14 @@
     </pluginRepository>
   </pluginRepositories>
   <dependencies>
+    <!-- test dependencies that must precede android.jar -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.5</version>
+      <scope>test</scope>
+    </dependency>
+
     <dependency>
       <groupId>com.google.android</groupId>
       <artifactId>android</artifactId>
@@ -83,12 +91,6 @@
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest</artifactId>
       <version>1.2</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.5</version>
       <scope>test</scope>
     </dependency>
     <dependency>
