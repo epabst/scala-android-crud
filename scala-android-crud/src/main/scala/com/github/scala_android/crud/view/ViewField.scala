@@ -104,6 +104,8 @@ object ViewField extends PlatformTypes {
         spinner.setSelection(valueArray.indexOf(value))
       })
       protected def delegate = spinnerField + formatted[E](enumFormat(enum), textView)
+
+      override def toString = "enumerationView(" + enum.getClass.getSimpleName + ")"
     }
   }
 
