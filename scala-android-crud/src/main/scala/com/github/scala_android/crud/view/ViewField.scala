@@ -53,6 +53,8 @@ object ViewField extends PlatformTypes {
 
   val textView: ViewField[String] = new ViewField[String](FieldLayout.nameLayout) {
     protected def delegate = fieldDirect[TextView,String](v => toOption(v.getText.toString.trim), v => v.setText(_), _.setText(""))
+
+    override def toString = "textView"
   }
 
   def viewId[T](viewResourceId: ViewKey, childViewField: PortableField[T]): ViewIdField[T] = {
@@ -65,6 +67,8 @@ object ViewField extends PlatformTypes {
     protected def delegate = formatted(calendarValueFormat, textView) + fieldDirect[DatePicker,Calendar](
       v => Some(new GregorianCalendar(v.getYear, v.getMonth, v.getDayOfMonth)),
       v => calendar => v.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)))
+
+    override def toString = "calendarDateView"
   }
 
   implicit val datePicker: PortableField[Date] = new ConvertedField[Date,Calendar](calendarDatePicker) {
@@ -75,6 +79,8 @@ object ViewField extends PlatformTypes {
       calendar.setTime(date)
       calendar
     }
+
+    override def toString = "dateView"
   }
 
   def enumerationSpinner[E <: Enumeration#Value](enum: Enumeration): PortableField[E] = {
