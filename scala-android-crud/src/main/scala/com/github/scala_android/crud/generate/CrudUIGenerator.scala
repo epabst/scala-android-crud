@@ -2,7 +2,6 @@ package com.github.scala_android.crud.generate
 
 import android.view.View
 import com.github.scala_android.crud.view.ViewField.ViewIdField
-import java.lang.reflect.{Modifier, Field}
 import java.lang.IllegalStateException
 import com.github.scala_android.crud.common.PlatformTypes
 import com.github.scala_android.crud.persistence.{IdPk, CursorField}
@@ -12,6 +11,7 @@ import scala.tools.nsc.io.Path
 import xml._
 import com.github.scala_android.crud.{CrudApplication, ForeignKey, CrudType}
 import com.github.scala_android.crud.view.{ViewField, FieldLayout}
+import com.github.scala_android.crud.AndroidResourceAnalyzer._
 
 /**
  * A UI Generator for a CrudTypes.
@@ -39,18 +39,6 @@ object CrudUIGenerator extends PlatformTypes with Logging {
 
   def generateLayouts(application: CrudApplication) {
     application.allEntities.foreach(generateLayouts(_))
-  }
-
-  private[generate] def detectResourceIdClasses(clazz: Class[_]): Seq[Class[_]] = {
-    findResourceIdClass(clazz.getClassLoader, clazz.getPackage.getName).toSeq ++ Seq(classOf[android.R.id], classOf[com.github.scala_android.crud.res.R.id])
-  }
-
-  private[generate] def findResourceIdClass(classLoader: ClassLoader, packageName: String): Option[Class[_]] = {
-    try { Some(classLoader.loadClass(packageName + ".R$id")) }
-    catch { case e: ClassNotFoundException =>
-      val parentPackagePieces = packageName.split('.').dropRight(1)
-      if (parentPackagePieces.isEmpty) None else findResourceIdClass(classLoader, parentPackagePieces.mkString("."))
-    }
   }
 
   protected def fieldLayoutForHeader(field: ViewFieldInfo, position: Int): Elem = {
@@ -190,15 +178,6 @@ object CrudUIGenerator extends PlatformTypes with Logging {
     val updateableFields = fieldInfos.filter(_.updateable)
     if (!updateableFields.isEmpty) writeLayoutFile(filenamePrefix + "_entry", entryLayout(updateableFields))
   }
-
-  private def findMatchingResourceField(classes: Seq[Class[_]], matcher: Field => Boolean): Option[Field] = {
-    classes.view.flatMap(_.getDeclaredFields.find { field =>
-      Modifier.isStatic(field.getModifiers) && matcher(field)
-    }).headOption
-  }
-
-  private def findResourceFieldWithIntValue(classes: Seq[Class[_]], value: Int): Option[Field] =
-    findMatchingResourceField(classes, field => field.getInt(null) == value)
 
   private[generate] def fieldsWithViewSubject(field: BaseField): List[SubjectField] = {
     field.deepCollect[SubjectField] {

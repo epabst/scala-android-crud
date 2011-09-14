@@ -24,24 +24,4 @@ class CrudUIGeneratorSpec extends Spec with MustMatchers {
       fields must be(List(textView, textView, textView, calendarDateView))
     }
   }
-
-  describe("detectResourceIdClasses") {
-    it("must be able to find all of the R.id instances") {
-      CrudUIGenerator.detectResourceIdClasses(classOf[CrudUIGeneratorSpec]) must
-              be (Seq(classOf[R.id], classOf[android.R.id], classOf[com.github.scala_android.crud.res.R.id]))
-    }
-
-    it("must look in parent packages to find the application R.id instance") {
-      CrudUIGenerator.detectResourceIdClasses(classOf[foo.A]) must
-              be (Seq(classOf[R.id], classOf[android.R.id], classOf[com.github.scala_android.crud.res.R.id]))
-    }
-  }
 }
-
-object R {
-  class id {
-    val foo: Int = 123
-  }
-}
-
-package foo { class A }
