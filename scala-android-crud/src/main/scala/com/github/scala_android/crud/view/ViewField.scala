@@ -12,6 +12,7 @@ import java.util.{Calendar, Date, GregorianCalendar}
 import android.net.Uri
 import FieldLayout._
 import ValueFormat._
+import com.github.scala_android.crud.AndroidResourceAnalyzer._
 
 /**
  * PortableField for Views.
@@ -29,6 +30,16 @@ object ViewField extends PlatformTypes {
       case activity: Activity => Option(activity.findViewById(viewResourceId))
       case _ => None
     }
+  }
+
+  /**
+   * @param resourceIdClasses a list of R classes that may contain the id.
+   */
+  private class ChildViewByIdName(viewResourceIdName: String, resourceIdClasses: Seq[Class[_]]) {
+    val childViewById = findResourceFieldWithName(resourceIdClasses, viewResourceIdName).map(_.getInt(null)).
+            map(new ChildViewById(_))
+
+    def unapply(target: Any): Option[View] = childViewById.flatMap(_.unapply(target))
   }
 
   /** PortableField for a View resource within a given parent View */
@@ -51,6 +62,26 @@ object ViewField extends PlatformTypes {
     override def toString = "viewId(" + viewResourceId + ", " + childViewField + ")"
   }
 
+  /** PortableField for a View resource within a given parent View */
+  class ViewIdNameField[T](val viewResourceIdName: String, childViewField: PortableField[T], resourceIdClasses: Seq[Class[_]])
+          extends FieldWithDelegate[T] with TransformerUsingSetter[T] {
+    private object ChildView extends ChildViewByIdName(viewResourceIdName, resourceIdClasses)
+
+    protected def delegate = childViewField
+
+    def getter = {
+      case ChildView(childView) if childViewField.getter.isDefinedAt(childView) =>
+        childViewField.getter(childView)
+    }
+
+    def setter = {
+      case ChildView(childView) if childViewField.setter.isDefinedAt(childView) =>
+        childViewField.setter(childView)
+    }
+
+    override def toString = "viewId(" + viewResourceIdName + ", " + childViewField + ")"
+  }
+
   val textView: ViewField[String] = new ViewField[String](nameLayout) {
     protected def delegate = fieldDirect[TextView,String](v => toOption(v.getText.toString.trim), v => v.setText(_), _.setText(""))
 
@@ -66,6 +97,15 @@ object ViewField extends PlatformTypes {
   def viewId[T](viewResourceId: ViewKey, childViewField: PortableField[T]): ViewIdField[T] = {
     new ViewIdField[T](viewResourceId, childViewField)
   }
+
+  /**
+   * This should be used when R.id doesn't yet have the needed name, and used like this:
+   * <code>viewId(classOf[R.id], "name", ...)</code>
+   * Which is conceptually identical to
+   * <code>viewId(R.id.name, ...)</code>.
+   */
+  def viewId[T](rIdClass: Class[_], viewResourceIdName: String, childViewField: PortableField[T]): PortableField[T] =
+    new ViewIdNameField[T](viewResourceIdName, childViewField, detectResourceIdClasses(rIdClass))
 
   private def toOption(string: String): Option[String] = if (string == "") None else Some(string)
 

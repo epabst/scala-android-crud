@@ -1,7 +1,6 @@
 package com.github.scala_android.crud.generate
 
 import android.view.View
-import com.github.scala_android.crud.view.ViewField.ViewIdField
 import java.lang.IllegalStateException
 import com.github.scala_android.crud.common.PlatformTypes
 import com.github.scala_android.crud.persistence.{IdPk, CursorField}
@@ -12,6 +11,7 @@ import xml._
 import com.github.scala_android.crud.{CrudApplication, ForeignKey, CrudType}
 import com.github.scala_android.crud.view.{ViewField, FieldLayout}
 import com.github.scala_android.crud.AndroidResourceAnalyzer._
+import com.github.scala_android.crud.view.ViewField.{ViewIdNameField, ViewIdField}
 
 /**
  * A UI Generator for a CrudTypes.
@@ -125,9 +125,10 @@ object CrudUIGenerator extends PlatformTypes with Logging {
 
   def guessFieldInfo(field: BaseField, resourceIdClasses: Seq[Class[_]]): ViewFieldInfo = {
     val viewIdFields = this.viewIdFields(field)
+    val viewIdNameFields = this.viewIdNameFields(field)
     val viewFieldsWithId = this.fieldsWithViewSubject(FieldList.toFieldList(viewIdFields))
     val otherViewFields = this.fieldsWithViewSubject(field).filterNot(viewFieldsWithId.contains)
-    val viewResourceIds = viewIdFields.map(_.viewResourceId).map { id =>
+    val viewResourceIdNames = viewIdNameFields.map(_.viewResourceIdName) ++ viewIdFields.map(_.viewResourceId).map { id =>
       findResourceFieldWithIntValue(resourceIdClasses, id).map(_.getName).getOrElse {
         throw new IllegalStateException("Unable to find R.id with value " + id)
       }
@@ -136,11 +137,11 @@ object CrudUIGenerator extends PlatformTypes with Logging {
     val persistedFieldsInForeignKeys = foreignKeys.flatMap(CursorField.persistedFields(_))
     val otherPersistedFields = CursorField.persistedFields(field).filterNot(persistedFieldsInForeignKeys.contains)
     val persistedFieldsWithTypes = otherPersistedFields.map(p => p.toString + ":" + p.persistedType.valueManifest.erasure.getSimpleName)
-    println("viewIds: " + viewResourceIds + " tied to " +
+    println("viewIds: " + viewResourceIdNames + " tied to " +
             viewFieldsWithId + "  /  other views: " + otherViewFields + "  /  foreignKeys: " + foreignKeys +
             " / other persisted: " + persistedFieldsWithTypes)
     val persistedFieldOption = otherPersistedFields.headOption
-    val derivedId: Option[String] = viewResourceIds.headOption.orElse(persistedFieldOption.map(_.name))
+    val derivedId: Option[String] = viewResourceIdNames.headOption.orElse(persistedFieldOption.map(_.name))
     val displayName = derivedId.map(FieldLayout.toDisplayName(_))
     val fieldLayout = viewFields(field).headOption.map(_.defaultLayout).getOrElse(field.deepCollect {
       case _: PortableField[Double] => FieldLayout.doubleLayout
@@ -181,22 +182,26 @@ object CrudUIGenerator extends PlatformTypes with Logging {
 
   private[generate] def fieldsWithViewSubject(field: BaseField): List[SubjectField] = {
     field.deepCollect[SubjectField] {
-      case subjectField: SubjectField if classOf[View].isAssignableFrom(subjectField.subjectManifest.erasure) => {
-        subjectField
+      case matchingField: SubjectField if classOf[View].isAssignableFrom(matchingField.subjectManifest.erasure) => {
+        matchingField
       }
     }
   }
 
   private[generate] def viewFields(field: BaseField): List[ViewField[_]] =
     field.deepCollect {
-      case field: ViewField[_] => field
+      case matchingField: ViewField[_] => matchingField
     }
 
-  private[generate] def viewIdFields(field: BaseField): List[ViewIdField[_]] = {
+  private[generate] def viewIdFields(field: BaseField): List[ViewIdField[_]] =
     field.deepCollect[ViewIdField[_]] {
-      case viewIdField: ViewIdField[_] => viewIdField
+      case matchingField: ViewIdField[_] => matchingField
     }
-  }
+
+  private[generate] def viewIdNameFields(field: BaseField): List[ViewIdNameField[_]] =
+    field.deepCollect[ViewIdNameField[_]] {
+      case matchingField: ViewIdNameField[_] => matchingField
+    }
 }
 
 case class ViewFieldInfo(displayName: Option[String], layout: FieldLayout,

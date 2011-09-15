@@ -7,6 +7,7 @@ import org.scalatest.junit.JUnitRunner
 import com.github.triangle.{PortableField, FieldList}
 import PortableField._
 import com.github.scala_android.crud.view.ViewField._
+import com.github.scala_android.crud.testres.R
 
 /**
  * A behavior specification for {@link CrudUIGenerator}.
@@ -22,6 +23,13 @@ class CrudUIGeneratorSpec extends Spec with MustMatchers {
         viewId(45, formatted[Double](textView)), dateView)
       val fields = CrudUIGenerator.viewFields(fieldList)
       fields must be(List(textView, textView, textView, calendarDateView))
+    }
+  }
+
+  describe("guessFieldInfo") {
+    it("must handle a viewId name that does not exist") {
+      val fieldInfo = CrudUIGenerator.guessFieldInfo(viewId(classOf[R.id], "bogus", textView), List(classOf[R]))
+      fieldInfo.id must be ("bogus")
     }
   }
 }
