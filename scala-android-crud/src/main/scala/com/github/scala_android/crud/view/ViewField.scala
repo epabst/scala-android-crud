@@ -12,7 +12,7 @@ import java.util.{Calendar, Date, GregorianCalendar}
 import android.net.Uri
 import FieldLayout._
 import ValueFormat._
-import com.github.scala_android.crud.AndroidResourceAnalyzer._
+import AndroidResourceAnalyzer._
 
 /**
  * PortableField for Views.

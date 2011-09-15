@@ -1,10 +1,10 @@
-package com.github.scala_android.crud
+package com.github.scala_android.crud.view
 
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers
-import testres._
+import com.github.scala_android.crud.testres._
 
 /**
  * A behavior specification for {@link AndroidResourceAnalyzer}.

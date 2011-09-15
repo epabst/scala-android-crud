@@ -9,8 +9,8 @@ import util.Random
 import scala.tools.nsc.io.Path
 import xml._
 import com.github.scala_android.crud.{CrudApplication, ForeignKey, CrudType}
-import com.github.scala_android.crud.view.{ViewField, FieldLayout}
-import com.github.scala_android.crud.AndroidResourceAnalyzer._
+import com.github.scala_android.crud.view.{ViewField, FieldLayout,AndroidResourceAnalyzer}
+import AndroidResourceAnalyzer._
 import com.github.scala_android.crud.view.ViewField.{ViewIdNameField, ViewIdField}
 
 /**

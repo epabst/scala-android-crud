@@ -1,4 +1,4 @@
-package com.github.scala_android.crud
+package com.github.scala_android.crud.view
 
 import java.lang.reflect.{Modifier, Field}
 
