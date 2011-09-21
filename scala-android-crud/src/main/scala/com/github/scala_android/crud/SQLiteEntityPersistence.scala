@@ -4,7 +4,7 @@ import android.provider.BaseColumns
 import android.database.Cursor
 import android.content.ContentValues
 import com.github.triangle.Logging
-import persistence.{SQLiteCriteria, CursorField, CrudPersistence}
+import persistence.{SQLiteCriteria, CursorField}
 import scala.None
 import collection.mutable.SynchronizedQueue
 import android.app.backup.BackupManager

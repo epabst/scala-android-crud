@@ -1,17 +1,15 @@
 package com.github.scala_android.crud
 
-import persistence.{IdPk, SeqEntityPersistence}
 import res.R
 import android.view.{ViewGroup, View}
 import com.github.triangle.PortableField.identityField
 import android.app.ListActivity
 import android.widget.{ListAdapter, BaseAdapter}
-import IdPk.idField
 
 trait GeneratedCrudType[T <: AnyRef] extends CrudType {
   def newWritable = throw new UnsupportedOperationException("not supported")
 
-  def openEntityPersistence(crudContext: CrudContext): SeqEntityPersistence[T]
+  def openEntityPersistence(crudContext: CrudContext): SeqCrudPersistence[T]
 
   class SeqPersistenceAdapter[T <: AnyRef](findAllResult: AnyRef, contextItems: List[AnyRef], activity: ListActivity)
           extends BaseAdapter with AdapterCaching {

@@ -1,7 +1,7 @@
 package com.github.scala_android.crud.persistence
 
-import com.github.triangle.FieldList
 import com.github.scala_android.crud.common.{ListenerHolder, Timing, PlatformTypes}
+import android.net.Uri
 
 trait PersistenceListener extends PlatformTypes {
   def onSave(id: ID)
@@ -52,11 +52,8 @@ trait EntityPersistence extends PlatformTypes with Timing with ListenerHolder[Pe
   def close()
 }
 
-trait CrudPersistence extends EntityPersistence {
-  def entityType: FieldList
+trait UriEntityPersistence extends EntityPersistence {
+  def toUri(id: ID): Uri
 
-  def findAsIterator[T <: AnyRef](criteria: AnyRef, instantiateItem: => T): Iterator[T] =
-    toIterator(findAll(criteria)).map(entity => {
-      entityType.transform(instantiateItem, entity)
-    })
+  def toCriteria(uri: Uri): AnyRef
 }

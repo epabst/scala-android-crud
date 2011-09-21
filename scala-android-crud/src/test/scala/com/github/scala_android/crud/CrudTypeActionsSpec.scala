@@ -8,7 +8,6 @@ import org.mockito.Mockito._
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.scalatest.matchers.MustMatchers
 import android.net.Uri
-import persistence.CrudPersistence
 
 /**
  * A test for {@link CrudListActivity}.

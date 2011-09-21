@@ -1,6 +1,5 @@
 package com.github.scala_android.crud
 
-import persistence.CrudPersistence
 import res.R
 import com.github.triangle.BaseField
 import android.app.ListActivity

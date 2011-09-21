@@ -8,6 +8,7 @@ import java.io.{ObjectInputStream, ByteArrayInputStream, ObjectOutputStream, Byt
 import scala.collection.JavaConversions._
 import java.util.{Map => JMap,HashMap}
 import android.content.Context
+import android.net.Uri
 
 object CrudBackupAgent {
   private val backupStrategyVersion: Int = 1
@@ -195,7 +196,7 @@ object DeletedEntityIdCrudType extends SQLiteCrudType with HiddenEntityType {
   def writeEntityRemovals(data: BackupTarget, context: Context) {
     val crudContext = new CrudContext(context, application)
     withEntityPersistence(crudContext, { persistence =>
-      persistence.toIterator(persistence.findAll(persistence.newCriteria)).foreach { entity =>
+      persistence.toIterator(persistence.findAll(persistence.toCriteria(Uri.EMPTY))).foreach { entity =>
         val deletedEntityName: String = entityNameField(entity)
         val deletedId: ID = entityIdField(entity)
         data.writeEntity(deletedEntityName + "#" + deletedId, None)

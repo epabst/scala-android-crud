@@ -5,7 +5,6 @@ import android.widget.ListAdapter
 import org.junit.Test
 import org.junit.runner.RunWith
 import com.xtremelabs.robolectric.RobolectricTestRunner
-import persistence.CrudPersistence
 import com.xtremelabs.robolectric.tester.android.view.TestMenu
 import org.scalatest.matchers.MustMatchers
 import android.view.{View, ContextMenu}

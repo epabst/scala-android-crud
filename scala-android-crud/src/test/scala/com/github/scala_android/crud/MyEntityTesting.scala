@@ -1,6 +1,5 @@
 package com.github.scala_android.crud
 
-import persistence.{CrudPersistence, ListBufferEntityPersistence}
 import scala.collection.mutable
 import mutable.Map
 import com.github.triangle._
@@ -20,7 +19,7 @@ import android.app.ListActivity
  */
 
 trait MyEntityTesting {
-  class MyEntityPersistence extends ListBufferEntityPersistence[Map[String,Any]] {
+  class MyEntityPersistence extends ListBufferCrudPersistence[Map[String,Any]] {
     def entityType = throw new UnsupportedOperationException
   }
 

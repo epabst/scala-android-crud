@@ -1,7 +1,6 @@
 package com.github.scala_android.crud
 
 import org.junit.runner.RunWith
-import persistence.SeqEntityPersistence
 import scala.collection.mutable
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.Spec
@@ -26,7 +25,7 @@ class GeneratedCrudTypeSpec extends Spec with MustMatchers with MyEntityTesting 
 
   @Test
   def itMustCreateListAdapterWithIntentUsedForCriteria() {
-    val seqPersistence = mock[SeqEntityPersistence[mutable.Map[String,Any]]]
+    val seqPersistence = mock[SeqCrudPersistence[mutable.Map[String,Any]]]
     val crudContext = mock[CrudContext]
     val activity = mock[ListActivity]
     val listAdapterCapture = capturingAnswer[Unit] { Unit }
@@ -38,9 +37,11 @@ class GeneratedCrudTypeSpec extends Spec with MustMatchers with MyEntityTesting 
       def openEntityPersistence(crudContext: CrudContext) = seqPersistence
     }
     expecting {
-      call(activity.getIntent).andReturn(new Intent("List", toUri(otherType.entityName, "123")))
-      call(seqPersistence.newCriteria).andReturn(mutable.Map[String,Any]())
-      call(seqPersistence.findAll(mutable.Map[String,Any](ParentField(otherType).fieldName -> 123L))).andReturn(List.empty)
+      val uri = toUri(otherType.entityName, "123")
+      val criteriaMap = mutable.Map[String, Any](ParentField(otherType).fieldName -> 123L)
+      call(activity.getIntent).andReturn(new Intent("List", uri))
+      call(seqPersistence.toCriteria(uri)).andReturn(criteriaMap)
+      call(seqPersistence.findAll(criteriaMap)).andReturn(List.empty)
       call(activity.setListAdapter(notNull())).andAnswer(listAdapterCapture)
       call(seqPersistence.entityType).andStubReturn(generatedType)
     }

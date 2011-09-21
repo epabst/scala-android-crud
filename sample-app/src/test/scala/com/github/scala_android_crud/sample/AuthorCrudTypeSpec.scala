@@ -7,7 +7,6 @@ import com.github.scala_android.crud.persistence.CursorField._
 import com.github.scala_android.crud._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import persistence.ListBufferEntityPersistence
 import com.github.scala_android.crud.ParentField._
 
 /**
@@ -27,7 +26,7 @@ class AuthorCrudTypeSpec extends Spec with MustMatchers with EasyMockSugar {
     val crudContext = mock[CrudContext]
     whenExecuting(crudContext) {
       val context = new AuthorContext {
-        val bookPersistence: ListBufferEntityPersistence[Map[String,Any]] = new ListBufferEntityPersistence[Map[String, Any]] {
+        val bookPersistence: ListBufferCrudPersistence[Map[String, Any]] = new ListBufferCrudPersistence[Map[String, Any]] {
           def entityType = BookCrudType
         }
 

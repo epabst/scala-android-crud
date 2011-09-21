@@ -5,7 +5,6 @@ import action.EntityAction
 import android.os.Bundle
 import com.github.triangle.ValueFormat.basicFormat
 import com.github.triangle.JavaUtil.toRunnable
-import persistence.CrudPersistence
 
 /**
  * A generic Activity for CRUD operations

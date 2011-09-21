@@ -1,7 +1,7 @@
 package com.github.scala_android.crud
 
 import org.junit.runner.RunWith
-import persistence.{IdPk, CrudPersistence}
+import persistence.IdPk
 import scala.collection.mutable
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.MustMatchers

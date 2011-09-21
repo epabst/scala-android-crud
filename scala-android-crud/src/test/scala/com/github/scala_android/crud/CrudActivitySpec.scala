@@ -1,12 +1,11 @@
 package com.github.scala_android.crud
 
-import action.{StartNamedActivityAction, Action}
+import action.Action
 import common.ReadyFuture
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.scalatest.mock.EasyMockSugar
 import com.xtremelabs.robolectric.RobolectricTestRunner
-import persistence.CrudPersistence
 import scala.collection.mutable.Map
 import org.scalatest.matchers.MustMatchers
 import Action._

@@ -4,7 +4,6 @@ import action.{Action, EntityUriSegment}
 import android.app.Activity
 import common.{Timing, PlatformTypes}
 import com.github.triangle.Logging
-import persistence.CrudPersistence
 import android.net.Uri
 import android.view.{MenuItem, Menu}
 import android.os.Bundle

@@ -10,9 +10,10 @@ import IdPk._
  * Time: 5:05 PM
  */
 
-trait SeqEntityPersistence[T <: AnyRef] extends CrudPersistence {
+trait SeqEntityPersistence[T <: AnyRef] extends UriEntityPersistence {
   def find(id: ID): Option[T] = {
-    findAll(newCriteria).find(entity => id == idField(entity))
+    val criteria = toCriteria(toUri(id))
+    findAll(criteria).find(entity => id == idField(entity))
   }
 
   def findAll(criteria: AnyRef): Seq[T]

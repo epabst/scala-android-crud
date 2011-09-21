@@ -8,7 +8,7 @@ import common.{Timing, PlatformTypes}
 import android.database.DataSetObserver
 import android.content.Intent
 import android.widget.{ListAdapter, BaseAdapter}
-import persistence.{PersistenceListener, IdPk, EntityPersistence, CrudPersistence}
+import persistence.{PersistenceListener, IdPk, EntityPersistence}
 import Action._
 import android.app.{Activity, ListActivity}
 import com.github.scala_android.crud.view.ViewField._
@@ -237,7 +237,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
 
   def setListAdapter(persistence: CrudPersistence, crudContext: CrudContext, activity: ListActivity) {
     val intent = activity.getIntent
-    val findAllResult = persistence.findAll(transform(persistence.newCriteria, intent))
+    val findAllResult = persistence.findAll(persistence.toCriteria(intent.getData))
     setListAdapter(findAllResult, List(intent, crudContext, Unit), activity)
   }
 
