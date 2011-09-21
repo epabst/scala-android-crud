@@ -12,6 +12,7 @@ import Mockito._
 import Matchers._
 import android.widget.ListAdapter
 import com.github.triangle.PortableField._
+import ParentField.foreignKey
 
 /**
  * A behavior specification for {@link CrudType}.
@@ -32,13 +33,24 @@ class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with Crud
     }.flatten must be (Seq(true))
   }
 
+  it("must derive parent entities from ParentField fields") {
+    val persistence = mock[CrudPersistence]
+    val listAdapter = mock[ListAdapter]
+    val entityType1 = new MyEntityType(persistence, listAdapter)
+    val entityType2 = new MyEntityType(persistence, listAdapter)
+    val entityType3 = new MyEntityType(persistence, listAdapter) {
+      override val valueFields = ParentField(entityType1) +: ParentField(entityType2) +: super.valueFields
+    }
+    entityType3.parentEntities must be (List(entityType1, entityType2))
+  }
+
   it("must derive parent entities from foreignKey fields") {
     val persistence = mock[CrudPersistence]
     val listAdapter = mock[ListAdapter]
     val entityType1 = new MyEntityType(persistence, listAdapter)
     val entityType2 = new MyEntityType(persistence, listAdapter)
     val entityType3 = new MyEntityType(persistence, listAdapter) {
-      override val valueFields = ForeignKey(entityType1) +: ForeignKey(entityType2) +: super.valueFields
+      override val valueFields = foreignKey(entityType1) +: foreignKey(entityType2) +: super.valueFields
     }
     entityType3.parentEntities must be (List(entityType1, entityType2))
   }
@@ -49,7 +61,7 @@ class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with Crud
     val listAdapter = mock[ListAdapter]
     val parentEntity = new MyEntityType(persistence, listAdapter)
     val childEntity = new MyEntityType(persistence, listAdapter) {
-      override lazy val valueFields = ForeignKey(parentEntity) :: super.valueFields
+      override lazy val valueFields = ParentField(parentEntity) :: super.valueFields
     }
     stub(application.allEntities).toReturn(List(parentEntity, childEntity))
     childEntity.getEntityActions(application) must be (List(childEntity.updateAction, childEntity.deleteAction))
@@ -64,10 +76,10 @@ class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with Crud
       override val displayLayout = Some(123)
     }
     val childEntity = new MyEntityType(persistence, listAdapter) {
-      override lazy val valueFields = ForeignKey(parentEntity) :: super.valueFields
+      override lazy val valueFields = ParentField(parentEntity) :: super.valueFields
     }
     val childEntity2 = new MyEntityType(persistence, listAdapter) {
-      override lazy val valueFields = ForeignKey(parentEntity) :: super.valueFields
+      override lazy val valueFields = ParentField(parentEntity) :: super.valueFields
     }
     stub(application.allEntities).toReturn(List(parentEntity, childEntity, childEntity2))
     parentEntity.getListActions(application) must be (List(parentEntity.createAction))
@@ -80,10 +92,10 @@ class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with Crud
     val listAdapter = mock[ListAdapter]
     var parentEntity = new MyEntityType(persistence, listAdapter)
     val childEntity = new MyEntityType(persistence, listAdapter) {
-      override lazy val valueFields = ForeignKey(parentEntity) :: super.valueFields
+      override lazy val valueFields = ParentField(parentEntity) :: super.valueFields
     }
     val childEntity2 = new MyEntityType(persistence, listAdapter) {
-      override lazy val valueFields = ForeignKey(parentEntity) :: super.valueFields
+      override lazy val valueFields = ParentField(parentEntity) :: super.valueFields
     }
     stub(application.allEntities).toReturn(List(parentEntity, childEntity, childEntity2))
     parentEntity.getListActions(application) must be (List(parentEntity.createAction))

@@ -8,6 +8,7 @@ import com.github.scala_android.crud._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import persistence.ListBufferEntityPersistence
+import com.github.scala_android.crud.ParentField._
 
 /**
  * A behavior specification for {@link AuthorCrudType}.
@@ -32,8 +33,7 @@ class AuthorCrudTypeSpec extends Spec with MustMatchers with EasyMockSugar {
 
         val BookCrudType = new HiddenEntityType with GeneratedCrudType[Map[String,Any]] {
           def entityName = "Book"
-          val authorIdField = ForeignKey(AuthorCrudType)
-          def valueFields = List(authorIdField)
+          def valueFields = List(foreignKey(AuthorCrudType))
           def openEntityPersistence(crudContext: CrudContext) = bookPersistence
         }
 

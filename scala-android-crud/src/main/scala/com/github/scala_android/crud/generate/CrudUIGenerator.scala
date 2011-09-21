@@ -8,7 +8,7 @@ import com.github.triangle._
 import util.Random
 import scala.tools.nsc.io.Path
 import xml._
-import com.github.scala_android.crud.{CrudApplication, ForeignKey, CrudType}
+import com.github.scala_android.crud.{CrudApplication, ParentField, CrudType}
 import com.github.scala_android.crud.view.{ViewField, FieldLayout,AndroidResourceAnalyzer}
 import AndroidResourceAnalyzer._
 import com.github.scala_android.crud.view.ViewField.{ViewIdNameField, ViewIdField}
@@ -133,12 +133,12 @@ object CrudUIGenerator extends PlatformTypes with Logging {
         throw new IllegalStateException("Unable to find R.id with value " + id)
       }
     }
-    val foreignKeys = ForeignKey.foreignKeys(field)
-    val persistedFieldsInForeignKeys = foreignKeys.flatMap(CursorField.persistedFields(_))
-    val otherPersistedFields = CursorField.persistedFields(field).filterNot(persistedFieldsInForeignKeys.contains)
+    val parentFields = ParentField.parentFields(field)
+    val parentFieldNames = parentFields.map(_.fieldName)
+    val otherPersistedFields = CursorField.persistedFields(field).filterNot(parentFieldNames.contains(_))
     val persistedFieldsWithTypes = otherPersistedFields.map(p => p.toString + ":" + p.persistedType.valueManifest.erasure.getSimpleName)
     println("viewIds: " + viewResourceIdNames + " tied to " +
-            viewFieldsWithId + "  /  other views: " + otherViewFields + "  /  foreignKeys: " + foreignKeys +
+            viewFieldsWithId + "  /  other views: " + otherViewFields + "  /  parentFields: " + parentFields +
             " / other persisted: " + persistedFieldsWithTypes)
     val persistedFieldOption = otherPersistedFields.headOption
     val derivedId: Option[String] = viewResourceIdNames.headOption.orElse(persistedFieldOption.map(_.name))
@@ -148,7 +148,7 @@ object CrudUIGenerator extends PlatformTypes with Logging {
       case _: PortableField[String] => FieldLayout.nameLayout
       case _: PortableField[Int] => FieldLayout.intLayout
     }.head)
-    ViewFieldInfo(displayName, fieldLayout, persistedFieldOption.isDefined, foreignKeys.headOption,
+    ViewFieldInfo(displayName, fieldLayout, persistedFieldOption.isDefined, parentFields.headOption,
       derivedId.getOrElse("field" + random.nextInt()))
   }
 
@@ -173,7 +173,7 @@ object CrudUIGenerator extends PlatformTypes with Logging {
     println("Generating layout for " + crudType)
     val fieldInfos = guessFieldInfos(crudType, resourceIdClasses)
     val filenamePrefix = toFilename(crudType.entityName)
-    val displayFields = fieldInfos.filterNot(_.foreignKey.isDefined)
+    val displayFields = fieldInfos.filterNot(_.parentField.isDefined)
     writeLayoutFile(filenamePrefix + "_header", headerLayout(displayFields))
     writeLayoutFile(filenamePrefix + "_row", rowLayout(displayFields))
     val updateableFields = fieldInfos.filter(_.updateable)
@@ -205,4 +205,4 @@ object CrudUIGenerator extends PlatformTypes with Logging {
 }
 
 case class ViewFieldInfo(displayName: Option[String], layout: FieldLayout,
-                         updateable: Boolean, foreignKey: Option[ForeignKey], id: String)
+                         updateable: Boolean, parentField: Option[ParentField], id: String)

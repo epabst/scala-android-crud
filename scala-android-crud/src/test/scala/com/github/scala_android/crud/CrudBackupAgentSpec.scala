@@ -119,7 +119,7 @@ class CrudBackupAgentSpec extends MyEntityTesting with MustMatchers with CrudEas
     val entityType = new MyEntityType(persistence, listAdapter)
     val generatedType = new GeneratedCrudType[mutable.Map[String,Any]] with StubEntityType {
       def entityName = "Generated"
-      def valueFields = List(ForeignKey(entityType), default[Int](100))
+      def valueFields = List(ParentField(entityType), default[Int](100))
       def openEntityPersistence(crudContext: CrudContext) = generatedPersistence
     }
     val state0 = null

@@ -12,13 +12,11 @@ import GeneratedCrudType.crudContextField
  * @author pabstec
  */
 trait AuthorContext {
-  def BookCrudType: CrudType {
-    def authorIdField: ForeignKey
-  }
+  def BookCrudType: CrudType
 
   def AuthorCrudType: AuthorCrudType
 
-  abstract class AuthorCrudType extends CrudType {
+  abstract class AuthorCrudType extends CrudType { self =>
     def entityName = "Author"
 
     def valueFields = List(
@@ -30,7 +28,7 @@ trait AuthorContext {
                 def calculate = { case Values(Some(authorId), Some(crudContext)) =>
                   println("calculating bookCount with authorId=" + authorId + " and " + crudContext)
                   BookCrudType.withEntityPersistence(crudContext, { persistence =>
-                    val criteria = BookCrudType.transform(persistence.newCriteria, Map(BookCrudType.authorIdField.fieldName -> authorId))
+                    val criteria = BookCrudType.transform(persistence.newCriteria, Map(ParentField(self).fieldName -> authorId))
                     val books = persistence.findAsIterator(criteria)
                     Some(books.size)
                   })

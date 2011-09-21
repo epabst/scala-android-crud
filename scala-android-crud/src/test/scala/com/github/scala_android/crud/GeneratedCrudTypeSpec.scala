@@ -12,6 +12,7 @@ import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.junit.Test
 import android.app.ListActivity
 import org.easymock.EasyMock._
+import ParentField.foreignKey
 
 /**
  * A behavior specification for {@link CrudType}.
@@ -30,7 +31,7 @@ class GeneratedCrudTypeSpec extends Spec with MustMatchers with MyEntityTesting 
     val activity = mock[ListActivity]
     val listAdapterCapture = capturingAnswer[Unit] { Unit }
     val otherType = new MyEntityType(seqPersistence, mock[ListAdapter])
-    val foreign = ForeignKey(otherType)
+    val foreign = foreignKey(otherType)
     val generatedType = new GeneratedCrudType[mutable.Map[String,Any]] with StubEntityType {
       def entityName = "Generated"
       def valueFields = List(foreign)
@@ -39,7 +40,7 @@ class GeneratedCrudTypeSpec extends Spec with MustMatchers with MyEntityTesting 
     expecting {
       call(activity.getIntent).andReturn(new Intent("List", toUri(otherType.entityName, "123")))
       call(seqPersistence.newCriteria).andReturn(mutable.Map[String,Any]())
-      call(seqPersistence.findAll(mutable.Map[String,Any](foreign.fieldName -> 123L))).andReturn(List.empty)
+      call(seqPersistence.findAll(mutable.Map[String,Any](ParentField(otherType).fieldName -> 123L))).andReturn(List.empty)
       call(activity.setListAdapter(notNull())).andAnswer(listAdapterCapture)
       call(seqPersistence.entityType).andStubReturn(generatedType)
     }

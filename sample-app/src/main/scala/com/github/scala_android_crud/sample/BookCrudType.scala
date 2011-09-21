@@ -3,11 +3,9 @@ package com.github.scala_android_crud.sample
 import com.github.scala_android.crud._
 import persistence.CursorField._
 import view.ViewField._
-import com.github.triangle._
-import PortableField._
 import persistence.PersistedType._
-import ValueFormat._
 import java.util.Date
+import com.github.scala_android.crud.ParentField._
 
 /**
  * A CRUD type for Book.
@@ -22,10 +20,8 @@ trait BookContext {
   abstract class BookCrudType extends CrudType {
     def entityName = "Book"
 
-    val authorIdField = ForeignKey(AuthorCrudType)
-
     def valueFields = List(
-      authorIdField,
+      foreignKey(AuthorCrudType),
 
       persisted[String]("name") + viewId(R.id.name, textView),
 
