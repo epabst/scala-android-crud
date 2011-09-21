@@ -30,9 +30,11 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
   /**
    * These are all of the entity's fields, which includes IdPk.idField and the valueFields.
    */
-  final lazy val fields: List[BaseField] = IdPk.idField +: valueFields
+  final lazy val fields: List[BaseField] = idField +: valueFields
 
   lazy val intentIdField = intentId(entityName) + uriId(entityName)
+
+  def idField = IdPk.idField
 
   /**
    * The fields other than the primary key.
