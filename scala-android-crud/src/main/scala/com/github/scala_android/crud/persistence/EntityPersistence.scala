@@ -55,8 +55,8 @@ trait EntityPersistence extends PlatformTypes with Timing with ListenerHolder[Pe
 trait CrudPersistence extends EntityPersistence {
   def entityType: FieldList
 
-  def findAsIterator[T <: AnyRef](criteria: AnyRef, instantiateItem: () => T): Iterator[T] =
+  def findAsIterator[T <: AnyRef](criteria: AnyRef, instantiateItem: => T): Iterator[T] =
     toIterator(findAll(criteria)).map(entity => {
-      entityType.transform(instantiateItem(), entity)
+      entityType.transform(instantiateItem, entity)
     })
 }
