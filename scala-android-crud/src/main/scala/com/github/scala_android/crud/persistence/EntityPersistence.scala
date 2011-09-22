@@ -17,16 +17,12 @@ trait PersistenceListener extends PlatformTypes {
  */
 
 trait EntityPersistence extends PlatformTypes with Timing with ListenerHolder[PersistenceListener] {
-  def newCriteria: AnyRef
+  def toUri(id: ID): Uri
 
-  def findAll(criteria: AnyRef): AnyRef
-
-  def toIterator(findAllResult: AnyRef): Iterator[AnyRef]
-
-  def findAsIterator(criteria: AnyRef): Iterator[AnyRef] = toIterator(findAll(criteria))
+  def findAll(uri: Uri): Seq[AnyRef]
 
   /** Find an entity by ID. */
-  def find(id: ID): Option[AnyRef]
+  def find(id: ID): Option[AnyRef] = findAll(toUri(id)).headOption
 
   /** Save a created or updated entity. */
   final def save(idOption: Option[ID], writable: AnyRef): ID = {
@@ -50,10 +46,4 @@ trait EntityPersistence extends PlatformTypes with Timing with ListenerHolder[Pe
   protected def doDelete(ids: Seq[ID])
 
   def close()
-}
-
-trait UriEntityPersistence extends EntityPersistence {
-  def toUri(id: ID): Uri
-
-  def toCriteria(uri: Uri): AnyRef
 }

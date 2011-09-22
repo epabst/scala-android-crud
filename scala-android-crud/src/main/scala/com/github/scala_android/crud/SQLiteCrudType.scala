@@ -18,16 +18,17 @@ trait SQLiteCrudType extends CrudType {
 
   def openEntityPersistence(crudContext: CrudContext) = new SQLiteEntityPersistence(this, crudContext)
 
-  def setListAdapter(findAllResult: AnyRef, contextItems: List[AnyRef], activity: ListActivity) {
-    val cursor = findAllResult.asInstanceOf[Cursor]
-    activity.startManagingCursor(cursor)
-    activity.setListAdapter(new ResourceCursorAdapter(activity, rowLayout, cursor) with AdapterCaching {
-      cursor.registerDataSetObserver(cacheClearingObserver(activity))
+  def setListAdapter(findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: ListActivity) {
+    findAllResult.headOption.foreach { case cursor: Cursor =>
+      activity.startManagingCursor(cursor)
+      activity.setListAdapter(new ResourceCursorAdapter(activity, rowLayout, cursor) with AdapterCaching {
+        cursor.registerDataSetObserver(cacheClearingObserver(activity))
 
-      def bindView(view: View, context: Context, cursor: Cursor) {
-        bindViewFromCacheOrItems(view, transform(Map[String,Any](), cursor) :: contextItems, cursor.getPosition, activity)
-      }
-    })
+        def bindView(view: View, context: Context, cursor: Cursor) {
+          bindViewFromCacheOrItems(view, transform(Map[String,Any](), cursor) :: contextItems, cursor.getPosition, activity)
+        }
+      })
+    }
   }
 
   def refreshAfterDataChanged(listAdapter: ListAdapter) {

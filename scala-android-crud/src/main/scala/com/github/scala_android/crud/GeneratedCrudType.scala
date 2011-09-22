@@ -11,7 +11,7 @@ trait GeneratedCrudType[T <: AnyRef] extends CrudType {
 
   def openEntityPersistence(crudContext: CrudContext): SeqCrudPersistence[T]
 
-  class SeqPersistenceAdapter[T <: AnyRef](findAllResult: AnyRef, contextItems: List[AnyRef], activity: ListActivity)
+  class SeqPersistenceAdapter[T <: AnyRef](findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: ListActivity)
           extends BaseAdapter with AdapterCaching {
     val seq: Seq[T] = findAllResult.asInstanceOf[Seq[T]]
 
@@ -28,7 +28,7 @@ trait GeneratedCrudType[T <: AnyRef] extends CrudType {
     }
   }
 
-  def setListAdapter(findAllResult: AnyRef, contextItems: List[AnyRef], activity: ListActivity) {
+  def setListAdapter(findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: ListActivity) {
     activity.setListAdapter(new SeqPersistenceAdapter[T](findAllResult, contextItems, activity))
   }
 

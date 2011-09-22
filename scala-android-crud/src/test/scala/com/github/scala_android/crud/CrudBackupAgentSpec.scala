@@ -12,6 +12,7 @@ import com.github.triangle.PortableField._
 import CrudBackupAgent._
 import android.os.ParcelFileDescriptor
 import com.github.scala_android.crud.persistence.IdPk.idField
+import android.net.Uri
 
 /**
  * A test for {@link CrudBackupAgent}.
@@ -82,19 +83,19 @@ class CrudBackupAgentSpec extends MyEntityTesting with MustMatchers with CrudEas
       backupAgent.onBackup(state0, backupTarget, state1)
       backupAgent.onDestroy()
 
-      persistenceB.findAll(persistenceB.newCriteria).size must be (0)
-      persistence2B.findAll(persistence2B.newCriteria).size must be (0)
+      persistenceB.findAll(Uri.EMPTY).size must be (0)
+      persistence2B.findAll(Uri.EMPTY).size must be (0)
 
       val backupAgentB = new CrudBackupAgent(applicationB)
       backupAgentB.onCreate()
       backupAgentB.onRestore(restoreItems.toIterator, 1, state1b)
       backupAgentB.onDestroy()
 
-      val allB = persistenceB.findAll(persistenceB.newCriteria)
+      val allB = persistenceB.findAll(Uri.EMPTY)
       allB.size must be (2)
       allB.map(idField(_)) must be (List(100L, 101L))
 
-      val all2B = persistence2B.findAll(persistence2B.newCriteria)
+      val all2B = persistence2B.findAll(Uri.EMPTY)
       all2B.size must be (2)
       all2B.map(idField(_)) must be (List(101L, 104L))
     }

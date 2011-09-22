@@ -37,7 +37,7 @@ trait MyEntityTesting {
 
     def openEntityPersistence(crudContext: CrudContext) = persistence
 
-    def setListAdapter(findAllResult: AnyRef, contextItems: List[AnyRef], activity: ListActivity) {
+    def setListAdapter(findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: ListActivity) {
       activity.setListAdapter(listAdapter)
     }
 

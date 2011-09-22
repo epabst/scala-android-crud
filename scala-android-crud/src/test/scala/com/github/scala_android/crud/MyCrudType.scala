@@ -22,7 +22,7 @@ class MyCrudType extends CrudType with StubEntityType {
 
   def refreshAfterDataChanged(listAdapter: ListAdapter) {}
 
-  def setListAdapter(findAllResult: AnyRef, contextItems: List[AnyRef], activity: ListActivity) {
+  def setListAdapter(findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: ListActivity) {
     throw new UnsupportedOperationException
   }
 

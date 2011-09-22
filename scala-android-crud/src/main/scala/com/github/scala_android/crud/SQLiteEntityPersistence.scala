@@ -9,6 +9,7 @@ import scala.None
 import collection.mutable.SynchronizedQueue
 import android.app.backup.BackupManager
 import android.database.sqlite.{SQLiteOpenHelper, SQLiteDatabase}
+import android.net.Uri
 
 /**
  * EntityPersistence for SQLite.
@@ -29,9 +30,7 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudType, crudContext: CrudC
   override lazy val logTag = classOf[CrudPersistence].getName +
           "(" + entityType.entityName + ")"
 
-  def newCriteria: SQLiteCriteria = new SQLiteCriteria
-
-  final def findAll(criteria: AnyRef): Cursor = findAll(criteria.asInstanceOf[SQLiteCriteria])
+  def findAll(uri: Uri): Seq[Cursor] = toSeq(findAll(entityType.transform(new SQLiteCriteria, uri)))
 
   def findAll(criteria: SQLiteCriteria): Cursor = {
     debug("Finding each " + entityType.entityName + " for " + queryFieldNames.mkString(",") + " where " + criteria.selection)
@@ -41,16 +40,15 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudType, crudContext: CrudC
     cursor
   }
 
-  def toIterator(list: AnyRef): Iterator[Cursor] = toIterator(list.asInstanceOf[Cursor])
-
-  def toIterator(list: Cursor) = new CalculatedIterator[Cursor] {
+  def toSeq(list: Cursor) = new CalculatedIterator[Cursor] {
     def calculateNextValue() = if (list.moveToNext) Some(list) else {
       list.close()
       None
     }
-  }
+  }.toSeq
 
-  def find(id: ID): Option[Cursor] = {
+  //todo delete?
+  override def find(id: ID): Option[Cursor] = {
     debug("Finding " + entityType.entityName + " for " + queryFieldNames.mkString(",") + " where " + BaseColumns._ID + "=" + id)
     val cursor = database.query(entityType.entityName, queryFieldNames.toArray,
       BaseColumns._ID + "=" + id, Nil.toArray, null, null, null)

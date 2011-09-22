@@ -34,6 +34,8 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
 
   lazy val intentIdField = intentId(entityName) + uriId(entityName)
 
+  def toUri(id: ID) = EntityUriSegment(entityName, id.toString).specifyInUri(Uri.EMPTY)
+
   def idField = IdPk.idField
 
   /**
@@ -237,11 +239,11 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
 
   def setListAdapter(persistence: CrudPersistence, crudContext: CrudContext, activity: ListActivity) {
     val intent = activity.getIntent
-    val findAllResult = persistence.findAll(persistence.toCriteria(intent.getData))
+    val findAllResult = persistence.findAll(intent.getData)
     setListAdapter(findAllResult, List(intent, crudContext, Unit), activity)
   }
 
-  def setListAdapter(findAllResult: AnyRef, contextItems: List[AnyRef], activity: ListActivity)
+  def setListAdapter(findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: ListActivity)
 
   def refreshAfterDataChanged(listAdapter: ListAdapter)
 

@@ -1,8 +1,7 @@
 package com.github.scala_android.crud
 
-import action.EntityUriSegment
 import android.net.Uri
-import persistence.{ListBufferEntityPersistence, SeqEntityPersistence, UriEntityPersistence}
+import persistence.{ListBufferEntityPersistence, SeqEntityPersistence, EntityPersistence}
 
 /**
  * An EntityPersistence for a CrudType.
@@ -11,17 +10,13 @@ import persistence.{ListBufferEntityPersistence, SeqEntityPersistence, UriEntity
  * Time: 6:39 AM
  */
 
-trait CrudPersistence extends UriEntityPersistence {
+trait CrudPersistence extends EntityPersistence {
   def entityType: CrudType
 
-  def toUri(id: ID) = EntityUriSegment(entityType.entityName, id.toString).specifyInUri(Uri.EMPTY)
+  def toUri(id: ID) = entityType.toUri(id)
 
-  def toCriteria(uri: Uri): AnyRef = entityType.transform(newCriteria, uri)
-
-  def findAsIterator[T <: AnyRef](criteria: AnyRef, instantiateItem: => T): Iterator[T] =
-    toIterator(findAll(criteria)).map(entity => {
-      entityType.transform(instantiateItem, entity)
-    })
+  def findAll[T <: AnyRef](uri: Uri, instantiateItem: => T): Seq[T] =
+    findAll(uri).map(entityType.transform(instantiateItem, _))
 }
 
 trait SeqCrudPersistence[T <: AnyRef] extends SeqEntityPersistence[T] with CrudPersistence

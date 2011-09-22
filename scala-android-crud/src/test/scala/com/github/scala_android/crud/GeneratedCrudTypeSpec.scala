@@ -38,10 +38,8 @@ class GeneratedCrudTypeSpec extends Spec with MustMatchers with MyEntityTesting 
     }
     expecting {
       val uri = toUri(otherType.entityName, "123")
-      val criteriaMap = mutable.Map[String, Any](ParentField(otherType).fieldName -> 123L)
       call(activity.getIntent).andReturn(new Intent("List", uri))
-      call(seqPersistence.toCriteria(uri)).andReturn(criteriaMap)
-      call(seqPersistence.findAll(criteriaMap)).andReturn(List.empty)
+      call(seqPersistence.findAll(uri)).andReturn(List.empty)
       call(activity.setListAdapter(notNull())).andAnswer(listAdapterCapture)
       call(seqPersistence.entityType).andStubReturn(generatedType)
     }

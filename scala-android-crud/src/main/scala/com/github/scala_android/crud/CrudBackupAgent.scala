@@ -74,8 +74,7 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Log
 
   def onBackup(entityType: CrudType, data: BackupTarget, crudContext: CrudContext) {
     entityType.withEntityPersistence[Unit](crudContext, persistence => {
-      val all = persistence.findAll(persistence.newCriteria)
-      persistence.toIterator(all).foreach(entity => {
+      persistence.findAll(Uri.EMPTY).foreach(entity => {
         val map = entityType.transform(Map[String,Any](), entity)
         val id = persistedId(entity)
         data.writeEntity(entityType.entityName + "#" + id, Some(map))
@@ -196,7 +195,7 @@ object DeletedEntityIdCrudType extends SQLiteCrudType with HiddenEntityType {
   def writeEntityRemovals(data: BackupTarget, context: Context) {
     val crudContext = new CrudContext(context, application)
     withEntityPersistence(crudContext, { persistence =>
-      persistence.toIterator(persistence.findAll(persistence.toCriteria(Uri.EMPTY))).foreach { entity =>
+      persistence.findAll(Uri.EMPTY).foreach { entity =>
         val deletedEntityName: String = entityNameField(entity)
         val deletedId: ID = entityIdField(entity)
         data.writeEntity(deletedEntityName + "#" + deletedId, None)

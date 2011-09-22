@@ -8,6 +8,7 @@ import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.scalatest.matchers.MustMatchers
 import com.github.triangle._
 import persistence.CursorField._
+import persistence.SQLiteCriteria
 import PortableField._
 import res.R
 import android.net.Uri
@@ -69,7 +70,7 @@ class SQLiteCrudTypeSpec extends MustMatchers with Logging with MyEntityTesting 
     stub(crudContext.application).toReturn(TestApplication)
 
     val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext)
-    val result = persistence.findAll(persistence.newCriteria)
+    val result = persistence.findAll(new SQLiteCriteria())
     result.getColumnIndex(BaseColumns._ID) must be (0)
     result.getColumnIndex("age") must be (1)
   }
@@ -86,7 +87,7 @@ class SQLiteCrudTypeSpec extends MustMatchers with Logging with MyEntityTesting 
     TestEntityType.copy(Unit, writable)
     val id = persistence.save(None, writable)
     val cursors = List(
-      persistence.findAll(persistence.newCriteria),
+      persistence.findAll(new SQLiteCriteria()),
       persistence.find(id).get
     )
     persistence.close()

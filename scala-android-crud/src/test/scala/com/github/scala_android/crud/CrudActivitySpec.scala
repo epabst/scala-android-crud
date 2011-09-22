@@ -11,6 +11,7 @@ import org.scalatest.matchers.MustMatchers
 import Action._
 import android.widget.ListAdapter
 import java.lang.IllegalStateException
+import android.net.Uri
 
 /**
  * A test for {@link CrudListActivity}.
@@ -77,13 +78,13 @@ class CrudActivitySpec extends EasyMockSugar with MustMatchers with MyEntityTest
     val listAdapter = mock[ListAdapter]
     val application = mock[CrudApplication]
     expecting {
-      call(persistence.findAll(Unit)).andReturn(List[Map[String,Any]]())
+      call(persistence.findAll(Uri.EMPTY)).andReturn(List[Map[String,Any]]())
       call(persistence.close())
     }
     whenExecuting(persistence, listAdapter, application) {
       val entityType = new MyEntityType(persistence, listAdapter)
       val activity = new CrudActivity(entityType, application)
-      activity.withPersistence(p => p.findAll(Unit))
+      activity.withPersistence(p => p.findAll(Uri.EMPTY))
     }
   }
 
