@@ -9,6 +9,7 @@ import scala.collection.JavaConversions._
 import java.util.{Map => JMap,HashMap}
 import android.content.Context
 import android.net.Uri
+import collection.BufferedIterator
 
 object CrudBackupAgent {
   private val backupStrategyVersion: Int = 1
@@ -130,7 +131,7 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Log
   }
 }
 
-private[crud] trait CalculatedIterator[T] extends Iterator[T] {
+private[crud] trait CalculatedIterator[T] extends BufferedIterator[T] {
   private var calculatedNextValue: Option[Option[T]] = None
 
   def calculateNextValue(): Option[T]
@@ -144,8 +145,10 @@ private[crud] trait CalculatedIterator[T] extends Iterator[T] {
 
   def hasNext = determineNextValue().isDefined
 
+  def head = determineNextValue().get
+
   def next() = {
-    val next = determineNextValue().get
+    val next = head
     calculatedNextValue = None
     next
   }

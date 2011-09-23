@@ -30,8 +30,6 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudType, crudContext: CrudC
   override lazy val logTag = classOf[CrudPersistence].getName +
           "(" + entityType.entityName + ")"
 
-  def findAll(uri: Uri): Seq[Cursor] = toSeq(findAll(entityType.transform(new SQLiteCriteria, uri)))
-
   def findAll(criteria: SQLiteCriteria): Cursor = {
     debug("Finding each " + entityType.entityName + " for " + queryFieldNames.mkString(",") + " where " + criteria.selection)
     val cursor = database.query(entityType.entityName, queryFieldNames.toArray,
@@ -40,12 +38,7 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudType, crudContext: CrudC
     cursor
   }
 
-  def toSeq(list: Cursor) = new CalculatedIterator[Cursor] {
-    def calculateNextValue() = if (list.moveToNext) Some(list) else {
-      list.close()
-      None
-    }
-  }.toSeq
+  def findAll(uri: Uri) = CursorStream(findAll(entityType.transform(new SQLiteCriteria, uri)))
 
   //todo delete?
   override def find(id: ID): Option[Cursor] = {
@@ -110,6 +103,26 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudType, crudContext: CrudC
     cursors.map(_.close())
     database.close()
   }
+}
+
+case class CursorStream(cursor: Cursor) extends Stream[Cursor] {
+  private val cursorIterator = new CalculatedIterator[Cursor] {
+    def calculateNextValue() = if (cursor.moveToNext) Some(cursor) else {
+      cursor.close()
+      None
+    }
+  }
+
+  override def isEmpty = cursorIterator.isEmpty
+
+  override def head = cursorIterator.head
+
+  override def tail = {
+    cursorIterator.next()
+    this
+  }
+
+  protected def tailDefined = cursor.getPosition < cursor.getCount - 1
 }
 
 class GeneratedDatabaseSetup(crudContext: CrudContext) extends SQLiteOpenHelper(crudContext.context, crudContext.application.nameId, null, 1) with Logging {
