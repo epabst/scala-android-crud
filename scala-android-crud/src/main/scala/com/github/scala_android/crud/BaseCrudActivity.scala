@@ -1,6 +1,6 @@
 package com.github.scala_android.crud
 
-import action.{Action, EntityUriSegment}
+import action.{Action, UriPath}
 import android.app.Activity
 import common.{Timing, PlatformTypes}
 import com.github.triangle.Logging
@@ -25,7 +25,7 @@ trait BaseCrudActivity extends Activity with PlatformTypes with Logging with Tim
 
   def currentUri: Uri = getIntent.getData
 
-  def uriWithId(id: ID): Uri = EntityUriSegment(entityType.entityName, id.toString).specifyInUri(currentUri)
+  def uriWithId(id: ID): Uri = UriPath(entityType.entityName, id.toString).specifyInUri(currentUri)
 
   val crudContext = new CrudContext(this, application)
 

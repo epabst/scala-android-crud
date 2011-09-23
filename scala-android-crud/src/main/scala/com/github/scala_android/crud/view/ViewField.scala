@@ -4,7 +4,7 @@ import _root_.android.app.Activity
 import _root_.android.content.Intent
 import _root_.android.view.View
 import _root_.android.widget.{ArrayAdapter, Spinner, DatePicker, TextView}
-import com.github.scala_android.crud.action.EntityUriSegment
+import com.github.scala_android.crud.action.UriPath
 import com.github.scala_android.crud.common.PlatformTypes
 import com.github.triangle._
 import PortableField._
@@ -150,12 +150,12 @@ object ViewField extends PlatformTypes {
   }
 
   def intentId(entityName: String): FieldGetter[Intent,ID] = {
-    val uriSegment = EntityUriSegment(entityName)
+    val uriSegment = UriPath(entityName)
     PortableField.readOnly[Intent,ID](intent => uriSegment.findId(intent.getData))
   }
 
   def uriId(entityName: String): FieldGetter[Uri,ID] = {
-    val uriSegment = EntityUriSegment(entityName)
+    val uriSegment = UriPath(entityName)
     PortableField.readOnly[Uri,ID](uri => uriSegment.findId(uri))
   }
 }

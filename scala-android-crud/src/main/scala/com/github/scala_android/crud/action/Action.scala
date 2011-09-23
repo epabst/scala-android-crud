@@ -61,28 +61,6 @@ trait StartActivityAction extends Action {
   }
 }
 
-case class EntityUriSegment(entityName: String, detail: String*) extends PlatformTypes {
-  import JavaConversions._
-  private val idFormat = basicFormat[ID]
-
-  def specifyInUri(currentUri: Uri): Uri =
-    replacePathSegments(currentUri, _.takeWhile(_ != entityName) ::: entityName :: detail.toList)
-
-  def findId(currentUri: Uri): Option[ID] =
-    currentUri.getPathSegments.toList.dropWhile(_ != entityName) match {
-      case nameString :: idString :: x => idFormat.toValue(idString)
-      case _ => None
-    }
-
-  def keepUpToTheIdInUri(currentUri: Uri): Uri =
-    EntityUriSegment(entityName, findId(currentUri).get.toString).specifyInUri(currentUri)
-
-  private def replacePathSegments(uri: Uri, f: List[String] => List[String]): Uri = {
-    val path = f(uri.getPathSegments.toList)
-    Action.toUri(path: _*)
-  }
-}
-
 //final to guarantee equality is correct
 final case class StartNamedActivityAction(action: String,
                                           icon: Option[PlatformTypes#ImgKey], title: Option[PlatformTypes#SKey],
@@ -94,7 +72,7 @@ trait EntityAction extends Action {
 }
 
 //final to guarantee equality is correct
-final case class StartEntityActivityAction(entityUriSegment: EntityUriSegment, action: String,
+final case class StartEntityActivityAction(entityUriSegment: UriPath, action: String,
                                            icon: Option[PlatformTypes#ImgKey], title: Option[PlatformTypes#SKey],
                                            activityClass: Class[_ <: Activity]) extends StartActivityAction with EntityAction {
   def entityName = entityUriSegment.entityName
@@ -107,7 +85,7 @@ final case class StartEntityActivityAction(entityUriSegment: EntityUriSegment, a
 final case class StartEntityIdActivityAction(entityName: String, action: String,
                                              icon: Option[PlatformTypes#ImgKey], title: Option[PlatformTypes#SKey],
                                              activityClass: Class[_ <: Activity]) extends StartActivityAction with EntityAction {
-  val entityUriSegmentWithoutId = EntityUriSegment(entityName)
+  val entityUriSegmentWithoutId = UriPath(entityName)
 
   override def determineIntent(uri: Uri, activity: Activity) =
     super.determineIntent(entityUriSegmentWithoutId.keepUpToTheIdInUri(uri), activity)

@@ -34,7 +34,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
 
   lazy val intentIdField = intentId(entityName) + uriId(entityName)
 
-  def toUri(id: ID) = EntityUriSegment(entityName, id.toString).specifyInUri(Uri.EMPTY)
+  def toUri(id: ID) = UriPath(entityName, id.toString).specifyInUri(Uri.EMPTY)
 
   def idField = IdPk.idField
 
@@ -85,13 +85,13 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
    * Gets the action to display a UI for a user to fill in data for creating an entity.
    * The target Activity should copy Unit into the UI using entityType.copy to populate defaults.
    */
-  lazy val createAction = new StartEntityActivityAction(EntityUriSegment(entityName), CreateActionName,
+  lazy val createAction = new StartEntityActivityAction(UriPath(entityName), CreateActionName,
     android.R.drawable.ic_menu_add, addItemString, activityClass)
 
   /**
    * Gets the action to display the list that matches the criteria copied from criteriaSource using entityType.copy.
    */
-  lazy val listAction = new StartEntityActivityAction(EntityUriSegment(entityName), ListActionName,
+  lazy val listAction = new StartEntityActivityAction(UriPath(entityName), ListActionName,
     None, listItemsString, listActivityClass)
 
   protected def entityAction(action: String, icon: Option[PlatformTypes#ImgKey], title: Option[PlatformTypes#SKey],
@@ -112,7 +112,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
     def invoke(uri: Uri, activity: Activity) {
       activity match {
         case crudActivity: BaseCrudActivity =>
-          startDelete(EntityUriSegment(entityName).findId(uri).get, crudActivity)
+          startDelete(UriPath(entityName).findId(uri).get, crudActivity)
       }
     }
   }
@@ -121,7 +121,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
   def listActivityClass: Class[_ <: CrudListActivity]
   def activityClass: Class[_ <: CrudActivity]
 
-  def findId(uri: Uri): Option[ID] = new EntityUriSegment(entityName).findId(uri)
+  def findId(uri: Uri): Option[ID] = new UriPath(entityName).findId(uri)
 
   def copyFromPersistedEntity(intentWithId: Intent, crudContext: CrudContext): Option[PortableValue] = {
     findId(intentWithId.getData).flatMap { id =>

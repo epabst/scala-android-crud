@@ -1,7 +1,7 @@
 package com.github.scala_android.crud
 
 import _root_.android.content.Intent
-import action.EntityUriSegment
+import action.UriPath
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito._
@@ -87,7 +87,7 @@ class CrudTypeActionsSpec extends MyEntityTesting with MustMatchers with CrudMoc
     }
     val id = 345L
     stub(persistence.find(id)).toReturn(Some(Unit))
-    entityType.deleteAction.invoke(EntityUriSegment(entityType.entityName, id.toString).specifyInUri(Uri.EMPTY), currentActivity)
+    entityType.deleteAction.invoke(UriPath(entityType.entityName, id.toString).specifyInUri(Uri.EMPTY), currentActivity)
   }
 
   @Test
@@ -99,14 +99,5 @@ class CrudTypeActionsSpec extends MyEntityTesting with MustMatchers with CrudMoc
       MyCrudType.displayAction.determineIntent(toUri("foo"), activity).getAction must be (Intent.ACTION_VIEW)
       MyCrudType.updateAction.determineIntent(toUri("foo"), activity).getAction must be (Intent.ACTION_EDIT)
     }
-  }
-
-  @Test
-  def segmentShouldFindId() {
-    EntityUriSegment(entityName).findId(toUri("foo")) must be (None)
-    EntityUriSegment(entityName).findId(toUri(entityName)) must be (None)
-    EntityUriSegment(entityName).findId(toUri(entityName, "123")) must be (Some(123))
-    EntityUriSegment(entityName).findId(toUri(entityName, "123", "foo")) must be (Some(123))
-    EntityUriSegment(entityName).findId(toUri(entityName, "blah")) must be (None)
   }
 }
