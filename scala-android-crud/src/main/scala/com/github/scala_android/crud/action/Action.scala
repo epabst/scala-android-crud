@@ -80,7 +80,7 @@ final case class StartEntityActivityAction(entityName: String, action: String,
                                            icon: Option[PlatformTypes#ImgKey], title: Option[PlatformTypes#SKey],
                                            activityClass: Class[_ <: Activity]) extends StartActivityAction with EntityAction {
   override def determineIntent(uri: UriPath, activity: Activity): Intent =
-    super.determineIntent(UriPath(entityName).specifyInUri(uri), activity)
+    super.determineIntent(uri.specifyInUri(entityName), activity)
 }
 
 //final to guarantee equality is correct

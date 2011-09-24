@@ -86,7 +86,7 @@ class CrudTypeActionsSpec extends MyEntityTesting with MustMatchers with CrudMoc
     }
     val id = 345L
     stub(persistence.find(id)).toReturn(Some(Unit))
-    entityType.deleteAction.invoke(UriPath(entityType.entityName, id.toString).specifyInUri(UriPath.EMPTY), currentActivity)
+    entityType.deleteAction.invoke(UriPath(entityType.entityName, id.toString), currentActivity)
   }
 
   @Test

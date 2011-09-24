@@ -33,7 +33,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
 
   lazy val uriPathId = uriIdField(entityName)
 
-  def toUri(id: ID) = UriPath(entityName, id.toString).specifyInUri(UriPath.EMPTY)
+  def toUri(id: ID) = UriPath(entityName, id.toString)
 
   def idField = IdPk.idField
 

@@ -16,10 +16,10 @@ case class UriPath(segments: String*) extends PlatformTypes {
 
   def /(segment: String): UriPath = UriPath(segments :+ segment:_*)
 
-  def /(id: Long): UriPath = this / id.toString
+  def /(id: ID): UriPath = this / idFormat.toString(id)
 
-  def specifyInUri(currentUri: UriPath): UriPath =
-    replacePathSegments(currentUri, _.takeWhile(_ != segments.head) ++ segments.toList)
+  def specifyInUri(finalSegments: String*): UriPath =
+    UriPath.replacePathSegments(this, _.takeWhile(_ != finalSegments.head) ++ finalSegments.toList)
 
   def findId(currentUri: UriPath): Option[ID] =
     currentUri.segments.dropWhile(_ != segments.head).toList match {
@@ -28,12 +28,7 @@ case class UriPath(segments: String*) extends PlatformTypes {
     }
 
   def keepUpToTheIdInUri(currentUri: UriPath): UriPath =
-    UriPath(segments.head, findId(currentUri).get.toString).specifyInUri(currentUri)
-
-  private def replacePathSegments(uri: UriPath, f: Seq[String] => Seq[String]): UriPath = {
-    val path = f(uri.segments)
-    UriPath(path: _*)
-  }
+    currentUri.specifyInUri(segments.head, findId(currentUri).get.toString)
 
   override def toString = segments.mkString("/", "/", "")
 }
@@ -43,4 +38,9 @@ object UriPath {
 
   import scala.collection.JavaConversions._
   def apply(uri: Uri): UriPath = UriPath(uri.getPathSegments.toList:_*)
+
+  private[UriPath] def replacePathSegments(uri: UriPath, f: Seq[String] => Seq[String]): UriPath = {
+    val path = f(uri.segments)
+    UriPath(path: _*)
+  }
 }

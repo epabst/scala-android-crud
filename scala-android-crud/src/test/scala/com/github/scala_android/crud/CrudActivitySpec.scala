@@ -36,7 +36,7 @@ class CrudActivitySpec extends EasyMockSugar with MustMatchers with MyEntityTest
     }
     whenExecuting(persistence, listAdapter, application) {
       val activity = new CrudActivity(entityType, application) {
-        override val currentAction = UpdateActionName
+        override lazy val currentAction = UpdateActionName
         override lazy val currentUriPath = uri
       }
       activity.onCreate(null)
@@ -61,7 +61,7 @@ class CrudActivitySpec extends EasyMockSugar with MustMatchers with MyEntityTest
     }
     whenExecuting(persistence, listAdapter, application) {
       val activity = new CrudActivity(entityType, application) {
-        override val currentAction = UpdateActionName
+        override lazy val currentAction = UpdateActionName
         override lazy val currentUriPath = uri
         override def future[T](body: => T) = new ReadyFuture[T](body)
       }
