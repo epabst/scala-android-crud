@@ -111,7 +111,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
     def invoke(uri: UriPath, activity: Activity) {
       activity match {
         case crudActivity: BaseCrudActivity =>
-          startDelete(UriPath(entityName).findId(uri).get, crudActivity)
+          startDelete(uri.findId(entityName).get, crudActivity)
       }
     }
   }
@@ -120,7 +120,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
   def listActivityClass: Class[_ <: CrudListActivity]
   def activityClass: Class[_ <: CrudActivity]
 
-  def findId(uri: UriPath): Option[ID] = new UriPath(entityName).findId(uri)
+  def findId(uri: UriPath): Option[ID] = uri.findId(entityName)
 
   def copyFromPersistedEntity(uriPathWithId: UriPath, crudContext: CrudContext): Option[PortableValue] = {
     findId(uriPathWithId).flatMap { id =>

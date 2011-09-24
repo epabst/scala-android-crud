@@ -2,7 +2,6 @@ package com.github.scala_android.crud.action
 
 import org.junit.runner.RunWith
 import org.junit.Test
-import com.github.scala_android.crud.action.Action._
 import com.github.scala_android.crud.MyCrudType
 import org.scalatest.matchers.MustMatchers
 import com.xtremelabs.robolectric.RobolectricTestRunner
@@ -17,12 +16,12 @@ import com.xtremelabs.robolectric.RobolectricTestRunner
 class UriPathSpec extends MustMatchers {
 
   @Test
-  def segmentShouldFindId() {
+  def mustFindTheIdFollowingTheEntityName() {
     val entityName = MyCrudType.entityName
-    UriPath(entityName).findId(UriPath("foo")) must be (None)
-    UriPath(entityName).findId(UriPath(entityName)) must be (None)
-    UriPath(entityName).findId(UriPath(entityName, "123")) must be (Some(123))
-    UriPath(entityName).findId(UriPath(entityName, "123", "foo")) must be (Some(123))
-    UriPath(entityName).findId(UriPath(entityName, "blah")) must be (None)
+    UriPath("foo").findId(entityName) must be (None)
+    UriPath(entityName).findId(entityName) must be (None)
+    UriPath(entityName, "123").findId(entityName) must be (Some(123))
+    UriPath(entityName, "123", "foo").findId(entityName) must be (Some(123))
+    UriPath(entityName, "blah").findId(entityName) must be (None)
   }
 }

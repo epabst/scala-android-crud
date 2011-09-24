@@ -80,15 +80,12 @@ final case class StartEntityActivityAction(entityName: String, action: String,
                                            icon: Option[PlatformTypes#ImgKey], title: Option[PlatformTypes#SKey],
                                            activityClass: Class[_ <: Activity]) extends StartActivityAction with EntityAction {
   override def determineIntent(uri: UriPath, activity: Activity): Intent =
-    super.determineIntent(uri.specifyInUri(entityName), activity)
+    super.determineIntent(uri.specify(entityName), activity)
 }
 
 //final to guarantee equality is correct
 final case class StartEntityIdActivityAction(entityName: String, action: String,
                                              icon: Option[PlatformTypes#ImgKey], title: Option[PlatformTypes#SKey],
                                              activityClass: Class[_ <: Activity]) extends StartActivityAction with EntityAction {
-  private val uriPathWithoutId = UriPath(entityName)
-
-  override def determineIntent(uri: UriPath, activity: Activity) =
-    super.determineIntent(uriPathWithoutId.keepUpToTheIdInUri(uri), activity)
+  override def determineIntent(uri: UriPath, activity: Activity) = super.determineIntent(uri.upToIdOf(entityName), activity)
 }

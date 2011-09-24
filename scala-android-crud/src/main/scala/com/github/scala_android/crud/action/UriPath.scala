@@ -18,17 +18,16 @@ case class UriPath(segments: String*) extends PlatformTypes {
 
   def /(id: ID): UriPath = this / idFormat.toString(id)
 
-  def specifyInUri(finalSegments: String*): UriPath =
+  def specify(finalSegments: String*): UriPath =
     UriPath.replacePathSegments(this, _.takeWhile(_ != finalSegments.head) ++ finalSegments.toList)
 
-  def findId(currentUri: UriPath): Option[ID] =
-    currentUri.segments.dropWhile(_ != segments.head).toList match {
-      case nameString :: idString :: x => idFormat.toValue(idString)
+  def findId(entityName: String): Option[ID] =
+    segments.dropWhile(_ != entityName).toList match {
+      case _ :: idString :: tail => idFormat.toValue(idString)
       case _ => None
     }
 
-  def keepUpToTheIdInUri(currentUri: UriPath): UriPath =
-    currentUri.specifyInUri(segments.head, findId(currentUri).get.toString)
+  def upToIdOf(entityName: String): UriPath = specify(entityName, findId(entityName).get.toString)
 
   override def toString = segments.mkString("/", "/", "")
 }

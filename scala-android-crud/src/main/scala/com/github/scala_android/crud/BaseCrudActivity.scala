@@ -33,7 +33,7 @@ trait BaseCrudActivity extends Activity with PlatformTypes with Logging with Tim
 
   lazy val currentAction: String = getIntent.getAction
 
-  def uriWithId(id: ID): UriPath = currentUriPath.specifyInUri(entityType.entityName, id.toString)
+  def uriWithId(id: ID): UriPath = currentUriPath.specify(entityType.entityName, id.toString)
 
   val crudContext = new CrudContext(this, application)
 

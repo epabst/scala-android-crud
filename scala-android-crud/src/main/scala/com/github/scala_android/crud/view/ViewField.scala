@@ -148,6 +148,6 @@ object ViewField extends PlatformTypes {
   }
 
   def uriIdField(entityName: String): FieldGetter[UriPath,ID] = {
-    PortableField.readOnly[UriPath,ID](uri => UriPath(entityName).findId(uri))
+    PortableField.readOnly[UriPath,ID](_.findId(entityName))
   }
 }
