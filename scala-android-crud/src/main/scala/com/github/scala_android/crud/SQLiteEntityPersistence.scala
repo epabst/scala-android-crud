@@ -38,7 +38,8 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudType, crudContext: CrudC
     cursor
   }
 
-  def findAll(uri: UriPath) = CursorStream(findAll(entityType.transform(new SQLiteCriteria, uri)))
+  //Unit is provided here in the item list for the sake of PortableField.adjustment[SQLiteCriteria] fields
+  def findAll(uri: UriPath) = CursorStream(findAll(entityType.transformWithItem(new SQLiteCriteria, List(uri, Unit))))
 
   //todo delete?
   override def find(id: ID): Option[Cursor] = {

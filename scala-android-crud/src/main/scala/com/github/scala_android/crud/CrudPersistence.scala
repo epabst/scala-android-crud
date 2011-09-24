@@ -24,15 +24,20 @@ trait SeqCrudPersistence[T <: AnyRef] extends SeqEntityPersistence[T] with CrudP
 trait ListBufferCrudPersistence[T <: AnyRef] extends SeqCrudPersistence[T] with ListBufferEntityPersistence[T]
 
 /**
- * An EntityPersistence that is derived from another CrudType's persistence.
+ * An EntityPersistence that is derived from other CrudType persistence(s).
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 9/20/11
  * Time: 9:30 PM
  */
 
-abstract class DerivedCrudPersistence[T <: AnyRef](val delegate: CrudType, val crudContext: CrudContext)
+abstract class DerivedCrudPersistence[T <: AnyRef](val crudContext: CrudContext, delegates: CrudType*)
         extends SeqCrudPersistence[T] {
-  val delegatePersistence = delegate.openEntityPersistence(crudContext)
+  val delegatePersistenceMap: Map[CrudType,CrudPersistence] =
+    Map.empty ++ delegates.toList.map(delegate => delegate -> delegate.openEntityPersistence(crudContext))
+  def delegatePersistence: CrudPersistence = delegatePersistenceMap(delegates.head)
 
-  override def close() { delegatePersistence.close() }
+  override def close() {
+    delegatePersistenceMap.values.foreach(_.close())
+    super.close()
+  }
 }
