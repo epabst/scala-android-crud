@@ -24,11 +24,9 @@ class CrudListActivity(val entityType: CrudType, val application: CrudApplicatio
 
     setContentView(entityType.listLayout)
 
-    // If no data was given in the intent (because we were started
-    // as a MAIN activity), then use our default content provider.
     val uriPath = currentUriPath
     future {
-      //copy each parent Entity's data to the Activity if identified in the Intent's URI
+      //copy each parent Entity's data to the Activity if identified in the currentUriPath
       val portableValues: List[PortableValue] = entityType.parentEntities.flatMap(_ match {
         case parentType: CrudType => parentType.copyFromPersistedEntity(uriPath, crudContext)
       })

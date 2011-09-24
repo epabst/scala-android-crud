@@ -7,7 +7,6 @@ import com.github.triangle._
 import PortableField._
 import view.ViewField._
 import persistence.CursorField._
-import android.content.Intent
 import android.widget.ListAdapter
 import res.R
 import android.app.ListActivity
@@ -32,7 +31,7 @@ trait MyEntityTesting {
       persisted[String]("name") + viewId(R.id.name, textView),
       persisted[Int]("age") + viewId(R.id.age, intView),
       //here to test a non-UI field
-      persisted[String]("uri") + readOnly[Intent,String](u => UriPath(u.getData).toString))
+      persisted[String]("uri") + readOnly[UriPath,String](u => u.toString))
 
     def newWritable = Map[String,Any]()
 

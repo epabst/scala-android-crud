@@ -1,12 +1,11 @@
 package com.github.scala_android.crud
 
-import action.{Action, UriPath}
+import action.Action
 import android.app.Activity
 import common.{Timing, PlatformTypes}
 import com.github.triangle.Logging
 import action.UriPath
 import android.view.{MenuItem, Menu}
-import android.os.Bundle
 
 /**
  * Support for the different Crud Activity's.
@@ -20,20 +19,19 @@ trait BaseCrudActivity extends Activity with PlatformTypes with Logging with Tim
 
   def application: CrudApplication
 
-  lazy val contentProviderAuthority = application.getClass.getPackage.toString
+  lazy val contentProviderAuthority = Option(application.getClass.getPackage).getOrElse(getClass.getPackage).toString
   lazy val defaultContentUri = UriPath("content://" + contentProviderAuthority) / entityType.entityName
 
   lazy val currentUriPath: UriPath = {
-    val intent = getIntent
-    if (intent.getData == null) {
-      intent.setData(Action.toUri(defaultContentUri))
+    Option(getIntent).map(i => Option(i.getData).map(UriPath(_)).getOrElse {
+      // If no data was given in the intent (because we were started
+      // as a MAIN activity), then use our default content provider.
+      getIntent.setData(Action.toUri(defaultContentUri))
       defaultContentUri
-    } else {
-      UriPath(intent.getData)
-    }
+    }).getOrElse(defaultContentUri)
   }
 
-  val currentAction: String = getIntent.getAction
+  lazy val currentAction: String = getIntent.getAction
 
   def uriWithId(id: ID): UriPath = UriPath(entityType.entityName, id.toString).specifyInUri(currentUriPath)
 

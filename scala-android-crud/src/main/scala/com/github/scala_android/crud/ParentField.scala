@@ -14,7 +14,7 @@ import com.github.triangle.{BaseField, DelegatingPortableField}
 case class ParentField(entityType: CrudType) extends PlatformTypes with DelegatingPortableField[ID] {
   val fieldName = entityType.entityName.toLowerCase + BaseColumns._ID
 
-  protected val delegate = entityType.intentIdField
+  protected val delegate = entityType.uriPathId
 
   override def toString = "ParentField(" + entityType.entityName + ")"
 }

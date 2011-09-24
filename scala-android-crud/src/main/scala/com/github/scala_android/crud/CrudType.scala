@@ -6,7 +6,6 @@ import android.view.View
 import com.github.triangle.JavaUtil._
 import common.{Timing, PlatformTypes}
 import android.database.DataSetObserver
-import android.content.Intent
 import android.widget.{ListAdapter, BaseAdapter}
 import persistence.{PersistenceListener, IdPk, EntityPersistence}
 import Action._
@@ -32,7 +31,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
    */
   final lazy val fields: List[BaseField] = idField +: valueFields
 
-  lazy val intentIdField = intentId(entityName) + uriId(entityName)
+  lazy val uriPathId = uriIdField(entityName)
 
   def toUri(id: ID) = UriPath(entityName, id.toString).specifyInUri(UriPath.EMPTY)
 
@@ -123,10 +122,9 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
 
   def findId(uri: UriPath): Option[ID] = new UriPath(entityName).findId(uri)
 
-  //todo stop using Intent if possible here
-  def copyFromPersistedEntity(intentWithId: Intent, crudContext: CrudContext): Option[PortableValue] = {
-    findId(UriPath(intentWithId.getData)).flatMap { id =>
-      val contextItems = List(intentWithId, crudContext, Unit)
+  def copyFromPersistedEntity(uriPathWithId: UriPath, crudContext: CrudContext): Option[PortableValue] = {
+    findId(uriPathWithId).flatMap { id =>
+      val contextItems = List(uriPathWithId, crudContext, Unit)
       withEntityPersistence(crudContext, _.find(id).map { readable =>
         debug("Copying " + entityName + "#" + id + " to " + this)
         copyFromItem(readable :: contextItems)

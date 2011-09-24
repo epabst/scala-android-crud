@@ -1,15 +1,13 @@
 package com.github.scala_android.crud
 
-import action.{UriPath, Action}
+import action.UriPath
 import org.junit.runner.RunWith
 import scala.collection.mutable
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.Spec
 import android.widget.ListAdapter
-import android.content.Intent
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.junit.Test
-import android.app.ListActivity
 import org.easymock.EasyMock._
 import ParentField.foreignKey
 
@@ -24,7 +22,7 @@ import ParentField.foreignKey
 class GeneratedCrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with CrudEasyMockSugar {
 
   @Test
-  def itMustCreateListAdapterWithIntentUsedForCriteria() {
+  def itMustCreateListAdapterWithUriPathUsedForCriteria() {
     val seqPersistence = mock[SeqCrudPersistence[mutable.Map[String,Any]]]
     val crudContext = mock[CrudContext]
     val activity = mock[CrudListActivity]
@@ -38,7 +36,7 @@ class GeneratedCrudTypeSpec extends Spec with MustMatchers with MyEntityTesting 
     }
     expecting {
       val uri = UriPath(otherType.entityName, "123")
-      call(activity.currentUriPath).andReturn(uri)
+      call(activity.currentUriPath).andStubReturn(uri)
       call(seqPersistence.findAll(uri)).andReturn(List.empty)
       call(activity.setListAdapter(notNull())).andAnswer(listAdapterCapture)
       call(seqPersistence.entityType).andStubReturn(generatedType)
