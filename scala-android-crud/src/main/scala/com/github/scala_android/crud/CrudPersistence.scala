@@ -1,6 +1,6 @@
 package com.github.scala_android.crud
 
-import android.net.Uri
+import action.UriPath
 import persistence.{ListBufferEntityPersistence, SeqEntityPersistence, EntityPersistence}
 
 /**
@@ -15,7 +15,7 @@ trait CrudPersistence extends EntityPersistence {
 
   def toUri(id: ID) = entityType.toUri(id)
 
-  def findAll[T <: AnyRef](uri: Uri, instantiateItem: => T): Seq[T] =
+  def findAll[T <: AnyRef](uri: UriPath, instantiateItem: => T): Seq[T] =
     findAll(uri).map(entityType.transform(instantiateItem, _))
 }
 

@@ -1,7 +1,7 @@
 package com.github.scala_android.crud
 
 import action._
-import android.net.Uri
+import action.UriPath
 import android.view.View
 import com.github.triangle.JavaUtil._
 import common.{Timing, PlatformTypes}
@@ -34,7 +34,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
 
   lazy val intentIdField = intentId(entityName) + uriId(entityName)
 
-  def toUri(id: ID) = UriPath(entityName, id.toString).specifyInUri(Uri.EMPTY)
+  def toUri(id: ID) = UriPath(entityName, id.toString).specifyInUri(UriPath.EMPTY)
 
   def idField = IdPk.idField
 
@@ -85,13 +85,13 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
    * Gets the action to display a UI for a user to fill in data for creating an entity.
    * The target Activity should copy Unit into the UI using entityType.copy to populate defaults.
    */
-  lazy val createAction = new StartEntityActivityAction(UriPath(entityName), CreateActionName,
+  lazy val createAction = new StartEntityActivityAction(entityName, CreateActionName,
     android.R.drawable.ic_menu_add, addItemString, activityClass)
 
   /**
    * Gets the action to display the list that matches the criteria copied from criteriaSource using entityType.copy.
    */
-  lazy val listAction = new StartEntityActivityAction(UriPath(entityName), ListActionName,
+  lazy val listAction = new StartEntityActivityAction(entityName, ListActionName,
     None, listItemsString, listActivityClass)
 
   protected def entityAction(action: String, icon: Option[PlatformTypes#ImgKey], title: Option[PlatformTypes#SKey],
@@ -99,17 +99,17 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
     new StartEntityIdActivityAction(entityName, action, icon, title, activityClass)
 
   /**
-   * Gets the action to display the entity given the id in the Uri.
+   * Gets the action to display the entity given the id in the UriPath.
    */
   lazy val displayAction = entityAction(DisplayActionName, None, None, activityClass)
 
   /**
-   * Gets the action to display a UI for a user to edit data for an entity given its id in the Uri.
+   * Gets the action to display a UI for a user to edit data for an entity given its id in the UriPath.
    */
   lazy val updateAction = entityAction(UpdateActionName, android.R.drawable.ic_menu_edit, editItemString, activityClass)
 
   lazy val deleteAction = new RunnableAction(android.R.drawable.ic_menu_delete, deleteItemString) {
-    def invoke(uri: Uri, activity: Activity) {
+    def invoke(uri: UriPath, activity: Activity) {
       activity match {
         case crudActivity: BaseCrudActivity =>
           startDelete(UriPath(entityName).findId(uri).get, crudActivity)
@@ -121,10 +121,11 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
   def listActivityClass: Class[_ <: CrudListActivity]
   def activityClass: Class[_ <: CrudActivity]
 
-  def findId(uri: Uri): Option[ID] = new UriPath(entityName).findId(uri)
+  def findId(uri: UriPath): Option[ID] = new UriPath(entityName).findId(uri)
 
+  //todo stop using Intent if possible here
   def copyFromPersistedEntity(intentWithId: Intent, crudContext: CrudContext): Option[PortableValue] = {
-    findId(intentWithId.getData).flatMap { id =>
+    findId(UriPath(intentWithId.getData)).flatMap { id =>
       val contextItems = List(intentWithId, crudContext, Unit)
       withEntityPersistence(crudContext, _.find(id).map { readable =>
         debug("Copying " + entityName + "#" + id + " to " + this)
@@ -239,7 +240,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
 
   def setListAdapter(persistence: CrudPersistence, crudContext: CrudContext, activity: ListActivity) {
     val intent = activity.getIntent
-    val findAllResult = persistence.findAll(intent.getData)
+    val findAllResult = persistence.findAll(UriPath(intent.getData))
     setListAdapter(findAllResult, List(intent, crudContext, Unit), activity)
   }
 

@@ -19,10 +19,10 @@ class UriPathSpec extends MustMatchers {
   @Test
   def segmentShouldFindId() {
     val entityName = MyCrudType.entityName
-    UriPath(entityName).findId(toUri("foo")) must be (None)
-    UriPath(entityName).findId(toUri(entityName)) must be (None)
-    UriPath(entityName).findId(toUri(entityName, "123")) must be (Some(123))
-    UriPath(entityName).findId(toUri(entityName, "123", "foo")) must be (Some(123))
-    UriPath(entityName).findId(toUri(entityName, "blah")) must be (None)
+    UriPath(entityName).findId(UriPath("foo")) must be (None)
+    UriPath(entityName).findId(UriPath(entityName)) must be (None)
+    UriPath(entityName).findId(UriPath(entityName, "123")) must be (Some(123))
+    UriPath(entityName).findId(UriPath(entityName, "123", "foo")) must be (Some(123))
+    UriPath(entityName).findId(UriPath(entityName, "blah")) must be (None)
   }
 }

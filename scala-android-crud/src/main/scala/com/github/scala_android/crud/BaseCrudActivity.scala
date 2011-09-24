@@ -4,7 +4,7 @@ import action.{Action, UriPath}
 import android.app.Activity
 import common.{Timing, PlatformTypes}
 import com.github.triangle.Logging
-import android.net.Uri
+import action.UriPath
 import android.view.{MenuItem, Menu}
 import android.os.Bundle
 
@@ -21,11 +21,11 @@ trait BaseCrudActivity extends Activity with PlatformTypes with Logging with Tim
   def application: CrudApplication
 
   lazy val contentProviderAuthority = application.getClass.getPackage.toString
-  lazy val defaultContentUri = Uri.parse("content://" + contentProviderAuthority + "/" + entityType.entityName);
+  lazy val defaultContentUri = UriPath("content://" + contentProviderAuthority) / entityType.entityName
 
-  def currentUri: Uri = getIntent.getData
+  def currentUri: UriPath = UriPath(getIntent.getData)
 
-  def uriWithId(id: ID): Uri = UriPath(entityType.entityName, id.toString).specifyInUri(currentUri)
+  def uriWithId(id: ID): UriPath = UriPath(entityType.entityName, id.toString).specifyInUri(currentUri)
 
   val crudContext = new CrudContext(this, application)
 
@@ -34,7 +34,7 @@ trait BaseCrudActivity extends Activity with PlatformTypes with Logging with Tim
   override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)
     val intent = getIntent
-    if (intent.getData == null) intent.setData(defaultContentUri)
+    if (intent.getData == null) intent.setData(Action.toUri(defaultContentUri))
   }
 
   protected def applicableActions: List[Action]

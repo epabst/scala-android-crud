@@ -11,7 +11,7 @@ import org.scalatest.matchers.MustMatchers
 import Action._
 import android.widget.ListAdapter
 import java.lang.IllegalStateException
-import android.net.Uri
+import action.UriPath
 
 /**
  * A test for {@link CrudListActivity}.
@@ -28,7 +28,7 @@ class CrudActivitySpec extends EasyMockSugar with MustMatchers with MyEntityTest
     val entityType = new MyEntityType(persistence, listAdapter)
     val application = mock[CrudApplication]
     val entity = Map[String,Any]("name" -> "Bob", "age" -> 25)
-    val uri = toUri(entityType.entityName)
+    val uri = UriPath(entityType.entityName)
     expecting {
       call(persistence.close())
       call(persistence.save(None, Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))).andReturn(101)
@@ -50,7 +50,7 @@ class CrudActivitySpec extends EasyMockSugar with MustMatchers with MyEntityTest
     val entityType = new MyEntityType(persistence, listAdapter)
     val application = mock[CrudApplication]
     val entity = Map[String,Any]("name" -> "Bob", "age" -> 25)
-    val uri = toUri(entityType.entityName, "101")
+    val uri = UriPath(entityType.entityName, "101")
     expecting {
       call(persistence.find(101)).andReturn(Some(entity))
       call(persistence.close())
@@ -78,13 +78,13 @@ class CrudActivitySpec extends EasyMockSugar with MustMatchers with MyEntityTest
     val listAdapter = mock[ListAdapter]
     val application = mock[CrudApplication]
     expecting {
-      call(persistence.findAll(Uri.EMPTY)).andReturn(List[Map[String,Any]]())
+      call(persistence.findAll(UriPath.EMPTY)).andReturn(List[Map[String,Any]]())
       call(persistence.close())
     }
     whenExecuting(persistence, listAdapter, application) {
       val entityType = new MyEntityType(persistence, listAdapter)
       val activity = new CrudActivity(entityType, application)
-      activity.withPersistence(p => p.findAll(Uri.EMPTY))
+      activity.withPersistence(p => p.findAll(UriPath.EMPTY))
     }
   }
 

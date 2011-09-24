@@ -2,10 +2,8 @@ package com.github.scala_android.crud.action
 
 import android.app.Activity
 import com.github.scala_android.crud.common.PlatformTypes
-import android.net.Uri
 import android.content.{Context, Intent}
-import collection.JavaConversions
-import com.github.triangle.ValueFormat._
+import android.net.Uri
 
 /**
  * Represents an action that a user can initiate.
@@ -27,7 +25,7 @@ trait Action extends PlatformTypes {
   def title: Option[SKey]
 
   /** Runs the action, given the uri and the current state of the application. */
-  def invoke(uri: Uri, activity: Activity)
+  def invoke(uri: UriPath, activity: Activity)
 }
 
 abstract class RunnableAction(val icon: Option[PlatformTypes#ImgKey], val title: Option[PlatformTypes#SKey]) extends Action
@@ -39,14 +37,20 @@ object Action {
   val UpdateActionName = Intent.ACTION_EDIT
   val DeleteActionName = Intent.ACTION_DELETE
 
-  def toUri(segments: String*): Uri = segments.foldLeft(Uri.EMPTY)((uri, segment) => Uri.withAppendedPath(uri, segment))
+  def toUri(uriPath: UriPath): Uri = uriPath.segments.foldLeft(Uri.EMPTY)((uri, segment) => Uri.withAppendedPath(uri, segment))
+
+  implicit def toRichItent(intent: Intent) = new RichIntent(intent)
 
   //this is a workaround because Robolectric doesn't handle the full constructor
-  def constructIntent(action: String, uri: Uri, context: Context, clazz: Class[_]): Intent = {
-    val intent = new Intent(action, uri)
+  def constructIntent(action: String, uriPath: UriPath, context: Context, clazz: Class[_]): Intent = {
+    val intent = new Intent(action, toUri(uriPath))
     intent.setClass(context, clazz)
     intent
   }
+}
+
+case class RichIntent(intent: Intent) {
+  def uriPath: UriPath = UriPath(intent.getData)
 }
 
 trait StartActivityAction extends Action {
@@ -54,9 +58,9 @@ trait StartActivityAction extends Action {
 
   def activityClass: Class[_ <: Activity]
 
-  def determineIntent(uri: Uri, activity: Activity): Intent = Action.constructIntent(action, uri, activity, activityClass)
+  def determineIntent(uri: UriPath, activity: Activity): Intent = Action.constructIntent(action, uri, activity, activityClass)
 
-  def invoke(uri: Uri, activity: Activity) {
+  def invoke(uri: UriPath, activity: Activity) {
     activity.startActivity(determineIntent(uri, activity))
   }
 }
@@ -72,21 +76,19 @@ trait EntityAction extends Action {
 }
 
 //final to guarantee equality is correct
-final case class StartEntityActivityAction(entityUriSegment: UriPath, action: String,
+final case class StartEntityActivityAction(entityName: String, action: String,
                                            icon: Option[PlatformTypes#ImgKey], title: Option[PlatformTypes#SKey],
                                            activityClass: Class[_ <: Activity]) extends StartActivityAction with EntityAction {
-  def entityName = entityUriSegment.entityName
-
-  override def determineIntent(uri: Uri, activity: Activity): Intent =
-    super.determineIntent(entityUriSegment.specifyInUri(uri), activity)
+  override def determineIntent(uri: UriPath, activity: Activity): Intent =
+    super.determineIntent(UriPath(entityName).specifyInUri(uri), activity)
 }
 
 //final to guarantee equality is correct
 final case class StartEntityIdActivityAction(entityName: String, action: String,
                                              icon: Option[PlatformTypes#ImgKey], title: Option[PlatformTypes#SKey],
                                              activityClass: Class[_ <: Activity]) extends StartActivityAction with EntityAction {
-  val entityUriSegmentWithoutId = UriPath(entityName)
+  private val uriPathWithoutId = UriPath(entityName)
 
-  override def determineIntent(uri: Uri, activity: Activity) =
-    super.determineIntent(entityUriSegmentWithoutId.keepUpToTheIdInUri(uri), activity)
+  override def determineIntent(uri: UriPath, activity: Activity) =
+    super.determineIntent(uriPathWithoutId.keepUpToTheIdInUri(uri), activity)
 }

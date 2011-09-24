@@ -1,12 +1,10 @@
 package com.github.scala_android.crud
 
-import action.UriPath
 import org.junit.Test
 import org.junit.runner.RunWith
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.scalatest.matchers.MustMatchers
-import android.content.Intent
-import android.net.Uri
+import action.UriPath
 import org.scalatest.mock.EasyMockSugar
 import persistence.SQLiteCriteria
 import ParentField.foreignKey
@@ -22,11 +20,11 @@ class ParentFieldSpec extends MustMatchers with EasyMockSugar {
   @Test
   def shouldGetCriteriaCorrectlyForForeignKey() {
     val foreign = foreignKey(MyCrudType)
-    val uri = UriPath(MyCrudType.entityName, "19").specifyInUri(Uri.EMPTY)
+    val uri = UriPath(MyCrudType.entityName, "19").specifyInUri(UriPath.EMPTY)
     //add on extra stuff to make sure it is ignored
-    val intent = new Intent("", Uri.withAppendedPath(uri, "foo/1234"))
+    val uriWithExtraStuff = uri / "foo" / 1234
     val criteria = new SQLiteCriteria
-    foreign.copy(intent, criteria)
+    foreign.copy(uriWithExtraStuff, criteria)
     criteria.selection must be (ParentField(MyCrudType).fieldName + "=19")
   }
 }

@@ -2,7 +2,7 @@ package com.github.scala_android.crud.persistence
 
 import scala.collection.mutable
 import IdPk._
-import android.net.Uri
+import com.github.scala_android.crud.action.UriPath
 
 /**
  * EntityPersistence for a simple generated Seq.
@@ -28,7 +28,7 @@ trait ListBufferEntityPersistence[T <: AnyRef] extends SeqEntityPersistence[T] {
 
   var nextId = 10000L
 
-  def findAll(uri: Uri) = buffer.toList
+  def findAll(uri: UriPath) = buffer.toList
 
   override protected def doSave(id: Option[ID], item: AnyRef) = {
     val newId = id.getOrElse {

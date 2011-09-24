@@ -1,12 +1,12 @@
 package com.github.scala_android.crud
 
+import action.{UriPath, Action}
 import org.junit.runner.RunWith
 import scala.collection.mutable
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.Spec
 import android.widget.ListAdapter
 import android.content.Intent
-import com.github.scala_android.crud.action.Action.toUri
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.junit.Test
 import android.app.ListActivity
@@ -37,8 +37,8 @@ class GeneratedCrudTypeSpec extends Spec with MustMatchers with MyEntityTesting 
       def openEntityPersistence(crudContext: CrudContext) = seqPersistence
     }
     expecting {
-      val uri = toUri(otherType.entityName, "123")
-      call(activity.getIntent).andReturn(new Intent("List", uri))
+      val uri = UriPath(otherType.entityName, "123")
+      call(activity.getIntent).andReturn(new Intent("List", Action.toUri(uri)))
       call(seqPersistence.findAll(uri)).andReturn(List.empty)
       call(activity.setListAdapter(notNull())).andAnswer(listAdapterCapture)
       call(seqPersistence.entityType).andStubReturn(generatedType)

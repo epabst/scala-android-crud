@@ -1,7 +1,7 @@
 package com.github.scala_android.crud.persistence
 
 import com.github.scala_android.crud.common.{ListenerHolder, Timing, PlatformTypes}
-import android.net.Uri
+import com.github.scala_android.crud.action.UriPath
 
 trait PersistenceListener extends PlatformTypes {
   def onSave(id: ID)
@@ -17,9 +17,9 @@ trait PersistenceListener extends PlatformTypes {
  */
 
 trait EntityPersistence extends PlatformTypes with Timing with ListenerHolder[PersistenceListener] {
-  def toUri(id: ID): Uri
+  def toUri(id: ID): UriPath
 
-  def findAll(uri: Uri): Seq[AnyRef]
+  def findAll(uri: UriPath): Seq[AnyRef]
 
   /** Find an entity by ID. */
   def find(id: ID): Option[AnyRef] = findAll(toUri(id)).headOption

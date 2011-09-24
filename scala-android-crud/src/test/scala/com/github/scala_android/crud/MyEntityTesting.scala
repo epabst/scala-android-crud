@@ -1,5 +1,6 @@
 package com.github.scala_android.crud
 
+import action.UriPath
 import scala.collection.mutable
 import mutable.Map
 import com.github.triangle._
@@ -31,7 +32,7 @@ trait MyEntityTesting {
       persisted[String]("name") + viewId(R.id.name, textView),
       persisted[Int]("age") + viewId(R.id.age, intView),
       //here to test a non-UI field
-      persisted[String]("uri") + readOnly[Intent,String](_.getData.toString))
+      persisted[String]("uri") + readOnly[Intent,String](u => UriPath(u.getData).toString))
 
     def newWritable = Map[String,Any]()
 

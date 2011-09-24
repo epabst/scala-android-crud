@@ -4,12 +4,11 @@ import _root_.android.app.Activity
 import _root_.android.content.Intent
 import _root_.android.view.View
 import _root_.android.widget.{ArrayAdapter, Spinner, DatePicker, TextView}
-import com.github.scala_android.crud.action.UriPath
 import com.github.scala_android.crud.common.PlatformTypes
 import com.github.triangle._
 import PortableField._
 import java.util.{Calendar, Date, GregorianCalendar}
-import android.net.Uri
+import com.github.scala_android.crud.action.UriPath
 import FieldLayout._
 import ValueFormat._
 import AndroidResourceAnalyzer._
@@ -151,11 +150,11 @@ object ViewField extends PlatformTypes {
 
   def intentId(entityName: String): FieldGetter[Intent,ID] = {
     val uriSegment = UriPath(entityName)
-    PortableField.readOnly[Intent,ID](intent => uriSegment.findId(intent.getData))
+    PortableField.readOnly[Intent,ID](intent => uriSegment.findId(UriPath(intent.getData)))
   }
 
-  def uriId(entityName: String): FieldGetter[Uri,ID] = {
+  def uriId(entityName: String): FieldGetter[UriPath,ID] = {
     val uriSegment = UriPath(entityName)
-    PortableField.readOnly[Uri,ID](uri => uriSegment.findId(uri))
+    PortableField.readOnly[UriPath,ID](uri => uriSegment.findId(uri))
   }
 }

@@ -10,7 +10,6 @@ import persistence.CursorField._
 import persistence.SQLiteCriteria
 import PortableField._
 import res.R
-import android.net.Uri
 import android.content.{Intent, Context}
 import android.database.DataSetObserver
 import android.app.ListActivity
@@ -19,6 +18,7 @@ import scala.collection._
 import org.mockito.Mockito
 import Mockito._
 import org.mockito.Matchers._
+import android.net.Uri
 
 /**
  * A test for {@link SQLiteCrudType}.

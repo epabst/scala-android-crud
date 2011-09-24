@@ -9,7 +9,7 @@ import scala.None
 import collection.mutable.SynchronizedQueue
 import android.app.backup.BackupManager
 import android.database.sqlite.{SQLiteOpenHelper, SQLiteDatabase}
-import android.net.Uri
+import action.UriPath
 
 /**
  * EntityPersistence for SQLite.
@@ -38,7 +38,7 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudType, crudContext: CrudC
     cursor
   }
 
-  def findAll(uri: Uri) = CursorStream(findAll(entityType.transform(new SQLiteCriteria, uri)))
+  def findAll(uri: UriPath) = CursorStream(findAll(entityType.transform(new SQLiteCriteria, uri)))
 
   //todo delete?
   override def find(id: ID): Option[Cursor] = {

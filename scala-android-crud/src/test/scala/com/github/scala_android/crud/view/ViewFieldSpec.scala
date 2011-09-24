@@ -9,10 +9,10 @@ import android.view.View
 import android.widget.{Spinner, LinearLayout, TextView}
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.junit.Test
-import android.content.{Intent, Context}
-import com.github.scala_android.crud.action.Action.toUri
+import android.content.Context
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
+import com.github.scala_android.crud.action.UriPath
 
 
 /**
@@ -103,21 +103,21 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
 
   @Test
   def itMustGetTheIdForAnEntityNameFromTheIntent() {
-    val field = intentId("foo")
-    val intent = new Intent(null, toUri("hello", "1", "foo", "4", "bar", "3"))
-    field.getter(intent) must be (Some(4))
+    val field = uriId("foo")
+    val uripath = UriPath("hello", "1", "foo", "4", "bar", "3")
+    field.getter(uripath) must be (Some(4))
 
-    val intent2 = new Intent(null, toUri("hello", "1", "foo"))
-    field.getter(intent2) must be (None)
+    val uripath2 = UriPath("hello", "1", "foo")
+    field.getter(uripath2) must be (None)
 
-    val intent3 = new Intent(null, toUri("hello"))
-    field.getter(intent3) must be (None)
+    val uripath3 = UriPath("hello")
+    field.getter(uripath3) must be (None)
 
-    val intent4 = new Intent(null, toUri())
-    field.getter(intent4) must be (None)
+    val uripath4 = UriPath()
+    field.getter(uripath4) must be (None)
 
-    val intent5 = new Intent(null, toUri("4"))
-    field.getter(intent5) must be (None)
+    val uripath5 = UriPath("4")
+    field.getter(uripath5) must be (None)
   }
 
   @Test
