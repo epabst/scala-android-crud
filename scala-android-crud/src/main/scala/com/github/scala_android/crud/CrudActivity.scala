@@ -15,13 +15,13 @@ import com.github.triangle.JavaUtil.toRunnable
 class CrudActivity(val entityType: CrudType, val application: CrudApplication) extends Activity with BaseCrudActivity {
 
   private val idFormat = basicFormat[ID]
-  def id: Option[ID] = Option(getIntent).flatMap(intent => idFormat.toValue(intent.getData.getLastPathSegment))
+  def id: Option[ID] = currentUriPath.segments.lastOption.flatMap(idFormat.toValue(_))
 
   override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)
 
     setContentView(entityType.entryLayout)
-    val contextItems = List(getIntent, crudContext, Unit)
+    val contextItems = List(currentUriPath, crudContext, Unit)
     future {
       withPersistence { persistence =>
         val readableOrUnit: AnyRef = id.map(i => persistence.find(i).get).getOrElse(Unit)
@@ -33,7 +33,7 @@ class CrudActivity(val entityType: CrudType, val application: CrudApplication) e
 
   override def onPause() {
     //intentionally don't include CrudContext presumably those are only used for calculated fields, which shouldn't be persisted.
-    val contextItems = List(getIntent, Unit)
+    val contextItems = List(currentUriPath, Unit)
     val writable = entityType.newWritable
     withPersistence { persistence =>
       val transformedWritable = entityType.transformWithItem(writable, this :: contextItems)
@@ -48,7 +48,7 @@ class CrudActivity(val entityType: CrudType, val application: CrudApplication) e
   }
 
   protected def applicableActions = entityType.getEntityActions(application).filter {
-    case action: EntityAction => action.entityName != entityType.entityName || action.action != getIntent.getAction
+    case action: EntityAction => action.entityName != entityType.entityName || action.action != currentAction
     case _ => true
   }
 }

@@ -226,7 +226,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
     }
   }
 
-  final def setListAdapter(crudContext: CrudContext, activity: ListActivity) {
+  final def setListAdapter(crudContext: CrudContext, activity: CrudListActivity) {
     val persistence = openEntityPersistence(crudContext)
     persistenceVarForListAdapter.set(crudContext, persistence)
     setListAdapter(persistence, crudContext, activity)
@@ -238,10 +238,9 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
     })
   }
 
-  def setListAdapter(persistence: CrudPersistence, crudContext: CrudContext, activity: ListActivity) {
-    val intent = activity.getIntent
-    val findAllResult = persistence.findAll(UriPath(intent.getData))
-    setListAdapter(findAllResult, List(intent, crudContext, Unit), activity)
+  def setListAdapter(persistence: CrudPersistence, crudContext: CrudContext, activity: CrudListActivity) {
+    val findAllResult = persistence.findAll(activity.currentUriPath)
+    setListAdapter(findAllResult, List(activity.currentUriPath, crudContext, Unit), activity)
   }
 
   def setListAdapter(findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: ListActivity)

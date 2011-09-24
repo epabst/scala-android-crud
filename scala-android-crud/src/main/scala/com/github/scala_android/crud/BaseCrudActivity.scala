@@ -23,19 +23,23 @@ trait BaseCrudActivity extends Activity with PlatformTypes with Logging with Tim
   lazy val contentProviderAuthority = application.getClass.getPackage.toString
   lazy val defaultContentUri = UriPath("content://" + contentProviderAuthority) / entityType.entityName
 
-  def currentUri: UriPath = UriPath(getIntent.getData)
+  lazy val currentUriPath: UriPath = {
+    val intent = getIntent
+    if (intent.getData == null) {
+      intent.setData(Action.toUri(defaultContentUri))
+      defaultContentUri
+    } else {
+      UriPath(intent.getData)
+    }
+  }
 
-  def uriWithId(id: ID): UriPath = UriPath(entityType.entityName, id.toString).specifyInUri(currentUri)
+  val currentAction: String = getIntent.getAction
+
+  def uriWithId(id: ID): UriPath = UriPath(entityType.entityName, id.toString).specifyInUri(currentUriPath)
 
   val crudContext = new CrudContext(this, application)
 
   override lazy val logTag = classOf[BaseCrudActivity].getName + "(" + entityType.entityName + ")"
-
-  override def onCreate(savedInstanceState: Bundle) {
-    super.onCreate(savedInstanceState)
-    val intent = getIntent
-    if (intent.getData == null) intent.setData(Action.toUri(defaultContentUri))
-  }
 
   protected def applicableActions: List[Action]
 
@@ -55,7 +59,7 @@ trait BaseCrudActivity extends Activity with PlatformTypes with Logging with Tim
   override def onOptionsItemSelected(item: MenuItem): Boolean = {
     val actions = optionsMenuActions
     val action = actions(item.getItemId)
-    action.invoke(currentUri, this)
+    action.invoke(currentUriPath, this)
     true
   }
 

@@ -2,7 +2,7 @@ package com.github.scala_android.crud.action
 
 import com.github.scala_android.crud.common.PlatformTypes
 import com.github.triangle.ValueFormat._
-import android.net.{Uri => AndroidUri}
+import android.net.Uri
 
 /**
  * A convenience wrapper for UriPath.
@@ -42,5 +42,5 @@ object UriPath {
   val EMPTY: UriPath = UriPath()
 
   import scala.collection.JavaConversions._
-  def apply(uri: AndroidUri): UriPath = UriPath(uri.getPathSegments.toList:_*)
+  def apply(uri: Uri): UriPath = UriPath(uri.getPathSegments.toList:_*)
 }

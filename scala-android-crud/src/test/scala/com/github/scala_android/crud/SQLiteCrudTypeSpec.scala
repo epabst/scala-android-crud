@@ -1,5 +1,6 @@
 package com.github.scala_android.crud
 
+import action.UriPath
 import android.provider.BaseColumns
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -10,15 +11,13 @@ import persistence.CursorField._
 import persistence.SQLiteCriteria
 import PortableField._
 import res.R
-import android.content.{Intent, Context}
+import android.content.Context
 import android.database.DataSetObserver
-import android.app.ListActivity
 import android.widget.ListAdapter
 import scala.collection._
 import org.mockito.Mockito
 import Mockito._
 import org.mockito.Matchers._
-import android.net.Uri
 
 /**
  * A test for {@link SQLiteCrudType}.
@@ -97,10 +96,10 @@ class SQLiteCrudTypeSpec extends MustMatchers with Logging with MyEntityTesting 
 
   @Test
   def shouldRefreshCursorWhenDeletingAndSaving() {
-    val activity = mock[ListActivity]
+    val activity = mock[CrudListActivity]
     val observer = mock[DataSetObserver]
     val listAdapterCapture = capturingAnswer[Unit] { Unit }
-    stub(activity.getIntent).toReturn(new Intent("foo", Uri.EMPTY))
+    stub(activity.currentUriPath).toReturn(UriPath.EMPTY)
     stub(activity.setListAdapter(anyObject())).toAnswer(listAdapterCapture)
     stub(activity.getListAdapter).toAnswer(answer {
       listAdapterCapture.params(0).asInstanceOf[ListAdapter]

@@ -27,7 +27,7 @@ class GeneratedCrudTypeSpec extends Spec with MustMatchers with MyEntityTesting 
   def itMustCreateListAdapterWithIntentUsedForCriteria() {
     val seqPersistence = mock[SeqCrudPersistence[mutable.Map[String,Any]]]
     val crudContext = mock[CrudContext]
-    val activity = mock[ListActivity]
+    val activity = mock[CrudListActivity]
     val listAdapterCapture = capturingAnswer[Unit] { Unit }
     val otherType = new MyEntityType(seqPersistence, mock[ListAdapter])
     val foreign = foreignKey(otherType)
@@ -38,7 +38,7 @@ class GeneratedCrudTypeSpec extends Spec with MustMatchers with MyEntityTesting 
     }
     expecting {
       val uri = UriPath(otherType.entityName, "123")
-      call(activity.getIntent).andReturn(new Intent("List", Action.toUri(uri)))
+      call(activity.currentUriPath).andReturn(uri)
       call(seqPersistence.findAll(uri)).andReturn(List.empty)
       call(activity.setListAdapter(notNull())).andAnswer(listAdapterCapture)
       call(seqPersistence.entityType).andStubReturn(generatedType)
