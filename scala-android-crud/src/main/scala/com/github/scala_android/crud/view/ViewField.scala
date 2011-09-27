@@ -144,7 +144,7 @@ object ViewField extends PlatformTypes {
       private val spinnerField: PortableField[E] = fieldDirect[Spinner,E](v => Option(v.getSelectedItem.asInstanceOf[E]), spinner => value => {
         //don't do it again if already done from a previous time
         if (spinner.getAdapter == null) {
-          spinner.setAdapter(new ArrayAdapter[E](spinner.getContext, _root_.android.R.layout.simple_spinner_item, valueArray))
+          spinner.setAdapter(new ArrayAdapter[E](spinner.getContext, _root_.android.R.layout.simple_spinner_dropdown_item, valueArray))
         }
         spinner.setSelection(valueArray.indexOf(value))
       })
