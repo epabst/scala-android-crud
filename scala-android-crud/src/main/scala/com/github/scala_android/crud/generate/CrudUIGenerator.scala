@@ -135,7 +135,9 @@ object CrudUIGenerator extends PlatformTypes with Logging {
     }
     val parentFields = ParentField.parentFields(field)
     val parentFieldNames = parentFields.map(_.fieldName)
-    val otherPersistedFields = CursorField.persistedFields(field).filterNot(parentFieldNames.contains(_))
+    val otherPersistedFields = CursorField.persistedFields(field).
+            filterNot(_.name == CursorField.persistedId.name).
+            filterNot(parentFieldNames.contains(_))
     val persistedFieldsWithTypes = otherPersistedFields.map(p => p.toString + ":" + p.persistedType.valueManifest.erasure.getSimpleName)
     println("viewIds: " + viewResourceIdNames + " tied to " +
             viewFieldsWithId + "  /  other views: " + otherViewFields + "  /  parentFields: " + parentFields +
