@@ -11,6 +11,7 @@ import com.github.scala_android.crud.action.UriPath
 import FieldLayout._
 import ValueFormat._
 import AndroidResourceAnalyzer._
+import com.github.triangle.Converter._
 
 /**
  * PortableField for Views.
@@ -122,17 +123,7 @@ object ViewField extends PlatformTypes {
     override def toString = "calendarDateView"
   }
 
-  implicit val dateView: PortableField[Date] = new ConvertedField[Date,Calendar](calendarDateView) {
-    def convert(calendar: Calendar) = calendar.getTime
-
-    def unconvert(date: Date) = {
-      val calendar = new GregorianCalendar()
-      calendar.setTime(date)
-      calendar
-    }
-
-    override def toString = "dateView"
-  }
+  implicit val dateView: PortableField[Date] = converted(dateToCalendar, calendarToDate, calendarDateView)
 
   def enumerationView[E <: Enumeration#Value](enum: Enumeration): PortableField[E] = {
     val valueArray: Array[E] = enum.values.toArray.asInstanceOf[Array[E]]
