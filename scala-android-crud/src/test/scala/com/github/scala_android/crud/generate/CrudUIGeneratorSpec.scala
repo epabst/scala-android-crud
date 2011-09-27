@@ -8,6 +8,8 @@ import com.github.triangle.{PortableField, FieldList}
 import PortableField._
 import com.github.scala_android.crud.view.ViewField._
 import com.github.scala_android.crud.testres.R
+import com.github.scala_android.crud.persistence.SQLiteCriteria
+import com.github.scala_android.crud.{MyCrudType, ParentField}
 
 /**
  * A behavior specification for {@link CrudUIGenerator}.
@@ -30,6 +32,21 @@ class CrudUIGeneratorSpec extends Spec with MustMatchers {
     it("must handle a viewId name that does not exist") {
       val fieldInfo = CrudUIGenerator.guessFieldInfo(viewId(classOf[R.id], "bogus", textView), List(classOf[R]))
       fieldInfo.id must be ("bogus")
+    }
+
+    it("must display a ParentField if it has a viewId field") {
+      val fieldInfo = CrudUIGenerator.guessFieldInfo(ParentField(MyCrudType) + viewId(classOf[R], "foo", longView), Seq(classOf[R]))
+      fieldInfo.displayable must be (true)
+    }
+
+    it("must not display a ParentField if it has no viewId field") {
+      val fieldInfo = CrudUIGenerator.guessFieldInfo(ParentField(MyCrudType), Seq(classOf[R]))
+      fieldInfo.displayable must be (false)
+    }
+
+    it("must not display adjustment fields") {
+      val fieldInfo = CrudUIGenerator.guessFieldInfo(adjustment[SQLiteCriteria](_.orderBy = "foo"), Seq(classOf[R]))
+      fieldInfo.displayable must be (false)
     }
   }
 }

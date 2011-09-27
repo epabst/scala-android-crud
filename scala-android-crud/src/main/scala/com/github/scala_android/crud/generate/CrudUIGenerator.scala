@@ -148,8 +148,8 @@ object CrudUIGenerator extends PlatformTypes with Logging {
       case _: PortableField[String] => FieldLayout.nameLayout
       case _: PortableField[Int] => FieldLayout.intLayout
     }.head)
-    ViewFieldInfo(displayName, fieldLayout, persistedFieldOption.isDefined, parentFields.headOption,
-      derivedId.getOrElse("field" + random.nextInt()))
+    ViewFieldInfo(displayName, fieldLayout, id = derivedId.getOrElse("field" + random.nextInt()),
+      displayable = !viewResourceIdNames.isEmpty, updateable = persistedFieldOption.isDefined)
   }
 
   def guessFieldInfos(crudType: CrudType, resourceIdClasses: Seq[Class[_]]): List[ViewFieldInfo] = {
@@ -166,17 +166,17 @@ object CrudUIGenerator extends PlatformTypes with Logging {
 
   def toFilename(string: String): String = string.collect {
     case c if (c.isUpper) => "_" + c.toLower
-    case c if (Character.isJavaLetterOrDigit(c)) => c.toString
+    case c if (Character.isJavaIdentifierPart(c)) => c.toString
   }.mkString.stripPrefix("_")
 
   def generateLayouts(crudType: CrudType, resourceIdClasses: Seq[Class[_]]) {
     println("Generating layout for " + crudType)
-    val fieldInfos = guessFieldInfos(crudType, resourceIdClasses)
     val filenamePrefix = toFilename(crudType.entityName)
-    val displayFields = fieldInfos.filterNot(_.parentField.isDefined)
+    val fieldInfos = guessFieldInfos(crudType, resourceIdClasses)
+    val displayFields = fieldInfos.filter(_.displayable)
+    val updateableFields = fieldInfos.filter(_.updateable)
     writeLayoutFile(filenamePrefix + "_header", headerLayout(displayFields))
     writeLayoutFile(filenamePrefix + "_row", rowLayout(displayFields))
-    val updateableFields = fieldInfos.filter(_.updateable)
     if (!updateableFields.isEmpty) writeLayoutFile(filenamePrefix + "_entry", entryLayout(updateableFields))
   }
 
@@ -204,5 +204,5 @@ object CrudUIGenerator extends PlatformTypes with Logging {
     }
 }
 
-case class ViewFieldInfo(displayName: Option[String], layout: FieldLayout,
-                         updateable: Boolean, parentField: Option[ParentField], id: String)
+case class ViewFieldInfo(displayName: Option[String], layout: FieldLayout, id: String,
+                         displayable: Boolean, updateable: Boolean)
