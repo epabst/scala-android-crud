@@ -23,6 +23,7 @@ object FieldLayout {
 
   lazy val nameLayout = textLayout("textCapWords")
   lazy val intLayout = textLayout("number|numberSigned")
+  lazy val longLayout = textLayout("number|numberSigned")
   lazy val doubleLayout = textLayout("numberDecimal|numberSigned")
   lazy val currencyLayout = textLayout("numberDecimal|numberSigned")
   lazy val datePickerLayout = new FieldLayout {
