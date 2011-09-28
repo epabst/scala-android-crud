@@ -159,6 +159,8 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
       //exactly one parent w/o a display page
       case parentField :: Nil if !parentField.entityType.hasDisplayPage => {
         val parentEntity = parentField.entityType
+        //the parent's updateAction should be shown since clicking on the parent entity brought the user
+        //to the list of child entities instead of to a display page for the parent entity.
         parentEntity.updateAction :: parentEntity.childEntities(application).filter(_ != thisEntity).map(_.listAction)
       }
       case _ => Nil
