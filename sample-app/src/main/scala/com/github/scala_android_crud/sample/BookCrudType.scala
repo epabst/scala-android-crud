@@ -35,15 +35,7 @@ trait BookContext {
     )
 
     def activityClass = classOf[BookActivity]
-
     def listActivityClass = classOf[BookListActivity]
-
-    def entryLayout = R.layout.book_entry
-    def rowLayout = R.layout.book_row
-    //Use the same layout for the header
-    def headerLayout = R.layout.book_row
-    def listLayout = R.layout.entity_list
-    def displayLayout = None
 
     def cancelItemString = res.R.string.cancel_item
     def editItemString = R.string.edit_book

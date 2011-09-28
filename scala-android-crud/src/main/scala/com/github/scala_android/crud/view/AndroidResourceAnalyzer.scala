@@ -33,4 +33,7 @@ object AndroidResourceAnalyzer {
 
   def findResourceFieldWithName(classes: Seq[Class[_]], name: String): Option[Field] =
     findMatchingResourceField(classes, field => field.getName == name)
+
+  def findResourceIdWithName(classes: Seq[Class[_]], name: String): Option[Int] =
+    findResourceFieldWithName(classes, name).map(_.getInt(null))
 }

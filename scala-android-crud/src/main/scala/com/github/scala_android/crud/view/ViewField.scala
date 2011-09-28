@@ -35,8 +35,7 @@ object ViewField extends PlatformTypes {
    * @param resourceIdClasses a list of R classes that may contain the id.
    */
   private class ChildViewByIdName(viewResourceIdName: String, resourceIdClasses: Seq[Class[_]]) {
-    val childViewById = findResourceFieldWithName(resourceIdClasses, viewResourceIdName).map(_.getInt(null)).
-            map(new ChildViewById(_))
+    val childViewById = findResourceIdWithName(resourceIdClasses, viewResourceIdName).map(new ChildViewById(_))
 
     def unapply(target: Any): Option[View] = childViewById.flatMap(_.unapply(target))
   }

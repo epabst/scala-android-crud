@@ -73,7 +73,7 @@ class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with Crud
     val application = mock[CrudApplication]
     val listAdapter = mock[ListAdapter]
     val parentEntity = new MyEntityType(persistence, listAdapter) {
-      override val displayLayout = Some(123)
+      override lazy val displayLayout = Some(123)
     }
     val childEntity = new MyEntityType(persistence, listAdapter) {
       override lazy val valueFields = ParentField(parentEntity) :: super.valueFields

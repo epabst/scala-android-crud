@@ -33,6 +33,9 @@ trait MyEntityTesting {
       //here to test a non-UI field
       persisted[String]("uri") + readOnly[UriPath,String](u => u.toString))
 
+
+    override def resourceIdClasses = classOf[testres.R] +: super.resourceIdClasses
+
     def newWritable = Map[String,Any]()
 
     def openEntityPersistence(crudContext: CrudContext) = persistence

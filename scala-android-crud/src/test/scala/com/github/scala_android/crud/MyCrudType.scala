@@ -32,11 +32,6 @@ class MyCrudType extends CrudType with StubEntityType {
 }
 
 trait StubEntityType extends CrudType {
-  val listLayout = R.layout.entity_list
-  val headerLayout = R.layout.test_row
-  val rowLayout = R.layout.test_row
-  val displayLayout: Option[LayoutKey] = None
-  val entryLayout = R.layout.test_entry
   val addItemString = R.string.add_item
   val editItemString = R.string.edit_item
 

@@ -13,6 +13,9 @@ import android.app.{Activity, ListActivity}
 import com.github.scala_android.crud.view.ViewField._
 import com.github.triangle._
 import PortableField.toSome
+import view.AndroidResourceAnalyzer._
+import java.lang.IllegalStateException
+
 /**
  * An entity configuration that provides all custom information needed to
  * implement CRUD on the entity.  This shouldn't depend on the platform (e.g. android).
@@ -25,6 +28,8 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
 
   //this is the type used for internationalized strings
   def entityName: String
+
+  lazy val entityNameLayoutPrefix = NamingConventions.toLayoutPrefix(entityName)
 
   /**
    * These are all of the entity's fields, which includes IdPk.idField and the valueFields.
@@ -42,11 +47,18 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
    */
   def valueFields: List[BaseField]
 
-  def headerLayout: LayoutKey
-  def listLayout: LayoutKey
-  def rowLayout: LayoutKey
-  def displayLayout: Option[LayoutKey]
-  def entryLayout: LayoutKey
+  def resourceIdClasses: Seq[Class[_]] = detectResourceIdClasses(this.getClass)
+
+  protected def getLayoutKey(layoutName: String): LayoutKey =
+    findResourceIdWithName(resourceIdClasses, layoutName).getOrElse {
+      throw new IllegalStateException("R.id." + layoutName + " not found.  You may want to run the CrudUIGenerator.generateLayouts")
+    }
+
+  lazy val headerLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_header")
+  lazy val listLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_list")
+  lazy val rowLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_row")
+  lazy val displayLayout: Option[LayoutKey] = findResourceIdWithName(resourceIdClasses, entityNameLayoutPrefix + "_display")
+  lazy val entryLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_entry")
 
   final def hasDisplayPage = displayLayout.isDefined
 
@@ -280,11 +292,6 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
  * never be used with the UI.
  */
 trait HiddenEntityType extends CrudType {
-  def headerLayout: LayoutKey = throw new UnsupportedOperationException
-  def listLayout: LayoutKey = throw new UnsupportedOperationException
-  def rowLayout: LayoutKey = throw new UnsupportedOperationException
-  def displayLayout: Option[LayoutKey] = throw new UnsupportedOperationException
-  def entryLayout: LayoutKey = throw new UnsupportedOperationException
   def addItemString: SKey = throw new UnsupportedOperationException
   def editItemString: SKey = throw new UnsupportedOperationException
   def cancelItemString: SKey = throw new UnsupportedOperationException

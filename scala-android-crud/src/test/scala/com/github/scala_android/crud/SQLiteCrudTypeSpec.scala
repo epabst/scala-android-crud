@@ -39,14 +39,9 @@ class SQLiteCrudTypeSpec extends MustMatchers with Logging with MyEntityTesting 
     }
   }
   object TestEntityType extends SQLiteCrudType {
-    def entityName = "Person"
+    def entityName = "Test"
     val valueFields = List(persisted[Int]("age") + default(21))
 
-    val listLayout = R.layout.entity_list
-    val headerLayout = R.layout.test_row
-    val rowLayout = R.layout.test_row
-    val displayLayout = None
-    val entryLayout = R.layout.test_entry
     val addItemString = R.string.add_item
     val editItemString = R.string.edit_item
     val cancelItemString = R.string.cancel_item

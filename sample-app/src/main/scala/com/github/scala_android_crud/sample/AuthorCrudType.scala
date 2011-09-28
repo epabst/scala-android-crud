@@ -35,13 +35,6 @@ trait AuthorContext {
               }
     )
 
-    //Use the same layout for the header
-    def headerLayout = R.layout.author_row
-    def listLayout = R.layout.entity_list
-    def displayLayout = None
-    def entryLayout = R.layout.author_entry
-    def rowLayout = R.layout.author_row
-
     def cancelItemString = res.R.string.cancel_item
     def editItemString = R.string.edit_author
     def addItemString = R.string.add_author

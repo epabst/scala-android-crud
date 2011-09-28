@@ -8,10 +8,10 @@ import com.github.triangle._
 import util.Random
 import scala.tools.nsc.io.Path
 import xml._
-import com.github.scala_android.crud.{CrudApplication, ParentField, CrudType}
 import com.github.scala_android.crud.view.{ViewField, FieldLayout,AndroidResourceAnalyzer}
 import AndroidResourceAnalyzer._
 import com.github.scala_android.crud.view.ViewField.{ViewIdNameField, ViewIdField}
+import com.github.scala_android.crud.{NamingConventions, CrudApplication, ParentField, CrudType}
 
 /**
  * A UI Generator for a CrudTypes.
@@ -31,10 +31,6 @@ object CrudUIGenerator extends PlatformTypes with Logging {
         case _ => super.traverse(node, namespace, indent)
       }
     }
-  }
-
-  def generateLayouts(crudType: CrudType) {
-    generateLayouts(crudType, detectResourceIdClasses(crudType.getClass))
   }
 
   def generateLayouts(application: CrudApplication) {
@@ -154,9 +150,9 @@ object CrudUIGenerator extends PlatformTypes with Logging {
       displayable = !viewResourceIdNames.isEmpty, updateable = persistedFieldOption.isDefined)
   }
 
-  def guessFieldInfos(crudType: CrudType, resourceIdClasses: Seq[Class[_]]): List[ViewFieldInfo] = {
+  def guessFieldInfos(crudType: CrudType): List[ViewFieldInfo] = {
     val excludedFields = List(CursorField.persistedId, IdPk.idField)
-    crudType.fields.filterNot(excludedFields.contains).map(guessFieldInfo(_, resourceIdClasses))
+    crudType.fields.filterNot(excludedFields.contains).map(guessFieldInfo(_, crudType.resourceIdClasses))
   }
 
   private def writeLayoutFile(name: String, xml: Elem) {
@@ -166,20 +162,15 @@ object CrudUIGenerator extends PlatformTypes with Logging {
     println("Wrote " + file)
   }
 
-  def toFilename(string: String): String = string.collect {
-    case c if (c.isUpper) => "_" + c.toLower
-    case c if (Character.isJavaIdentifierPart(c)) => c.toString
-  }.mkString.stripPrefix("_")
-
-  def generateLayouts(crudType: CrudType, resourceIdClasses: Seq[Class[_]]) {
+  def generateLayouts(crudType: CrudType) {
     println("Generating layout for " + crudType)
-    val filenamePrefix = toFilename(crudType.entityName)
-    val fieldInfos = guessFieldInfos(crudType, resourceIdClasses)
+    val layoutPrefix = NamingConventions.toLayoutPrefix(crudType.entityName)
+    val fieldInfos = guessFieldInfos(crudType)
     val displayFields = fieldInfos.filter(_.displayable)
     val updateableFields = fieldInfos.filter(_.updateable)
-    writeLayoutFile(filenamePrefix + "_header", headerLayout(displayFields))
-    writeLayoutFile(filenamePrefix + "_row", rowLayout(displayFields))
-    if (!updateableFields.isEmpty) writeLayoutFile(filenamePrefix + "_entry", entryLayout(updateableFields))
+    writeLayoutFile(layoutPrefix + "_header", headerLayout(displayFields))
+    writeLayoutFile(layoutPrefix + "_row", rowLayout(displayFields))
+    if (!updateableFields.isEmpty) writeLayoutFile(layoutPrefix + "_entry", entryLayout(updateableFields))
   }
 
   private[generate] def fieldsWithViewSubject(field: BaseField): List[SubjectField] = {
