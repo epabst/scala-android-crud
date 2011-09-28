@@ -27,15 +27,15 @@ class CrudTypeActionsSpec extends MyEntityTesting with MustMatchers with CrudMoc
   @Test
   def createActionShouldHaveTheRightUri() {
     val activity = null
-    MyCrudType.createAction.determineIntent(UriPath("foo"), activity).uriPath must
+    MyCrudType.createAction.get.determineIntent(UriPath("foo"), activity).uriPath must
       be (UriPath("foo", entityName))
-    MyCrudType.createAction.determineIntent(UriPath("foo", entityName), activity).uriPath must
+    MyCrudType.createAction.get.determineIntent(UriPath("foo", entityName), activity).uriPath must
       be (UriPath("foo", entityName))
-    MyCrudType.createAction.determineIntent(UriPath("foo", entityName, "123"), activity).uriPath must
+    MyCrudType.createAction.get.determineIntent(UriPath("foo", entityName, "123"), activity).uriPath must
       be (UriPath("foo", entityName))
-    MyCrudType.createAction.determineIntent(UriPath("foo", entityName, "123", "bar"), activity).uriPath must
+    MyCrudType.createAction.get.determineIntent(UriPath("foo", entityName, "123", "bar"), activity).uriPath must
       be (UriPath("foo", entityName))
-    MyCrudType.createAction.determineIntent(UriPath(), activity).uriPath must
+    MyCrudType.createAction.get.determineIntent(UriPath(), activity).uriPath must
       be (UriPath(entityName))
   }
 
@@ -68,11 +68,11 @@ class CrudTypeActionsSpec extends MyEntityTesting with MustMatchers with CrudMoc
   @Test
   def updateActionShouldHaveTheRightUri() {
     val activity = null
-    MyCrudType.updateAction.determineIntent(UriPath("foo", entityName, "35"), activity).uriPath must
+    MyCrudType.updateAction.get.determineIntent(UriPath("foo", entityName, "35"), activity).uriPath must
       be (UriPath("foo", entityName, "35"))
-    MyCrudType.updateAction.determineIntent(UriPath("foo", entityName, "34", "bar"), activity).uriPath must
+    MyCrudType.updateAction.get.determineIntent(UriPath("foo", entityName, "34", "bar"), activity).uriPath must
       be (UriPath("foo", entityName, "34"))
-    MyCrudType.updateAction.determineIntent(UriPath("foo", entityName, "34", "bar", "123"), activity).uriPath must
+    MyCrudType.updateAction.get.determineIntent(UriPath("foo", entityName, "34", "bar", "123"), activity).uriPath must
       be (UriPath("foo", entityName, "34"))
   }
 
@@ -86,17 +86,17 @@ class CrudTypeActionsSpec extends MyEntityTesting with MustMatchers with CrudMoc
     }
     val id = 345L
     stub(persistence.find(id)).toReturn(Some(Unit))
-    entityType.deleteAction.invoke(UriPath(entityType.entityName, id.toString), currentActivity)
+    entityType.deleteAction.get.invoke(UriPath(entityType.entityName, id.toString), currentActivity)
   }
 
   @Test
   def shouldHaveTheStandardActionNames() {
     if (!isShadowing) {
       val activity = null
-      MyCrudType.createAction.determineIntent(UriPath("foo"), activity).getAction must be (Intent.ACTION_INSERT)
+      MyCrudType.createAction.get.determineIntent(UriPath("foo"), activity).getAction must be (Intent.ACTION_INSERT)
       MyCrudType.listAction.determineIntent(UriPath("foo"), activity).getAction must be (Intent.ACTION_PICK)
       MyCrudType.displayAction.determineIntent(UriPath("foo"), activity).getAction must be (Intent.ACTION_VIEW)
-      MyCrudType.updateAction.determineIntent(UriPath("foo"), activity).getAction must be (Intent.ACTION_EDIT)
+      MyCrudType.updateAction.get.determineIntent(UriPath("foo"), activity).getAction must be (Intent.ACTION_EDIT)
     }
   }
 }

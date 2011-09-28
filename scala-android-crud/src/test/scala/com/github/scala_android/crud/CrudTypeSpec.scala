@@ -64,8 +64,9 @@ class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with Crud
       override lazy val valueFields = ParentField(parentEntity) :: super.valueFields
     }
     stub(application.allEntities).toReturn(List(parentEntity, childEntity))
-    childEntity.getEntityActions(application) must be (List(childEntity.updateAction, childEntity.deleteAction))
-    parentEntity.getEntityActions(application) must be (List(childEntity.listAction, parentEntity.updateAction, parentEntity.deleteAction))
+    childEntity.getEntityActions(application) must be (List(childEntity.updateAction.get, childEntity.deleteAction.get))
+    parentEntity.getEntityActions(application) must be (
+      List(childEntity.listAction, parentEntity.updateAction.get, parentEntity.deleteAction.get))
   }
 
   it("must get the correct list actions with child entities") {
@@ -82,8 +83,8 @@ class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with Crud
       override lazy val valueFields = ParentField(parentEntity) :: super.valueFields
     }
     stub(application.allEntities).toReturn(List(parentEntity, childEntity, childEntity2))
-    parentEntity.getListActions(application) must be (List(parentEntity.createAction))
-    childEntity.getListActions(application) must be (List(childEntity.createAction))
+    parentEntity.getListActions(application) must be (List(parentEntity.createAction.get))
+    childEntity.getListActions(application) must be (List(childEntity.createAction.get))
   }
 
   it("must get the correct list actions with child entities w/ no parent display") {
@@ -98,8 +99,9 @@ class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with Crud
       override lazy val valueFields = ParentField(parentEntity) :: super.valueFields
     }
     stub(application.allEntities).toReturn(List(parentEntity, childEntity, childEntity2))
-    parentEntity.getListActions(application) must be (List(parentEntity.createAction))
-    childEntity.getListActions(application) must be (List(parentEntity.updateAction, childEntity2.listAction, childEntity.createAction))
+    parentEntity.getListActions(application) must be (List(parentEntity.createAction.get))
+    childEntity.getListActions(application) must be (
+      List(parentEntity.updateAction.get, childEntity2.listAction, childEntity.createAction.get))
   }
 
   it("must delete with undo possibility") {

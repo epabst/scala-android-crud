@@ -7,11 +7,11 @@ import com.github.triangle.JavaUtil._
 import common.{Timing, PlatformTypes}
 import android.database.DataSetObserver
 import android.widget.{ListAdapter, BaseAdapter}
-import persistence.{PersistenceListener, IdPk, EntityPersistence}
 import Action._
 import android.app.{Activity, ListActivity}
 import com.github.scala_android.crud.view.ViewField._
 import com.github.triangle._
+import persistence.{CursorField, PersistenceListener, IdPk, EntityPersistence}
 import PortableField.toSome
 import view.AndroidResourceAnalyzer._
 import java.lang.IllegalStateException
@@ -47,21 +47,24 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
    */
   def valueFields: List[BaseField]
 
-  lazy val rLayoutClasses: Seq[Class[_]] = detectRLayoutClasses(this.getClass)
+  def rIdClasses: Seq[Class[_]] = detectRIdClasses(this.getClass)
+  def rLayoutClasses: Seq[Class[_]] = detectRLayoutClasses(this.getClass)
+  private lazy val rLayoutClassesVal = rLayoutClasses
 
   protected def getLayoutKey(layoutName: String): LayoutKey =
-    findResourceIdWithName(rLayoutClasses, layoutName).getOrElse {
+    findResourceIdWithName(rLayoutClassesVal, layoutName).getOrElse {
       throw new IllegalStateException("R.layout." + layoutName + " not found.  You may want to run the CrudUIGenerator.generateLayouts")
     }
 
   lazy val headerLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_header")
   lazy val listLayout: LayoutKey =
-    findResourceIdWithName(rLayoutClasses, entityNameLayoutPrefix + "_list").getOrElse(getLayoutKey("entity_list"))
+    findResourceIdWithName(rLayoutClassesVal, entityNameLayoutPrefix + "_list").getOrElse(getLayoutKey("entity_list"))
   lazy val rowLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_row")
-  lazy val displayLayout: Option[LayoutKey] = findResourceIdWithName(rLayoutClasses, entityNameLayoutPrefix + "_display")
+  lazy val displayLayout: Option[LayoutKey] = findResourceIdWithName(rLayoutClassesVal, entityNameLayoutPrefix + "_display")
   lazy val entryLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_entry")
 
   final def hasDisplayPage = displayLayout.isDefined
+  lazy val isUpdateable: Boolean = !CursorField.updateablePersistedFields(this, rIdClasses).isEmpty
 
   lazy val unitPortableValue = copyFrom(Unit)
 
@@ -97,8 +100,11 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
    * Gets the action to display a UI for a user to fill in data for creating an entity.
    * The target Activity should copy Unit into the UI using entityType.copy to populate defaults.
    */
-  lazy val createAction = new StartEntityActivityAction(entityName, CreateActionName,
-    android.R.drawable.ic_menu_add, addItemString, activityClass)
+  lazy val createAction: Option[StartActivityAction] =
+    if (isUpdateable)
+      new StartEntityActivityAction(entityName, CreateActionName, android.R.drawable.ic_menu_add, addItemString, activityClass)
+    else
+      None
 
   /**
    * Gets the action to display the list that matches the criteria copied from criteriaSource using entityType.copy.
@@ -118,16 +124,21 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
   /**
    * Gets the action to display a UI for a user to edit data for an entity given its id in the UriPath.
    */
-  lazy val updateAction = entityAction(UpdateActionName, android.R.drawable.ic_menu_edit, editItemString, activityClass)
+  lazy val updateAction: Option[StartActivityAction] =
+    if (isUpdateable) Some(entityAction(UpdateActionName, android.R.drawable.ic_menu_edit, editItemString, activityClass))
+    else None
 
-  lazy val deleteAction = new RunnableAction(android.R.drawable.ic_menu_delete, deleteItemString) {
-    def invoke(uri: UriPath, activity: Activity) {
-      activity match {
-        case crudActivity: BaseCrudActivity =>
-          startDelete(uri.findId(entityName).get, crudActivity)
+  lazy val deleteAction: Option[Action] =
+    if (isUpdateable) {
+      new RunnableAction(android.R.drawable.ic_menu_delete, deleteItemString) {
+        def invoke(uri: UriPath, activity: Activity) {
+          activity match {
+            case crudActivity: BaseCrudActivity =>
+              startDelete(uri.findId(entityName).get, crudActivity)
+          }
+        }
       }
-    }
-  }
+    } else None
 
 
   def listActivityClass: Class[_ <: CrudListActivity]
@@ -152,7 +163,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
    * May be overridden to modify the list of actions.
    */
   def getListActions(application: CrudApplication): List[Action] =
-    getReadOnlyListActions(application) ::: createAction :: Nil
+    getReadOnlyListActions(application) ::: createAction.toList
 
   protected def getReadOnlyListActions(application: CrudApplication): List[Action] = {
     val thisEntity = this;
@@ -162,7 +173,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
         val parentEntity = parentField.entityType
         //the parent's updateAction should be shown since clicking on the parent entity brought the user
         //to the list of child entities instead of to a display page for the parent entity.
-        parentEntity.updateAction :: parentEntity.childEntities(application).filter(_ != thisEntity).map(_.listAction)
+        parentEntity.updateAction.toList ::: parentEntity.childEntities(application).filter(_ != thisEntity).map(_.listAction)
       }
       case _ => Nil
     })
@@ -174,7 +185,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
    * May be overridden to modify the list of actions.
    */
   def getEntityActions(application: CrudApplication): List[Action] =
-    getReadOnlyEntityActions(application) ::: List(updateAction, deleteAction)
+    getReadOnlyEntityActions(application) ::: updateAction.toList ::: deleteAction.toList
 
   protected def getReadOnlyEntityActions(application: CrudApplication): List[Action] =
     displayLayout.map(_ => displayAction).toList ::: childEntities(application).map(_.listAction)

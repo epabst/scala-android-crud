@@ -4,6 +4,7 @@ import res.R
 import com.github.triangle.BaseField
 import android.app.ListActivity
 import android.widget.ListAdapter
+import persistence.CursorField.persisted
 
 /**
  * A simple CrudType for testing.
@@ -16,7 +17,7 @@ object MyCrudType extends MyCrudType
 class MyCrudType extends CrudType with StubEntityType {
   def entityName = "MyEntity"
 
-  def valueFields = List[BaseField]()
+  def valueFields = List[BaseField](persisted[Int]("count"))
 
   def cancelItemString = R.string.cancel_item
 
