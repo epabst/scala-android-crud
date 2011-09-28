@@ -10,15 +10,16 @@ import java.lang.reflect.{Modifier, Field}
  */
 
 object AndroidResourceAnalyzer {
-  def detectResourceIdClasses(clazz: Class[_]): Seq[Class[_]] = {
-    findResourceIdClass(clazz.getClassLoader, clazz.getPackage.getName).toSeq ++ Seq(classOf[android.R.id], classOf[com.github.scala_android.crud.res.R.id])
+  private def findRInnerClass(classInSamePackage: Class[_], innerClassName: String): Option[Class[_]] = {
+    findRInnerClass(classInSamePackage.getClassLoader, classInSamePackage.getPackage.getName, innerClassName)
   }
 
-  private def findResourceIdClass(classLoader: ClassLoader, packageName: String): Option[Class[_]] = {
-    try { Some(classLoader.loadClass(packageName + ".R$id")) }
+  private def findRInnerClass(classLoader: ClassLoader, packageName: String, innerClassName: String): Option[Class[_]] = {
+    try { Some(classLoader.loadClass(packageName + ".R$" + innerClassName)) }
     catch { case e: ClassNotFoundException =>
       val parentPackagePieces = packageName.split('.').dropRight(1)
-      if (parentPackagePieces.isEmpty) None else findResourceIdClass(classLoader, parentPackagePieces.mkString("."))
+      if (parentPackagePieces.isEmpty) None
+      else findRInnerClass(classLoader, parentPackagePieces.mkString("."), innerClassName)
     }
   }
 
@@ -26,6 +27,14 @@ object AndroidResourceAnalyzer {
     classes.view.flatMap(_.getDeclaredFields.find { field =>
       Modifier.isStatic(field.getModifiers) && matcher(field)
     }).headOption
+  }
+
+  def detectRIdClasses(clazz: Class[_]): Seq[Class[_]] = {
+    findRInnerClass(clazz, "id").toSeq ++ Seq(classOf[android.R.id], classOf[com.github.scala_android.crud.res.R.id])
+  }
+
+  def detectRLayoutClasses(clazz: Class[_]): Seq[Class[_]] = {
+    findRInnerClass(clazz, "layout").toSeq ++ Seq(classOf[android.R.layout], classOf[com.github.scala_android.crud.res.R.layout])
   }
 
   def findResourceFieldWithIntValue(classes: Seq[Class[_]], value: Int): Option[Field] =

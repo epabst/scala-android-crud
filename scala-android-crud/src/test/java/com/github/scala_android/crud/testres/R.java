@@ -11,4 +11,10 @@ public final class R {
   public static final class id {
     public static final int foo = 123;
   }
+
+  public static final class layout {
+    public static final int my_map_entry = 200;
+    public static final int my_map_header = 201;
+    public static final int my_map_row = 202;
+  }
 }

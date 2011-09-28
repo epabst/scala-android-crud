@@ -6,7 +6,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.scalatest.mock.EasyMockSugar
 import com.xtremelabs.robolectric.RobolectricTestRunner
-import scala.collection.mutable.Map
+import scala.collection.mutable
 import org.scalatest.matchers.MustMatchers
 import Action._
 import android.widget.ListAdapter
@@ -27,17 +27,18 @@ class CrudActivitySpec extends EasyMockSugar with MustMatchers with MyEntityTest
     val listAdapter = mock[ListAdapter]
     val entityType = new MyEntityType(persistence, listAdapter)
     val application = mock[CrudApplication]
-    val entity = Map[String,Any]("name" -> "Bob", "age" -> 25)
+    val entity = mutable.Map[String,Any]("name" -> "Bob", "age" -> 25)
     val uri = UriPath(entityType.entityName)
     expecting {
       call(persistence.close())
-      call(persistence.save(None, Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))).andReturn(101)
+      call(persistence.save(None, mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))).andReturn(101)
       call(persistence.close())
     }
     whenExecuting(persistence, listAdapter, application) {
       val activity = new CrudActivity(entityType, application) {
         override lazy val currentAction = UpdateActionName
         override lazy val currentUriPath = uri
+        override def future[T](body: => T) = new ReadyFuture[T](body)
       }
       activity.onCreate(null)
       entityType.copy(entity, activity)
@@ -51,12 +52,12 @@ class CrudActivitySpec extends EasyMockSugar with MustMatchers with MyEntityTest
     val listAdapter = mock[ListAdapter]
     val entityType = new MyEntityType(persistence, listAdapter)
     val application = mock[CrudApplication]
-    val entity = Map[String,Any]("name" -> "Bob", "age" -> 25)
+    val entity = mutable.Map[String,Any]("name" -> "Bob", "age" -> 25)
     val uri = UriPath(entityType.entityName, "101")
     expecting {
       call(persistence.find(101)).andReturn(Some(entity))
       call(persistence.close())
-      call(persistence.save(Some(101), Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))).andReturn(101)
+      call(persistence.save(Some(101), mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))).andReturn(101)
       call(persistence.close())
     }
     whenExecuting(persistence, listAdapter, application) {
@@ -66,8 +67,7 @@ class CrudActivitySpec extends EasyMockSugar with MustMatchers with MyEntityTest
         override def future[T](body: => T) = new ReadyFuture[T](body)
       }
       activity.onCreate(null)
-      val viewData = Map[String,Any]()
-      entityType.copy(activity, viewData)
+      val viewData = entityType.transform(mutable.Map[String,Any](), activity)
       viewData.get("name") must be (Some("Bob"))
       viewData.get("age") must be (Some(25))
 
@@ -81,7 +81,7 @@ class CrudActivitySpec extends EasyMockSugar with MustMatchers with MyEntityTest
     val listAdapter = mock[ListAdapter]
     val application = mock[CrudApplication]
     expecting {
-      call(persistence.findAll(UriPath.EMPTY)).andReturn(List[Map[String,Any]]())
+      call(persistence.findAll(UriPath.EMPTY)).andReturn(List[mutable.Map[String,Any]]())
       call(persistence.close())
     }
     whenExecuting(persistence, listAdapter, application) {

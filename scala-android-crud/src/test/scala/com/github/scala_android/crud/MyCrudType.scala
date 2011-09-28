@@ -32,6 +32,7 @@ class MyCrudType extends CrudType with StubEntityType {
 }
 
 trait StubEntityType extends CrudType {
+  override lazy val entityNameLayoutPrefix = "test"
   val addItemString = R.string.add_item
   val editItemString = R.string.edit_item
 

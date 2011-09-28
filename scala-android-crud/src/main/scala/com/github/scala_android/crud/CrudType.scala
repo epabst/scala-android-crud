@@ -47,17 +47,18 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
    */
   def valueFields: List[BaseField]
 
-  def resourceIdClasses: Seq[Class[_]] = detectResourceIdClasses(this.getClass)
+  def rLayoutClasses: Seq[Class[_]] = detectRLayoutClasses(this.getClass)
 
   protected def getLayoutKey(layoutName: String): LayoutKey =
-    findResourceIdWithName(resourceIdClasses, layoutName).getOrElse {
-      throw new IllegalStateException("R.id." + layoutName + " not found.  You may want to run the CrudUIGenerator.generateLayouts")
+    findResourceIdWithName(rLayoutClasses, layoutName).getOrElse {
+      throw new IllegalStateException("R.layout." + layoutName + " not found.  You may want to run the CrudUIGenerator.generateLayouts")
     }
 
   lazy val headerLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_header")
-  lazy val listLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_list")
+  lazy val listLayout: LayoutKey =
+    findResourceIdWithName(rLayoutClasses, entityNameLayoutPrefix + "_list").getOrElse(getLayoutKey("entity_list"))
   lazy val rowLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_row")
-  lazy val displayLayout: Option[LayoutKey] = findResourceIdWithName(resourceIdClasses, entityNameLayoutPrefix + "_display")
+  lazy val displayLayout: Option[LayoutKey] = findResourceIdWithName(rLayoutClasses, entityNameLayoutPrefix + "_display")
   lazy val entryLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_entry")
 
   final def hasDisplayPage = displayLayout.isDefined

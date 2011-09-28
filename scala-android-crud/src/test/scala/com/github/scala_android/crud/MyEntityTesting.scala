@@ -34,7 +34,7 @@ trait MyEntityTesting {
       persisted[String]("uri") + readOnly[UriPath,String](u => u.toString))
 
 
-    override def resourceIdClasses = classOf[testres.R] +: super.resourceIdClasses
+    override def rLayoutClasses = classOf[testres.R.layout] +: super.rLayoutClasses
 
     def newWritable = Map[String,Any]()
 

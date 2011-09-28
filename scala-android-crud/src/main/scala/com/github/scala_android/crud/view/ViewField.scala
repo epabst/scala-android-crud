@@ -32,10 +32,10 @@ object ViewField extends PlatformTypes {
   }
 
   /**
-   * @param resourceIdClasses a list of R classes that may contain the id.
+   * @param rIdClasses a list of R.id classes that may contain the id.
    */
-  private class ChildViewByIdName(viewResourceIdName: String, resourceIdClasses: Seq[Class[_]]) {
-    val childViewById = findResourceIdWithName(resourceIdClasses, viewResourceIdName).map(new ChildViewById(_))
+  private class ChildViewByIdName(viewResourceIdName: String, rIdClasses: Seq[Class[_]]) {
+    val childViewById = findResourceIdWithName(rIdClasses, viewResourceIdName).map(new ChildViewById(_))
 
     def unapply(target: Any): Option[View] = childViewById.flatMap(_.unapply(target))
   }
@@ -61,9 +61,9 @@ object ViewField extends PlatformTypes {
   }
 
   /** PortableField for a View resource within a given parent View */
-  class ViewIdNameField[T](val viewResourceIdName: String, childViewField: PortableField[T], resourceIdClasses: Seq[Class[_]])
+  class ViewIdNameField[T](val viewResourceIdName: String, childViewField: PortableField[T], rIdClasses: Seq[Class[_]])
           extends FieldWithDelegate[T] with TransformerUsingSetter[T] {
-    private object ChildView extends ChildViewByIdName(viewResourceIdName, resourceIdClasses)
+    private object ChildView extends ChildViewByIdName(viewResourceIdName, rIdClasses)
 
     protected def delegate = childViewField
 
@@ -110,7 +110,7 @@ object ViewField extends PlatformTypes {
    * <code>viewId(R.id.name, ...)</code>.
    */
   def viewId[T](rIdClass: Class[_], viewResourceIdName: String, childViewField: PortableField[T]): PortableField[T] =
-    new ViewIdNameField[T](viewResourceIdName, childViewField, detectResourceIdClasses(rIdClass))
+    new ViewIdNameField[T](viewResourceIdName, childViewField, detectRIdClasses(rIdClass))
 
   private def toOption(string: String): Option[String] = if (string == "") None else Some(string)
 

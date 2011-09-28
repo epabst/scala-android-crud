@@ -152,7 +152,7 @@ object CrudUIGenerator extends PlatformTypes with Logging {
 
   def guessFieldInfos(crudType: CrudType): List[ViewFieldInfo] = {
     val excludedFields = List(CursorField.persistedId, IdPk.idField)
-    crudType.fields.filterNot(excludedFields.contains).map(guessFieldInfo(_, crudType.resourceIdClasses))
+    crudType.fields.filterNot(excludedFields.contains).map(guessFieldInfo(_, crudType.rLayoutClasses))
   }
 
   private def writeLayoutFile(name: String, xml: Elem) {
