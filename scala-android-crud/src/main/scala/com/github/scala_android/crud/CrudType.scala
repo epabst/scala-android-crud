@@ -47,7 +47,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
    */
   def valueFields: List[BaseField]
 
-  def rLayoutClasses: Seq[Class[_]] = detectRLayoutClasses(this.getClass)
+  lazy val rLayoutClasses: Seq[Class[_]] = detectRLayoutClasses(this.getClass)
 
   protected def getLayoutKey(layoutName: String): LayoutKey =
     findResourceIdWithName(rLayoutClasses, layoutName).getOrElse {

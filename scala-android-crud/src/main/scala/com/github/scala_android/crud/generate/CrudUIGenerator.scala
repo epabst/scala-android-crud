@@ -119,26 +119,24 @@ object CrudUIGenerator extends PlatformTypes with Logging {
     </TableLayout>
   }
 
-  def guessFieldInfo(field: BaseField, resourceIdClasses: Seq[Class[_]]): ViewFieldInfo = {
+  def guessFieldInfo(field: BaseField, rIdClasses: Seq[Class[_]]): ViewFieldInfo = {
+    val updateablePersistedFields = CursorField.updateablePersistedFields(field, rIdClasses)
+    val persistedFieldOption = updateablePersistedFields.headOption
+
     val viewIdFields = this.viewIdFields(field)
     val viewIdNameFields = this.viewIdNameFields(field)
     val viewFieldsWithId = this.fieldsWithViewSubject(FieldList.toFieldList(viewIdFields))
     val otherViewFields = this.fieldsWithViewSubject(field).filterNot(viewFieldsWithId.contains)
     val viewResourceIdNames = viewIdNameFields.map(_.viewResourceIdName) ++ viewIdFields.map(_.viewResourceId).map { id =>
-      findResourceFieldWithIntValue(resourceIdClasses, id).map(_.getName).getOrElse {
+      findResourceFieldWithIntValue(rIdClasses, id).map(_.getName).getOrElse {
         throw new IllegalStateException("Unable to find R.id with value " + id)
       }
     }
-    val parentFields = ParentField.parentFields(field)
-    val parentFieldNames = parentFields.map(_.fieldName)
-    val otherPersistedFields = CursorField.persistedFields(field).
-            filterNot(_.name == CursorField.persistedId.name).
-            filterNot(parentFieldNames.contains(_))
-    val persistedFieldsWithTypes = otherPersistedFields.map(p => p.toString + ":" + p.persistedType.valueManifest.erasure.getSimpleName)
+    val persistedFieldsWithTypes = updateablePersistedFields.map(p => p.toString + ":" + p.persistedType.valueManifest.erasure.getSimpleName)
     println("viewIds: " + viewResourceIdNames + " tied to " +
-            viewFieldsWithId + "  /  other views: " + otherViewFields + "  /  parentFields: " + parentFields +
+            viewFieldsWithId + "  /  other views: " + otherViewFields +
+            "  /  parentFields: " + ParentField.parentFields(field) +
             " / other persisted: " + persistedFieldsWithTypes)
-    val persistedFieldOption = otherPersistedFields.headOption
     val derivedId: Option[String] = viewResourceIdNames.headOption.orElse(persistedFieldOption.map(_.name))
     val displayName = derivedId.map(FieldLayout.toDisplayName(_))
     val fieldLayout = viewFields(field).headOption.map(_.defaultLayout).getOrElse(field.deepCollect {
@@ -150,10 +148,8 @@ object CrudUIGenerator extends PlatformTypes with Logging {
       displayable = !viewResourceIdNames.isEmpty, updateable = persistedFieldOption.isDefined)
   }
 
-  def guessFieldInfos(crudType: CrudType): List[ViewFieldInfo] = {
-    val excludedFields = List(CursorField.persistedId, IdPk.idField)
-    crudType.fields.filterNot(excludedFields.contains).map(guessFieldInfo(_, crudType.rLayoutClasses))
-  }
+  def guessFieldInfos(crudType: CrudType): List[ViewFieldInfo] =
+    crudType.fields.map(guessFieldInfo(_, crudType.rLayoutClasses))
 
   private def writeLayoutFile(name: String, xml: Elem) {
     val file = (Path("res") / "layout" / (name + ".xml")).toFile
@@ -164,10 +160,10 @@ object CrudUIGenerator extends PlatformTypes with Logging {
 
   def generateLayouts(crudType: CrudType) {
     println("Generating layout for " + crudType)
-    val layoutPrefix = NamingConventions.toLayoutPrefix(crudType.entityName)
     val fieldInfos = guessFieldInfos(crudType)
     val displayFields = fieldInfos.filter(_.displayable)
     val updateableFields = fieldInfos.filter(_.updateable)
+    val layoutPrefix = NamingConventions.toLayoutPrefix(crudType.entityName)
     writeLayoutFile(layoutPrefix + "_header", headerLayout(displayFields))
     writeLayoutFile(layoutPrefix + "_row", rowLayout(displayFields))
     if (!updateableFields.isEmpty) writeLayoutFile(layoutPrefix + "_entry", entryLayout(updateableFields))

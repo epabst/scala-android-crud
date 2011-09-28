@@ -7,6 +7,7 @@ import com.github.triangle._
 import PortableField._
 import android.os.Bundle
 import com.github.scala_android.crud.common.PlatformTypes
+import com.github.scala_android.crud.ParentField
 
 class SQLiteCriteria(var selection: String = null, var selectionArgs: Array[String] = Nil.toArray,
                      var groupBy: String = null, var having: String = null, var orderBy: String = null)
@@ -26,6 +27,11 @@ object CursorField extends PlatformTypes {
     field.deepCollect[CursorField[_]] {
       case cursorField: CursorField[_] => cursorField
     }
+  }
+
+  def updateablePersistedFields(field: BaseField, rIdClasses: Seq[Class[_]]): List[CursorField[_]] = {
+    val parentFieldNames = ParentField.parentFields(field).map(_.fieldName)
+    persistedFields(field).filterNot(_.name == CursorField.persistedId.name).filterNot(parentFieldNames.contains(_))
   }
 
   def queryFieldNames(fields: FieldList): List[String] = persistedFields(fields).map(_.name)
