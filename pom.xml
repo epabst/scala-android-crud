@@ -17,7 +17,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.scala-android-crud</groupId>
   <artifactId>scala-android-crud-parent</artifactId>
-  <version>0.6-SNAPSHOT</version>
+  <version>0.3-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Scala Android Crud - Parent</name>
 
