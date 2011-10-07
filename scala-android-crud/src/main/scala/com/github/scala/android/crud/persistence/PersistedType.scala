@@ -21,7 +21,7 @@ trait PersistedType[T] {
 }
 
 /**
- * An android PersistedType based on the {@link Cursor} and {@link ContentValues} api's.
+ * An android PersistedType based on the [[android.database.Cursor]] and [[android.content.ContentValues]] api's.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 2/12/11
  * Time: 10:30 AM

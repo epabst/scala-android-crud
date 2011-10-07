@@ -18,23 +18,23 @@ class CrudContext(val context: Context, val application: CrudApplication) {
  * A variable stored in a CrudContext.
  * <p />
  * Normally you create an object that extends this:
- * <code>object ProductName extends ContextVar[String]</code>
+ * {{{object ProductName extends ContextVar[String]}}}
  * But if you need uniqueness by instance, do this:
- * <code>val productName = new ContextVar[String]</code>
+ * {{{val productName = new ContextVar[String]}}}
  * It doesn't accumulate any data and is sharable across threads since all data is stored in each CrudContext.
  */
 class ContextVar[T] {
   /**
    * Gets the value or None if not set.
    * @param crudContext the Context where the value is stored
-   * @returns Some(value) if set, otherwise None
+   * @return Some(value) if set, otherwise None
    */
   def get(crudContext: CrudContext): Option[T] = {
     crudContext.variables.get(this).map(_.asInstanceOf[T])
   }
 
   /**
-   * Tries to set the value in <code>crudContext</code>.
+   * Tries to set the value in {{{crudContext}}}.
    * @param crudContext the Context where the value is stored
    * @param the value to set in the Context.
    */

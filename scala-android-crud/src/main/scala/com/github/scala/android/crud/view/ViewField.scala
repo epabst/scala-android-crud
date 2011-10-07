@@ -15,7 +15,7 @@ import com.github.triangle.Converter._
 
 /**
  * PortableField for Views.
- * @param defaultLayout the default layout used as an example and by {@link CrudUIGenerator}.
+ * @param defaultLayout the default layout used as an example and by [[com.github.scala.android.crud.generate.CrudUIGenerator]].
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 2/16/11
  * Time: 6:30 AM
@@ -105,9 +105,9 @@ object ViewField extends PlatformTypes {
 
   /**
    * This should be used when R.id doesn't yet have the needed name, and used like this:
-   * <code>viewId(classOf[R.id], "name", ...)</code>
+   * {{{viewId(classOf[R.id], "name", ...)}}}
    * Which is conceptually identical to
-   * <code>viewId(R.id.name, ...)</code>.
+   * {{{viewId(R.id.name, ...)}}}.
    */
   def viewId[T](rIdClass: Class[_], viewResourceIdName: String, childViewField: PortableField[T]): PortableField[T] =
     new ViewIdNameField[T](viewResourceIdName, childViewField, detectRIdClasses(rIdClass))

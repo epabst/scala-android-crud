@@ -3,7 +3,7 @@ package com.github.scala.android.crud
 import com.github.triangle.Logging
 
 /**
- * An Application that works with {@link CrudType}s.
+ * An Application that works with [[com.github.scala.android.crud.CrudType]]s.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 3/31/11
  * Time: 4:50 PM
