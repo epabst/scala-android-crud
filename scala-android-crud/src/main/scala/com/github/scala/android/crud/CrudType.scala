@@ -53,7 +53,9 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
 
   protected def getLayoutKey(layoutName: String): LayoutKey =
     findResourceIdWithName(rLayoutClassesVal, layoutName).getOrElse {
-      throw new IllegalStateException("R.layout." + layoutName + " not found.  You may want to run the CrudUIGenerator.generateLayouts")
+      rLayoutClassesVal.foreach(layoutClass => error("Contents of " + layoutClass + " are " + layoutClass.getFields.mkString(", ")))
+      throw new IllegalStateException("R.layout." + layoutName + " not found.  You may want to run the CrudUIGenerator.generateLayouts." +
+              rLayoutClassesVal.mkString("(layout classes: ", ",", ")"))
     }
 
   lazy val headerLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_header")
