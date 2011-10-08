@@ -3,7 +3,7 @@
 android:minHeight="?android:attr/listPreferredItemHeight" android:layout_height="wrap_content" android:paddingBottom="2dip" android:orientation="vertical" android:paddingRight="6dip" android:paddingTop="2dip" android:layout_width="match_parent" android:paddingLeft="6dip" xmlns:android="http://schemas.android.com/apk/res/android">
   <LinearLayout 
   android:layout_height="wrap_content" android:orientation="horizontal" android:layout_width="match_parent">
-    <TextView android:layout_height="wrap_content" android:paddingRight="3sp" android:text="Name" android:textAppearance="?android:attr/textAppearanceLarge" android:gravity="left" android:layout_width="wrap_content"/>
+    <TextView android:layout_height="wrap_content" android:paddingRight="3sp" android:text="Book" android:textAppearance="?android:attr/textAppearanceLarge" android:gravity="left" android:layout_width="wrap_content"/>
     <TextView android:layout_height="wrap_content" android:paddingRight="3sp" android:text="Genre" android:textAppearance="?android:attr/textAppearanceLarge" android:gravity="right" android:layout_width="fill_parent"/>
 </LinearLayout>
   <LinearLayout 
