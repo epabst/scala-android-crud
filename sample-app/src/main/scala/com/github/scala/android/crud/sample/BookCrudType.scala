@@ -23,15 +23,15 @@ trait BookContext {
     def valueFields = List(
       foreignKey(AuthorCrudType),
 
-      persisted[String]("name") + viewId(R.id.name, textView),
+      persisted[String]("name") + viewId(classOf[R], "name", textView),
 
       persisted[Genre.Value]("genre")(enumStringType[Genre.Value](Genre)) +
-            viewId(R.id.genre, enumerationView(Genre)),
+            viewId(classOf[R], "genre", enumerationView(Genre)),
 
-      persisted[Int]("edition") + viewId(R.id.edition, intView),
+      persisted[Int]("edition") + viewId(classOf[R], "edition", intView),
 
       persisted[Date]("publishDate") +
-        viewId[Date](R.id.publishDate, dateView)
+        viewId[Date](classOf[R], "publishDate", dateView)
     )
 
     def activityClass = classOf[BookActivity]

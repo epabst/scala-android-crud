@@ -20,9 +20,9 @@ trait AuthorContext {
     def entityName = "Author"
 
     def valueFields = List(
-      persisted[String]("name") + viewId(R.id.name, textView),
+      persisted[String]("name") + viewId(classOf[R], "name", textView),
 
-      viewId(R.id.bookCount, intView) +
+      viewId(classOf[R], "bookCount", intView) +
               mapField[Int]("bookCount") +
               new FieldTuple2(persistedId, crudContextField) with CalculatedField[Int] {
                 def calculate = { case Values(Some(authorId), Some(crudContext)) =>
