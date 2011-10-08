@@ -22,7 +22,7 @@ import com.github.triangle.Converter._
  */
 abstract class ViewField[T](val defaultLayout: FieldLayout) extends DelegatingPortableField[T]
 
-object ViewField extends PlatformTypes {
+object ViewField extends PlatformTypes with Logging {
   private class ChildViewById(viewResourceId: ViewKey) {
     def unapply(target: Any): Option[View] = target match {
       case view: View => Option(view.findViewById(viewResourceId))
@@ -126,6 +126,7 @@ object ViewField extends PlatformTypes {
 
   def enumerationView[E <: Enumeration#Value](enum: Enumeration): PortableField[E] = {
     val valueArray: Array[E] = enum.values.toArray.asInstanceOf[Array[E]]
+    debug("enumerationView values: " + valueArray.mkString(","))
     val defaultLayout = new FieldLayout {
       def displayXml = <TextView/>
       def editXml = <Spinner android:drawSelectorOnTop = "true"/>
@@ -133,7 +134,11 @@ object ViewField extends PlatformTypes {
     new ViewField[E](defaultLayout) {
       private val spinnerField: PortableField[E] = fieldDirect[Spinner,E](v => Option(v.getSelectedItem.asInstanceOf[E]), spinner => value => {
         //don't do it again if already done from a previous time
+        debug("Spinner.getAdapter is " + spinner.getAdapter)
+        debug("Spinner.getAdapter.getCount is " + spinner.getAdapter.getCount)
+        debug("Spinner.getAdapter.items are " + (0 to spinner.getAdapter.getCount).map(spinner.getAdapter.getItem(_)).mkString(","))
         if (spinner.getAdapter == null) {
+          debug("Setting values in Spinner to be " + valueArray.mkString(","))
           spinner.setAdapter(new ArrayAdapter[E](spinner.getContext, _root_.android.R.layout.simple_spinner_dropdown_item, valueArray))
         }
         spinner.setSelection(valueArray.indexOf(value))
