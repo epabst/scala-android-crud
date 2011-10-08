@@ -2,7 +2,6 @@ package com.github.scala.android.crud.view
 
 import _root_.android.app.Activity
 import _root_.android.view.View
-import _root_.android.widget.{ArrayAdapter, Spinner, DatePicker, TextView}
 import com.github.scala.android.crud.common.PlatformTypes
 import com.github.triangle._
 import PortableField._
@@ -12,6 +11,7 @@ import FieldLayout._
 import ValueFormat._
 import AndroidResourceAnalyzer._
 import com.github.triangle.Converter._
+import android.widget._
 
 /**
  * PortableField for Views.
@@ -124,26 +124,33 @@ object ViewField extends PlatformTypes with Logging {
 
   implicit val dateView: PortableField[Date] = converted(dateToCalendar, calendarToDate, calendarDateView)
 
+  /**
+    * @param adapterFactory a function that takes the adapter View and returns the Adapter to put into it.
+    * @param positionFinder a function that takes a value and returns its position in the Adapter
+    */
+  private[view] def adapterViewField[T,A <: Adapter](adapterFactory: AdapterView[A] => A, positionFinder: T => Int): PortableField[T] = {
+    fieldDirect[AdapterView[A], T](v => Option(v.getSelectedItem.asInstanceOf[T]), adapterView => value => {
+      //don't do it again if already done from a previous time
+      if (adapterView.getAdapter == null) {
+        val adapter: A = adapterFactory(adapterView)
+        adapterView.setAdapter(adapter)
+      }
+      adapterView.setSelection(positionFinder(value))
+    })
+  }
+
   def enumerationView[E <: Enumeration#Value](enum: Enumeration): PortableField[E] = {
-    val valueArray: Array[E] = enum.values.toArray.asInstanceOf[Array[E]]
-    debug("enumerationView values: " + valueArray.mkString(","))
+    val itemViewResourceId = _root_.android.R.layout.simple_spinner_dropdown_item
     val defaultLayout = new FieldLayout {
       def displayXml = <TextView/>
       def editXml = <Spinner android:drawSelectorOnTop = "true"/>
     }
+    val valueArray: Array[E] = enum.values.toArray.asInstanceOf[Array[E]]
+    val adapterField = adapterViewField[E, BaseAdapter](
+      view => new ArrayAdapter[E](view.getContext, itemViewResourceId, valueArray),
+      value => valueArray.indexOf(value))
     new ViewField[E](defaultLayout) {
-      private val spinnerField: PortableField[E] = fieldDirect[Spinner,E](v => Option(v.getSelectedItem.asInstanceOf[E]), spinner => value => {
-        //don't do it again if already done from a previous time
-        debug("Spinner.getAdapter is " + spinner.getAdapter)
-        debug("Spinner.getAdapter.getCount is " + spinner.getAdapter.getCount)
-        debug("Spinner.getAdapter.items are " + (0 to spinner.getAdapter.getCount).map(spinner.getAdapter.getItem(_)).mkString(","))
-        if (spinner.getAdapter == null) {
-          debug("Setting values in Spinner to be " + valueArray.mkString(","))
-          spinner.setAdapter(new ArrayAdapter[E](spinner.getContext, _root_.android.R.layout.simple_spinner_dropdown_item, valueArray))
-        }
-        spinner.setSelection(valueArray.indexOf(value))
-      })
-      protected def delegate = spinnerField + formatted[E](enumFormat(enum), textView)
+      protected def delegate = adapterField + formatted[E](enumFormat(enum), textView)
 
       override def toString = "enumerationView(" + enum.getClass.getSimpleName + ")"
     }

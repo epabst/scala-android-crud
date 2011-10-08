@@ -6,13 +6,14 @@ import com.github.triangle.PortableField._
 import com.github.scala.android.crud.persistence.CursorField._
 import ViewField._
 import android.view.View
-import android.widget.{Spinner, LinearLayout, TextView}
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.junit.Test
 import android.content.Context
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
 import com.github.scala.android.crud.action.UriPath
+import java.util.Arrays
+import android.widget._
 
 
 /**
@@ -25,6 +26,8 @@ import com.github.scala.android.crud.action.UriPath
 @RunWith(classOf[RobolectricTestRunner])
 class ViewFieldSpec extends MustMatchers with MockitoSugar {
   class MyEntity(var string: String, var number: Int)
+  val context = mock[Context]
+  val itemLayoutId = android.R.layout.simple_spinner_dropdown_item
 
   @Test
   def itMustBeEasilyInstantiableForAView() {
@@ -74,7 +77,6 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
 
   @Test
   def itMustOnlyCopyToAndFromViewByIdIfIdIsFound() {
-    val context = mock[Context]
     val stringField = fieldDirect[MyEntity,String](e => e.string, e => e.string = _) +
       viewId(56, fieldDirect[Spinner,String](
         _ => throw new IllegalStateException("must not be called"),
@@ -90,7 +92,6 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
 
   @Test
   def itMustHandleUnparseableValues() {
-    val context = mock[Context]
     val intField = intView + fieldDirect[MyEntity,Int](e => e.number, e => e.number = _)
     val view = new TextView(context)
     view.setText("twenty")
@@ -122,7 +123,6 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
 
   @Test
   def itMustConvertNullToNone() {
-    val context = mock[Context]
     val field = textView
     val view = new TextView(context)
     view.setText(null)
@@ -134,7 +134,6 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
 
   @Test
   def itMustTrimStrings() {
-    val context = mock[Context]
     val field = textView
     val view = new TextView(context)
     view.setText("  ")
@@ -142,5 +141,33 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
 
     view.setText(" hello world ")
     field.getter(view) must be (Some("hello world"))
+  }
+
+  @Test
+  def adapterViewFieldMustSetTheAdapterForAnAdapterView() {
+    val list = Arrays.asList("a", "b", "c")
+    val field = ViewField.adapterViewField[String,BaseAdapter](view => new ArrayAdapter[String](context, itemLayoutId, list), list.indexOf(_))
+    val adapterView = new Spinner(context)
+    field.setValue(adapterView, Some("c"))
+    val adapter = adapterView.getAdapter
+    (0 to (adapter.getCount - 1)).toList.map(adapter.getItem(_)) must be (List("a", "b", "c"))
+  }
+
+  @Test
+  def adapterViewFieldMustSetThePositionCorrectly() {
+    val list = Arrays.asList("a", "b", "c")
+    val field = ViewField.adapterViewField[String,BaseAdapter](view => new ArrayAdapter[String](context, itemLayoutId, list), list.indexOf(_))
+    val adapterView = new Spinner(context)
+    field.setValue(adapterView, Some("c"))
+    adapterView.getSelectedItemPosition must be (2)
+  }
+
+  @Test
+  def adapterViewFieldMustHandleInvalidValueForAnAdapterView() {
+    val list = Arrays.asList("a", "b", "c")
+    val field = ViewField.adapterViewField[String,BaseAdapter](view => new ArrayAdapter[String](context, itemLayoutId, list), list.indexOf(_))
+    val adapterView = new Spinner(context)
+    field.setValue(adapterView, Some("blah"))
+    adapterView.getSelectedItemPosition must be (AdapterView.INVALID_POSITION)
   }
 }
