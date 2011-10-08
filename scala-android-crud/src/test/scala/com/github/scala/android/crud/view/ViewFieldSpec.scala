@@ -154,6 +154,16 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
   }
 
   @Test
+  def adapterViewFieldMustSetTheAdapterForAnAdapterViewEvenIfTheValueIsNotSet() {
+    val list = Arrays.asList("a", "b", "c")
+    val field = ViewField.adapterViewField[String,BaseAdapter](view => new ArrayAdapter[String](context, itemLayoutId, list), list.indexOf(_))
+    val adapterView = new Spinner(context)
+    field.setValue(adapterView, None)
+    val adapter = adapterView.getAdapter
+    (0 to (adapter.getCount - 1)).toList.map(adapter.getItem(_)) must be (List("a", "b", "c"))
+  }
+
+  @Test
   def adapterViewFieldMustSetThePositionCorrectly() {
     val list = Arrays.asList("a", "b", "c")
     val field = ViewField.adapterViewField[String,BaseAdapter](view => new ArrayAdapter[String](context, itemLayoutId, list), list.indexOf(_))

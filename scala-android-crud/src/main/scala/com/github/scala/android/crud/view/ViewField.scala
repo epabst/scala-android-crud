@@ -129,13 +129,13 @@ object ViewField extends PlatformTypes with Logging {
     * @param positionFinder a function that takes a value and returns its position in the Adapter
     */
   private[view] def adapterViewField[T,A <: Adapter](adapterFactory: AdapterView[A] => A, positionFinder: T => Int): PortableField[T] = {
-    fieldDirect[AdapterView[A], T](v => Option(v.getSelectedItem.asInstanceOf[T]), adapterView => value => {
+    field[AdapterView[A], T](v => Option(v.getSelectedItem.asInstanceOf[T]), adapterView => valueOpt => {
       //don't do it again if already done from a previous time
       if (adapterView.getAdapter == null) {
         val adapter: A = adapterFactory(adapterView)
         adapterView.setAdapter(adapter)
       }
-      adapterView.setSelection(positionFinder(value))
+      adapterView.setSelection(valueOpt.map(positionFinder(_)).getOrElse(-1))
     })
   }
 
