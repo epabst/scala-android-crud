@@ -7,7 +7,7 @@ import org.scalatest.junit.JUnitRunner
 import com.github.triangle.{PortableField, FieldList}
 import PortableField._
 import com.github.scala.android.crud.view.ViewField._
-import com.github.scala.android.crud.testres.R
+import com.github.scala.android.crud.ParentField._
 import com.github.scala.android.crud.testres.R
 import com.github.scala.android.crud.{MyCrudType, ParentField}
 import com.github.scala.android.crud.persistence.{IdPk, SQLiteCriteria}
@@ -57,6 +57,11 @@ class CrudUIGeneratorSpec extends Spec with MustMatchers {
 
     it("must not consider the default primary key field updateable") {
       val fieldInfo = CrudUIGenerator.guessFieldInfo(IdPk.idField, Seq(classOf[R]))
+      fieldInfo.updateable must be (false)
+    }
+
+    it("must not consider a ForeignKey updateable if it has no viewId field") {
+      val fieldInfo = CrudUIGenerator.guessFieldInfo(foreignKey(MyCrudType), Seq(classOf[R]))
       fieldInfo.updateable must be (false)
     }
 

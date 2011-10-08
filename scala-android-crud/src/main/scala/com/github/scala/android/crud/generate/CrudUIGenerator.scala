@@ -144,8 +144,9 @@ object CrudUIGenerator extends PlatformTypes with Logging {
       case _: PortableField[String] => FieldLayout.nameLayout
       case _: PortableField[Int] => FieldLayout.intLayout
     }.head)
-    ViewFieldInfo(displayName, fieldLayout, id = derivedId.getOrElse("field" + random.nextInt()),
-      displayable = !viewResourceIdNames.isEmpty, updateable = persistedFieldOption.isDefined)
+    val displayable = !viewResourceIdNames.isEmpty
+    ViewFieldInfo(displayName, fieldLayout, id = derivedId.getOrElse("field" + random.nextInt()), displayable,
+      updateable = displayable && persistedFieldOption.isDefined)
   }
 
   def guessFieldInfos(crudType: CrudType): List[ViewFieldInfo] =
