@@ -1,28 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TableLayout
-  xmlns:android="http://schemas.android.com/apk/res/android"
-  android:layout_width="fill_parent"
-  android:layout_height="wrap_content"
-  android:stretchColumns="1">
-
+<TableLayout 
+android:stretchColumns="1" android:layout_height="wrap_content" android:layout_width="fill_parent" xmlns:android="http://schemas.android.com/apk/res/android">
   <TableRow>
-    <TextView android:text="Name:" />
-    <EditText android:id="@+id/name" />
+    <TextView android:text="Name:" android:textAppearance="?android:attr/textAppearanceLarge" android:gravity="right"/>
+    <EditText android:inputType="textCapWords" android:id="@+id/name"/>
   </TableRow>
-
   <TableRow>
-    <TextView android:text="Genre:" />
-    <Spinner android:id="@+id/genre" android:drawSelectorOnTop = "true"
-            android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+    <TextView android:text="Genre:" android:textAppearance="?android:attr/textAppearanceLarge" android:gravity="right"/>
+    <Spinner android:drawSelectorOnTop="true" android:id="@+id/genre"/>
   </TableRow>
-
   <TableRow>
-    <TextView android:text="Edition:" />
-    <EditText android:id="@+id/edition" android:digits="01234567890"/>
+    <TextView android:text="Edition:" android:textAppearance="?android:attr/textAppearanceLarge" android:gravity="right"/>
+    <EditText android:inputType="number|numberSigned" android:id="@+id/edition"/>
   </TableRow>
-
   <TableRow>
-    <TextView android:text="Publish Date:" />
-    <DatePicker android:id="@+id/publishDate" />
+    <TextView android:text="Publish Date:" android:textAppearance="?android:attr/textAppearanceLarge" android:gravity="right"/>
+    <DatePicker android:id="@+id/publishDate"/>
   </TableRow>
 </TableLayout>
