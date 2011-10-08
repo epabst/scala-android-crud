@@ -11,6 +11,7 @@ import com.github.scala.android.crud.ParentField._
 import com.github.scala.android.crud.testres.R
 import com.github.scala.android.crud.{MyCrudType, ParentField}
 import com.github.scala.android.crud.persistence.{IdPk, SQLiteCriteria}
+import com.github.scala.android.crud.view.FieldLayout
 
 /**
  * A behavior specification for {@link CrudUIGenerator}.
@@ -68,6 +69,44 @@ class CrudUIGeneratorSpec extends Spec with MustMatchers {
     it("must not consider adjustment fields updateable") {
       val fieldInfo = CrudUIGenerator.guessFieldInfo(adjustment[SQLiteCriteria](_.orderBy = "foo"), Seq(classOf[R]))
       fieldInfo.updateable must be (false)
+    }
+  }
+
+  describe("fieldLayoutForHeader") {
+    it("must show the display name") {
+      val position = 0
+      val fieldLayout = CrudUIGenerator.fieldLayoutForHeader(ViewFieldInfo(Some("My Name"), FieldLayout.nameLayout, "foo", true, true), position)
+      fieldLayout.attributes.find(_.key == "text").get.value.text must be ("My Name")
+    }
+
+    it("must put the first field on the left side of the screen") {
+      val position = 0
+      val fieldLayout = CrudUIGenerator.fieldLayoutForHeader(ViewFieldInfo(None, FieldLayout.nameLayout, "foo", true, true), position)
+      fieldLayout.attributes.find(_.key == "layout_width").get.value.text must be ("wrap_content")
+      fieldLayout.attributes.find(_.key == "gravity").get.value.text must be ("left")
+    }
+
+    it("must put the second field on the right side of the screen") {
+      val position = 1
+      val fieldLayout = CrudUIGenerator.fieldLayoutForHeader(ViewFieldInfo(None, FieldLayout.nameLayout, "foo", true, true), position)
+      fieldLayout.attributes.find(_.key == "layout_width").get.value.text must be ("fill_parent")
+      fieldLayout.attributes.find(_.key == "gravity").get.value.text must be ("right")
+    }
+  }
+
+  describe("fieldLayoutForRow") {
+    it("must put the first field on the left side of the screen") {
+      val position = 0
+      val fieldLayout = CrudUIGenerator.fieldLayoutForRow(ViewFieldInfo(None, FieldLayout.nameLayout, "foo", true, true), position)
+      fieldLayout.attributes.find(_.key == "layout_width").get.value.text must be ("wrap_content")
+      fieldLayout.attributes.find(_.key == "gravity").get.value.text must be ("left")
+    }
+
+    it("must put the second field on the right side of the screen") {
+      val position = 1
+      val fieldLayout = CrudUIGenerator.fieldLayoutForRow(ViewFieldInfo(None, FieldLayout.nameLayout, "foo", true, true), position)
+      fieldLayout.attributes.find(_.key == "layout_width").get.value.text must be ("fill_parent")
+      fieldLayout.attributes.find(_.key == "gravity").get.value.text must be ("right")
     }
   }
 }

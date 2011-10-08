@@ -37,10 +37,10 @@ object CrudUIGenerator extends PlatformTypes with Logging {
     application.allEntities.foreach(generateLayouts(_))
   }
 
-  protected def fieldLayoutForHeader(field: ViewFieldInfo, position: Int): Elem = {
+  protected[generate] def fieldLayoutForHeader(field: ViewFieldInfo, position: Int): Elem = {
     val textAppearance = if (position < 2) "?android:attr/textAppearanceLarge" else "?android:attr/textAppearanceSmall"
-    val gravity = if (position % 1 == 0) "left" else "right"
-    val layoutWidth = if (position % 1 == 0) "wrap_content" else "fill_parent"
+    val gravity = if (position % 2 == 0) "left" else "right"
+    val layoutWidth = if (position % 2 == 0) "wrap_content" else "fill_parent"
     <TextView android:text={field.displayName.getOrElse("")} android:gravity={gravity}
               android:layout_width={layoutWidth}
               android:layout_height="wrap_content"
@@ -48,10 +48,10 @@ object CrudUIGenerator extends PlatformTypes with Logging {
               android:textAppearance={textAppearance}/>
   }
 
-  protected def fieldLayoutForRow(field: ViewFieldInfo, position: Int): Elem = {
+  protected[generate] def fieldLayoutForRow(field: ViewFieldInfo, position: Int): Elem = {
     val textAppearance = if (position < 2) "?android:attr/textAppearanceLarge" else "?android:attr/textAppearanceSmall"
-    val gravity = if (position % 1 == 0) "left" else "right"
-    val layoutWidth = if (position % 1 == 0) "wrap_content" else "fill_parent"
+    val gravity = if (position % 2 == 0) "left" else "right"
+    val layoutWidth = if (position % 2 == 0) "wrap_content" else "fill_parent"
     val attributes = <TextView android:id={"@+id/" + field.id} android:gravity={gravity}
                                android:layout_width={layoutWidth}
                                android:layout_height="wrap_content"
