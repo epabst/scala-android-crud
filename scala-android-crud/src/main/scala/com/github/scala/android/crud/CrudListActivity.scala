@@ -25,6 +25,11 @@ class CrudListActivity(val entityType: CrudType, val application: CrudApplicatio
     setContentView(entityType.listLayout)
 
     val uriPath = currentUriPath
+    val view = getListView;
+		view.setHeaderDividersEnabled(true);
+		view.addHeaderView(getLayoutInflater.inflate(entityType.headerLayout, null));
+    registerForContextMenu(getListView)
+
     future {
       //copy each parent Entity's data to the Activity if identified in the currentUriPath
       val portableValues: List[PortableValue] = entityType.parentEntities.flatMap(_ match {
@@ -34,11 +39,6 @@ class CrudListActivity(val entityType: CrudType, val application: CrudApplicatio
         portableValues.foreach(_.copyTo(this))
       }
     }
-    val view = getListView;
-		view.setHeaderDividersEnabled(true);
-		view.addHeaderView(getLayoutInflater.inflate(entityType.headerLayout, null));
-    registerForContextMenu(getListView)
-
     entityType.setListAdapter(crudContext, this)
   }
 
