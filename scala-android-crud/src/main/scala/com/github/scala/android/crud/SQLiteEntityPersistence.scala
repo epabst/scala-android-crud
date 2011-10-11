@@ -134,8 +134,8 @@ class GeneratedDatabaseSetup(crudContext: CrudContext) extends SQLiteOpenHelper(
       val buffer = new StringBuffer
       buffer.append("CREATE TABLE IF NOT EXISTS ").append(entityType.tableName).append(" (").
           append(BaseColumns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT")
-      CursorField.persistedFields(entityType).filter(_.name != BaseColumns._ID).foreach { persisted =>
-        buffer.append(", ").append(persisted.name).append(" ").append(persisted.persistedType.sqliteType)
+      CursorField.persistedFields(entityType).filter(_.columnName != BaseColumns._ID).foreach { persisted =>
+        buffer.append(", ").append(persisted.columnName).append(" ").append(persisted.persistedType.sqliteType)
       }
       buffer.append(")")
       execSQL(db, buffer.toString)

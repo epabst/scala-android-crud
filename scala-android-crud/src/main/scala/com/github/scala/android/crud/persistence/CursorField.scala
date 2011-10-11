@@ -34,7 +34,7 @@ object CursorField extends PlatformTypes {
     persistedFields(field).filterNot(_.name == CursorField.persistedId.name).filterNot(parentFieldNames.contains(_))
   }
 
-  def queryFieldNames(fields: FieldList): List[String] = persistedFields(fields).map(_.name)
+  def queryFieldNames(fields: FieldList): List[String] = persistedFields(fields).map(_.columnName)
 
   def sqliteCriteria[T](name: String) = PortableField.writeOnlyDirect[SQLiteCriteria,T](criteria => value => criteria.selection = name + "=" + value)
 }
@@ -49,17 +49,38 @@ class CursorField[T](val name: String)(implicit val persistedType: PersistedType
     readOnly[Cursor,T](getFromCursor) + writeOnlyDirect[ContentValues,T](setIntoContentValues) +
     bundleField[T](name)
 
+  lazy val columnName = SQLiteUtil.toNonReservedWord(name)
+
   private def getFromCursor(cursor: Cursor) = {
-    val columnIndex = cursor.getColumnIndex(name)
+    val columnIndex = cursor.getColumnIndex(columnName)
     if (columnIndex >= 0) {
       persistedType.getValue(cursor, columnIndex)
     } else {
-      warn("column not in Cursor: " + name)
+      warn("column not in Cursor: " + columnName)
       None
     }
   }
 
-  private def setIntoContentValues(contentValues: ContentValues)(value: T) { persistedType.putValue(contentValues, name, value) }
+  private def setIntoContentValues(contentValues: ContentValues)(value: T) { persistedType.putValue(contentValues, columnName, value) }
 
   override def toString = "persisted(\"" + name + "\")"
+}
+
+object SQLiteUtil {
+  def toNonReservedWord(name: String): String =  name.toUpperCase match {
+    case "ABORT" | "ACTION" | "ADD" | "AFTER" | "ALL" | "ALTER" | "ANALYZE" | "AND" | "AS" | "ASC" | "ATTACH" |
+      "AUTOINCREMENT" | "BEFORE" | "BEGIN" | "BETWEEN" | "BY" | "CASCADE" | "CASE" | "CAST" | "CHECK" |
+      "COLLATE" | "COLUMN" | "COMMIT" | "CONFLICT" | "CONSTRAINT" | "CREATE" | "CROSS" | "CURRENT_DATE" |
+      "CURRENT_TIME" | "CURRENT_TIMESTAMP" | "DATABASE" | "DEFAULT" | "DEFERRABLE" | "DEFERRED" | "DELETE" |
+      "DESC" | "DETACH" | "DISTINCT" | "DROP" | "EACH" | "ELSE" | "END" | "ESCAPE" | "EXCEPT" | "EXCLUSIVE" |
+      "EXISTS" | "EXPLAIN" | "FAIL" | "FOR" | "FOREIGN" | "FROM" | "FULL" | "GLOB" | "GROUP" | "HAVING" |
+      "IF" | "IGNORE" | "IMMEDIATE" | "IN" | "INDEX" | "INDEXED" | "INITIALLY" | "INNER" | "INSERT" | "INSTEAD" |
+      "INTERSECT" | "INTO" | "IS" | "ISNULL" | "JOIN" | "KEY" | "LEFT" | "LIKE" | "LIMIT" | "MATCH" | "NATURAL" |
+      "NO" | "NOT" | "NOTNULL" | "NULL" | "OF" | "OFFSET" | "ON" | "OR" | "ORDER" | "OUTER" | "PLAN" |
+      "PRAGMA" | "PRIMARY" | "QUERY" | "RAISE" | "REFERENCES" | "REGEXP" | "REINDEX" | "RELEASE" | "RENAME" |
+      "REPLACE" | "RESTRICT" | "RIGHT" | "ROLLBACK" | "ROW" | "SAVEPOINT" | "SELECT" | "SET" | "TABLE" |
+      "TEMP" | "TEMPORARY" | "THEN" | "TO" | "TRANSACTION" | "TRIGGER" | "UNION" | "UNIQUE" | "UPDATE" |
+      "USING" | "VACUUM" | "VALUES" | "VIEW" | "VIRTUAL" | "WHEN" | "WHERE" => name + "0"
+    case _ => name
+  }
 }
