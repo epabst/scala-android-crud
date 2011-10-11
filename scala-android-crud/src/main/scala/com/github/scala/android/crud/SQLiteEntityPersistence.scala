@@ -32,7 +32,7 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudType, crudContext: CrudC
 
   def findAll(criteria: SQLiteCriteria): Cursor = {
     debug("Finding each " + entityType.entityName + " for " + queryFieldNames.mkString(",") + " where " + criteria.selection)
-    val cursor = database.query(entityType.entityName, queryFieldNames.toArray,
+    val cursor = database.query(entityType.tableName, queryFieldNames.toArray,
       criteria.selection, criteria.selectionArgs, criteria.groupBy, criteria.having, criteria.orderBy)
     cursors += cursor
     cursor
@@ -44,7 +44,7 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudType, crudContext: CrudC
   //todo delete?
   override def find(id: ID): Option[Cursor] = {
     debug("Finding " + entityType.entityName + " for " + queryFieldNames.mkString(",") + " where " + BaseColumns._ID + "=" + id)
-    val cursor = database.query(entityType.entityName, queryFieldNames.toArray,
+    val cursor = database.query(entityType.tableName, queryFieldNames.toArray,
       BaseColumns._ID + "=" + id, Nil.toArray, null, null, null)
     if (cursor.moveToFirst) {
       cursors += cursor
@@ -65,15 +65,15 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudType, crudContext: CrudC
     val id = idOption match {
       case None => {
         info("Adding " + entityType.entityName + " with " + contentValues)
-        database.insert(entityType.entityName, null, contentValues)
+        database.insert(entityType.tableName, null, contentValues)
       }
       case Some(givenId) => {
         info("Updating " + entityType.entityName + " #" + givenId + " with " + contentValues)
-        val rowCount = database.update(entityType.entityName, contentValues, BaseColumns._ID + "=" + givenId, null)
+        val rowCount = database.update(entityType.tableName, contentValues, BaseColumns._ID + "=" + givenId, null)
         if (rowCount == 0) {
           contentValues.put(BaseColumns._ID, givenId)
           info("Added " + entityType.entityName + " #" + givenId + " with " + contentValues + " since id is not present yet")
-          val resultingId = database.insert(entityType.entityName, null, contentValues)
+          val resultingId = database.insert(entityType.tableName, null, contentValues)
           if (givenId != resultingId)
             throw new IllegalStateException("id changed from " + givenId + " to " + resultingId +
                     " when restoring " + entityType.entityName + " #" + givenId + " with " + contentValues)
@@ -90,7 +90,7 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudType, crudContext: CrudC
 
   protected def doDelete(ids: Seq[ID]) {
     ids.foreach { id =>
-      database.delete(entityType.entityName, BaseColumns._ID + "=" + id, Nil.toArray)
+      database.delete(entityType.tableName, BaseColumns._ID + "=" + id, Nil.toArray)
     }
     future {
       ids.foreach { id =>
@@ -130,9 +130,9 @@ class GeneratedDatabaseSetup(crudContext: CrudContext) extends SQLiteOpenHelper(
 
   def onCreate(db: SQLiteDatabase) {
     val application = crudContext.application
-    for (val entityType <- application.allEntities) {
+    for (val entityType <- application.allEntities.collect { case c: SQLiteCrudType => c }) {
       val buffer = new StringBuffer
-      buffer.append("CREATE TABLE IF NOT EXISTS ").append(entityType.entityName).append(" (").
+      buffer.append("CREATE TABLE IF NOT EXISTS ").append(entityType.tableName).append(" (").
           append(BaseColumns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT")
       CursorField.persistedFields(entityType).filter(_.name != BaseColumns._ID).foreach { persisted =>
         buffer.append(", ").append(persisted.name).append(" ").append(persisted.persistedType.sqliteType)

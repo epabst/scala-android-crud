@@ -122,4 +122,20 @@ class SQLiteCrudTypeSpec extends MustMatchers with Logging with MyEntityTesting 
     //it must have refreshed the listAdapter
     listAdapter.getCount must be (0)
   }
+
+  @Test
+  def tableNameMustNotBeReservedWord() {
+    tableNameMustNotBeReservedWord("Group")
+    tableNameMustNotBeReservedWord("Table")
+    tableNameMustNotBeReservedWord("index")
+  }
+
+  def tableNameMustNotBeReservedWord(name: String) {
+    val crudType = new SQLiteCrudType with HiddenEntityType {
+      def entityName = name
+
+      def valueFields = List.empty[BaseField]
+    }
+    crudType.tableName must be (name + "0")
+  }
 }
