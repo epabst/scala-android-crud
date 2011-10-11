@@ -85,9 +85,10 @@ object ViewField extends PlatformTypes with Logging {
 
     override def toString = "textView"
   }
-  lazy val phoneView: PortableField[String] = new ViewField[String](textLayout("phone")) {
+  def textViewWithInputType(inputType: String): PortableField[String] = new ViewField[String](textLayout(inputType)) {
     protected def delegate = textView
   }
+  lazy val phoneView: PortableField[String] = textViewWithInputType("phone")
   lazy val doubleView: PortableField[Double] = new ViewField[Double](doubleLayout) {
     protected def delegate = formatted(textView)
   }
