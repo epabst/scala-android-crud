@@ -54,21 +54,32 @@ case class RichIntent(intent: Intent) {
 }
 
 trait StartActivityAction extends Action {
-  def action: String
-
-  def activityClass: Class[_ <: Activity]
-
-  def determineIntent(uri: UriPath, activity: Activity): Intent = Action.constructIntent(action, uri, activity, activityClass)
+  def determineIntent(uri: UriPath, activity: Activity): Intent
 
   def invoke(uri: UriPath, activity: Activity) {
     activity.startActivity(determineIntent(uri, activity))
   }
 }
 
+trait BaseStartActivityAction extends StartActivityAction {
+  def action: String
+
+  def activityClass: Class[_ <: Activity]
+
+  def determineIntent(uri: UriPath, activity: Activity): Intent = Action.constructIntent(action, uri, activity, activityClass)
+}
+
+//final to guarantee equality is correct
+final case class StartActivityActionFromIntent(intent: Intent,
+                                               icon: Option[PlatformTypes#ImgKey] = None,
+                                               title: Option[PlatformTypes#SKey] = None) extends StartActivityAction {
+  def determineIntent(uri: UriPath, activity: Activity) = intent
+}
+
 //final to guarantee equality is correct
 final case class StartNamedActivityAction(action: String,
                                           icon: Option[PlatformTypes#ImgKey], title: Option[PlatformTypes#SKey],
-                                          activityClass: Class[_ <: Activity]) extends StartActivityAction
+                                          activityClass: Class[_ <: Activity]) extends BaseStartActivityAction
 
 trait EntityAction extends Action {
   def entityName: String
@@ -78,7 +89,7 @@ trait EntityAction extends Action {
 //final to guarantee equality is correct
 final case class StartEntityActivityAction(entityName: String, action: String,
                                            icon: Option[PlatformTypes#ImgKey], title: Option[PlatformTypes#SKey],
-                                           activityClass: Class[_ <: Activity]) extends StartActivityAction with EntityAction {
+                                           activityClass: Class[_ <: Activity]) extends BaseStartActivityAction with EntityAction {
   override def determineIntent(uri: UriPath, activity: Activity): Intent =
     super.determineIntent(uri.specify(entityName), activity)
 }
@@ -86,6 +97,6 @@ final case class StartEntityActivityAction(entityName: String, action: String,
 //final to guarantee equality is correct
 final case class StartEntityIdActivityAction(entityName: String, action: String,
                                              icon: Option[PlatformTypes#ImgKey], title: Option[PlatformTypes#SKey],
-                                             activityClass: Class[_ <: Activity]) extends StartActivityAction with EntityAction {
+                                             activityClass: Class[_ <: Activity]) extends BaseStartActivityAction with EntityAction {
   override def determineIntent(uri: UriPath, activity: Activity) = super.determineIntent(uri.upToIdOf(entityName), activity)
 }
