@@ -32,7 +32,6 @@
     <android.obfuscate>false</android.obfuscate>
     <scala.version>2.8.1</scala.version>
     <android.version>2.2.1</android.version>
-    <scala-android-crud.version>${project.version}</scala-android-crud.version>
     <!-- set a custom format that is guaranteed to grow as a Long number, so it can be used as version code
     in the AndroidManifest.xml -->
     <maven.build.timestamp.format>yyMMdddHHmm</maven.build.timestamp.format>
@@ -474,12 +473,12 @@
     <dependency>
       <groupId>com.github.epabst.scala-android-crud</groupId>
       <artifactId>scala-android-crud</artifactId>
-      <version>${scala-android-crud.version}</version>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.github.epabst.scala-android-crud</groupId>
       <artifactId>scala-android-crud</artifactId>
-      <version>${scala-android-crud.version}</version>
+      <version>${project.version}</version>
       <type>apklib</type>
     </dependency>
     <dependency>
