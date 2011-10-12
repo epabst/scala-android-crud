@@ -167,7 +167,7 @@
       <plugin>
         <groupId>com.jayway.maven.plugins.android.generation2</groupId>
         <artifactId>maven-android-plugin</artifactId>
-        <version>2.9.0-beta-2</version>
+        <version>2.9.0-beta-5</version>
         <configuration>
           <sdk>
             <platform>8</platform>
@@ -232,6 +232,15 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-release-plugin</artifactId>
+        <version>2.2.1</version>
+        <configuration>
+          <!-- During release:perform, enable the "sign" profile -->
+          <releaseProfiles>sign,release</releaseProfiles>
+          <goals>package deploy</goals>
+        </configuration>
       </plugin>
     </plugins>
   </build>
