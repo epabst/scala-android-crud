@@ -334,7 +334,7 @@
                   <removeExistingSignatures>true</removeExistingSignatures>
                   <archiveDirectory />
                   <includes>
-                    <include>${project.build.directory}/${project.artifactId}.apk</include>
+                    <include>${project.build.directory}/${project.build.finalName}.apk</include>
                   </includes>
                   <keystore>${sign.keystore}</keystore>
                   <alias>${sign.alias}</alias>
@@ -356,8 +356,8 @@
               </sign>
               <zipalign>
                 <verbose>true</verbose>
-                <inputApk>${project.build.directory}/${project.artifactId}.apk</inputApk>
-                <outputApk>${project.build.directory}/${project.artifactId}-signed-aligned.apk
+                <inputApk>${project.build.directory}/${project.build.finalName}.apk</inputApk>
+                <outputApk>${project.build.directory}/${project.build.finalName}-signed-aligned.apk
                 </outputApk>
               </zipalign>
             </configuration>
@@ -377,7 +377,7 @@
             <configuration>
               <artifacts>
                 <artifact>
-                  <file>${project.build.directory}/${project.artifactId}-signed-aligned.apk</file>
+                  <file>${project.build.directory}/${project.build.finalName}-signed-aligned.apk</file>
                   <type>apk</type>
                   <classifier>signed-aligned</classifier>
                 </artifact>
