@@ -197,9 +197,7 @@
             <!-- next options are necessary to decipher stack traces with retrace later, relies on the map file created -->
             <option>-renamesourcefileattribute SourceFile</option>
             <option>-keepattributes SourceFile,LineNumberTable</option>
-
-            <!---keepattributes-->
-            <!--SourceFile,LineNumberTable,*Annotation*-->
+            <!--keepattributes SourceFile,LineNumberTable,*Annotation*-->
 
             <!-- Optimization related settings -->
             <option>${proguard.optimization.option1}</option>
