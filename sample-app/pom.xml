@@ -230,6 +230,7 @@
           </zipalign>
           <deleteConflictingFiles>true</deleteConflictingFiles>
           <undeployBeforeDeploy>true</undeployBeforeDeploy>
+          <sign><debug>${sign.debug}</debug></sign>
         </configuration>
         <extensions>true</extensions>
         <executions>
@@ -290,6 +291,7 @@
         <proguard.optimization.option1>-dontoptimize</proguard.optimization.option1>
         <!-- This should be "none", but leaving it blank causes problems, so simply repeating the prior option. -->
         <proguard.optimization.option2>-dontoptimize</proguard.optimization.option2>
+        <sign.debug>true</sign.debug>
       </properties>
     </profile>
     <profile>
@@ -301,6 +303,7 @@
         <proguard.optimization.option1>-optimizationpasses 3</proguard.optimization.option1>
         <!-- The -optimizations option disables some arithmetic simplifications that Dalvik 1.0 and 1.5 can't handle. -->
         <proguard.optimization.option2>-optimizations !code/simplification/arithmetic,!code/allocation/variable</proguard.optimization.option2>
+        <sign.debug>false</sign.debug>
       </properties>
     </profile>
     <profile>
@@ -317,6 +320,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-jarsigner-plugin</artifactId>
+            <version>1.2</version>
             <executions>
               <execution>
                 <id>signing</id>
