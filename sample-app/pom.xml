@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright (C) 2011 All Rights Reserved, Eric Pabst.
+ Copyright (C) 2011 Eric Pabst.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -202,10 +202,8 @@
             <!--SourceFile,LineNumberTable,*Annotation*-->
 
             <!-- Optimization related settings -->
-            <!--<option>-dontoptimize</option>-->
-            <option>-optimizationpasses 3</option>
-            <!-- The -optimizations option disables some arithmetic simplifications that Dalvik 1.0 and 1.5 can't handle. -->
-            <option>-optimizations !code/simplification/arithmetic,!code/allocation/variable</option>
+            <option>${proguard.optimization.option1}</option>
+            <option>${proguard.optimization.option2}</option>
           </options>
           <!-- these are here to prevent a lot of "duplicate definition of library class" warnings -->
           <exclusions>
@@ -238,13 +236,6 @@
         </configuration>
         <extensions>true</extensions>
         <executions>
-          <execution>
-            <id>startEmulator</id>
-            <phase>initialize</phase>
-            <goals>
-              <goal>emulator-start</goal>
-            </goals>
-          </execution>
           <execution>
             <id>alignApk</id>
             <phase>package</phase>
@@ -299,6 +290,8 @@
       <properties>
         <deployment.stage>In Development</deployment.stage>
         <android.debuggable>true</android.debuggable>
+        <proguard.optimization.option1>-dontoptimize</proguard.optimization.option1>
+        <proguard.optimization.option2></proguard.optimization.option2>
       </properties>
     </profile>
     <profile>
@@ -307,6 +300,9 @@
         <deployment.stage>In Production</deployment.stage>
         <android.debuggable>false</android.debuggable>
         <android.obfuscate>true</android.obfuscate>
+        <proguard.optimization.option1>-optimizationpasses 3</proguard.optimization.option1>
+        <!-- The -optimizations option disables some arithmetic simplifications that Dalvik 1.0 and 1.5 can't handle. -->
+        <proguard.optimization.option2>-optimizations !code/simplification/arithmetic,!code/allocation/variable</proguard.optimization.option2>
       </properties>
     </profile>
     <profile>
