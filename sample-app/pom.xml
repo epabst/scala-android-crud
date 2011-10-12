@@ -28,8 +28,6 @@
     <url>https://github.com/epabst/scala-android-crud</url>
   </scm>
   <properties>
-    <environment>development</environment>
-    <android.obfuscate>false</android.obfuscate>
     <scala.version>2.8.1</scala.version>
     <android.version>2.2.1</android.version>
     <!-- set a custom format that is guaranteed to grow as a Long number, so it can be used as version code
@@ -282,13 +280,14 @@
       <!-- using this since activeByDefault does not work well with multiple profiles -->
       <activation>
         <property>
-          <name>environment</name>
-          <value>!production</value>
+          <name>performRelease</name>
+          <value>!true</value>
         </property>
       </activation>
       <properties>
         <deployment.stage>In Development</deployment.stage>
         <android.debuggable>true</android.debuggable>
+        <android.obfuscate>false</android.obfuscate>
         <proguard.optimization.option1>-dontoptimize</proguard.optimization.option1>
         <!-- This should be "none", but leaving it blank causes problems, so simply repeating the prior option. -->
         <proguard.optimization.option2>-dontoptimize</proguard.optimization.option2>
@@ -297,6 +296,13 @@
     </profile>
     <profile>
       <id>production</id>
+      <!-- via this activation the profile is automatically used when the release is done with the maven release plugin -->
+      <activation>
+        <property>
+          <name>performRelease</name>
+          <value>true</value>
+        </property>
+      </activation>
       <properties>
         <deployment.stage>In Production</deployment.stage>
         <android.debuggable>false</android.debuggable>
@@ -306,16 +312,6 @@
         <proguard.optimization.option2>-optimizations !code/simplification/arithmetic,!code/allocation/variable</proguard.optimization.option2>
         <sign.debug>false</sign.debug>
       </properties>
-    </profile>
-    <profile>
-      <id>release</id>
-      <!-- via this activation the profile is automatically used when the release is done with the maven release plugin -->
-      <activation>
-        <property>
-          <name>performRelease</name>
-          <value>true</value>
-        </property>
-      </activation>
       <build>
         <plugins>
           <plugin>
