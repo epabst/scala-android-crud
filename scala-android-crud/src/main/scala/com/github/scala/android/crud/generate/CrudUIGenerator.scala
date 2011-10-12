@@ -3,7 +3,7 @@ package com.github.scala.android.crud.generate
 import android.view.View
 import java.lang.IllegalStateException
 import com.github.scala.android.crud.common.PlatformTypes
-import com.github.scala.android.crud.persistence.{IdPk, CursorField}
+import com.github.scala.android.crud.persistence.{CursorField}
 import com.github.triangle._
 import util.Random
 import scala.tools.nsc.io.Path
@@ -33,8 +33,46 @@ object CrudUIGenerator extends PlatformTypes with Logging {
     }
   }
 
+  private def writeXmlToFile(path: Path, xml: Node) {
+    val file = path.toFile
+    file.parent.createDirectory()
+    file.writeAll("""<?xml version="1.0" encoding="utf-8"?>""", lineSeparator, prettyPrinter.format(xml))
+    println("Wrote " + file)
+  }
+
+  def generateAndroidManifest(application: CrudApplication): Node = {
+    val activityNames = application.allEntities.flatMap { entity =>
+      List(entity.listActivityClass.getSimpleName, entity.activityClass.getSimpleName)
+    }
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+              package={application.getClass.getPackage.getName}
+              android:versionName="${project.version}"
+              android:versionCode="${versionCode}">
+      <application android:label="@string/app_name" android:icon="@drawable/icon"
+                   android:theme="@android:style/Theme.NoTitleBar"
+                   android:debuggable="${android.debuggable}"
+                   android:backupAgent={application.getClass.getSimpleName + "BackupAgent"} android:restoreAnyVersion="true">
+        <meta-data android:name="com.google.android.backup.api_key"
+                   android:value="TODO: get a backup key from http://code.google.com/android/backup/signup.html and put it here."/>
+        <activity android:name={"." + activityNames.head} android:label="@string/app_name">
+          <intent-filter>
+            <action android:name="android.intent.action.MAIN"/>
+            <category android:name="android.intent.category.LAUNCHER"/>
+          </intent-filter>
+        </activity>
+        {activityNames.tail.map { name => <activity android:name={"." + name} android:label="@string/app_name"/>}}
+      </application>
+      <uses-sdk android:minSdkVersion="8"/>
+    </manifest>
+  }
+
+  def writeAndroidManifest(application: CrudApplication) {
+    writeXmlToFile(Path("AndroidManifest.xml"), generateAndroidManifest(application))
+  }
+
   def generateLayouts(application: CrudApplication) {
     application.allEntities.foreach(generateLayouts(_))
+    writeAndroidManifest(application)
   }
 
   protected[generate] def fieldLayoutForHeader(field: ViewFieldInfo, position: Int): Elem = {
@@ -153,10 +191,7 @@ object CrudUIGenerator extends PlatformTypes with Logging {
     crudType.fields.map(guessFieldInfo(_, crudType.rLayoutClasses))
 
   private def writeLayoutFile(name: String, xml: Elem) {
-    val file = (Path("res") / "layout" / (name + ".xml")).toFile
-    file.parent.createDirectory()
-    file.writeAll("""<?xml version="1.0" encoding="utf-8"?>""", lineSeparator, prettyPrinter.format(xml))
-    println("Wrote " + file)
+    writeXmlToFile(Path("res") / "layout" / (name + ".xml"), xml)
   }
 
   def generateLayouts(crudType: CrudType) {
