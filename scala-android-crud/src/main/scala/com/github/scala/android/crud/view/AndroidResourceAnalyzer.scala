@@ -37,6 +37,10 @@ object AndroidResourceAnalyzer {
     findRInnerClass(clazz, "layout").toSeq ++ Seq(classOf[android.R.layout], classOf[com.github.scala.android.crud.res.R.layout])
   }
 
+  def detectRStringClasses(clazz: Class[_]): Seq[Class[_]] = {
+    findRInnerClass(clazz, "string").toSeq ++ Seq(classOf[android.R.string], classOf[com.github.scala.android.crud.res.R.string])
+  }
+
   def findResourceFieldWithIntValue(classes: Seq[Class[_]], value: Int): Option[Field] =
     findMatchingResourceField(classes, field => field.getInt(null) == value)
 

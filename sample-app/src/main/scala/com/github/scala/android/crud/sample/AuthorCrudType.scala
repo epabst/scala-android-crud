@@ -35,10 +35,6 @@ trait AuthorContext {
               }
     )
 
-    def cancelItemString = res.R.string.cancel_item
-    def editItemString = R.string.edit_author
-    def addItemString = R.string.add_author
-
     def activityClass = classOf[AuthorActivity]
     def listActivityClass = classOf[AuthorListActivity]
   }

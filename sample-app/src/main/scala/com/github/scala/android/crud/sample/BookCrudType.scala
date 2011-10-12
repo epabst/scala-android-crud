@@ -36,10 +36,6 @@ trait BookContext {
 
     def activityClass = classOf[BookActivity]
     def listActivityClass = classOf[BookListActivity]
-
-    def cancelItemString = res.R.string.cancel_item
-    def editItemString = R.string.edit_book
-    def addItemString = R.string.add_book
   }
 }
 

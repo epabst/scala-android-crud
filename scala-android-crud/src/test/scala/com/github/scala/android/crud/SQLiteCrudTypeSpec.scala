@@ -42,9 +42,6 @@ class SQLiteCrudTypeSpec extends MustMatchers with Logging with MyEntityTesting 
     def entityName = "Test"
     val valueFields = List(persisted[Int]("age") + default(21))
 
-    val addItemString = R.string.add_item
-    val editItemString = R.string.edit_item
-    val cancelItemString = R.string.cancel_item
     def activityClass = classOf[CrudActivity]
     def listActivityClass = classOf[CrudListActivity]
   }

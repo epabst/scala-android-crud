@@ -34,12 +34,9 @@ trait GeneratedCrudType[T <: AnyRef] extends CrudType {
 
   def refreshAfterDataChanged(listAdapter: ListAdapter) {}
 
-
   override def getListActions(application: CrudApplication) = super.getReadOnlyListActions(application)
 
   override def getEntityActions(application: CrudApplication) = super.getReadOnlyEntityActions(application)
-
-  override val cancelItemString = R.string.cancel_item
 }
 
 object GeneratedCrudType {

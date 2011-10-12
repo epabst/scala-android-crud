@@ -47,7 +47,5 @@ trait MyEntityTesting {
     def refreshAfterDataChanged(listAdapter: ListAdapter) {
       refreshCount += 1
     }
-
-    val cancelItemString = R.string.cancel_item
   }
 }

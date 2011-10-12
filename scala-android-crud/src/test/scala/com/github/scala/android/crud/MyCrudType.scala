@@ -19,8 +19,6 @@ class MyCrudType extends CrudType with StubEntityType {
 
   def valueFields = List[BaseField](persisted[Int]("count"))
 
-  def cancelItemString = R.string.cancel_item
-
   def refreshAfterDataChanged(listAdapter: ListAdapter) {}
 
   def setListAdapter(findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: ListActivity) {
@@ -34,8 +32,6 @@ class MyCrudType extends CrudType with StubEntityType {
 
 trait StubEntityType extends CrudType {
   override lazy val entityNameLayoutPrefix = "test"
-  val addItemString = R.string.add_item
-  val editItemString = R.string.edit_item
 
   def listActivityClass = classOf[CrudListActivity]
   def activityClass = classOf[CrudActivity]

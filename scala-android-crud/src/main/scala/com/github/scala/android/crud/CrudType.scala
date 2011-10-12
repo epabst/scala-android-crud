@@ -50,6 +50,8 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
   def rIdClasses: Seq[Class[_]] = detectRIdClasses(this.getClass)
   def rLayoutClasses: Seq[Class[_]] = detectRLayoutClasses(this.getClass)
   private lazy val rLayoutClassesVal = rLayoutClasses
+  def rStringClasses: Seq[Class[_]] = detectRStringClasses(this.getClass)
+  private lazy val rStringClassesVal = rStringClasses
 
   protected def getLayoutKey(layoutName: String): LayoutKey =
     findResourceIdWithName(rLayoutClassesVal, layoutName).getOrElse {
@@ -72,11 +74,18 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
 
   private val persistenceVarForListAdapter = new ContextVar[CrudPersistence]
 
-  def listItemsString: Option[SKey] = None
-  def addItemString: SKey
-  def editItemString: SKey
+  protected def getStringKey(stringName: String): SKey =
+    findResourceIdWithName(rStringClassesVal, stringName).getOrElse {
+      rStringClassesVal.foreach(rStringClass => error("Contents of " + rStringClass + " are " + rStringClass.getFields.mkString(", ")))
+      throw new IllegalStateException("R.string." + stringName + " not found.  You may want to run the CrudUIGenerator.generateLayouts." +
+              rStringClassesVal.mkString("(string classes: ", ",", ")"))
+    }
+
+  def listItemsString: Option[SKey] = findResourceIdWithName(rStringClassesVal, entityNameLayoutPrefix + "_list")
+  def addItemString: SKey = getStringKey("add_" + entityNameLayoutPrefix)
+  def editItemString: SKey = getStringKey("edit_" + entityNameLayoutPrefix)
   def deleteItemString: SKey = res.R.string.delete_item
-  def cancelItemString: SKey
+  def cancelItemString: SKey = android.R.string.cancel
 
   lazy val parentFields: List[ParentField] = deepCollect {
     case parentField: ParentField => parentField
@@ -308,9 +317,6 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
  * never be used with the UI.
  */
 trait HiddenEntityType extends CrudType {
-  def addItemString: SKey = throw new UnsupportedOperationException
-  def editItemString: SKey = throw new UnsupportedOperationException
-  def cancelItemString: SKey = throw new UnsupportedOperationException
   def activityClass = throw new UnsupportedOperationException
   def listActivityClass = throw new UnsupportedOperationException
 }
