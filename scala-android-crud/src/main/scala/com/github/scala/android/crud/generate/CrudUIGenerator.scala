@@ -66,13 +66,21 @@ object CrudUIGenerator extends PlatformTypes with Logging {
     </manifest>
   }
 
-  def writeAndroidManifest(application: CrudApplication) {
-    writeXmlToFile(Path("AndroidManifest.xml"), generateAndroidManifest(application))
+  def generateValueStrings(application: CrudApplication): Node = {
+    <resources>
+      <string name="app_name">{application.name}</string>
+      {application.allEntities.flatMap { entity => Seq(
+        <string name={"add_" + entity.entityNameLayoutPrefix}>Add {entity.entityName}</string>,
+        <string name={"edit_" + entity.entityNameLayoutPrefix}>Edit {entity.entityName}</string>,
+        <string name={entity.entityNameLayoutPrefix + "_list"}>{entity.entityName} List</string>
+      )}}
+    </resources>
   }
 
   def generateLayouts(application: CrudApplication) {
     application.allEntities.foreach(generateLayouts(_))
-    writeAndroidManifest(application)
+    writeXmlToFile(Path("AndroidManifest.xml"), generateAndroidManifest(application))
+    writeXmlToFile(Path("res") / "values" / "strings.xml", generateValueStrings(application))
   }
 
   protected[generate] def fieldLayoutForHeader(field: ViewFieldInfo, position: Int): Elem = {
