@@ -20,6 +20,33 @@
   <version>0.3-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Scala Android Crud - Parent</name>
+  <url>https://github.com/epabst/scala-android-crud</url>
+  <inceptionYear>2011</inceptionYear>
+  <developers>
+    <developer><name>Eric Pabst</name></developer>
+  </developers>
+  <licenses>
+    <license>
+      <name>Apache 2.0 License</name>
+      <url>http://maven.apache.org/license.html</url>
+    </license>
+  </licenses>
+  <scm>
+    <connection>scm:git:git://github.com/epabst/scala-android-crud.git</connection>
+    <developerConnection>scm:git:https://epabst@github.com/epabst/scala-android-crud.git</developerConnection>
+    <url>https://github.com/epabst/scala-android-crud</url>
+  </scm>
+  <distributionManagement>
+    <repository>
+      <id>scala-tools.org</id>
+      <url>http://nexus.scala-tools.org/content/repositories/releases/</url>
+    </repository>
+    <snapshotRepository>
+      <id>scala-tools.org</id>
+      <url>http://nexus.scala-tools.org/content/repositories/snapshots/</url>
+      <uniqueVersion>false</uniqueVersion>
+    </snapshotRepository>
+  </distributionManagement>
 
   <modules>
     <module>scala-android-crud</module>
