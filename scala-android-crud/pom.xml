@@ -41,6 +41,22 @@
       <url>http://scala-tools.org/repo-releases</url>
     </pluginRepository>
   </pluginRepositories>
+  <distributionManagement>
+    <site>
+      <id>scala-tools.org</id>
+      <name>${project.name} Site</name>
+      <url>http://scala-tools.org/mvnsites/${project.artifactId}-${version}</url>
+    </site>
+    <repository>
+      <id>scala-tools.org</id>
+      <url>http://nexus.scala-tools.org/content/repositories/releases/</url>
+    </repository>
+    <snapshotRepository>
+      <id>scala-tools.org</id>
+      <url>http://nexus.scala-tools.org/content/repositories/snapshots/</url>
+      <uniqueVersion>false</uniqueVersion>
+    </snapshotRepository>
+  </distributionManagement>
   <dependencies>
     <!-- test dependencies that must precede android.jar -->
     <dependency>
@@ -124,6 +140,7 @@
 
   <build>
     <sourceDirectory>src/main/scala</sourceDirectory>
+    <testSourceDirectory>src/test/java</testSourceDirectory>
     <plugins>
       <plugin>
         <groupId>org.scala-tools</groupId>
@@ -208,7 +225,7 @@
             <configuration>
               <artifacts>
                 <artifact>
-                  <file>${project.build.directory}/${project.artifactId}-${project.version}.jar</file>
+                  <file>${project.build.directory}/${project.build.finalName}.jar</file>
                   <type>jar</type>
                 </artifact>
               </artifacts>
