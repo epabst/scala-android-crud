@@ -15,7 +15,10 @@ trait CrudApplication extends Logging {
   def name: String
 
   //this will be used for programmatic uses such as a database name
-  lazy val nameId = name.replace(" ", "_").toLowerCase
+  lazy val nameId: String = name.replace(" ", "_").toLowerCase
+
+  def classNamePrefix: String = getClass.getSimpleName.replace("$", "").stripSuffix("Application")
+  def packageName: String = getClass.getPackage.getName
 
   /**
    * All entities in the application, in priority order of most interesting first.

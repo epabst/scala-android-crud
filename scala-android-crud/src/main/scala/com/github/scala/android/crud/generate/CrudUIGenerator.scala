@@ -45,13 +45,13 @@ object CrudUIGenerator extends PlatformTypes with Logging {
       List(entity.listActivityClass.getSimpleName, entity.activityClass.getSimpleName)
     }
     <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-              package={application.getClass.getPackage.getName}
+              package={application.packageName}
               android:versionName="${project.version}"
               android:versionCode="${versionCode}">
       <application android:label="@string/app_name" android:icon="@drawable/icon"
                    android:theme="@android:style/Theme.NoTitleBar"
                    android:debuggable="${android.debuggable}"
-                   android:backupAgent={application.getClass.getSimpleName + "BackupAgent"} android:restoreAnyVersion="true">
+                   android:backupAgent={application.classNamePrefix + "BackupAgent"} android:restoreAnyVersion="true">
         <meta-data android:name="com.google.android.backup.api_key"
                    android:value="TODO: get a backup key from http://code.google.com/android/backup/signup.html and put it here."/>
         <activity android:name={"." + activityNames.head} android:label="@string/app_name">
@@ -196,7 +196,7 @@ object CrudUIGenerator extends PlatformTypes with Logging {
   }
 
   def guessFieldInfos(crudType: CrudType): List[ViewFieldInfo] =
-    crudType.fields.map(guessFieldInfo(_, crudType.rLayoutClasses))
+    crudType.fields.map(guessFieldInfo(_, crudType.rIdClasses))
 
   private def writeLayoutFile(name: String, xml: Elem) {
     writeXmlToFile(Path("res") / "layout" / (name + ".xml"), xml)

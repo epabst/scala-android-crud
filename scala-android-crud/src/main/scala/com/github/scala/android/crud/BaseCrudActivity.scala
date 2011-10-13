@@ -19,7 +19,7 @@ trait BaseCrudActivity extends Activity with PlatformTypes with Logging with Tim
 
   def application: CrudApplication
 
-  lazy val contentProviderAuthority = Option(application.getClass.getPackage).getOrElse(getClass.getPackage).toString
+  lazy val contentProviderAuthority = Option(application.packageName).getOrElse(getClass.getPackage.getName)
   lazy val defaultContentUri = UriPath("content://" + contentProviderAuthority) / entityType.entityName
 
   lazy val currentUriPath: UriPath = {
