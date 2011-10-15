@@ -5,7 +5,7 @@ import persistence.CursorField._
 import view.ViewField._
 import com.github.triangle._
 import PortableField._
-import GeneratedCrudType.crudContextField
+import GeneratedCrudType.CrudContextField
 
 /**
  * A CRUD type for Author.
@@ -24,7 +24,7 @@ trait AuthorContext {
 
       viewId(classOf[R], "bookCount", intView) +
               mapField[Int]("bookCount") +
-              new FieldTuple2(persistedId, crudContextField) with CalculatedField[Int] {
+              new FieldTuple2(persistedId, CrudContextField) with CalculatedField[Int] {
                 def calculate = { case Values(Some(authorId), Some(crudContext)) =>
                   println("calculating bookCount with authorId=" + authorId + " and " + crudContext)
                   BookCrudType.withEntityPersistence(crudContext, { persistence =>

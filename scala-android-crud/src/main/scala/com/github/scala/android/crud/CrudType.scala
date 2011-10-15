@@ -31,21 +31,21 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
 
   lazy val entityNameLayoutPrefix = NamingConventions.toLayoutPrefix(entityName)
 
-  /**
-   * These are all of the entity's fields, which includes IdPk.idField and the valueFields.
-   */
-  final lazy val fields: List[BaseField] = idField +: valueFields
-
-  lazy val uriPathId = uriIdField(entityName)
-
-  def toUri(id: ID) = UriPath(entityName, id.toString)
-
-  def idField = IdPk.idField
+  object IdField extends DelegatingPortableField[ID] { def delegate = IdPk.idField }
 
   /**
    * The fields other than the primary key.
    */
   def valueFields: List[BaseField]
+
+  /**
+   * These are all of the entity's fields, which includes IdPk.idField and the valueFields.
+   */
+  final lazy val fields: List[BaseField] = IdField +: valueFields
+
+  lazy val uriPathId = uriIdField(entityName)
+
+  def toUri(id: ID) = UriPath(entityName, id.toString)
 
   def rIdClasses: Seq[Class[_]] = detectRIdClasses(this.getClass)
   def rLayoutClasses: Seq[Class[_]] = detectRLayoutClasses(this.getClass)

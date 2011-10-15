@@ -1,10 +1,10 @@
 package com.github.scala.android.crud
 
-import res.R
 import android.view.{ViewGroup, View}
 import com.github.triangle.PortableField.identityField
 import android.app.ListActivity
 import android.widget.{ListAdapter, BaseAdapter}
+import com.github.triangle.Field
 
 trait GeneratedCrudType[T <: AnyRef] extends CrudType {
   def newWritable = throw new UnsupportedOperationException("not supported")
@@ -17,7 +17,7 @@ trait GeneratedCrudType[T <: AnyRef] extends CrudType {
 
     def getCount: Int = seq.size
 
-    def getItemId(position: Int): ID = idField(getItem(position))
+    def getItemId(position: Int): ID = IdField(getItem(position))
 
     def getItem(position: Int) = seq(position)
 
@@ -40,5 +40,5 @@ trait GeneratedCrudType[T <: AnyRef] extends CrudType {
 }
 
 object GeneratedCrudType {
-  val crudContextField = identityField[CrudContext]
+  object CrudContextField extends Field(identityField[CrudContext])
 }
