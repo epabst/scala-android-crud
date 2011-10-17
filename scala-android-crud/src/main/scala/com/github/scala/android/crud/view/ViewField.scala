@@ -20,7 +20,9 @@ import android.widget._
  * Date: 2/16/11
  * Time: 6:30 AM
  */
-abstract class ViewField[T](val defaultLayout: FieldLayout) extends DelegatingPortableField[T]
+class ViewField[T](val defaultLayout: FieldLayout, dataField: PortableField[T]) extends DelegatingPortableField[T] {
+  protected def delegate = dataField
+}
 
 object ViewField extends PlatformTypes with Logging {
   private class ChildViewById(viewResourceId: ViewKey) {
@@ -80,28 +82,16 @@ object ViewField extends PlatformTypes with Logging {
     override def toString = "viewId(" + viewResourceIdName + ", " + childViewField + ")"
   }
 
-  val textView: ViewField[String] = new ViewField[String](nameLayout) {
-    protected def delegate = fieldDirect[TextView,String](v => toOption(v.getText.toString.trim), v => v.setText(_), _.setText(""))
-
+  val textView: ViewField[String] = new ViewField[String](nameLayout,
+    fieldDirect[TextView,String](v => toOption(v.getText.toString.trim), v => v.setText(_), _.setText(""))) {
     override def toString = "textView"
   }
-  def textViewWithInputType(inputType: String): PortableField[String] = new ViewField[String](textLayout(inputType)) {
-    protected def delegate = textView
-  }
+  def textViewWithInputType(inputType: String) = new ViewField[String](textLayout(inputType), textView)
   lazy val phoneView: PortableField[String] = textViewWithInputType("phone")
-  lazy val doubleView: PortableField[Double] = new ViewField[Double](doubleLayout) {
-    protected def delegate = formatted(textView)
-  }
-  lazy val currencyView: PortableField[Double] = new ViewField[Double](currencyLayout) {
-    protected def delegate = formatted(currencyValueFormat, textView)
-  }
-  lazy val intView: PortableField[Int] = new ViewField[Int](intLayout) {
-    protected def delegate = formatted[Int](textView)
-  }
-
-  lazy val longView: PortableField[Long] = new ViewField[Long](longLayout) {
-    protected def delegate = formatted[Long](textView)
-  }
+  lazy val doubleView: PortableField[Double] = new ViewField[Double](doubleLayout, formatted(textView))
+  lazy val currencyView = new ViewField[Double](currencyLayout, formatted(currencyValueFormat, textView))
+  lazy val intView: PortableField[Int] = new ViewField[Int](intLayout, formatted[Int](textView))
+  lazy val longView: PortableField[Long] = new ViewField[Long](longLayout, formatted[Long](textView))
 
   def viewId[T](viewResourceId: ViewKey, childViewField: PortableField[T]): ViewIdField[T] = {
     new ViewIdField[T](viewResourceId, childViewField)
@@ -118,11 +108,10 @@ object ViewField extends PlatformTypes with Logging {
 
   private def toOption(string: String): Option[String] = if (string == "") None else Some(string)
 
-  val calendarDateView: PortableField[Calendar] = new ViewField[Calendar](datePickerLayout) {
-    protected def delegate = formatted(calendarValueFormat, textView) + fieldDirect[DatePicker,Calendar](
+  val calendarDateView: PortableField[Calendar] = new ViewField[Calendar](datePickerLayout,
+    formatted(calendarValueFormat, textView) + fieldDirect[DatePicker,Calendar](
       v => Some(new GregorianCalendar(v.getYear, v.getMonth, v.getDayOfMonth)),
-      v => calendar => v.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)))
-
+      v => calendar => v.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)))) {
     override def toString = "calendarDateView"
   }
 
@@ -153,9 +142,7 @@ object ViewField extends PlatformTypes with Logging {
     val adapterField = adapterViewField[E, BaseAdapter](
       view => new ArrayAdapter[E](view.getContext, itemViewResourceId, valueArray),
       value => valueArray.indexOf(value))
-    new ViewField[E](defaultLayout) {
-      protected def delegate = adapterField + formatted[E](enumFormat(enum), textView)
-
+    new ViewField[E](defaultLayout, adapterField + formatted[E](enumFormat(enum), textView)) {
       override def toString = "enumerationView(" + enum.getClass.getSimpleName + ")"
     }
   }
