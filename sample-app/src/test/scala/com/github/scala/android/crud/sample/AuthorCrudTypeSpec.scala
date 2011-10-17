@@ -42,8 +42,8 @@ class AuthorCrudTypeSpec extends Spec with MustMatchers with EasyMockSugar {
       }
       context.bookPersistence.buffer += Map.empty[String,Any] += Map.empty[String,Any]
 
-      val authorData = context.AuthorCrudType.transformWithItem(Map.empty[String,Any], List(Map[String,Any](persistedId.name -> 100L), crudContext))
-      authorData must be (Map[String,Any](persistedId.name -> 100L, "bookCount" -> 2))
+      val authorData = context.AuthorCrudType.transformWithItem(Map.empty[String,Any], List(Map[String,Any](idFieldName -> 100L), crudContext))
+      authorData must be (Map[String,Any](idFieldName -> 100L, "bookCount" -> 2))
     }
   }
 }

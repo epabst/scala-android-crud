@@ -29,7 +29,7 @@ class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with Crud
       override def valueFields = List(mapField[String]("name"))
     }
     crudType.deepCollect {
-      case f if f == IdPk.idField => Some(true)
+      case f if f == IdPk.IdField => Some(true)
     }.flatten must be (Seq(true))
   }
 

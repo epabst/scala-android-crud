@@ -77,7 +77,7 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Log
     entityType.withEntityPersistence[Unit](crudContext, persistence => {
       persistence.findAll(UriPath.EMPTY).foreach(entity => {
         val map = entityType.transform(Map[String,Any](), entity)
-        val id = persistedId(entity)
+        val id = PersistedId(entity)
         data.writeEntity(entityType.entityName + "#" + id, Some(map))
       })
     })

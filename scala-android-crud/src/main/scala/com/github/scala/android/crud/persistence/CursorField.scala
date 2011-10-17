@@ -21,7 +21,9 @@ object CursorField extends PlatformTypes {
     new CursorField[T](name)(persistedType)
   }
 
-  val persistedId = persisted[ID](BaseColumns._ID)
+  val idFieldName = BaseColumns._ID
+
+  object PersistedId extends Field(persisted[ID](idFieldName))
 
   def persistedFields(field: BaseField): List[CursorField[_]] = {
     field.deepCollect[CursorField[_]] {
@@ -31,7 +33,7 @@ object CursorField extends PlatformTypes {
 
   def updateablePersistedFields(field: BaseField, rIdClasses: Seq[Class[_]]): List[CursorField[_]] = {
     val parentFieldNames = ParentField.parentFields(field).map(_.fieldName)
-    persistedFields(field).filterNot(_.name == CursorField.persistedId.name).filterNot(parentFieldNames.contains(_))
+    persistedFields(field).filterNot(_.name == idFieldName).filterNot(parentFieldNames.contains(_))
   }
 
   def queryFieldNames(fields: FieldList): List[String] = persistedFields(fields).map(_.columnName)

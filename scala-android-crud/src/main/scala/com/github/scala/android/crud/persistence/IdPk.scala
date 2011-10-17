@@ -1,8 +1,8 @@
 package com.github.scala.android.crud.persistence
 
 import com.github.triangle.PortableField._
-import com.github.triangle.PortableField
 import com.github.scala.android.crud.common.PlatformTypes
+import com.github.triangle.Field
 
 /**
  * A trait with a primary key
@@ -16,5 +16,5 @@ trait IdPk extends PlatformTypes {
 }
 
 object IdPk extends PlatformTypes {
-  val idField: PortableField[ID] = field[IdPk,ID](_.id, e => e.id = _) + CursorField.persistedId
+  object IdField extends Field[ID](field[IdPk,ID](_.id, e => e.id = _) + CursorField.PersistedId)
 }

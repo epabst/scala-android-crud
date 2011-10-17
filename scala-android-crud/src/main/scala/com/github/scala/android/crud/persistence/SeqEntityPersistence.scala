@@ -13,7 +13,7 @@ import com.github.scala.android.crud.action.UriPath
 
 trait SeqEntityPersistence[T <: AnyRef] extends EntityPersistence {
   override def find(id: ID): Option[T] = {
-    findAll(toUri(id)).find(entity => id == idField(entity)).asInstanceOf[Option[T]]
+    findAll(toUri(id)).find(entity => id == IdField(entity)).asInstanceOf[Option[T]]
   }
 
   protected def doSave(id: Option[ID], data: AnyRef): ID = throw new UnsupportedOperationException("write not supported")
@@ -35,7 +35,7 @@ trait ListBufferEntityPersistence[T <: AnyRef] extends SeqEntityPersistence[T] {
       nextId += 1
       nextId
     }
-    buffer += idField.transformer(item.asInstanceOf[T])(Some(newId));
+    buffer += IdField.transformer(item.asInstanceOf[T])(Some(newId));
     newId
   }
 

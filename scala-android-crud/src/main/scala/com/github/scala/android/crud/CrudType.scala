@@ -31,7 +31,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
 
   lazy val entityNameLayoutPrefix = NamingConventions.toLayoutPrefix(entityName)
 
-  object IdField extends DelegatingPortableField[ID] { def delegate = IdPk.idField }
+  object IdField extends Field[ID](IdPk.IdField)
 
   /**
    * The fields other than the primary key.

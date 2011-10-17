@@ -24,8 +24,8 @@ trait AuthorContext {
 
       viewId(classOf[R], "bookCount", intView) +
               mapField[Int]("bookCount") +
-              new FieldTuple2(persistedId, CrudContextField) with CalculatedField[Int] {
-                def calculate = { case Values(Some(authorId), Some(crudContext)) =>
+              getter[Int] {
+                case PersistedId(Some(authorId)) && CrudContextField(Some(crudContext)) => {
                   println("calculating bookCount with authorId=" + authorId + " and " + crudContext)
                   BookCrudType.withEntityPersistence(crudContext, { persistence =>
                     val books = persistence.findAll(toUri(authorId))
