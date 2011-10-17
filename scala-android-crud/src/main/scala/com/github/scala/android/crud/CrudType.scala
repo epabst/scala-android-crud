@@ -141,7 +141,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
 
   lazy val deleteAction: Option[Action] =
     if (isUpdateable) {
-      new RunnableAction(android.R.drawable.ic_menu_delete, deleteItemString) {
+      new BaseAction(android.R.drawable.ic_menu_delete, deleteItemString) {
         def invoke(uri: UriPath, activity: Activity) {
           activity match {
             case crudActivity: BaseCrudActivity =>

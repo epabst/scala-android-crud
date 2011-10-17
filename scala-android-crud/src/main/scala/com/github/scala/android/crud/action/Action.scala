@@ -28,7 +28,10 @@ trait Action extends PlatformTypes {
   def invoke(uri: UriPath, activity: Activity)
 }
 
-abstract class RunnableAction(val icon: Option[PlatformTypes#ImgKey], val title: Option[PlatformTypes#SKey]) extends Action
+/**
+  * An action class that can be mixed in with Action traits, and specifies the icon and title.
+  */
+abstract class BaseAction(val icon: Option[PlatformTypes#ImgKey], val title: Option[PlatformTypes#SKey]) extends Action
 
 object Action {
   val CreateActionName = Intent.ACTION_INSERT
