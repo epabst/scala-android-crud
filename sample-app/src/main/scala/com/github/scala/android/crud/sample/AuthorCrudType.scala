@@ -24,7 +24,7 @@ trait AuthorContext {
 
       viewId(classOf[R], "bookCount", intView) +
               mapField[Int]("bookCount") +
-              getter[Int] {
+              getterFromItem[Int] {
                 case PersistedId(Some(authorId)) && CrudContextField(Some(crudContext)) => {
                   println("calculating bookCount with authorId=" + authorId + " and " + crudContext)
                   BookCrudType.withEntityPersistence(crudContext, { persistence =>
