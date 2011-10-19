@@ -2,10 +2,9 @@ package com.github.scala.android.crud.persistence
 
 import android.database.Cursor
 import android.content.ContentValues
-import java.util.{GregorianCalendar, Calendar, Date}
-import scala.Enumeration
 import android.os.Bundle
 
+/** A persisted type.  It should be very simple and serializable, ideally a primitive. */
 trait PersistedType[T] {
   def valueManifest: Manifest[T]
 
@@ -62,24 +61,6 @@ private class DirectPersistedType[T <: AnyRef](val sqliteType: String,
   def getValue(bundle: Bundle, name: String): Option[T] = if (bundle.containsKey(name)) bundleGetter(bundle)(name) else None
 }
 
-private class CastedPersistedType[T <: AnyVal, R <: AnyRef](implicit refType: PersistedType[R],
-                                                            implicit val valueManifest: Manifest[T])
-        extends PersistedType[T] {
-  def sqliteType = refType.sqliteType
-
-  def putValue(contentValues: ContentValues, name: String, value: T) {
-    refType.putValue(contentValues, name, value.asInstanceOf[R])
-  }
-
-  def getValue(cursor: Cursor, cursorIndex: Int) = refType.getValue(cursor, cursorIndex).asInstanceOf[Option[T]]
-
-  def putValue(bundle: Bundle, name: String, value: T) {
-    refType.putValue(bundle, name, value.asInstanceOf[R])
-  }
-
-  def getValue(bundle: Bundle, name: String) = refType.getValue(bundle, name).asInstanceOf[Option[T]]
-}
-
 object PersistedType {
   private class RichBundle(bundle: Bundle) {
     implicit def getJLong(key: String): java.lang.Long = bundle.getLong(key)
@@ -121,35 +102,12 @@ object PersistedType {
   implicit lazy val doubleType: PersistedType[Double] = castedPersistedType[Double,java.lang.Double]
   implicit lazy val floatType: PersistedType[Float] = castedPersistedType[Float,java.lang.Float]
 
-  implicit lazy val calendarLongType: PersistedType[Calendar] = convertedPersistedType[Calendar,Long](_.getTimeInMillis, persisted => {
-    val calendar = new GregorianCalendar
-    calendar.setTimeInMillis(persisted)
-    Some(calendar)
-  })
-
-  implicit lazy val dateLongType: PersistedType[Date] = convertedPersistedType[Date,Long](_.getTime, persisted => {
-    Some(new Date(persisted))
-  })
-
-  def enumStringType[E <: Ordered[_]](enumeration: Enumeration)(implicit m: Manifest[E]): PersistedType[E] =
-    convertedPersistedType[E,String](_.toString, persisted => enumeration.valueOf(persisted).asInstanceOf[Option[E]])
-
   /**
    * @param P the persisted type
    * @param T the value type
    */
-  def convertedPersistedType[T,P](toPersisted: T => P, toValue: P => Option[T])(
-          implicit persistedType: PersistedType[P], valueManifest: Manifest[T]): PersistedType[T] = {
-    new ConvertedPersistedType[T,P](toValue, toPersisted)
-  }
-
-  /**
-   * @param P the persisted type
-   * @param T the value type
-   */
-  def castedPersistedType[T,P](implicit persistedType: PersistedType[P], valueManifest: Manifest[T]): PersistedType[T] = {
-    convertedPersistedType[T,P](v => v.asInstanceOf[P], p => Option(p.asInstanceOf[T]))
-  }
+  def castedPersistedType[T,P](implicit persistedType: PersistedType[P], valueManifest: Manifest[T]): PersistedType[T] =
+    new ConvertedPersistedType[T,P](p => Option(p.asInstanceOf[T]), v => v.asInstanceOf[P])
 
   //doesn't require an Option.
   private def directPersistedType[T <: AnyRef](sqliteType: String,
