@@ -8,6 +8,7 @@ import PortableField._
 import android.os.Bundle
 import com.github.scala.android.crud.common.PlatformTypes
 import com.github.scala.android.crud.ParentField
+import com.github.triangle.Converter._
 
 class SQLiteCriteria(var selection: String = null, var selectionArgs: Array[String] = Nil.toArray,
                      var groupBy: String = null, var having: String = null, var orderBy: String = null)
@@ -20,6 +21,13 @@ object CursorField extends PlatformTypes {
   def persisted[T](name: String)(implicit persistedType: PersistedType[T]): CursorField[T] = {
     new CursorField[T](name)(persistedType)
   }
+
+  def persistedEnum[E <: Enumeration#Value](name: String, enumeration: Enumeration)(implicit m: Manifest[E]): PortableField[E] =
+    formatted[E](ValueFormat.enumFormat(enumeration), persisted(name))
+
+  def persistedDate(name: String) = converted(dateToLong, longToDate, persisted[Long](name))
+
+  def persistedCalendar(name: String) = converted(calendarToDate, dateToCalendar, persistedDate(name))
 
   val idFieldName = BaseColumns._ID
 
