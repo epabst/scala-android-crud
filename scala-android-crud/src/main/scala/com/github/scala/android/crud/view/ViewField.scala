@@ -12,6 +12,19 @@ import ValueFormat._
 import AndroidResourceAnalyzer._
 import com.github.triangle.Converter._
 import android.widget._
+import collection.immutable
+
+/** A Map of ViewKey with values.
+  * Wraps a map so that it is distinguished from persisted fields.
+  */
+case class ViewKeyMap(map: Map[PlatformTypes#ViewKey,Any])
+        extends immutable.Map[PlatformTypes#ViewKey,Any] with immutable.MapLike[PlatformTypes#ViewKey,Any,ViewKeyMap] {
+  override def empty = ViewKeyMap(Map.empty[PlatformTypes#ViewKey,Any])
+  override def get(key: PlatformTypes#ViewKey) = map.get(key)
+  override def iterator = map.iterator
+  override def -(key: PlatformTypes#ViewKey) = ViewKeyMap(map - key)
+  override def +[B1 >: Any](kv: (PlatformTypes#ViewKey, B1)) = ViewKeyMap(map + kv)
+}
 
 /**
  * PortableField for Views.
@@ -25,60 +38,54 @@ class ViewField[T](val defaultLayout: FieldLayout, dataField: PortableField[T]) 
 }
 
 object ViewField extends PlatformTypes with Logging {
-  private class ChildViewById(viewResourceId: ViewKey) {
-    def unapply(target: Any): Option[View] = target match {
-      case view: View => Option(view.findViewById(viewResourceId))
-      case activity: Activity => Option(activity.findViewById(viewResourceId))
-      case _ => None
+  /** PortableField for a View resource within a given parent View */
+  protected abstract class BaseViewIdField[T](childViewField: PortableField[T])
+          extends FieldWithDelegate[T] with TransformerUsingSetter[T] {
+    protected def viewResourceIdOpt: Option[ViewKey]
+    protected def viewResourceIdOrError: ViewKey
+
+    lazy val viewKeyMapField =
+      viewResourceIdOpt.map { key =>
+        readOnly[ViewKeyMap,T](_.get(key).map(_.asInstanceOf[T])) +
+                transformOnlyDirect[ViewKeyMap,T](map => value => map + (key -> value), _ - key)
+      }.getOrElse(emptyField)
+
+    object ChildView {
+      def unapply(target: Any): Option[View] = target match {
+        case view: View => viewResourceIdOpt.flatMap(id => Option(view.findViewById(id)))
+        case activity: Activity => viewResourceIdOpt.flatMap(id => Option(activity.findViewById(id)))
+        case _ => None
+      }
     }
-  }
 
-  /**
-   * @param rIdClasses a list of R.id classes that may contain the id.
-   */
-  private class ChildViewByIdName(viewResourceIdName: String, rIdClasses: Seq[Class[_]]) {
-    val childViewById = findResourceIdWithName(rIdClasses, viewResourceIdName).map(new ChildViewById(_))
+    protected def delegate = childViewField + viewKeyMapField
 
-    def unapply(target: Any): Option[View] = childViewById.flatMap(_.unapply(target))
+    def getter = viewKeyMapField.getter orElse {
+      case ChildView(childView) if childViewField.getter.isDefinedAt(childView) =>
+        childViewField.getter(childView)
+    }
+
+    def setter = viewKeyMapField.setter orElse {
+      case ChildView(childView) if childViewField.setter.isDefinedAt(childView) =>
+        childViewField.setter(childView)
+    }
   }
 
   /** PortableField for a View resource within a given parent View */
   class ViewIdField[T](val viewResourceId: ViewKey, childViewField: PortableField[T])
-          extends FieldWithDelegate[T] with TransformerUsingSetter[T] {
-    private object ChildView extends ChildViewById(viewResourceId)
-
-    protected def delegate = childViewField
-
-    def getter = {
-      case ChildView(childView) if childViewField.getter.isDefinedAt(childView) =>
-        childViewField.getter(childView)
-    }
-
-    def setter = {
-      case ChildView(childView) if childViewField.setter.isDefinedAt(childView) =>
-        childViewField.setter(childView)
-    }
-
+          extends BaseViewIdField[T](childViewField) {
+    protected def viewResourceIdOpt = Some(viewResourceId)
+    protected def viewResourceIdOrError = viewResourceId
     override def toString = "viewId(" + viewResourceId + ", " + childViewField + ")"
   }
 
-  /** PortableField for a View resource within a given parent View */
+  /** PortableField for a View resource within a given parent View.
+    * @param rIdClasses a list of R.id classes that may contain the id.
+    */
   class ViewIdNameField[T](val viewResourceIdName: String, childViewField: PortableField[T], rIdClasses: Seq[Class[_]])
-          extends FieldWithDelegate[T] with TransformerUsingSetter[T] {
-    private object ChildView extends ChildViewByIdName(viewResourceIdName, rIdClasses)
-
-    protected def delegate = childViewField
-
-    def getter = {
-      case ChildView(childView) if childViewField.getter.isDefinedAt(childView) =>
-        childViewField.getter(childView)
-    }
-
-    def setter = {
-      case ChildView(childView) if childViewField.setter.isDefinedAt(childView) =>
-        childViewField.setter(childView)
-    }
-
+          extends BaseViewIdField[T](childViewField) {
+    protected lazy val viewResourceIdOpt = findResourceIdWithName(rIdClasses, viewResourceIdName)
+    protected def viewResourceIdOrError = resourceIdWithName(rIdClasses, viewResourceIdName)
     override def toString = "viewId(" + viewResourceIdName + ", " + childViewField + ")"
   }
 

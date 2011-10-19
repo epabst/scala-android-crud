@@ -1,6 +1,7 @@
 package com.github.scala.android.crud.view
 
 import java.lang.reflect.{Modifier, Field}
+import com.github.triangle.Logging
 
 /**
  * An "R" analyzer.
@@ -9,7 +10,7 @@ import java.lang.reflect.{Modifier, Field}
  * Time: 9:53 PM
  */
 
-object AndroidResourceAnalyzer {
+object AndroidResourceAnalyzer extends Logging {
   private def findRInnerClass(classInSamePackage: Class[_], innerClassName: String): Option[Class[_]] = {
     findRInnerClass(classInSamePackage.getClassLoader, classInSamePackage.getPackage.getName, innerClassName)
   }
@@ -49,4 +50,12 @@ object AndroidResourceAnalyzer {
 
   def findResourceIdWithName(classes: Seq[Class[_]], name: String): Option[Int] =
     findResourceFieldWithName(classes, name).map(_.getInt(null))
+
+  def resourceIdWithName(classes: Seq[Class[_]], name: String): Int =
+    findResourceIdWithName(classes, name).getOrElse {
+      classes.foreach(rStringClass => error("Contents of " + rStringClass + " are " + rStringClass.getFields.mkString(", ")))
+      throw new IllegalStateException("R.string." + name + " not found.  You may want to run the CrudUIGenerator.generateLayouts." +
+              classes.mkString("(string classes: ", ",", ")"))
+    }
+
 }
