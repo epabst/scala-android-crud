@@ -31,7 +31,9 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
 
   lazy val entityNameLayoutPrefix = NamingConventions.toLayoutPrefix(entityName)
 
-  object IdField extends Field[ID](IdPk.IdField)
+  object UriPathId extends Field[ID](uriIdField(entityName))
+
+  object IdField extends Field[ID](IdPk.IdField + UriPathId)
 
   /**
    * The fields other than the primary key.
@@ -42,8 +44,6 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
    * These are all of the entity's fields, which includes IdPk.idField and the valueFields.
    */
   final lazy val fields: List[BaseField] = IdField +: valueFields
-
-  lazy val uriPathId = uriIdField(entityName)
 
   def toUri(id: ID) = UriPath(entityName, id.toString)
 
