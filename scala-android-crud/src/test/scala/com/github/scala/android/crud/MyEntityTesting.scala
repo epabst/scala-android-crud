@@ -19,9 +19,7 @@ import android.app.ListActivity
  */
 
 trait MyEntityTesting {
-  class MyEntityPersistence extends ListBufferCrudPersistence[Map[String,Any]] {
-    def entityType = throw new UnsupportedOperationException
-  }
+  class MyEntityPersistence extends ListBufferCrudPersistence[Map[String,Any]](null, null)
 
   class MyEntityType(persistence: CrudPersistence, listAdapter: ListAdapter, val entityName: String = "MyMap")
           extends StubEntityType {

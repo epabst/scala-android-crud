@@ -5,6 +5,7 @@ import common.ReadyFuture
 import org.junit.Test
 import org.junit.runner.RunWith
 import com.xtremelabs.robolectric.RobolectricTestRunner
+import persistence.CursorField
 import scala.collection.mutable
 import org.scalatest.matchers.MustMatchers
 import Action._
@@ -61,7 +62,8 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers with MyEntityTesti
     viewData.get("age") must be (Some(25))
 
     activity.onPause()
-    verify(persistence).save(Some(101), mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))
+    verify(persistence).save(Some(101),
+      mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString, CursorField.idFieldName -> 101))
   }
 
   @Test

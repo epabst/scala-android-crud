@@ -17,7 +17,7 @@ import action.UriPath
  * Date: 2/3/11
  * Time: 6:17 PM
  */
-class SQLiteEntityPersistence(val entityType: SQLiteCrudType, crudContext: CrudContext)
+class SQLiteEntityPersistence(val entityType: SQLiteCrudType, val crudContext: CrudContext)
   extends CrudPersistence with Logging {
 
   lazy val databaseSetup = new GeneratedDatabaseSetup(crudContext)

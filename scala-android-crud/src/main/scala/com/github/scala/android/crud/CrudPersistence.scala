@@ -13,6 +13,8 @@ import persistence.{ListBufferEntityPersistence, SeqEntityPersistence, EntityPer
 trait CrudPersistence extends EntityPersistence {
   def entityType: CrudType
 
+  def crudContext: CrudContext
+
   def toUri(id: ID) = entityType.toUri(id)
 
   def findAll[T <: AnyRef](uri: UriPath, instantiateItem: => T): Seq[T] =
@@ -21,7 +23,8 @@ trait CrudPersistence extends EntityPersistence {
 
 trait SeqCrudPersistence[T <: AnyRef] extends SeqEntityPersistence[T] with CrudPersistence
 
-trait ListBufferCrudPersistence[T <: AnyRef] extends SeqCrudPersistence[T] with ListBufferEntityPersistence[T]
+class ListBufferCrudPersistence[T <: AnyRef](val entityType: CrudType, val crudContext: CrudContext)
+        extends SeqCrudPersistence[T] with ListBufferEntityPersistence[T]
 
 /**
  * An EntityPersistence that is derived from other CrudType persistence(s).

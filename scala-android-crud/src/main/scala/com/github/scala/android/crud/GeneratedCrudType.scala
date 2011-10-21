@@ -1,5 +1,6 @@
 package com.github.scala.android.crud
 
+import action.UriPath
 import android.view.{ViewGroup, View}
 import com.github.triangle.PortableField.identityField
 import android.app.ListActivity
@@ -41,4 +42,5 @@ trait GeneratedCrudType[T <: AnyRef] extends CrudType {
 
 object GeneratedCrudType {
   object CrudContextField extends Field(identityField[CrudContext])
+  object UriField extends Field(identityField[UriPath])
 }
