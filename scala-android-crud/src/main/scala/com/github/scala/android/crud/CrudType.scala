@@ -291,7 +291,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
   private[crud] def undoableDelete(id: ID, activity: BaseCrudActivity)(persistence: EntityPersistence) {
     persistence.find(id).map { readable =>
       val writable = transform(newWritable, readable)
-      persistence.delete(List(id))
+      persistence.delete(id)
       activity.addUndoableDelete(this, new Undoable[ID] {
         def undo(): ID = {
           persistence.save(None, writable)

@@ -121,7 +121,7 @@ class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with Crud
       undoable.close()
     })
     entity.startDelete(id, activity)
-    verify(persistence).delete(List(id))
+    verify(persistence).delete(id)
   }
 
   it("undo of delete must work") {
@@ -143,6 +143,6 @@ class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with Crud
       undoable.undo() must be(id2)
     })
     entity.startDelete(id, activity)
-    verify(persistence).delete(List(id))
+    verify(persistence).delete(id)
   }
 }

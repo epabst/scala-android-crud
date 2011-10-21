@@ -38,7 +38,7 @@ trait EntityPersistence extends PlatformTypes with Timing with ListenerHolder[Pe
    * This should NOT delete child entities because that would make the "undo" functionality incomplete.
    * Instead, assume that the CrudType will handle deleting all child entities explicitly.
    */
-  final def delete(ids: Seq[ID]) {
+  final def delete(ids: ID*) {
     doDelete(ids)
     listeners.foreach(_.onDelete(ids))
   }

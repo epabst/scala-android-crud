@@ -115,7 +115,7 @@ class SQLiteCrudTypeSpec extends MustMatchers with Logging with MyEntityTesting 
     listAdapter.unregisterDataSetObserver(observer)
     listAdapter.getCount must be (if (runningOnRealAndroid) 1 else 0)
 
-    TestEntityType.withEntityPersistence(crudContext, _.delete(List(id)))
+    TestEntityType.withEntityPersistence(crudContext, _.delete(id))
     //it must have refreshed the listAdapter
     listAdapter.getCount must be (0)
   }
