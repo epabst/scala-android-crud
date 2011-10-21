@@ -6,6 +6,7 @@ import android.app.Activity
 
 /**
  * An action that interacts with an entity's persistence.
+ * The CrudContext is available as persistence.crudContext to implementing classes.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 10/21/11
  * Time: 6:59 AM

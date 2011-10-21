@@ -1,7 +1,7 @@
 package com.github.scala.android.crud
 
 import action.UriPath
-import persistence.{ListBufferEntityPersistence, SeqEntityPersistence, EntityPersistence}
+import persistence.{IdPk, ListBufferEntityPersistence, SeqEntityPersistence, EntityPersistence}
 
 /**
  * An EntityPersistence for a CrudType.
@@ -19,6 +19,9 @@ trait CrudPersistence extends EntityPersistence {
 
   def findAll[T <: AnyRef](uri: UriPath, instantiateItem: => T): Seq[T] =
     findAll(uri).map(entityType.transform(instantiateItem, _))
+
+  /** Saves the entity.  This assumes that the entityType's fields support copying from the given modelEntity. */
+  def save(modelEntity: IdPk): ID = save(modelEntity.id, entityType.transform(entityType.newWritable, modelEntity))
 }
 
 trait SeqCrudPersistence[T <: AnyRef] extends SeqEntityPersistence[T] with CrudPersistence
