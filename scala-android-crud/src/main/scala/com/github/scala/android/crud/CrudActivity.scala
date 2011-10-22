@@ -1,7 +1,7 @@
 package com.github.scala.android.crud
 
 import _root_.android.app.Activity
-import action.EntityAction
+import action.{Action, EntityAction}
 import android.os.Bundle
 import com.github.triangle.ValueFormat.basicFormat
 import com.github.triangle.JavaUtil.toRunnable
@@ -43,8 +43,10 @@ class CrudActivity(val entityType: CrudType, val application: CrudApplication) e
   }
 
   private[crud] def saveForOnPause(persistence: CrudPersistence, writable: AnyRef) {
-    try { persistence.save(id, writable) }
-    catch { case e => error("onPause: Unable to store " + writable, e) }
+    try {
+      val newId = persistence.save(id, writable)
+      if (id.isEmpty) setIntent(getIntent.setData(Action.toUri(currentUriPath.specify(entityType.toUri(newId).segments:_*))))
+    } catch { case e => error("onPause: Unable to store " + writable, e) }
   }
 
   protected def applicableActions = entityType.getEntityActions(application).filter {

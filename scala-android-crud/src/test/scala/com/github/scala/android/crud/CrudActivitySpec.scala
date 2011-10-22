@@ -23,17 +23,18 @@ import org.mockito.Mockito._
  */
 @RunWith(classOf[RobolectricTestRunner])
 class CrudActivitySpec extends MockitoSugar with MustMatchers with MyEntityTesting {
+  val persistence = mock[CrudPersistence]
+  val listAdapter = mock[ListAdapter]
+  val application = mock[CrudApplication]
+
   @Test
   def shouldAllowAdding() {
-    val persistence = mock[CrudPersistence]
-    val listAdapter = mock[ListAdapter]
     val entityType = new MyEntityType(persistence, listAdapter)
-    val application = mock[CrudApplication]
     val entity = mutable.Map[String,Any]("name" -> "Bob", "age" -> 25)
     val uri = UriPath(entityType.entityName)
     val activity = new CrudActivity(entityType, application) {
       override lazy val currentAction = UpdateActionName
-      override lazy val currentUriPath = uri
+      override def currentUriPath = uri
       override def future[T](body: => T) = new ReadyFuture[T](body)
     }
     activity.onCreate(null)
@@ -44,10 +45,7 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers with MyEntityTesti
 
   @Test
   def shouldAllowUpdating() {
-    val persistence = mock[CrudPersistence]
-    val listAdapter = mock[ListAdapter]
     val entityType = new MyEntityType(persistence, listAdapter)
-    val application = mock[CrudApplication]
     val entity = mutable.Map[String,Any]("name" -> "Bob", "age" -> 25)
     val uri = UriPath(entityType.entityName, "101")
     stub(persistence.find(101)).toReturn(Some(entity))
@@ -68,9 +66,6 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers with MyEntityTesti
 
   @Test
   def withPersistenceShouldClosePersistence() {
-    val persistence = mock[CrudPersistence]
-    val listAdapter = mock[ListAdapter]
-    val application = mock[CrudApplication]
     val entityType = new MyEntityType(persistence, listAdapter)
     val activity = new CrudActivity(entityType, application)
     activity.withPersistence(p => p.findAll(UriPath.EMPTY))
@@ -79,9 +74,6 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers with MyEntityTesti
 
   @Test
   def withPersistenceShouldClosePersistenceWithFailure() {
-    val persistence = mock[CrudPersistence]
-    val listAdapter = mock[ListAdapter]
-    val application = mock[CrudApplication]
     val entityType = new MyEntityType(persistence, listAdapter)
     val activity = new CrudActivity(entityType, application)
     try {
@@ -95,13 +87,31 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers with MyEntityTesti
 
   @Test
   def onPauseShouldHandleAnyExceptionWhenSaving() {
-    val persistence = mock[CrudPersistence]
-    val listAdapter = mock[ListAdapter]
-    val application = mock[CrudApplication]
     stub(persistence.save(None, "unsaveable data")).toThrow(new IllegalStateException("intentional"))
     val entityType = new MyEntityType(persistence, listAdapter)
     val activity = new CrudActivity(entityType, application)
     //should not throw an exception
     activity.saveForOnPause(persistence, "unsaveable data")
+  }
+
+  @Test
+  def onPauseShouldNotCreateANewIdEveryTime() {
+    val entityType = new MyEntityType(persistence, listAdapter)
+    val entity = mutable.Map[String,Any]("name" -> "Bob", "age" -> 25)
+    val uri = UriPath(entityType.entityName)
+    stub(persistence.save(None, mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))).toReturn(101)
+    val activity = new CrudActivity(entityType, application) {
+      override def future[T](body: => T) = new ReadyFuture[T](body)
+    }
+    activity.setIntent(constructIntent(Action.CreateActionName, uri, activity, null))
+    activity.onCreate(null)
+    //simulate a user entering data
+    entityType.copy(entity, activity)
+    activity.onPause()
+    activity.onPause()
+    verify(persistence, times(1)).save(None, mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))
+    //all but the first time should provide an id
+    verify(persistence).save(Some(101), mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> (uri / 101).toString,
+      CursorField.idFieldName -> 101))
   }
 }

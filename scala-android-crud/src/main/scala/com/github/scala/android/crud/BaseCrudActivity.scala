@@ -22,11 +22,11 @@ trait BaseCrudActivity extends Activity with PlatformTypes with Logging with Tim
   lazy val contentProviderAuthority = Option(application.packageName).getOrElse(getClass.getPackage.getName)
   lazy val defaultContentUri = UriPath("content://" + contentProviderAuthority) / entityType.entityName
 
-  lazy val currentUriPath: UriPath = {
-    Option(getIntent).map(i => Option(i.getData).map(UriPath(_)).getOrElse {
+  def currentUriPath: UriPath = {
+    Option(getIntent).map(intent => Option(intent.getData).map(UriPath(_)).getOrElse {
       // If no data was given in the intent (because we were started
       // as a MAIN activity), then use our default content provider.
-      getIntent.setData(Action.toUri(defaultContentUri))
+      intent.setData(Action.toUri(defaultContentUri))
       defaultContentUri
     }).getOrElse(defaultContentUri)
   }
