@@ -6,6 +6,7 @@ import common.{Timing, PlatformTypes}
 import com.github.triangle.Logging
 import action.UriPath
 import android.view.{MenuItem, Menu}
+import android.content.Intent
 
 /**
  * Support for the different Crud Activity's.
@@ -21,6 +22,11 @@ trait BaseCrudActivity extends Activity with PlatformTypes with Logging with Tim
 
   lazy val contentProviderAuthority = Option(application.packageName).getOrElse(getClass.getPackage.getName)
   lazy val defaultContentUri = UriPath("content://" + contentProviderAuthority) / entityType.entityName
+
+  override def setIntent(newIntent: Intent) {
+    info("Current Intent: " + newIntent)
+    super.setIntent(newIntent)
+  }
 
   def currentUriPath: UriPath = {
     Option(getIntent).map(intent => Option(intent.getData).map(UriPath(_)).getOrElse {
