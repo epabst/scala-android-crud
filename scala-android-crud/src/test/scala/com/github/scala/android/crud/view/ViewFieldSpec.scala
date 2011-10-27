@@ -12,9 +12,8 @@ import android.content.Context
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
 import com.github.scala.android.crud.action.UriPath
-import java.util.Arrays
 import android.widget._
-
+import java.util.{Locale, GregorianCalendar, Calendar, Arrays}
 
 /**
  * A behavior specification for {@link ViewField}.
@@ -28,6 +27,7 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
   class MyEntity(var string: String, var number: Int)
   val context = mock[Context]
   val itemLayoutId = android.R.layout.simple_spinner_dropdown_item
+  Locale.setDefault(Locale.US)
 
   @Test
   def itMustBeEasilyInstantiableForAView() {
@@ -141,6 +141,23 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
 
     view.setText(" hello world ")
     field.getter(view) must be (Some("hello world"))
+  }
+
+  @Test
+  def itMustFormatDatesForEditInShortFormat() {
+    val field = calendarDateView
+    val view = new EditText(context)
+    field.setValue(view, Some(new GregorianCalendar(2020, Calendar.JANUARY, 20)))
+    view.getText.toString must not(include ("Jan"))
+    view.getText.toString must include ("1")
+  }
+
+  @Test
+  def itMustFormatDatesForDisplayInDefaultFormat() {
+    val field = calendarDateView
+    val view = new TextView(context)
+    field.setValue(view, Some(new GregorianCalendar(2020, Calendar.JANUARY, 20)))
+    view.getText.toString must include ("Jan")
   }
 
   @Test

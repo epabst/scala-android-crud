@@ -99,6 +99,11 @@ object ViewField extends PlatformTypes with Logging {
   lazy val currencyView = new ViewField[Double](currencyLayout, formatted(currencyValueFormat, textView))
   lazy val intView: PortableField[Int] = new ViewField[Int](intLayout, formatted[Int](textView))
   lazy val longView: PortableField[Long] = new ViewField[Long](longLayout, formatted[Long](textView))
+  /** Specifically an EditText view in order to get different behavior compared to a plain TextView. */
+  val editTextView: ViewField[String] = new ViewField[String](nameLayout,
+    fieldDirect[EditText,String](v => toOption(v.getText.toString.trim), v => v.setText(_), _.setText(""))) {
+    override def toString = "editTextView"
+  }
 
   def viewId[T](viewResourceId: ViewKey, childViewField: PortableField[T]): ViewIdField[T] = {
     new ViewIdField[T](viewResourceId, childViewField)
@@ -116,9 +121,14 @@ object ViewField extends PlatformTypes with Logging {
   private def toOption(string: String): Option[String] = if (string == "") None else Some(string)
 
   val calendarDateView: PortableField[Calendar] = new ViewField[Calendar](datePickerLayout,
-    formatted(calendarValueFormat, textView) + fieldDirect[DatePicker,Calendar](
-      v => Some(new GregorianCalendar(v.getYear, v.getMonth, v.getDayOfMonth)),
-      v => calendar => v.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)))) {
+    setter[Calendar] {
+      case view: EditText => _.foreach(value => view.setText(calendarValueFormat.toString(value)))
+      case view: TextView => _.foreach(value => view.setText(calendarDisplayValueFormat.toString(value)))
+      case picker: DatePicker => valueOpt =>
+        val calendar = valueOpt.getOrElse(Calendar.getInstance())
+        picker.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
+    } + getter(formatted(calendarValueFormat, textView).getter) +
+            readOnly((p: DatePicker) => Some(new GregorianCalendar(p.getYear, p.getMonth, p.getDayOfMonth)))) {
     override def toString = "calendarDateView"
   }
 
