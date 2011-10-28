@@ -25,7 +25,7 @@ trait Action extends PlatformTypes {
   def title: Option[SKey]
 
   /** Runs the action, given the uri and the current state of the application. */
-  def invoke(uri: UriPath, activity: Activity)
+  def invoke(uri: UriPath, activity: ActivityWithVars)
 }
 
 /**
@@ -57,9 +57,9 @@ case class RichIntent(intent: Intent) {
 }
 
 trait StartActivityAction extends Action {
-  def determineIntent(uri: UriPath, activity: Activity): Intent
+  def determineIntent(uri: UriPath, activity: ActivityWithVars): Intent
 
-  def invoke(uri: UriPath, activity: Activity) {
+  def invoke(uri: UriPath, activity: ActivityWithVars) {
     activity.startActivity(determineIntent(uri, activity))
   }
 }
@@ -69,14 +69,14 @@ trait BaseStartActivityAction extends StartActivityAction {
 
   def activityClass: Class[_ <: Activity]
 
-  def determineIntent(uri: UriPath, activity: Activity): Intent = Action.constructIntent(action, uri, activity, activityClass)
+  def determineIntent(uri: UriPath, activity: ActivityWithVars): Intent = Action.constructIntent(action, uri, activity, activityClass)
 }
 
 //final to guarantee equality is correct
 final case class StartActivityActionFromIntent(intent: Intent,
                                                icon: Option[PlatformTypes#ImgKey] = None,
                                                title: Option[PlatformTypes#SKey] = None) extends StartActivityAction {
-  def determineIntent(uri: UriPath, activity: Activity) = intent
+  def determineIntent(uri: UriPath, activity: ActivityWithVars) = intent
 }
 
 //final to guarantee equality is correct
@@ -93,7 +93,7 @@ trait EntityAction extends Action {
 final case class StartEntityActivityAction(entityName: String, action: String,
                                            icon: Option[PlatformTypes#ImgKey], title: Option[PlatformTypes#SKey],
                                            activityClass: Class[_ <: Activity]) extends BaseStartActivityAction with EntityAction {
-  override def determineIntent(uri: UriPath, activity: Activity): Intent =
+  override def determineIntent(uri: UriPath, activity: ActivityWithVars): Intent =
     super.determineIntent(uri.specify(entityName), activity)
 }
 
@@ -101,5 +101,5 @@ final case class StartEntityActivityAction(entityName: String, action: String,
 final case class StartEntityIdActivityAction(entityName: String, action: String,
                                              icon: Option[PlatformTypes#ImgKey], title: Option[PlatformTypes#SKey],
                                              activityClass: Class[_ <: Activity]) extends BaseStartActivityAction with EntityAction {
-  override def determineIntent(uri: UriPath, activity: Activity) = super.determineIntent(uri.upToIdOf(entityName), activity)
+  override def determineIntent(uri: UriPath, activity: ActivityWithVars) = super.determineIntent(uri.upToIdOf(entityName), activity)
 }

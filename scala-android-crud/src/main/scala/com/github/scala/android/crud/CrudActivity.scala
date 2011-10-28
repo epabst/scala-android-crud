@@ -1,6 +1,5 @@
 package com.github.scala.android.crud
 
-import _root_.android.app.Activity
 import action.{Action, EntityAction}
 import android.os.Bundle
 import com.github.triangle.ValueFormat.basicFormat
@@ -12,7 +11,7 @@ import com.github.triangle.JavaUtil.toRunnable
  * Date: 2/3/11
  * Time: 7:06 AM
  */
-class CrudActivity(val entityType: CrudType, val application: CrudApplication) extends Activity with BaseCrudActivity {
+class CrudActivity(val entityType: CrudType, val application: CrudApplication) extends BaseCrudActivity {
 
   private val idFormat = basicFormat[ID]
   def id: Option[ID] = currentUriPath.segments.lastOption.flatMap(idFormat.toValue(_))

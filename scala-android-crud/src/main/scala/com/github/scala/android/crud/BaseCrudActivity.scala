@@ -1,10 +1,8 @@
 package com.github.scala.android.crud
 
-import action.Action
-import android.app.Activity
+import action.{ActivityWithVars, Action, UriPath}
 import common.{Timing, PlatformTypes}
 import com.github.triangle.Logging
-import action.UriPath
 import android.view.{MenuItem, Menu}
 import android.content.Intent
 
@@ -15,7 +13,7 @@ import android.content.Intent
  * Time: 7:01 PM
  */
 
-trait BaseCrudActivity extends Activity with PlatformTypes with Logging with Timing {
+trait BaseCrudActivity extends ActivityWithVars with PlatformTypes with Logging with Timing {
   def entityType: CrudType
 
   def application: CrudApplication

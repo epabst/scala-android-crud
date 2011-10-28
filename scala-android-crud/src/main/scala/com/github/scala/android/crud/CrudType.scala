@@ -144,7 +144,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
   lazy val deleteAction: Option[Action] =
     if (isUpdateable) {
       new BaseAction(android.R.drawable.ic_menu_delete, deleteItemString) {
-        def invoke(uri: UriPath, activity: Activity) {
+        def invoke(uri: UriPath, activity: ActivityWithVars) {
           activity match {
             case crudActivity: BaseCrudActivity =>
               startDelete(uri.findId(entityName).get, crudActivity)
@@ -265,7 +265,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
 
   final def setListAdapter(crudContext: CrudContext, activity: CrudListActivity) {
     val persistence = openEntityPersistence(crudContext)
-    persistenceVarForListAdapter.set(crudContext, persistence)
+    persistenceVarForListAdapter.set(crudContext.context, persistence)
     setListAdapter(persistence, crudContext, activity)
     val listAdapter = activity.getListAdapter
     persistence.addListener(new PersistenceListener {
@@ -284,8 +284,8 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
 
   def refreshAfterDataChanged(listAdapter: ListAdapter)
 
-  def destroyContextVars(crudContext: CrudContext) {
-    persistenceVarForListAdapter.clear(crudContext).map { persistence =>
+  def destroyContextVars(context: ContextWithVars) {
+    persistenceVarForListAdapter.clear(context).map { persistence =>
       persistence.close()
     }
   }

@@ -1,6 +1,6 @@
 package com.github.scala.android.crud
 
-import action.UriPath
+import action.{ContextWithVars, UriPath}
 import android.provider.BaseColumns
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -10,14 +10,13 @@ import com.github.triangle._
 import persistence.CursorField._
 import persistence.SQLiteCriteria
 import PortableField._
-import res.R
-import android.content.Context
 import android.database.DataSetObserver
 import android.widget.ListAdapter
 import scala.collection._
 import org.mockito.Mockito
 import Mockito._
 import org.mockito.Matchers._
+import android.app.Activity
 
 /**
  * A test for {@link SQLiteCrudType}.
@@ -54,7 +53,7 @@ class SQLiteCrudTypeSpec extends MustMatchers with Logging with MyEntityTesting 
 
   @Test
   def shouldUseCorrectColumnNamesForFindAll() {
-    val context = mock[Context]
+    val context = mock[MyContextWithVars]
     val crudContext = mock[CrudContext]
     stub(crudContext.context).toReturn(context)
     stub(crudContext.application).toReturn(TestApplication)
@@ -67,7 +66,7 @@ class SQLiteCrudTypeSpec extends MustMatchers with Logging with MyEntityTesting 
 
   @Test
   def shouldCloseCursorsWhenClosing() {
-    val context = mock[Context]
+    val context = mock[MyContextWithVars]
     val crudContext = mock[CrudContext]
     stub(crudContext.context).toReturn(context)
     stub(crudContext.application).toReturn(TestApplication)
@@ -136,3 +135,5 @@ class SQLiteCrudTypeSpec extends MustMatchers with Logging with MyEntityTesting 
     crudType.tableName must be (name + "0")
   }
 }
+
+class MyContextWithVars extends Activity with ContextWithVars

@@ -1,5 +1,6 @@
 package com.github.scala.android.crud
 
+import action.{ContextWithVars, UriPath}
 import android.app.backup.{BackupDataOutput, BackupDataInput, BackupAgent}
 import com.github.triangle.Logging
 import persistence.CursorField._
@@ -7,8 +8,6 @@ import android.os.ParcelFileDescriptor
 import java.io.{ObjectInputStream, ByteArrayInputStream, ObjectOutputStream, ByteArrayOutputStream}
 import scala.collection.JavaConversions._
 import java.util.{Map => JMap,HashMap}
-import android.content.Context
-import action.UriPath
 import collection.BufferedIterator
 
 object CrudBackupAgent {
@@ -46,7 +45,7 @@ object CrudBackupAgent {
 
 import CrudBackupAgent._
 
-class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Logging {
+class CrudBackupAgent(application: CrudApplication) extends BackupAgent with ContextWithVars with Logging {
   final def onBackup(oldState: ParcelFileDescriptor, data: BackupDataOutput, newState: ParcelFileDescriptor) {
     onBackup(oldState, new BackupTarget {
       def writeEntity(key: String, mapOpt: Option[Map[String,Any]]) {
@@ -187,7 +186,7 @@ object DeletedEntityIdCrudType extends SQLiteCrudType with HiddenEntityType {
    * it will be restored independent of this support, and it will then be re-added to the Backup Service later
    * just like any new entity being added.
    */
-  def recordDeletion(entityType: CrudType, id: ID, context: Context) {
+  def recordDeletion(entityType: CrudType, id: ID, context: ContextWithVars) {
     val crudContext = new CrudContext(context, application)
     val writable = transform(newWritable, Map(entityNameField.name -> entityType.entityName, entityIdField.name -> id))
     withEntityPersistence(crudContext, { persistence =>
@@ -195,7 +194,7 @@ object DeletedEntityIdCrudType extends SQLiteCrudType with HiddenEntityType {
     })
   }
 
-  def writeEntityRemovals(data: BackupTarget, context: Context) {
+  def writeEntityRemovals(data: BackupTarget, context: ContextWithVars) {
     val crudContext = new CrudContext(context, application)
     withEntityPersistence(crudContext, { persistence =>
       persistence.findAll(UriPath.EMPTY).foreach { entity =>

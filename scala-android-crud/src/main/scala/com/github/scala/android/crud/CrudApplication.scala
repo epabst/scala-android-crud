@@ -1,5 +1,6 @@
 package com.github.scala.android.crud
 
+import action.ContextWithVars
 import com.github.triangle.Logging
 
 /**
@@ -25,3 +26,12 @@ trait CrudApplication extends Logging {
    */
   def allEntities: List[CrudType]
 }
+
+/**
+ * A context which can store data for the duration of a single Activity.
+ * @author Eric Pabst (epabst@gmail.com)
+ * Date: 4/2/11
+ * Time: 3:43 PM
+ */
+
+class CrudContext(val context: ContextWithVars, val application: CrudApplication)
