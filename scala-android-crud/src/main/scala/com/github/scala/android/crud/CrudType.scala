@@ -33,7 +33,9 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
 
   object UriPathId extends Field[ID](uriIdField(entityName))
 
-  object IdField extends Field[ID](IdPk.IdField + UriPathId)
+  /** This should only be used in order to override this.  IdField should be used instead of this. */
+  protected def idField: PortableField[ID] = IdPk.IdField + UriPathId
+  object IdField extends Field[ID](idField)
 
   /**
    * The fields other than the primary key.
