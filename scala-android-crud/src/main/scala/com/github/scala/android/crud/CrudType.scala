@@ -209,8 +209,17 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
    */
   def newWritable: AnyRef
 
+  /** Listeners that will listen to any EntityPersistence that is opened. */
+  val persistenceListeners = new ContextVar[Seq[PersistenceListener]]
+
+  def addPersistenceListener(listener: PersistenceListener, context: ContextVars) {
+    persistenceListeners.set(context, listener +: persistenceListeners.get(context).getOrElse(Nil))
+  }
+
   def openEntityPersistence(crudContext: CrudContext): CrudPersistence = {
-    createEntityPersistence(crudContext)
+    val persistence = createEntityPersistence(crudContext)
+    persistenceListeners.get(crudContext.context).getOrElse(Nil).foreach(persistence.addListener(_))
+    persistence
   }
 
   protected def createEntityPersistence(crudContext: CrudContext): CrudPersistence
@@ -271,12 +280,6 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
     val persistence = openEntityPersistence(crudContext)
     persistenceVarForListAdapter.set(crudContext.context, persistence)
     setListAdapter(persistence, crudContext, activity)
-    val listAdapter = activity.getListAdapter
-    persistence.addListener(new PersistenceListener {
-      def onSave(id: ID) { refreshAfterDataChanged(listAdapter) }
-
-      def onDelete(ids: Seq[ID]) { refreshAfterDataChanged(listAdapter) }
-    })
   }
 
   def setListAdapter(persistence: CrudPersistence, crudContext: CrudContext, activity: CrudListActivity) {

@@ -9,6 +9,7 @@ import android.view.ContextMenu.ContextMenuInfo
 import android.widget.AdapterView.AdapterContextMenuInfo
 import com.github.triangle.{JavaUtil, PortableValue}
 import JavaUtil.toRunnable
+import persistence.PersistenceListener
 
 /**
  * A generic ListActivity for CRUD operations
@@ -30,6 +31,12 @@ class CrudListActivity(val entityType: CrudType, val application: CrudApplicatio
 		view.addHeaderView(getLayoutInflater.inflate(entityType.headerLayout, null));
     registerForContextMenu(getListView)
 
+    entityType.addPersistenceListener(new PersistenceListener {
+      def onSave(id: ID) { entityType.refreshAfterDataChanged(getListAdapter) }
+      def onDelete(ids: Seq[ID]) { entityType.refreshAfterDataChanged(getListAdapter) }
+    }, crudContext.context)
+
+    entityType.setListAdapter(crudContext, this)
     future {
       //copy each parent Entity's data to the Activity if identified in the currentUriPath
       val portableValues: List[PortableValue] = entityType.parentEntities.flatMap(_ match {
@@ -39,7 +46,6 @@ class CrudListActivity(val entityType: CrudType, val application: CrudApplicatio
         portableValues.foreach(_.copyTo(this))
       }
     }
-    entityType.setListAdapter(crudContext, this)
   }
 
 

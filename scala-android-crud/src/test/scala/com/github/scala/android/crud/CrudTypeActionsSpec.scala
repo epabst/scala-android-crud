@@ -22,8 +22,6 @@ class CrudTypeActionsSpec extends MyEntityTesting with MustMatchers with CrudMoc
 
   import MyCrudType.entityName
 
-  val crudContext = new CrudContext(null, null)
-
   @Test
   def createActionShouldHaveTheRightUri() {
     val activity = null
@@ -79,6 +77,7 @@ class CrudTypeActionsSpec extends MyEntityTesting with MustMatchers with CrudMoc
   @Test
   def deleteActionShouldBeUndoable() {
     val currentActivity = mock[CrudActivity]
+    stub(currentActivity.crudContext).toReturn(new CrudContext(currentActivity, null))
     val persistence = mock[CrudPersistence]
     val entityType = new MyCrudType {
       override def newWritable = Unit
