@@ -218,7 +218,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
 
   def openEntityPersistence(crudContext: CrudContext): CrudPersistence = {
     val persistence = createEntityPersistence(crudContext)
-    persistenceListeners.get(crudContext.context).getOrElse(Nil).foreach(persistence.addListener(_))
+    persistenceListeners.get(crudContext.vars).getOrElse(Nil).foreach(persistence.addListener(_))
     persistence
   }
 
@@ -278,7 +278,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
 
   final def setListAdapter(crudContext: CrudContext, activity: CrudListActivity) {
     val persistence = openEntityPersistence(crudContext)
-    persistenceVarForListAdapter.set(crudContext.context, persistence)
+    persistenceVarForListAdapter.set(crudContext.vars, persistence)
     setListAdapter(persistence, crudContext, activity)
   }
 
@@ -291,8 +291,8 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
 
   def refreshAfterDataChanged(listAdapter: ListAdapter)
 
-  def destroyContextVars(context: ContextWithVars) {
-    persistenceVarForListAdapter.clear(context).map { persistence =>
+  def destroyContextVars(vars: ContextVars) {
+    persistenceVarForListAdapter.clear(vars).map { persistence =>
       persistence.close()
     }
   }

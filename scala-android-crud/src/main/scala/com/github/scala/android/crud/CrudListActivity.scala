@@ -50,7 +50,7 @@ class CrudListActivity(val entityType: CrudType, val application: CrudApplicatio
 
 
   override def onDestroy() {
-    entityType.destroyContextVars(crudContext.context)
+    entityType.destroyContextVars(crudContext.vars)
     super.onDestroy()
   }
 

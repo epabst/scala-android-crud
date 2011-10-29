@@ -1,12 +1,12 @@
 package com.github.scala.android.crud
 
 import _root_.android.content.Intent
+import action.{ContextVars, UriPath}
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito._
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.scalatest.matchers.MustMatchers
-import action.UriPath
 import com.github.scala.android.crud.action.Action.toRichItent
 
 /**
@@ -77,7 +77,9 @@ class CrudTypeActionsSpec extends MyEntityTesting with MustMatchers with CrudMoc
   @Test
   def deleteActionShouldBeUndoable() {
     val currentActivity = mock[CrudActivity]
-    stub(currentActivity.crudContext).toReturn(new CrudContext(currentActivity, null))
+    val crudContext = mock[CrudContext]
+    stub(currentActivity.crudContext).toReturn(crudContext)
+    stub(crudContext.vars).toReturn(new ContextVars {})
     val persistence = mock[CrudPersistence]
     val entityType = new MyCrudType {
       override def newWritable = Unit

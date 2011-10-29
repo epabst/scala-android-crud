@@ -1,6 +1,6 @@
 package com.github.scala.android.crud
 
-import action.ContextWithVars
+import action.{ContextVars, ContextWithVars}
 import android.provider.BaseColumns
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -52,9 +52,7 @@ class SQLiteCrudTypeSpec extends MustMatchers with Logging with MyEntityTesting 
 
   @Test
   def shouldUseCorrectColumnNamesForFindAll() {
-    val context = mock[MyContextWithVars]
     val crudContext = mock[CrudContext]
-    stub(crudContext.context).toReturn(context)
     stub(crudContext.application).toReturn(TestApplication)
 
     val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext)
@@ -65,9 +63,8 @@ class SQLiteCrudTypeSpec extends MustMatchers with Logging with MyEntityTesting 
 
   @Test
   def shouldCloseCursorsWhenClosing() {
-    val context = mock[MyContextWithVars]
     val crudContext = mock[CrudContext]
-    stub(crudContext.context).toReturn(context)
+    stub(crudContext.vars).toReturn(new ContextVars {})
     stub(crudContext.application).toReturn(TestApplication)
 
     val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext)

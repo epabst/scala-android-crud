@@ -1,6 +1,6 @@
 package com.github.scala.android.crud
 
-import action.ContextWithVars
+import action.{ContextVars, ContextWithVars}
 import com.github.triangle.Logging
 
 /**
@@ -34,4 +34,6 @@ trait CrudApplication extends Logging {
  * Time: 3:43 PM
  */
 
-class CrudContext(val context: ContextWithVars, val application: CrudApplication)
+class CrudContext(val context: ContextWithVars, val application: CrudApplication) {
+  def vars: ContextVars = context
+}

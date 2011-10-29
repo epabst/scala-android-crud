@@ -1,5 +1,6 @@
 package com.github.scala.android.crud
 
+import action.ContextVars
 import org.junit.runner.RunWith
 import persistence.IdPk
 import scala.collection.mutable
@@ -106,10 +107,10 @@ class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with Crud
 
   it("must delete with undo possibility") {
     val persistence = mock[CrudPersistence]
-    val application = mock[CrudApplication]
     val listAdapter = mock[ListAdapter]
     val activity = mock[CrudActivity]
-    val crudContext = new CrudContext(activity, application)
+    val crudContext = mock[CrudContext]
+    stub(crudContext.vars).toReturn(new ContextVars {})
     var entity = new MyEntityType(persistence, listAdapter)
     val readable = mutable.Map[String,Any]()
     val id = 345L
@@ -126,15 +127,15 @@ class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with Crud
 
   it("undo of delete must work") {
     val persistence = mock[CrudPersistence]
-    val application = mock[CrudApplication]
     val activity = mock[CrudActivity]
-    val crudContext = new CrudContext(activity, application)
+    val crudContext = mock[CrudContext]
     val listAdapter = mock[ListAdapter]
     var entity = new MyEntityType(persistence, listAdapter)
     val readable = mutable.Map[String,Any]("name" -> "George")
     val id = 345L
     val id2 = 444L
     stub(activity.crudContext).toReturn(crudContext)
+    stub(crudContext.vars).toReturn(new ContextVars {})
     stub(persistence.find(id)).toReturn(Some(readable))
     when(persistence.save(None, mutable.Map("name" -> "George"))).thenReturn(id2)
     when(activity.addUndoableDelete(eql(entity), notNull.asInstanceOf[Undoable[ID]])).thenAnswer(answerWithInvocation { invocationOnMock =>
