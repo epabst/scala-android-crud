@@ -1,6 +1,6 @@
 package com.github.scala.android.crud
 
-import action.{ContextWithVars, UriPath}
+import action.ContextWithVars
 import android.provider.BaseColumns
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -15,7 +15,6 @@ import android.widget.ListAdapter
 import scala.collection._
 import org.mockito.Mockito
 import Mockito._
-import org.mockito.Matchers._
 import android.app.Activity
 
 /**
@@ -87,18 +86,19 @@ class SQLiteCrudTypeSpec extends MustMatchers with Logging with MyEntityTesting 
 
   @Test
   def shouldRefreshCursorWhenDeletingAndSaving() {
-    val activity = mock[CrudListActivity]
+    val activity = new CrudListActivity(TestEntityType, TestApplication) {
+      private var listAdapter: ListAdapter = _
+      override def setListAdapter(adapter: ListAdapter) {
+        super.setListAdapter(adapter)
+        this.listAdapter = adapter
+      }
+      override def getListAdapter = listAdapter
+    }
     val observer = mock[DataSetObserver]
-    val listAdapterCapture = capturingAnswer[Unit] { Unit }
-    stub(activity.currentUriPath).toReturn(UriPath.EMPTY)
-    stub(activity.setListAdapter(anyObject())).toAnswer(listAdapterCapture)
-    stub(activity.getListAdapter).toAnswer(answer {
-      listAdapterCapture.params(0).asInstanceOf[ListAdapter]
-    })
 
     val crudContext = new CrudContext(activity, TestApplication)
     TestEntityType.setListAdapter(crudContext, activity)
-    val listAdapter = listAdapterCapture.params(0).asInstanceOf[ListAdapter]
+    val listAdapter = activity.getListAdapter
     listAdapter.getCount must be (0)
 
     val writable = TestEntityType.newWritable

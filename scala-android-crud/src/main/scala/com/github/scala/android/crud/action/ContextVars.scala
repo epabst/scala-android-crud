@@ -8,7 +8,8 @@ import android.app.Activity
 
 /** A container for values of [[com.github.scala.android.crud.ContextVar]]'s */
 trait ContextVars {
-  private[crud] lazy val variables: ConcurrentMap[ContextVar[_], Any] = new ConcurrentHashMap[ContextVar[_], Any]()
+  //for some reason, making this lazy results in it being null during testing, even though lazy would be preferrable.
+  private[crud] val variables: ConcurrentMap[ContextVar[_], Any] = new ConcurrentHashMap[ContextVar[_], Any]()
 }
 
 /**
