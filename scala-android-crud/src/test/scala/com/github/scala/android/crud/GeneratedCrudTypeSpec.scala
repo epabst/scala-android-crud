@@ -32,7 +32,7 @@ class GeneratedCrudTypeSpec extends Spec with MustMatchers with MyEntityTesting 
     val generatedType = new GeneratedCrudType[mutable.Map[String,Any]] with StubEntityType {
       def entityName = "Generated"
       def valueFields = List(foreign)
-      def openEntityPersistence(crudContext: CrudContext) = seqPersistence
+      protected def createEntityPersistence(crudContext: CrudContext) = seqPersistence
     }
     expecting {
       val uri = UriPath(otherType.entityName, "123")

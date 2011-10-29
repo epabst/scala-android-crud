@@ -25,7 +25,7 @@ class MyCrudType extends CrudType with StubEntityType {
     throw new UnsupportedOperationException
   }
 
-  def openEntityPersistence(crudContext: CrudContext): CrudPersistence = throw new UnsupportedOperationException
+  protected def createEntityPersistence(crudContext: CrudContext): CrudPersistence = throw new UnsupportedOperationException
 
   def newWritable: AnyRef = throw new UnsupportedOperationException
 }

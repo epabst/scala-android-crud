@@ -36,7 +36,7 @@ trait MyEntityTesting {
 
     def newWritable = Map[String,Any]()
 
-    def openEntityPersistence(crudContext: CrudContext) = persistence
+    protected def createEntityPersistence(crudContext: CrudContext) = persistence
 
     def setListAdapter(findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: ListActivity) {
       activity.setListAdapter(listAdapter)

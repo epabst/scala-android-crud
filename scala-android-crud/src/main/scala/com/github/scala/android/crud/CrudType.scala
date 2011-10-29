@@ -209,7 +209,11 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
    */
   def newWritable: AnyRef
 
-  def openEntityPersistence(crudContext: CrudContext): CrudPersistence
+  def openEntityPersistence(crudContext: CrudContext): CrudPersistence = {
+    createEntityPersistence(crudContext)
+  }
+
+  protected def createEntityPersistence(crudContext: CrudContext): CrudPersistence
 
   final def withEntityPersistence[T](crudContext: CrudContext, f: CrudPersistence => T): T = {
     val persistence = openEntityPersistence(crudContext)

@@ -30,11 +30,11 @@ class AuthorCrudTypeSpec extends Spec with MustMatchers with EasyMockSugar {
           val bookPersistence = new ListBufferCrudPersistence[Map[String, Any]](this, crudContext)
           def entityName = "Book"
           def valueFields = List(foreignKey(AuthorCrudType))
-          def openEntityPersistence(crudContext: CrudContext) = bookPersistence
+          protected def createEntityPersistence(crudContext: CrudContext) = bookPersistence
         }
 
         object AuthorCrudType extends AuthorCrudType with GeneratedCrudType[Map[String,Any]] {
-          def openEntityPersistence(crudContext: CrudContext) = throw new UnsupportedOperationException
+          protected def createEntityPersistence(crudContext: CrudContext) = throw new UnsupportedOperationException
         }
       }
       context.BookCrudType.bookPersistence.buffer += Map.empty[String,Any] += Map.empty[String,Any]

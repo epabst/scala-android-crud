@@ -19,7 +19,7 @@ trait SQLiteCrudType extends CrudType {
 
   lazy val tableName = SQLiteUtil.toNonReservedWord(entityName)
 
-  def openEntityPersistence(crudContext: CrudContext) = new SQLiteEntityPersistence(this, crudContext)
+  protected def createEntityPersistence(crudContext: CrudContext) = new SQLiteEntityPersistence(this, crudContext)
 
   def setListAdapter(findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: ListActivity) {
     val CursorStream(cursor) = findAllResult

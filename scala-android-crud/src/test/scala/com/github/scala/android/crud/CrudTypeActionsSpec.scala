@@ -82,7 +82,7 @@ class CrudTypeActionsSpec extends MyEntityTesting with MustMatchers with CrudMoc
     val persistence = mock[CrudPersistence]
     val entityType = new MyCrudType {
       override def newWritable = Unit
-      override def openEntityPersistence(crudContext: CrudContext) = persistence
+      override protected def createEntityPersistence(crudContext: CrudContext) = persistence
     }
     val id = 345L
     stub(persistence.find(id)).toReturn(Some(Unit))

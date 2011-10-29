@@ -10,7 +10,7 @@ import com.github.triangle.Field
 trait GeneratedCrudType[T <: AnyRef] extends CrudType {
   def newWritable = throw new UnsupportedOperationException("not supported")
 
-  def openEntityPersistence(crudContext: CrudContext): SeqCrudPersistence[T]
+  protected def createEntityPersistence(crudContext: CrudContext): SeqCrudPersistence[T]
 
   class SeqPersistenceAdapter[T <: AnyRef](findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: ListActivity)
           extends BaseAdapter with AdapterCaching {
