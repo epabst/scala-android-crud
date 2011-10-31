@@ -9,9 +9,10 @@ import PortableField._
 import com.github.scala.android.crud.view.ViewField._
 import com.github.scala.android.crud.ParentField._
 import com.github.scala.android.crud.testres.R
-import com.github.scala.android.crud.{MyCrudType, ParentField}
 import com.github.scala.android.crud.persistence.{IdPk, SQLiteCriteria}
+import com.github.scala.android.crud.persistence.CursorField._
 import com.github.scala.android.crud.view.FieldLayout
+import com.github.scala.android.crud._
 
 /**
  * A behavior specification for {@link CrudUIGenerator}.
@@ -107,6 +108,22 @@ class CrudUIGeneratorSpec extends Spec with MustMatchers {
       val fieldLayout = CrudUIGenerator.fieldLayoutForRow(ViewFieldInfo(None, FieldLayout.nameLayout, "foo", true, true), position)
       fieldLayout.attributes.find(_.key == "layout_width").get.value.text must be ("fill_parent")
       fieldLayout.attributes.find(_.key == "gravity").get.value.text must be ("right")
+    }
+  }
+
+  describe("generateValueStrings") {
+    it("must include 'list', 'add' and 'edit' strings for modifiable entities") {
+      val valueStrings = CrudUIGenerator.generateValueStrings(new MyCrudType {
+        override def valueFields = List(persisted[String]("model"))
+      })
+      valueStrings.foreach(println(_))
+      (valueStrings \\ "string").length must be (3)
+    }
+
+    it("must not include 'add' and 'edit' strings for unmodifiable entities") {
+      (CrudUIGenerator.generateValueStrings(new MyCrudType {
+        override def valueFields = List(bundleField[String]("model"))
+      }) \\ "string").length must be (1)
     }
   }
 }

@@ -326,8 +326,8 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
  * never be used with the UI.
  */
 trait HiddenEntityType extends CrudType {
-  def activityClass = throw new UnsupportedOperationException
-  def listActivityClass = throw new UnsupportedOperationException
+  def activityClass: Class[_ <: CrudActivity] = throw new UnsupportedOperationException
+  def listActivityClass: Class[_ <: CrudListActivity] = throw new UnsupportedOperationException
 }
 
 /**

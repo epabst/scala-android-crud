@@ -66,14 +66,21 @@ object CrudUIGenerator extends PlatformTypes with Logging {
     </manifest>
   }
 
+  def generateValueStrings(entity: CrudType): NodeSeq = {
+    <string name={entity.entityNameLayoutPrefix + "_list"}>{entity.entityName} List</string> +: {
+      if (entity.createAction.isDefined) {
+        Seq(<string name={"add_" + entity.entityNameLayoutPrefix}>Add {entity.entityName}</string>,
+            <string name={"edit_" + entity.entityNameLayoutPrefix}>Edit {entity.entityName}</string>)
+      } else {
+        Nil
+      }
+    }
+  }
+
   def generateValueStrings(application: CrudApplication): Node = {
     <resources>
       <string name="app_name">{application.name}</string>
-      {application.allEntities.flatMap { entity => Seq(
-        <string name={"add_" + entity.entityNameLayoutPrefix}>Add {entity.entityName}</string>,
-        <string name={"edit_" + entity.entityNameLayoutPrefix}>Edit {entity.entityName}</string>,
-        <string name={entity.entityNameLayoutPrefix + "_list"}>{entity.entityName} List</string>
-      )}}
+      {application.allEntities.flatMap(generateValueStrings(_))}
     </resources>
   }
 
