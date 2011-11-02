@@ -41,20 +41,6 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudType, val crudContext: C
   //Unit is provided here in the item list for the sake of PortableField.adjustment[SQLiteCriteria] fields
   def findAll(uri: UriPath) = CursorStream(findAll(entityType.transformWithItem(new SQLiteCriteria, List(uri, Unit))))
 
-  //todo delete?
-  override def find(id: ID): Option[Cursor] = {
-    debug("Finding " + entityType.entityName + " for " + queryFieldNames.mkString(",") + " where " + BaseColumns._ID + "=" + id)
-    val cursor = database.query(entityType.tableName, queryFieldNames.toArray,
-      BaseColumns._ID + "=" + id, Nil.toArray, null, null, null)
-    if (cursor.moveToFirst) {
-      cursors += cursor
-      Some(cursor)
-    } else {
-      cursor.close()
-      None
-    }
-  }
-
   private def notifyDataChanged() {
     backupManager.dataChanged()
     debug("Notified BackupManager that data changed.")
@@ -88,9 +74,11 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudType, val crudContext: C
     id
   }
 
-  protected def doDelete(ids: Seq[ID]) {
-    ids.foreach { id =>
+  protected def doDelete(uri: UriPath) {
+    val ids = findAll(uri).map { readable =>
+      val id = entityType.IdField(readable)
       database.delete(entityType.tableName, BaseColumns._ID + "=" + id, Nil.toArray)
+      id
     }
     future {
       ids.foreach { id =>
@@ -108,13 +96,19 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudType, val crudContext: C
 
 case class CursorStream(cursor: Cursor) extends Stream[Cursor] {
   private val cursorIterator = new CalculatedIterator[Cursor] {
-    def calculateNextValue() = if (cursor.moveToNext) Some(cursor) else {
-      cursor.close()
-      None
+    def calculateNextValue() = {
+      if (cursor.moveToNext) {
+        Some(cursor)
+      } else {
+        cursor.close()
+        None
+      }
     }
   }
 
   override def isEmpty = cursorIterator.isEmpty
+
+  override def length = cursor.getCount - (cursor.getPosition)
 
   override def head = cursorIterator.head
 

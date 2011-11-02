@@ -12,13 +12,9 @@ import com.github.scala.android.crud.action.UriPath
  */
 
 trait SeqEntityPersistence[T <: AnyRef] extends EntityPersistence {
-  override def find(id: ID): Option[T] = {
-    findAll(toUri(id)).find(entity => id == IdField(entity)).asInstanceOf[Option[T]]
-  }
-
   protected def doSave(id: Option[ID], data: AnyRef): ID = throw new UnsupportedOperationException("write not supported")
 
-  protected def doDelete(ids: Seq[ID]) { throw new UnsupportedOperationException("delete not supported") }
+  protected def doDelete(uri: UriPath) { throw new UnsupportedOperationException("delete not supported") }
 
   def close() {}
 }
@@ -28,6 +24,7 @@ trait ListBufferEntityPersistence[T <: AnyRef] extends SeqEntityPersistence[T] {
 
   var nextId = 10000L
 
+  //todo only return the one that matches the ID in the uri, if present
   def findAll(uri: UriPath) = buffer.toList
 
   override protected def doSave(id: Option[ID], item: AnyRef) = {
@@ -39,7 +36,7 @@ trait ListBufferEntityPersistence[T <: AnyRef] extends SeqEntityPersistence[T] {
     newId
   }
 
-  override protected def doDelete(ids: Seq[ID]) {
-    ids.foreach(id => find(id).map(entity => buffer -= entity))
+  override protected def doDelete(uri: UriPath) {
+    findAll(uri).foreach(entity => buffer -= entity)
   }
 }

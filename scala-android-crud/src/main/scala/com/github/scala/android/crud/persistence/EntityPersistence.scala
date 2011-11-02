@@ -6,7 +6,7 @@ import com.github.scala.android.crud.action.UriPath
 trait PersistenceListener extends PlatformTypes {
   def onSave(id: ID)
 
-  def onDelete(ids: Seq[ID])
+  def onDelete(uri: UriPath)
 }
 
 /**
@@ -19,10 +19,17 @@ trait PersistenceListener extends PlatformTypes {
 trait EntityPersistence extends PlatformTypes with Timing with ListenerHolder[PersistenceListener] {
   def toUri(id: ID): UriPath
 
-  def findAll(uri: UriPath): Seq[AnyRef]
+  /**
+    * Finds one result for a given uri.  The UriPath should uniquely identify an entity.
+    * @throws IllegalStateException if more than one entity matches the UriPath.
+    */
+  def find(uri: UriPath): Option[AnyRef] = {
+    val results = findAll(uri)
+    if (results.size > 1) throw new IllegalStateException("multiple results for " + uri + ": " + results.mkString(", "))
+    results.headOption
+  }
 
-  /** Find an entity by ID. */
-  def find(id: ID): Option[AnyRef] = findAll(toUri(id)).headOption
+  def findAll(uri: UriPath): Seq[AnyRef]
 
   /** Save a created or updated entity. */
   final def save(idOption: Option[ID], writable: AnyRef): ID = {
@@ -34,16 +41,16 @@ trait EntityPersistence extends PlatformTypes with Timing with ListenerHolder[Pe
   protected def doSave(id: Option[ID], writable: AnyRef): ID
 
   /**
-   * Delete a seq of entities by ID.
+   * Delete a set of entities by uri.
    * This should NOT delete child entities because that would make the "undo" functionality incomplete.
    * Instead, assume that the CrudType will handle deleting all child entities explicitly.
    */
-  final def delete(ids: ID*) {
-    doDelete(ids)
-    listeners.foreach(_.onDelete(ids))
+  final def delete(uri: UriPath) {
+    doDelete(uri)
+    listeners.foreach(_.onDelete(uri))
   }
 
-  protected def doDelete(ids: Seq[ID])
+  protected def doDelete(uri: UriPath)
 
   def close()
 }

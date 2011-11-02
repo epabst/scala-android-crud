@@ -1,6 +1,6 @@
 package com.github.scala.android.crud
 
-import action.{ContextVars, ContextWithVars}
+import action.{UriPath, ContextVars, ContextWithVars}
 import android.provider.BaseColumns
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -62,6 +62,48 @@ class SQLiteCrudTypeSpec extends MustMatchers with Logging with MyEntityTesting 
   }
 
   @Test
+  def persistenceFindAllShouldHaveCorrectSize_Empty() {
+    val crudContext = mock[CrudContext]
+    stub(crudContext.vars).toReturn(new ContextVars {})
+    stub(crudContext.application).toReturn(TestApplication)
+
+    val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext)
+    persistence.findAll(UriPath()).length must be (0)
+  }
+
+  @Test
+  def persistenceFindAllShouldHaveCorrectSize_Multiple() {
+    val crudContext = mock[CrudContext]
+    stub(crudContext.vars).toReturn(new ContextVars {})
+    stub(crudContext.application).toReturn(TestApplication)
+
+    val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext)
+    persistence.save(None, TestEntityType.transform(TestEntityType.newWritable, Unit))
+    persistence.save(None, TestEntityType.transform(TestEntityType.newWritable, Unit))
+    persistence.findAll(UriPath()).length must be (2)
+  }
+
+  @Test
+  def gettingLengthForPersistenceFindAllShouldStillAllowGettingResults() {
+    val crudContext = mock[CrudContext]
+    stub(crudContext.vars).toReturn(new ContextVars {})
+    stub(crudContext.application).toReturn(TestApplication)
+
+    val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext)
+    val id = persistence.save(None, TestEntityType.transform(TestEntityType.newWritable, Unit))
+    val id2 = persistence.save(None, TestEntityType.transform(TestEntityType.newWritable, Unit))
+    val results = persistence.findAll(UriPath())
+    results.length must be (2)
+    if (runningOnRealAndroid) {
+      TestEntityType.IdField(results.head) must be (id)
+    }
+    val resultsTail = results.tail
+    if (runningOnRealAndroid) {
+      TestEntityType.IdField(resultsTail.head) must be (id2)
+    }
+  }
+
+  @Test
   def shouldCloseCursorsWhenClosing() {
     val crudContext = mock[CrudContext]
     stub(crudContext.vars).toReturn(new ContextVars {})
@@ -71,10 +113,8 @@ class SQLiteCrudTypeSpec extends MustMatchers with Logging with MyEntityTesting 
     val writable = TestEntityType.newWritable
     TestEntityType.copy(Unit, writable)
     val id = persistence.save(None, writable)
-    val cursors = List(
-      persistence.findAll(new SQLiteCriteria()),
-      persistence.find(id).get
-    )
+    val uri = persistence.toUri(id)
+    val cursors = persistence.findAll(new SQLiteCriteria()) +: persistence.find(uri).toList
     persistence.close()
     for (cursor <- cursors) {
       cursor must be ('closed)
@@ -111,7 +151,7 @@ class SQLiteCrudTypeSpec extends MustMatchers with Logging with MyEntityTesting 
     listAdapter.unregisterDataSetObserver(observer)
     listAdapter.getCount must be (if (runningOnRealAndroid) 1 else 0)
 
-    TestEntityType.withEntityPersistence(crudContext, _.delete(id))
+    TestEntityType.withEntityPersistence(crudContext, _.delete(TestEntityType.toUri(id)))
     //it must have refreshed the listAdapter
     listAdapter.getCount must be (0)
   }

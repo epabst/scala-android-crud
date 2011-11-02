@@ -1,6 +1,6 @@
 package com.github.scala.android.crud
 
-import action.ContextVars
+import action.{UriPath, ContextVars}
 import org.junit.runner.RunWith
 import persistence.IdPk
 import scala.collection.mutable
@@ -113,16 +113,16 @@ class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with Crud
     stub(crudContext.vars).toReturn(new ContextVars {})
     var entity = new MyEntityType(persistence, listAdapter)
     val readable = mutable.Map[String,Any]()
-    val id = 345L
+    val uri = UriPath(entity.entityName) / 345L
     stub(activity.crudContext).toReturn(crudContext)
-    stub(persistence.find(id)).toReturn(Some(readable))
+    stub(persistence.find(uri)).toReturn(Some(readable))
     stub(activity.addUndoableDelete(eql(entity), notNull.asInstanceOf[Undoable[ID]])).toAnswer(answerWithInvocation { invocationOnMock =>
       val currentArguments = invocationOnMock.getArguments
       val undoable = currentArguments(1).asInstanceOf[Undoable[ID]]
       undoable.close()
     })
-    entity.startDelete(id, activity)
-    verify(persistence).delete(id)
+    entity.startDelete(uri, activity)
+    verify(persistence).delete(uri)
   }
 
   it("undo of delete must work") {
@@ -132,18 +132,18 @@ class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with Crud
     val listAdapter = mock[ListAdapter]
     var entity = new MyEntityType(persistence, listAdapter)
     val readable = mutable.Map[String,Any]("name" -> "George")
-    val id = 345L
+    val uri = UriPath(entity.entityName) / 345L
     val id2 = 444L
     stub(activity.crudContext).toReturn(crudContext)
     stub(crudContext.vars).toReturn(new ContextVars {})
-    stub(persistence.find(id)).toReturn(Some(readable))
+    stub(persistence.find(uri)).toReturn(Some(readable))
     when(persistence.save(None, mutable.Map("name" -> "George"))).thenReturn(id2)
     when(activity.addUndoableDelete(eql(entity), notNull.asInstanceOf[Undoable[ID]])).thenAnswer(answerWithInvocation { invocationOnMock =>
       val currentArguments = invocationOnMock.getArguments
       val undoable = currentArguments(1).asInstanceOf[Undoable[ID]]
       undoable.undo() must be(id2)
     })
-    entity.startDelete(id, activity)
-    verify(persistence).delete(id)
+    entity.startDelete(uri, activity)
+    verify(persistence).delete(uri)
   }
 }

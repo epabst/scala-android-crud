@@ -85,9 +85,9 @@ class CrudTypeActionsSpec extends MyEntityTesting with MustMatchers with CrudMoc
       override def newWritable = Unit
       override protected def createEntityPersistence(crudContext: CrudContext) = persistence
     }
-    val id = 345L
-    stub(persistence.find(id)).toReturn(Some(Unit))
-    entityType.deleteAction.get.invoke(UriPath(entityType.entityName, id.toString), currentActivity)
+    val uri = UriPath(entityType.entityName) / 345L
+    stub(persistence.find(uri)).toReturn(Some(Unit))
+    entityType.deleteAction.get.invoke(uri, currentActivity)
   }
 
   @Test

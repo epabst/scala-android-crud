@@ -5,7 +5,7 @@ import persistence.CursorField._
 import view.ViewField._
 import com.github.triangle._
 import PortableField._
-import GeneratedCrudType.CrudContextField
+import com.github.scala.android.crud.GeneratedCrudType.{UriField, CrudContextField}
 
 /**
  * A CRUD type for Author.
@@ -25,10 +25,10 @@ trait AuthorContext {
       viewId(classOf[R], "bookCount", intView) +
               mapField[Int]("bookCount") +
               getterFromItem[Int] {
-                case PersistedId(Some(authorId)) && CrudContextField(Some(crudContext)) => {
-                  println("calculating bookCount with authorId=" + authorId + " and " + crudContext)
+                case UriField(Some(uri)) && CrudContextField(Some(crudContext)) => {
+                  println("calculating bookCount for " + uri + " and " + crudContext)
                   BookCrudType.withEntityPersistence(crudContext, { persistence =>
-                    val books = persistence.findAll(toUri(authorId))
+                    val books = persistence.findAll(uri)
                     Some(books.size)
                   })
                 }

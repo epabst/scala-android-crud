@@ -37,6 +37,7 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers with MyEntityTesti
       override def currentUriPath = uri
       override def future[T](body: => T) = new ReadyFuture[T](body)
     }
+    when(persistence.find(uri)).thenReturn(None)
     activity.onCreate(null)
     entityType.copy(entity, activity)
     activity.onPause()
@@ -48,7 +49,7 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers with MyEntityTesti
     val entityType = new MyEntityType(persistence, listAdapter)
     val entity = mutable.Map[String,Any]("name" -> "Bob", "age" -> 25)
     val uri = UriPath(entityType.entityName, "101")
-    stub(persistence.find(101)).toReturn(Some(entity))
+    stub(persistence.find(uri)).toReturn(Some(entity))
     val activity = new CrudActivity(entityType, application) {
       override lazy val currentAction = UpdateActionName
       override lazy val currentUriPath = uri
@@ -99,6 +100,7 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers with MyEntityTesti
     val entityType = new MyEntityType(persistence, listAdapter)
     val entity = mutable.Map[String,Any]("name" -> "Bob", "age" -> 25)
     val uri = UriPath(entityType.entityName)
+    when(persistence.find(uri)).thenReturn(None)
     stub(persistence.save(None, mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))).toReturn(101)
     val activity = new CrudActivity(entityType, application) {
       override def future[T](body: => T) = new ReadyFuture[T](body)

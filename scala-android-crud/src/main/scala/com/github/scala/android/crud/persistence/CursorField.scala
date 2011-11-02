@@ -31,7 +31,7 @@ object CursorField extends PlatformTypes {
 
   val idFieldName = BaseColumns._ID
 
-  object PersistedId extends Field(persisted[ID](idFieldName))
+  object PersistedId extends Field(persisted[ID](idFieldName) + sqliteCriteria(idFieldName))
 
   def persistedFields(field: BaseField): List[CursorField[_]] = {
     field.deepCollect[CursorField[_]] {

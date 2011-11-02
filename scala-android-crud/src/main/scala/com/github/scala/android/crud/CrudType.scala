@@ -146,8 +146,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
       new BaseAction(android.R.drawable.ic_menu_delete, deleteItemString) {
         def invoke(uri: UriPath, activity: ActivityWithVars) {
           activity match {
-            case crudActivity: BaseCrudActivity =>
-              startDelete(uri.findId(entityName).get, crudActivity)
+            case crudActivity: BaseCrudActivity => startDelete(uri, crudActivity)
           }
         }
       }
@@ -157,16 +156,12 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
   def listActivityClass: Class[_ <: CrudListActivity]
   def activityClass: Class[_ <: CrudActivity]
 
-  def findId(uri: UriPath): Option[ID] = uri.findId(entityName)
-
   def copyFromPersistedEntity(uriPathWithId: UriPath, crudContext: CrudContext): Option[PortableValue] = {
-    findId(uriPathWithId).flatMap { id =>
-      val contextItems = List(uriPathWithId, crudContext, Unit)
-      withEntityPersistence(crudContext, _.find(id).map { readable =>
-        debug("Copying " + entityName + "#" + id + " to " + this)
-        copyFromItem(readable :: contextItems)
-      })
-    }
+    val contextItems = List(uriPathWithId, crudContext, Unit)
+    withEntityPersistence(crudContext, _.find(uriPathWithId).map { readable =>
+      debug("Copying " + entityName + "#" + IdField(readable) + " to " + this)
+      copyFromItem(readable +: contextItems)
+    })
   }
 
   override def toString() = entityName
@@ -297,10 +292,10 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
     }
   }
 
-  private[crud] def undoableDelete(id: ID, activity: BaseCrudActivity)(persistence: EntityPersistence) {
-    persistence.find(id).map { readable =>
+  private[crud] def undoableDelete(uri: UriPath, activity: BaseCrudActivity)(persistence: EntityPersistence) {
+    persistence.find(uri).map { readable =>
       val writable = transform(newWritable, readable)
-      persistence.delete(id)
+      persistence.delete(uri)
       activity.addUndoableDelete(this, new Undoable[ID] {
         def undo(): ID = {
           persistence.save(None, writable)
@@ -313,11 +308,9 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
     }
   }
 
-  /**
-   * Delete an entity by ID with an undo option.  It can be overridden to do a confirmation box if desired.
-   */
-  def startDelete(id: ID, activity: BaseCrudActivity) {
-    withEntityPersistence(activity.crudContext, undoableDelete(id, activity))
+  /** Delete an entity by Uri with an undo option.  It can be overridden to do a confirmation box if desired. */
+  def startDelete(uri: UriPath, activity: BaseCrudActivity) {
+    withEntityPersistence(activity.crudContext, undoableDelete(uri, activity))
   }
 }
 

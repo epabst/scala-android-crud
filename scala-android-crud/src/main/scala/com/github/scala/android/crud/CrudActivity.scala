@@ -2,7 +2,6 @@ package com.github.scala.android.crud
 
 import action.{Action, EntityAction}
 import android.os.Bundle
-import com.github.triangle.ValueFormat.basicFormat
 import com.github.triangle.JavaUtil.toRunnable
 
 /**
@@ -13,9 +12,6 @@ import com.github.triangle.JavaUtil.toRunnable
  */
 class CrudActivity(val entityType: CrudType, val application: CrudApplication) extends BaseCrudActivity {
 
-  private val idFormat = basicFormat[ID]
-  def id: Option[ID] = currentUriPath.segments.lastOption.flatMap(idFormat.toValue(_))
-
   override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)
 
@@ -23,7 +19,7 @@ class CrudActivity(val entityType: CrudType, val application: CrudApplication) e
     val contextItems = List(currentUriPath, crudContext, Unit)
     future {
       withPersistence { persistence =>
-        val readableOrUnit: AnyRef = id.map(i => persistence.find(i).get).getOrElse(Unit)
+        val readableOrUnit: AnyRef = persistence.find(currentUriPath).getOrElse(Unit)
         val portableValue = entityType.copyFromItem(readableOrUnit :: contextItems)
         runOnUiThread { portableValue.copyTo(this) }
       }
@@ -43,8 +39,9 @@ class CrudActivity(val entityType: CrudType, val application: CrudApplication) e
 
   private[crud] def saveForOnPause(persistence: CrudPersistence, writable: AnyRef) {
     try {
+      val id = entityType.IdField.getter(currentUriPath)
       val newId = persistence.save(id, writable)
-      if (id.isEmpty) setIntent(getIntent.setData(Action.toUri(currentUriPath.specify(entityType.toUri(newId).segments:_*))))
+      if (id.isEmpty) setIntent(getIntent.setData(Action.toUri(uriWithId(newId))))
     } catch { case e => error("onPause: Unable to store " + writable, e) }
   }
 

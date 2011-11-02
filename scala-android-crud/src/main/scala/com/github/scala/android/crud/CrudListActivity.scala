@@ -2,7 +2,7 @@ package com.github.scala.android.crud
 
 import _root_.android.widget.ListView
 import _root_.android.app.ListActivity
-import action.Action
+import action.{UriPath, Action}
 import android.os.Bundle
 import android.view.{ContextMenu, View, MenuItem}
 import android.view.ContextMenu.ContextMenuInfo
@@ -33,7 +33,7 @@ class CrudListActivity(val entityType: CrudType, val application: CrudApplicatio
 
     entityType.addPersistenceListener(new PersistenceListener {
       def onSave(id: ID) { entityType.refreshAfterDataChanged(getListAdapter) }
-      def onDelete(ids: Seq[ID]) { entityType.refreshAfterDataChanged(getListAdapter) }
+      def onDelete(uri: UriPath) { entityType.refreshAfterDataChanged(getListAdapter) }
     }, crudContext.context)
 
     entityType.setListAdapter(crudContext, this)
