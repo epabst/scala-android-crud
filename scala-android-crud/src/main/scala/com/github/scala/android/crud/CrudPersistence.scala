@@ -17,6 +17,9 @@ trait CrudPersistence extends EntityPersistence {
 
   def toUri(id: ID) = entityType.toUri(id)
 
+  def find[T <: AnyRef](uri: UriPath, instantiateItem: => T): Option[T] =
+    find(uri).map(entityType.transform(instantiateItem, _))
+
   def findAll[T <: AnyRef](uri: UriPath, instantiateItem: => T): Seq[T] =
     findAll(uri).map(entityType.transform(instantiateItem, _))
 
