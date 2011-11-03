@@ -10,8 +10,8 @@ import com.github.scala.android.crud.common.PlatformTypes
 import com.github.scala.android.crud.ParentField
 import com.github.triangle.Converter._
 
-class SQLiteCriteria(var selection: String = null, var selectionArgs: Array[String] = Nil.toArray,
-                     var groupBy: String = null, var having: String = null, var orderBy: String = null)
+case class SQLiteCriteria(selection: List[String] = Nil, selectionArgs: List[String] = Nil,
+                          groupBy: Option[String] = None, having: Option[String] = None, orderBy: Option[String] = None)
 
 object CursorField extends PlatformTypes {
   def bundleField[T](name: String)(implicit persistedType: PersistedType[T]) =
@@ -46,7 +46,8 @@ object CursorField extends PlatformTypes {
 
   def queryFieldNames(fields: FieldList): List[String] = persistedFields(fields).map(_.columnName)
 
-  def sqliteCriteria[T](name: String) = PortableField.writeOnlyDirect[SQLiteCriteria,T](criteria => value => criteria.selection = name + "=" + value)
+  def sqliteCriteria[T](name: String): PortableField[T] =
+    PortableField.transformOnlyDirect[SQLiteCriteria,T](criteria => v => criteria.copy(selection = List(name + "=" + v)), c => c)
 }
 
 import CursorField._

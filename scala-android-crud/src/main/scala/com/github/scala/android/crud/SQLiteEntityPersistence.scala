@@ -30,10 +30,13 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudType, val crudContext: C
   override lazy val logTag = classOf[CrudPersistence].getName +
           "(" + entityType.entityName + ")"
 
+  private def toOption(string: String): Option[String] = if (string == "") None else Some(string)
+
   def findAll(criteria: SQLiteCriteria): Cursor = {
-    debug("Finding each " + entityType.entityName + " for " + queryFieldNames.mkString(",") + " where " + criteria.selection)
+    debug("Finding each " + entityType.entityName + "'s " + queryFieldNames.mkString(", ") + " where " + criteria.selection.mkString(" and "))
     val cursor = database.query(entityType.tableName, queryFieldNames.toArray,
-      criteria.selection, criteria.selectionArgs, criteria.groupBy, criteria.having, criteria.orderBy)
+      toOption(criteria.selection.mkString(" AND ")).getOrElse(null), criteria.selectionArgs.toArray,
+      criteria.groupBy.getOrElse(null), criteria.having.getOrElse(null), criteria.orderBy.getOrElse(null))
     cursors += cursor
     cursor
   }

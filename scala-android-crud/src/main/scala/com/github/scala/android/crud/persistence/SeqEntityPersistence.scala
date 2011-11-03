@@ -25,6 +25,7 @@ trait ListBufferEntityPersistence[T <: AnyRef] extends SeqEntityPersistence[T] {
   var nextId = 10000L
 
   //todo only return the one that matches the ID in the uri, if present
+  //def findAll(uri: UriPath) = buffer.toList.filter(item => uri.segments.containsSlice(toUri(IdField(item)).segments))
   def findAll(uri: UriPath) = buffer.toList
 
   override protected def doSave(id: Option[ID], item: AnyRef) = {

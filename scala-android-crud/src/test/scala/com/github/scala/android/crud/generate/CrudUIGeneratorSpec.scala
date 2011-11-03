@@ -9,7 +9,7 @@ import PortableField._
 import com.github.scala.android.crud.view.ViewField._
 import com.github.scala.android.crud.ParentField._
 import com.github.scala.android.crud.testres.R
-import com.github.scala.android.crud.persistence.{IdPk, SQLiteCriteria}
+import com.github.scala.android.crud.persistence.IdPk
 import com.github.scala.android.crud.persistence.CursorField._
 import com.github.scala.android.crud.view.FieldLayout
 import com.github.scala.android.crud._
@@ -48,7 +48,12 @@ class CrudUIGeneratorSpec extends Spec with MustMatchers {
     }
 
     it("must not consider adjustment fields displayable") {
-      val fieldInfo = CrudUIGenerator.guessFieldInfo(adjustment[SQLiteCriteria](_.orderBy = "foo"), Seq(classOf[R]))
+      val fieldInfo = CrudUIGenerator.guessFieldInfo(adjustment[String](_ + "foo"), Seq(classOf[R]))
+      fieldInfo.displayable must be (false)
+    }
+
+    it("must not consider adjustmentInPlace fields displayable") {
+      val fieldInfo = CrudUIGenerator.guessFieldInfo(adjustmentInPlace[StringBuffer] { s => s.append("foo"); Unit }, Seq(classOf[R]))
       fieldInfo.displayable must be (false)
     }
 
@@ -68,7 +73,12 @@ class CrudUIGeneratorSpec extends Spec with MustMatchers {
     }
 
     it("must not consider adjustment fields updateable") {
-      val fieldInfo = CrudUIGenerator.guessFieldInfo(adjustment[SQLiteCriteria](_.orderBy = "foo"), Seq(classOf[R]))
+      val fieldInfo = CrudUIGenerator.guessFieldInfo(adjustment[String](_ + "foo"), Seq(classOf[R]))
+      fieldInfo.updateable must be (false)
+    }
+
+    it("must not consider adjustmentInPlace fields updateable") {
+      val fieldInfo = CrudUIGenerator.guessFieldInfo(adjustmentInPlace[StringBuffer] { s => s.append("foo"); Unit }, Seq(classOf[R]))
       fieldInfo.updateable must be (false)
     }
   }
