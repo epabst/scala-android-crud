@@ -14,6 +14,7 @@ import java.lang.IllegalStateException
 import action.UriPath
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
+import actors.Future
 
 /**
  * A test for {@link CrudListActivity}.
@@ -103,7 +104,7 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers with MyEntityTesti
     when(persistence.find(uri)).thenReturn(None)
     stub(persistence.save(None, mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))).toReturn(101)
     val activity = new CrudActivity(entityType, application) {
-      override def future[T](body: => T) = new ReadyFuture[T](body)
+      override def future[T](body: => T): Future[T] = new ReadyFuture[T](body)
     }
     activity.setIntent(constructIntent(Action.CreateActionName, uri, activity, null))
     activity.onCreate(null)

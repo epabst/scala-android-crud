@@ -1,8 +1,9 @@
 package com.github.scala.android.crud.persistence
 
 import scala.collection.mutable
-import IdPk._
 import com.github.scala.android.crud.action.UriPath
+import com.github.triangle.Field
+import com.github.triangle.PortableField._
 
 /**
  * EntityPersistence for a simple generated Seq.
@@ -20,6 +21,7 @@ trait SeqEntityPersistence[T <: AnyRef] extends EntityPersistence {
 }
 
 trait ListBufferEntityPersistence[T <: AnyRef] extends SeqEntityPersistence[T] {
+  private object IdField extends Field[ID](field[IdPk,ID](_.id, e => e.id = _) + CursorField.PersistedId)
   val buffer = mutable.ListBuffer[T]()
 
   var nextId = 10000L

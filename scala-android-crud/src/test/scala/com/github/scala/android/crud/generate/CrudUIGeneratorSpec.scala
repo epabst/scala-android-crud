@@ -58,12 +58,12 @@ class CrudUIGeneratorSpec extends Spec with MustMatchers {
     }
 
     it("must not consider the default primary key field displayable") {
-      val fieldInfo = CrudUIGenerator.guessFieldInfo(IdPk.IdField, Seq(classOf[R]))
+      val fieldInfo = CrudUIGenerator.guessFieldInfo(MyCrudType.IdField, Seq(classOf[R]))
       fieldInfo.displayable must be (false)
     }
 
     it("must not consider the default primary key field updateable") {
-      val fieldInfo = CrudUIGenerator.guessFieldInfo(IdPk.IdField, Seq(classOf[R]))
+      val fieldInfo = CrudUIGenerator.guessFieldInfo(MyCrudType.IdField, Seq(classOf[R]))
       fieldInfo.updateable must be (false)
     }
 

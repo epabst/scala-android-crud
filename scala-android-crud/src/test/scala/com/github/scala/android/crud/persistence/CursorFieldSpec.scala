@@ -23,7 +23,7 @@ class CursorFieldSpec extends MustMatchers with EasyMockSugar {
   def shouldGetColumnsForQueryCorrectly() {
     val foreign = persisted[ID]("foreignID")
     val combined = persisted[Float]("height") + default(6.0f)
-    val fields = FieldList(IdPk.IdField, foreign, persisted[Int]("age"), combined)
+    val fields = FieldList(CursorField.PersistedId, foreign, persisted[Int]("age"), combined)
     val actualFields = CursorField.queryFieldNames(fields)
     actualFields must be (List(BaseColumns._ID, "foreignID", "age", "height"))
   }

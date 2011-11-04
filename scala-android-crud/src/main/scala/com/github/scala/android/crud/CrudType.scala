@@ -11,7 +11,8 @@ import Action._
 import android.app.{Activity, ListActivity}
 import com.github.scala.android.crud.view.ViewField._
 import com.github.triangle._
-import persistence.{CursorField, PersistenceListener, IdPk, EntityPersistence}
+import persistence.CursorField.PersistedId
+import persistence.{CursorField, PersistenceListener, EntityPersistence}
 import PortableField.toSome
 import view.AndroidResourceAnalyzer._
 import java.lang.IllegalStateException
@@ -33,8 +34,11 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
 
   object UriPathId extends Field[ID](uriIdField(entityName))
 
-  /** This should only be used in order to override this.  IdField should be used instead of this. */
-  protected def idField: PortableField[ID] = IdPk.IdField + UriPathId
+  /** This should only be used in order to override this.  IdField should be used instead of this.
+    * A field that uses IdPk.id is NOT included here because it could match a related entity that also extends IdPk,
+    * which results in many problems.
+    */
+  protected def idField: PortableField[ID] = UriPathId + PersistedId
   object IdField extends Field[ID](idField)
 
   /**
