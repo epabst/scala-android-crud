@@ -18,7 +18,9 @@ import android.app.ListActivity
  * Time: 11:06 PM
  */
 
-trait MyEntityTesting {
+trait MyEntityTesting extends Logging {
+  protected def logTag = "scala-android-crud"
+
   class MyEntityPersistence extends ListBufferCrudPersistence[Map[String,Any]](null, null)
 
   class MyEntityType(persistence: CrudPersistence, listAdapter: ListAdapter, val entityName: String = "MyMap")

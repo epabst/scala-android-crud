@@ -24,7 +24,7 @@ import android.app.Activity
  * Time: 6:22 PM
  */
 @RunWith(classOf[RobolectricTestRunner])
-class SQLiteCrudTypeSpec extends MustMatchers with Logging with MyEntityTesting with CrudMockitoSugar {
+class SQLiteCrudTypeSpec extends MustMatchers with MyEntityTesting with CrudMockitoSugar {
   val runningOnRealAndroid: Boolean = try {
     debug("Seeing if running on Real Android...")
     Class.forName("com.xtremelabs.robolectric.RobolectricTestRunner")
@@ -53,7 +53,8 @@ class SQLiteCrudTypeSpec extends MustMatchers with Logging with MyEntityTesting 
   @Test
   def shouldUseCorrectColumnNamesForFindAll() {
     val crudContext = mock[CrudContext]
-    stub(crudContext.application).toReturn(TestApplication)
+    val application = TestApplication
+    stub(crudContext.application).toReturn(application)
 
     val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext)
     val result = persistence.findAll(new SQLiteCriteria())

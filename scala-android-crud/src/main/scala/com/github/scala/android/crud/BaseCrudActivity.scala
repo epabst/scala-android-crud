@@ -41,7 +41,7 @@ trait BaseCrudActivity extends ActivityWithVars with PlatformTypes with Logging 
 
   val crudContext = new CrudContext(this, application)
 
-  override lazy val logTag = classOf[BaseCrudActivity].getName + "(" + entityType.entityName + ")"
+  protected lazy val logTag = entityType.entityName
 
   protected def applicableActions: List[Action]
 

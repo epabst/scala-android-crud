@@ -46,7 +46,8 @@ object CrudBackupAgent {
 import CrudBackupAgent._
 
 class CrudBackupAgent(application: CrudApplication) extends BackupAgent with ContextWithVars with Logging {
-  protected def logTag = application.logTag
+  //todo use application.logTag but recover from exception
+  protected def logTag = "scala-android-crud"
 
   final def onBackup(oldState: ParcelFileDescriptor, data: BackupDataOutput, newState: ParcelFileDescriptor) {
     onBackup(oldState, new BackupTarget {
