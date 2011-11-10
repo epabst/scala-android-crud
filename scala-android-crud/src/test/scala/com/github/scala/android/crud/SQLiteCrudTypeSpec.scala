@@ -134,7 +134,7 @@ class SQLiteCrudTypeSpec extends MustMatchers with Logging with MyEntityTesting 
     val observer = mock[DataSetObserver]
 
     val crudContext = new CrudContext(activity, TestApplication)
-    TestEntityType.setListAdapter(crudContext, activity)
+    TestEntityType.setListAdapterUsingUri(crudContext, activity)
     val listAdapter = activity.getListAdapter
     listAdapter.getCount must be (0)
 

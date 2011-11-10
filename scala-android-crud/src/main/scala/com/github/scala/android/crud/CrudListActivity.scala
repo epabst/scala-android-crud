@@ -36,7 +36,7 @@ class CrudListActivity(val entityType: CrudType, val application: CrudApplicatio
       def onDelete(uri: UriPath) { entityType.refreshAfterDataChanged(getListAdapter) }
     }, crudContext.context)
 
-    entityType.setListAdapter(crudContext, this)
+    entityType.setListAdapterUsingUri(crudContext, this)
     future {
       //copy each parent Entity's data to the Activity if identified in the currentUriPath
       val portableValues: List[PortableValue] = entityType.parentEntities.flatMap(_ match {

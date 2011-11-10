@@ -42,7 +42,7 @@ class GeneratedCrudTypeSpec extends Spec with MustMatchers with MyEntityTesting 
       call(seqPersistence.entityType).andStubReturn(generatedType)
     }
     whenExecuting(seqPersistence, crudContext, activity) {
-      generatedType.setListAdapter(seqPersistence, crudContext, activity)
+      generatedType.setListAdapterUsingUri(seqPersistence, crudContext, activity)
       val listAdapter = listAdapterCapture.params(0).asInstanceOf[ListAdapter]
       listAdapter.getCount must be (0)
     }
