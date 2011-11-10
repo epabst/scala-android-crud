@@ -76,7 +76,9 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
   final def hasDisplayPage = displayLayout.isDefined
   lazy val isUpdateable: Boolean = !CursorField.updateablePersistedFields(this, rIdClasses).isEmpty
 
-  lazy val unitPortableValue = copyFrom(Unit)
+  //this is here because the IDE thinks that Unit is not an AnyRef
+  val unitAsRef: AnyRef = Unit.asInstanceOf[AnyRef]
+  lazy val unitPortableValue = copyFrom(unitAsRef)
 
   private val persistenceVarForListAdapter = new ContextVar[CrudPersistence]
 
