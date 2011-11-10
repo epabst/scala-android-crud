@@ -25,6 +25,8 @@ import java.lang.IllegalStateException
  * Time: 3:24 PM
  */
 trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
+  override def logTag = entityName
+
   trace("Instantiated CrudType: " + this)
 
   //this is the type used for internationalized strings

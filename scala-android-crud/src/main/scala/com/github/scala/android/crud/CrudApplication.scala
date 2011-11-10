@@ -11,6 +11,8 @@ import com.github.triangle.Logging
  */
 
 trait CrudApplication extends Logging {
+  def logTag = nameId
+
   trace("Instantiated CrudApplication: " + this)
 
   def name: String

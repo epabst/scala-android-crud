@@ -37,7 +37,7 @@ class ViewField[T](val defaultLayout: FieldLayout, dataField: PortableField[T]) 
   protected def delegate = dataField
 }
 
-object ViewField extends PlatformTypes with Logging {
+object ViewField extends PlatformTypes {
   /** PortableField for a View resource within a given parent View */
   protected abstract class BaseViewIdField[T](childViewField: PortableField[T])
           extends FieldWithDelegate[T] with TransformerUsingSetter[T] {

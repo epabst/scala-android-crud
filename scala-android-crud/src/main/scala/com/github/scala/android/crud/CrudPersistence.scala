@@ -13,6 +13,8 @@ import com.github.triangle.FieldList
  */
 
 trait CrudPersistence extends EntityPersistence {
+  protected def logTag: String = entityType.logTag
+
   def entityType: CrudType
 
   def crudContext: CrudContext

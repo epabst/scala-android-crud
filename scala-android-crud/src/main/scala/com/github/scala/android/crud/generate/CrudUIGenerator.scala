@@ -21,6 +21,7 @@ import com.github.scala.android.crud.{NamingConventions, CrudApplication, Parent
  */
 
 object CrudUIGenerator extends PlatformTypes with Logging {
+  protected lazy val logTag = getClass.getSimpleName
   private val lineSeparator = System.getProperty("line.separator")
   private[generate] val random = new Random
   private[generate] val prettyPrinter = new PrettyPrinter(80, 2) {

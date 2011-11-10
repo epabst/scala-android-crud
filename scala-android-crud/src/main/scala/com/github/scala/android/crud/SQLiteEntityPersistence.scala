@@ -124,6 +124,7 @@ case class CursorStream(cursor: Cursor) extends Stream[Cursor] {
 }
 
 class GeneratedDatabaseSetup(crudContext: CrudContext) extends SQLiteOpenHelper(crudContext.context, crudContext.application.nameId, null, 1) with Logging {
+  protected def logTag = crudContext.application.logTag
 
   def onCreate(db: SQLiteDatabase) {
     val application = crudContext.application

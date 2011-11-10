@@ -11,6 +11,8 @@ import com.github.triangle.Logging
  */
 
 object AndroidResourceAnalyzer extends Logging {
+  protected def logTag = "scala-android-crud"
+
   private def findRInnerClass(classInSamePackage: Class[_], innerClassName: String): Option[Class[_]] = {
     findRInnerClass(classInSamePackage.getClassLoader, classInSamePackage.getPackage.getName, innerClassName)
   }
@@ -57,5 +59,4 @@ object AndroidResourceAnalyzer extends Logging {
       throw new IllegalStateException("R.string." + name + " not found.  You may want to run the CrudUIGenerator.generateLayouts." +
               classes.mkString("(string classes: ", ",", ")"))
     }
-
 }

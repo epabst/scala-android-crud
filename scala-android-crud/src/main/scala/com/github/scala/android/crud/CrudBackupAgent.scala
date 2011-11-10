@@ -46,6 +46,8 @@ object CrudBackupAgent {
 import CrudBackupAgent._
 
 class CrudBackupAgent(application: CrudApplication) extends BackupAgent with ContextWithVars with Logging {
+  protected def logTag = application.logTag
+
   final def onBackup(oldState: ParcelFileDescriptor, data: BackupDataOutput, newState: ParcelFileDescriptor) {
     onBackup(oldState, new BackupTarget {
       def writeEntity(key: String, mapOpt: Option[Map[String,Any]]) {
