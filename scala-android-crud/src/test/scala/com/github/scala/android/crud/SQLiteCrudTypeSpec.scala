@@ -49,11 +49,11 @@ class SQLiteCrudTypeSpec extends MustMatchers with MyEntityTesting with CrudMock
 
     def allEntities = List(TestEntityType)
   }
+  val application = TestApplication
 
   @Test
   def shouldUseCorrectColumnNamesForFindAll() {
     val crudContext = mock[CrudContext]
-    val application = TestApplication
     stub(crudContext.application).toReturn(application)
 
     val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext)
@@ -66,7 +66,7 @@ class SQLiteCrudTypeSpec extends MustMatchers with MyEntityTesting with CrudMock
   def persistenceFindAllShouldHaveCorrectSize_Empty() {
     val crudContext = mock[CrudContext]
     stub(crudContext.vars).toReturn(new ContextVars {})
-    stub(crudContext.application).toReturn(TestApplication)
+    stub(crudContext.application).toReturn(application)
 
     val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext)
     persistence.findAll(UriPath()).length must be (0)
@@ -76,7 +76,7 @@ class SQLiteCrudTypeSpec extends MustMatchers with MyEntityTesting with CrudMock
   def persistenceFindAllShouldHaveCorrectSize_Multiple() {
     val crudContext = mock[CrudContext]
     stub(crudContext.vars).toReturn(new ContextVars {})
-    stub(crudContext.application).toReturn(TestApplication)
+    stub(crudContext.application).toReturn(application)
 
     val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext)
     persistence.save(None, TestEntityType.transform(TestEntityType.newWritable, Unit))
@@ -88,7 +88,7 @@ class SQLiteCrudTypeSpec extends MustMatchers with MyEntityTesting with CrudMock
   def gettingLengthForPersistenceFindAllShouldStillAllowGettingResults() {
     val crudContext = mock[CrudContext]
     stub(crudContext.vars).toReturn(new ContextVars {})
-    stub(crudContext.application).toReturn(TestApplication)
+    stub(crudContext.application).toReturn(application)
 
     val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext)
     val id = persistence.save(None, TestEntityType.transform(TestEntityType.newWritable, Unit))
@@ -108,7 +108,7 @@ class SQLiteCrudTypeSpec extends MustMatchers with MyEntityTesting with CrudMock
   def shouldCloseCursorsWhenClosing() {
     val crudContext = mock[CrudContext]
     stub(crudContext.vars).toReturn(new ContextVars {})
-    stub(crudContext.application).toReturn(TestApplication)
+    stub(crudContext.application).toReturn(application)
 
     val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext)
     val writable = TestEntityType.newWritable
@@ -124,7 +124,7 @@ class SQLiteCrudTypeSpec extends MustMatchers with MyEntityTesting with CrudMock
 
   @Test
   def shouldRefreshCursorWhenDeletingAndSaving() {
-    val activity = new CrudListActivity(TestEntityType, TestApplication) {
+    val activity = new CrudListActivity(TestEntityType, application) {
       private var listAdapter: ListAdapter = _
       override def setListAdapter(adapter: ListAdapter) {
         super.setListAdapter(adapter)
@@ -134,7 +134,7 @@ class SQLiteCrudTypeSpec extends MustMatchers with MyEntityTesting with CrudMock
     }
     val observer = mock[DataSetObserver]
 
-    val crudContext = new CrudContext(activity, TestApplication)
+    val crudContext = new CrudContext(activity, application)
     TestEntityType.setListAdapterUsingUri(crudContext, activity)
     val listAdapter = activity.getListAdapter
     listAdapter.getCount must be (0)
