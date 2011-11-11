@@ -1,10 +1,10 @@
 package com.github.scala.android.crud
 
 import action.{ActivityWithVars, Action, UriPath}
-import common.{Timing, PlatformTypes}
 import com.github.triangle.Logging
 import android.view.{MenuItem, Menu}
 import android.content.Intent
+import common.{Common, Timing, PlatformTypes}
 
 /**
  * Support for the different Crud Activity's.
@@ -41,7 +41,7 @@ trait BaseCrudActivity extends ActivityWithVars with PlatformTypes with Logging 
 
   val crudContext = new CrudContext(this, application)
 
-  protected lazy val logTag = entityType.entityName
+  protected lazy val logTag = Common.tryToEvaluate(entityType.entityName).getOrElse(Common.logTag)
 
   protected def applicableActions: List[Action]
 

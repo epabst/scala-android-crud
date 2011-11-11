@@ -2,6 +2,7 @@ package com.github.scala.android.crud.view
 
 import java.lang.reflect.{Modifier, Field}
 import com.github.triangle.Logging
+import com.github.scala.android.crud.common.Common
 
 /**
  * An "R" analyzer.
@@ -11,7 +12,7 @@ import com.github.triangle.Logging
  */
 
 object AndroidResourceAnalyzer extends Logging {
-  protected def logTag = "scala-android-crud"
+  protected def logTag = Common.logTag
 
   private def findRInnerClass(classInSamePackage: Class[_], innerClassName: String): Option[Class[_]] = {
     findRInnerClass(classInSamePackage.getClassLoader, classInSamePackage.getPackage.getName, innerClassName)

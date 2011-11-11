@@ -3,6 +3,7 @@ package com.github.scala.android.crud
 import action.{ContextWithVars, UriPath}
 import android.app.backup.{BackupDataOutput, BackupDataInput, BackupAgent}
 import com.github.triangle.Logging
+import common.Common
 import persistence.CursorField._
 import android.os.ParcelFileDescriptor
 import java.io.{ObjectInputStream, ByteArrayInputStream, ObjectOutputStream, ByteArrayOutputStream}
@@ -46,8 +47,7 @@ object CrudBackupAgent {
 import CrudBackupAgent._
 
 class CrudBackupAgent(application: CrudApplication) extends BackupAgent with ContextWithVars with Logging {
-  //todo use application.logTag but recover from exception
-  protected def logTag = "scala-android-crud"
+  protected def logTag = Common.tryToEvaluate(application.logTag).getOrElse(Common.logTag)
 
   final def onBackup(oldState: ParcelFileDescriptor, data: BackupDataOutput, newState: ParcelFileDescriptor) {
     onBackup(oldState, new BackupTarget {

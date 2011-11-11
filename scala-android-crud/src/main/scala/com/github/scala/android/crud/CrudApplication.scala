@@ -2,6 +2,7 @@ package com.github.scala.android.crud
 
 import action.{ContextVars, ContextWithVars}
 import com.github.triangle.Logging
+import common.Common
 
 /**
  * An Application that works with [[com.github.scala.android.crud.CrudType]]s.
@@ -11,7 +12,7 @@ import com.github.triangle.Logging
  */
 
 trait CrudApplication extends Logging {
-  def logTag = nameId
+  def logTag = Common.tryToEvaluate(nameId).getOrElse(Common.logTag)
 
   trace("Instantiated CrudApplication: " + this)
 

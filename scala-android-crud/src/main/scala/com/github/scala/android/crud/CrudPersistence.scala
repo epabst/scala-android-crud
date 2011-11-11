@@ -1,6 +1,7 @@
 package com.github.scala.android.crud
 
 import action.UriPath
+import common.Common
 import persistence.{IdPk, ListBufferEntityPersistence, SeqEntityPersistence, EntityPersistence}
 import com.github.triangle.PortableField._
 import com.github.triangle.FieldList
@@ -13,7 +14,7 @@ import com.github.triangle.FieldList
  */
 
 trait CrudPersistence extends EntityPersistence {
-  protected def logTag: String = entityType.logTag
+  protected def logTag: String = Common.tryToEvaluate(entityType.logTag).getOrElse(Common.logTag)
 
   def entityType: CrudType
 

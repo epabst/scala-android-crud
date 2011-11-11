@@ -1,6 +1,7 @@
 package com.github.scala.android.crud
 
 import action.UriPath
+import common.Common
 import scala.collection.mutable
 import mutable.Map
 import com.github.triangle._
@@ -19,7 +20,7 @@ import android.app.ListActivity
  */
 
 trait MyEntityTesting extends Logging {
-  protected def logTag = "scala-android-crud"
+  protected def logTag = Common.logTag
 
   class MyEntityPersistence extends ListBufferCrudPersistence[Map[String,Any]](null, null)
 

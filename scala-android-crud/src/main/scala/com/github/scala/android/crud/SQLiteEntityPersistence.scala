@@ -4,6 +4,7 @@ import android.provider.BaseColumns
 import android.database.Cursor
 import android.content.ContentValues
 import com.github.triangle.Logging
+import common.Common
 import persistence.{SQLiteCriteria, CursorField}
 import scala.None
 import collection.mutable.SynchronizedQueue
@@ -26,9 +27,6 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudType, val crudContext: C
   private var cursors = new SynchronizedQueue[Cursor]
 
   lazy val queryFieldNames: List[String] = CursorField.queryFieldNames(entityType)
-
-  override lazy val logTag = classOf[CrudPersistence].getName +
-          "(" + entityType.entityName + ")"
 
   private def toOption(string: String): Option[String] = if (string == "") None else Some(string)
 
@@ -124,7 +122,7 @@ case class CursorStream(cursor: Cursor) extends Stream[Cursor] {
 }
 
 class GeneratedDatabaseSetup(crudContext: CrudContext) extends SQLiteOpenHelper(crudContext.context, crudContext.application.nameId, null, 1) with Logging {
-  protected def logTag = crudContext.application.logTag
+  protected lazy val logTag = Common.tryToEvaluate(crudContext.application.logTag).getOrElse(Common.logTag)
 
   def onCreate(db: SQLiteDatabase) {
     val application = crudContext.application

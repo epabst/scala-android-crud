@@ -4,13 +4,13 @@ import action._
 import action.UriPath
 import android.view.View
 import com.github.triangle.JavaUtil._
-import common.{Timing, PlatformTypes}
 import android.database.DataSetObserver
 import android.widget.{ListAdapter, BaseAdapter}
 import Action._
 import android.app.{Activity, ListActivity}
 import com.github.scala.android.crud.view.ViewField._
 import com.github.triangle._
+import common.{Common, Timing, PlatformTypes}
 import persistence.CursorField.PersistedId
 import persistence.{CursorField, PersistenceListener, EntityPersistence}
 import PortableField.toSome
@@ -25,7 +25,7 @@ import java.lang.IllegalStateException
  * Time: 3:24 PM
  */
 trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
-  override def logTag = entityName
+  override lazy val logTag = Common.tryToEvaluate(entityName).getOrElse(Common.logTag)
 
   trace("Instantiated CrudType: " + this)
 

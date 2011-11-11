@@ -2,7 +2,6 @@ package com.github.scala.android.crud.generate
 
 import android.view.View
 import java.lang.IllegalStateException
-import com.github.scala.android.crud.common.PlatformTypes
 import com.github.scala.android.crud.persistence.{CursorField}
 import com.github.triangle._
 import util.Random
@@ -12,6 +11,7 @@ import com.github.scala.android.crud.view.{ViewField, FieldLayout,AndroidResourc
 import AndroidResourceAnalyzer._
 import com.github.scala.android.crud.view.ViewField.{ViewIdNameField, ViewIdField}
 import com.github.scala.android.crud.{NamingConventions, CrudApplication, ParentField, CrudType}
+import com.github.scala.android.crud.common.{Common, PlatformTypes}
 
 /**
  * A UI Generator for a CrudTypes.
@@ -21,7 +21,7 @@ import com.github.scala.android.crud.{NamingConventions, CrudApplication, Parent
  */
 
 object CrudUIGenerator extends PlatformTypes with Logging {
-  protected lazy val logTag = getClass.getSimpleName
+  protected def logTag = Common.logTag
   private val lineSeparator = System.getProperty("line.separator")
   private[generate] val random = new Random
   private[generate] val prettyPrinter = new PrettyPrinter(80, 2) {
