@@ -3,13 +3,12 @@ package com.github.scala.android.crud
 import action.{ContextWithVars, UriPath}
 import android.app.backup.{BackupDataOutput, BackupDataInput, BackupAgent}
 import com.github.triangle.Logging
-import common.Common
+import common.{CalculatedIterator, Common}
 import persistence.CursorField._
 import android.os.ParcelFileDescriptor
 import java.io.{ObjectInputStream, ByteArrayInputStream, ObjectOutputStream, ByteArrayOutputStream}
 import scala.collection.JavaConversions._
 import java.util.{Map => JMap,HashMap}
-import collection.BufferedIterator
 
 object CrudBackupAgent {
   private val backupStrategyVersion: Int = 1
@@ -130,29 +129,6 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Con
     val writable = entityType.transform(entityType.newWritable, restoreItem.map)
     entityType.withEntityPersistence(crudContext, _.save(Some(id), writable))
     Unit
-  }
-}
-
-private[crud] trait CalculatedIterator[T] extends BufferedIterator[T] {
-  private var calculatedNextValue: Option[Option[T]] = None
-
-  def calculateNextValue(): Option[T]
-
-  private def determineNextValue(): Option[T] = {
-    if (!calculatedNextValue.isDefined) {
-      calculatedNextValue = Some(calculateNextValue())
-    }
-    calculatedNextValue.get
-  }
-
-  def hasNext = determineNextValue().isDefined
-
-  def head = determineNextValue().get
-
-  def next() = {
-    val next = head
-    calculatedNextValue = None
-    next
   }
 }
 

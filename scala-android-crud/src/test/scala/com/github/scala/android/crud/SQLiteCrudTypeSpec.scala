@@ -1,6 +1,6 @@
 package com.github.scala.android.crud
 
-import action.{UriPath, ContextVars, ContextWithVars}
+import action.{ContextVars, ContextWithVars}
 import android.provider.BaseColumns
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -8,14 +8,15 @@ import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.scalatest.matchers.MustMatchers
 import com.github.triangle._
 import persistence.CursorField._
-import persistence.SQLiteCriteria
+import persistence.{CursorStream, SQLiteCriteria}
 import PortableField._
-import android.database.DataSetObserver
 import android.widget.ListAdapter
 import scala.collection._
+import mutable.Buffer
 import org.mockito.Mockito
 import Mockito._
 import android.app.Activity
+import android.database.{Cursor, DataSetObserver}
 
 /**
  * A test for {@link SQLiteCrudType}.
@@ -36,6 +37,8 @@ class SQLiteCrudTypeSpec extends MustMatchers with MyEntityTesting with CrudMock
       true
     }
   }
+  val unitAsRef = Unit.asInstanceOf[AnyRef]
+
   object TestEntityType extends SQLiteCrudType {
     def entityName = "Test"
     val valueFields = List(persisted[Int]("age") + default(21))
@@ -57,51 +60,8 @@ class SQLiteCrudTypeSpec extends MustMatchers with MyEntityTesting with CrudMock
     stub(crudContext.application).toReturn(application)
 
     val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext)
-    val result = persistence.findAll(new SQLiteCriteria())
-    result.getColumnIndex(BaseColumns._ID) must be (0)
-    result.getColumnIndex("age") must be (1)
-  }
-
-  @Test
-  def persistenceFindAllShouldHaveCorrectSize_Empty() {
-    val crudContext = mock[CrudContext]
-    stub(crudContext.vars).toReturn(new ContextVars {})
-    stub(crudContext.application).toReturn(application)
-
-    val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext)
-    persistence.findAll(UriPath()).length must be (0)
-  }
-
-  @Test
-  def persistenceFindAllShouldHaveCorrectSize_Multiple() {
-    val crudContext = mock[CrudContext]
-    stub(crudContext.vars).toReturn(new ContextVars {})
-    stub(crudContext.application).toReturn(application)
-
-    val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext)
-    persistence.save(None, TestEntityType.transform(TestEntityType.newWritable, Unit))
-    persistence.save(None, TestEntityType.transform(TestEntityType.newWritable, Unit))
-    persistence.findAll(UriPath()).length must be (2)
-  }
-
-  @Test
-  def gettingLengthForPersistenceFindAllShouldStillAllowGettingResults() {
-    val crudContext = mock[CrudContext]
-    stub(crudContext.vars).toReturn(new ContextVars {})
-    stub(crudContext.application).toReturn(application)
-
-    val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext)
-    val id = persistence.save(None, TestEntityType.transform(TestEntityType.newWritable, Unit))
-    val id2 = persistence.save(None, TestEntityType.transform(TestEntityType.newWritable, Unit))
-    val results = persistence.findAll(UriPath())
-    results.length must be (2)
-    if (runningOnRealAndroid) {
-      TestEntityType.IdField(results.head) must be (id)
-    }
-    val resultsTail = results.tail
-    if (runningOnRealAndroid) {
-      TestEntityType.IdField(resultsTail.head) must be (id2)
-    }
+    persistence.queryFieldNames must contain(BaseColumns._ID)
+    persistence.queryFieldNames must contain("age")
   }
 
   @Test
@@ -110,15 +70,25 @@ class SQLiteCrudTypeSpec extends MustMatchers with MyEntityTesting with CrudMock
     stub(crudContext.vars).toReturn(new ContextVars {})
     stub(crudContext.application).toReturn(application)
 
-    val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext)
+    val cursors = Buffer[Cursor]()
+    val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext) {
+      override def findAll(criteria: SQLiteCriteria) = {
+        val result = super.findAll(criteria)
+        val CursorStream(cursor, _) = result
+        cursors += cursor
+        result
+      }
+    }
     val writable = TestEntityType.newWritable
-    TestEntityType.copy(Unit, writable)
+    TestEntityType.copy(unitAsRef, writable)
     val id = persistence.save(None, writable)
     val uri = persistence.toUri(id)
-    val cursors = persistence.findAll(new SQLiteCriteria()) +: persistence.find(uri).toList
+    persistence.find(uri)
+    persistence.findAll(new SQLiteCriteria())
+    cursors.size must be (2)
     persistence.close()
-    for (cursor <- cursors) {
-      cursor must be ('closed)
+    for (cursor <- cursors.toList) {
+      cursor.isClosed must be (true)
     }
   }
 
@@ -140,7 +110,7 @@ class SQLiteCrudTypeSpec extends MustMatchers with MyEntityTesting with CrudMock
     listAdapter.getCount must be (0)
 
     val writable = TestEntityType.newWritable
-    TestEntityType.copy(Unit, writable)
+    TestEntityType.copy(unitAsRef, writable)
     val id = TestEntityType.withEntityPersistence(crudContext, _.save(None, writable))
     //it must have refreshed the listAdapter
     listAdapter.getCount must be (if (runningOnRealAndroid) 1 else 0)

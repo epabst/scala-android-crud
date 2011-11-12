@@ -5,7 +5,7 @@ import android.database.Cursor
 import android.content.ContentValues
 import com.github.triangle.Logging
 import common.Common
-import persistence.{SQLiteCriteria, CursorField}
+import persistence.{CursorStream, SQLiteCriteria, CursorField}
 import scala.None
 import collection.mutable.SynchronizedQueue
 import android.app.backup.BackupManager
@@ -26,21 +26,22 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudType, val crudContext: C
   private lazy val backupManager = new BackupManager(crudContext.context)
   private var cursors = new SynchronizedQueue[Cursor]
 
-  lazy val queryFieldNames: List[String] = CursorField.queryFieldNames(entityType)
+  lazy val persistedFields: List[CursorField[_]] = CursorField.persistedFields(entityType)
+  lazy val queryFieldNames: List[String] = persistedFields.map(_.columnName)
 
   private def toOption(string: String): Option[String] = if (string == "") None else Some(string)
 
-  def findAll(criteria: SQLiteCriteria): Cursor = {
+  def findAll(criteria: SQLiteCriteria): CursorStream = {
     debug("Finding each " + entityType.entityName + "'s " + queryFieldNames.mkString(", ") + " where " + criteria.selection.mkString(" and "))
     val cursor = database.query(entityType.tableName, queryFieldNames.toArray,
       toOption(criteria.selection.mkString(" AND ")).getOrElse(null), criteria.selectionArgs.toArray,
       criteria.groupBy.getOrElse(null), criteria.having.getOrElse(null), criteria.orderBy.getOrElse(null))
     cursors += cursor
-    cursor
+    CursorStream(cursor, persistedFields)
   }
 
   //Unit is provided here in the item list for the sake of PortableField.adjustment[SQLiteCriteria] fields
-  def findAll(uri: UriPath) = CursorStream(findAll(entityType.transformWithItem(new SQLiteCriteria, List(uri, Unit))))
+  def findAll(uri: UriPath) = findAll(entityType.transformWithItem(new SQLiteCriteria, List(uri, Unit)))
 
   private def notifyDataChanged() {
     backupManager.dataChanged()
@@ -93,32 +94,6 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudType, val crudContext: C
     cursors.map(_.close())
     database.close()
   }
-}
-
-case class CursorStream(cursor: Cursor) extends Stream[Cursor] {
-  private val cursorIterator = new CalculatedIterator[Cursor] {
-    def calculateNextValue() = {
-      if (cursor.moveToNext) {
-        Some(cursor)
-      } else {
-        cursor.close()
-        None
-      }
-    }
-  }
-
-  override def isEmpty = cursorIterator.isEmpty
-
-  override def length = cursor.getCount - (cursor.getPosition)
-
-  override def head = cursorIterator.head
-
-  override def tail = {
-    cursorIterator.next()
-    this
-  }
-
-  protected def tailDefined = cursor.getPosition < cursor.getCount - 1
 }
 
 class GeneratedDatabaseSetup(crudContext: CrudContext) extends SQLiteOpenHelper(crudContext.context, crudContext.application.nameId, null, 1) with Logging {
