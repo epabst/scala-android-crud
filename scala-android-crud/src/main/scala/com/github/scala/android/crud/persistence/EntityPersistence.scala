@@ -25,7 +25,7 @@ trait EntityPersistence extends PlatformTypes with Timing with ListenerHolder[Pe
     */
   def find(uri: UriPath): Option[AnyRef] = {
     val results = findAll(uri)
-    if (results.size > 1) throw new IllegalStateException("multiple results for " + uri + ": " + results.mkString(", "))
+    if (!results.isEmpty && !results.tail.isEmpty) throw new IllegalStateException("multiple results for " + uri + ": " + results.mkString(", "))
     results.headOption
   }
 
