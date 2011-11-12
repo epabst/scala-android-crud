@@ -18,7 +18,7 @@ trait GeneratedCrudType[T <: AnyRef] extends CrudType {
 
     def getCount: Int = seq.size
 
-    def getItemId(position: Int): ID = IdField(getItem(position))
+    def getItemId(position: Int): ID = position
 
     def getItem(position: Int) = seq(position)
 
