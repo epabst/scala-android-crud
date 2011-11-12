@@ -9,7 +9,6 @@ import PortableField._
 import com.github.scala.android.crud.view.ViewField._
 import com.github.scala.android.crud.ParentField._
 import com.github.scala.android.crud.testres.R
-import com.github.scala.android.crud.persistence.IdPk
 import com.github.scala.android.crud.persistence.CursorField._
 import com.github.scala.android.crud.view.FieldLayout
 import com.github.scala.android.crud._
@@ -31,75 +30,65 @@ class CrudUIGeneratorSpec extends Spec with MustMatchers {
     }
   }
 
-  describe("guessFieldInfo") {
+  describe("guessFieldInfos") {
     it("must handle a viewId name that does not exist") {
-      val fieldInfo = CrudUIGenerator.guessFieldInfo(viewId(classOf[R.id], "bogus", textView), List(classOf[R]))
+      val fieldInfo = CrudUIGenerator.guessFieldInfos(viewId(classOf[R.id], "bogus", textView), List(classOf[R])).head
       fieldInfo.id must be ("bogus")
     }
 
     it("must consider a ParentField displayable if it has a viewId field") {
-      val fieldInfo = CrudUIGenerator.guessFieldInfo(ParentField(MyCrudType) + viewId(classOf[R], "foo", longView), Seq(classOf[R]))
+      val fieldInfo = CrudUIGenerator.guessFieldInfos(ParentField(MyCrudType) + viewId(classOf[R], "foo", longView), Seq(classOf[R])).head
       fieldInfo.displayable must be (true)
     }
 
-    it("must not consider a ParentField displayable if it has no viewId field") {
-      val fieldInfo = CrudUIGenerator.guessFieldInfo(ParentField(MyCrudType), Seq(classOf[R]))
-      fieldInfo.displayable must be (false)
+    it("must not include a ParentField if it has no viewId field") {
+      val fieldInfos = CrudUIGenerator.guessFieldInfos(ParentField(MyCrudType), Seq(classOf[R]))
+      fieldInfos must be (Nil)
     }
 
-    it("must not consider adjustment fields displayable") {
-      val fieldInfo = CrudUIGenerator.guessFieldInfo(adjustment[String](_ + "foo"), Seq(classOf[R]))
-      fieldInfo.displayable must be (false)
+    it("must not include adjustment fields") {
+      val fieldInfos = CrudUIGenerator.guessFieldInfos(adjustment[String](_ + "foo"), Seq(classOf[R]))
+      fieldInfos must be (Nil)
     }
 
-    it("must not consider adjustmentInPlace fields displayable") {
-      val fieldInfo = CrudUIGenerator.guessFieldInfo(adjustmentInPlace[StringBuffer] { s => s.append("foo"); Unit }, Seq(classOf[R]))
-      fieldInfo.displayable must be (false)
+    it("must not include adjustmentInPlace fields") {
+      val fieldInfos = CrudUIGenerator.guessFieldInfos(adjustmentInPlace[StringBuffer] { s => s.append("foo"); Unit }, Seq(classOf[R]))
+      fieldInfos must be (Nil)
     }
 
-    it("must not consider the default primary key field displayable") {
-      val fieldInfo = CrudUIGenerator.guessFieldInfo(MyCrudType.IdField, Seq(classOf[R]))
-      fieldInfo.displayable must be (false)
+    it("must not include the default primary key field") {
+      val fieldInfos = CrudUIGenerator.guessFieldInfos(MyCrudType.IdField, Seq(classOf[R]))
+      fieldInfos must be (Nil)
     }
 
-    it("must not consider the default primary key field updateable") {
-      val fieldInfo = CrudUIGenerator.guessFieldInfo(MyCrudType.IdField, Seq(classOf[R]))
+    it("must not include a ForeignKey if it has no viewId field") {
+      val fieldInfo = CrudUIGenerator.guessFieldInfos(foreignKey(MyCrudType), Seq(classOf[R])).head
       fieldInfo.updateable must be (false)
     }
 
-    it("must not consider a ForeignKey updateable if it has no viewId field") {
-      val fieldInfo = CrudUIGenerator.guessFieldInfo(foreignKey(MyCrudType), Seq(classOf[R]))
-      fieldInfo.updateable must be (false)
-    }
-
-    it("must not consider adjustment fields updateable") {
-      val fieldInfo = CrudUIGenerator.guessFieldInfo(adjustment[String](_ + "foo"), Seq(classOf[R]))
-      fieldInfo.updateable must be (false)
-    }
-
-    it("must not consider adjustmentInPlace fields updateable") {
-      val fieldInfo = CrudUIGenerator.guessFieldInfo(adjustmentInPlace[StringBuffer] { s => s.append("foo"); Unit }, Seq(classOf[R]))
-      fieldInfo.updateable must be (false)
+    it("must detect multiple ViewFields in the same field") {
+      val fieldInfos = CrudUIGenerator.guessFieldInfos(viewId(R.id.foo, textView) + viewId(R.id.bar, textView), Seq(classOf[R.id]))
+      fieldInfos.map(_.id) must be (List("foo", "bar"))
     }
   }
 
   describe("fieldLayoutForHeader") {
     it("must show the display name") {
       val position = 0
-      val fieldLayout = CrudUIGenerator.fieldLayoutForHeader(ViewFieldInfo(Some("My Name"), FieldLayout.nameLayout, "foo", true, true), position)
+      val fieldLayout = CrudUIGenerator.fieldLayoutForHeader(ViewFieldInfo("My Name", FieldLayout.nameLayout, "foo", true, true), position)
       fieldLayout.attributes.find(_.key == "text").get.value.text must be ("My Name")
     }
 
     it("must put the first field on the left side of the screen") {
       val position = 0
-      val fieldLayout = CrudUIGenerator.fieldLayoutForHeader(ViewFieldInfo(None, FieldLayout.nameLayout, "foo", true, true), position)
+      val fieldLayout = CrudUIGenerator.fieldLayoutForHeader(ViewFieldInfo("Foo", FieldLayout.nameLayout, "foo", true, true), position)
       fieldLayout.attributes.find(_.key == "layout_width").get.value.text must be ("wrap_content")
       fieldLayout.attributes.find(_.key == "gravity").get.value.text must be ("left")
     }
 
     it("must put the second field on the right side of the screen") {
       val position = 1
-      val fieldLayout = CrudUIGenerator.fieldLayoutForHeader(ViewFieldInfo(None, FieldLayout.nameLayout, "foo", true, true), position)
+      val fieldLayout = CrudUIGenerator.fieldLayoutForHeader(ViewFieldInfo("Foo", FieldLayout.nameLayout, "foo", true, true), position)
       fieldLayout.attributes.find(_.key == "layout_width").get.value.text must be ("fill_parent")
       fieldLayout.attributes.find(_.key == "gravity").get.value.text must be ("right")
     }
@@ -108,14 +97,14 @@ class CrudUIGeneratorSpec extends Spec with MustMatchers {
   describe("fieldLayoutForRow") {
     it("must put the first field on the left side of the screen") {
       val position = 0
-      val fieldLayout = CrudUIGenerator.fieldLayoutForRow(ViewFieldInfo(None, FieldLayout.nameLayout, "foo", true, true), position)
+      val fieldLayout = CrudUIGenerator.fieldLayoutForRow(ViewFieldInfo("Foo", FieldLayout.nameLayout, "foo", true, true), position)
       fieldLayout.attributes.find(_.key == "layout_width").get.value.text must be ("wrap_content")
       fieldLayout.attributes.find(_.key == "gravity").get.value.text must be ("left")
     }
 
     it("must put the second field on the right side of the screen") {
       val position = 1
-      val fieldLayout = CrudUIGenerator.fieldLayoutForRow(ViewFieldInfo(None, FieldLayout.nameLayout, "foo", true, true), position)
+      val fieldLayout = CrudUIGenerator.fieldLayoutForRow(ViewFieldInfo("Foo", FieldLayout.nameLayout, "foo", true, true), position)
       fieldLayout.attributes.find(_.key == "layout_width").get.value.text must be ("fill_parent")
       fieldLayout.attributes.find(_.key == "gravity").get.value.text must be ("right")
     }

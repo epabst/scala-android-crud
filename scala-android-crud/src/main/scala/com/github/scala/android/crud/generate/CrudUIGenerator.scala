@@ -12,6 +12,7 @@ import AndroidResourceAnalyzer._
 import com.github.scala.android.crud.view.ViewField.{ViewIdNameField, ViewIdField}
 import com.github.scala.android.crud.{NamingConventions, CrudApplication, ParentField, CrudType}
 import com.github.scala.android.crud.common.{Common, PlatformTypes}
+import collection.immutable.List
 
 /**
  * A UI Generator for a CrudTypes.
@@ -95,7 +96,7 @@ object CrudUIGenerator extends PlatformTypes with Logging {
     val textAppearance = if (position < 2) "?android:attr/textAppearanceLarge" else "?android:attr/textAppearanceSmall"
     val gravity = if (position % 2 == 0) "left" else "right"
     val layoutWidth = if (position % 2 == 0) "wrap_content" else "fill_parent"
-    <TextView android:text={field.displayName.getOrElse("")} android:gravity={gravity}
+    <TextView android:text={field.displayName} android:gravity={gravity}
               android:layout_width={layoutWidth}
               android:layout_height="wrap_content"
               android:paddingRight="3sp"
@@ -159,7 +160,7 @@ object CrudUIGenerator extends PlatformTypes with Logging {
     val textAppearance = "?android:attr/textAppearanceLarge"
     val attributes = <EditText android:id={"@+id/" + field.id}/>.attributes
     <TableRow>
-      <TextView android:text={field.displayName.get + ":"} android:textAppearance={textAppearance} android:gravity={gravity}/>
+      <TextView android:text={field.displayName + ":"} android:textAppearance={textAppearance} android:gravity={gravity}/>
       {field.layout.editXml % attributes}
     </TableRow>
   }
@@ -173,7 +174,13 @@ object CrudUIGenerator extends PlatformTypes with Logging {
     </TableLayout>
   }
 
-  def guessFieldInfo(field: BaseField, rIdClasses: Seq[Class[_]]): ViewFieldInfo = {
+  case class NamedField(name: String, field: PortableField[_], displayName: String)
+
+  object NamedField {
+    def apply(name: String, viewField: PortableField[_]): NamedField = NamedField(name, viewField, FieldLayout.toDisplayName(name))
+  }
+
+  def guessFieldInfos(field: BaseField, rIdClasses: Seq[Class[_]]): List[ViewFieldInfo] = {
     val updateablePersistedFields = CursorField.updateablePersistedFields(field, rIdClasses)
     val persistedFieldOption = updateablePersistedFields.headOption
 
@@ -181,30 +188,31 @@ object CrudUIGenerator extends PlatformTypes with Logging {
     val viewIdNameFields = this.viewIdNameFields(field)
     val viewFieldsWithId = this.fieldsWithViewSubject(FieldList.toFieldList(viewIdFields))
     val otherViewFields = this.fieldsWithViewSubject(field).filterNot(viewFieldsWithId.contains)
-    val viewResourceIdNames = viewIdNameFields.map(_.viewResourceIdName) ++ viewIdFields.map(_.viewResourceId).map { id =>
-      findResourceFieldWithIntValue(rIdClasses, id).map(_.getName).getOrElse {
-        throw new IllegalStateException("Unable to find R.id with value " + id)
-      }
+    val namedViewFields = viewIdNameFields.map(f => NamedField(f.viewResourceIdName, f)) ++ viewIdFields.map { f =>
+      NamedField(findResourceFieldWithIntValue(rIdClasses, f.viewResourceId).map(_.getName).getOrElse {
+        throw new IllegalStateException("Unable to find R.id with value " + f.viewResourceId + " in " + rIdClasses.mkString(", "))
+      }, f)
     }
     val persistedFieldsWithTypes = updateablePersistedFields.map(p => p.toString + ":" + p.persistedType.valueManifest.erasure.getSimpleName)
-    println("viewIds: " + viewResourceIdNames + " tied to " +
+    println("viewIds: " + namedViewFields.map(_.name) + " tied to " +
             viewFieldsWithId + "  /  other views: " + otherViewFields +
             "  /  parentFields: " + ParentField.parentFields(field) +
             " / other persisted: " + persistedFieldsWithTypes)
-    val derivedId: Option[String] = viewResourceIdNames.headOption.orElse(persistedFieldOption.map(_.name))
-    val displayName = derivedId.map(FieldLayout.toDisplayName(_))
-    val fieldLayout = viewFields(field).headOption.map(_.defaultLayout).getOrElse(field.deepCollect {
-      case _: PortableField[Double] => FieldLayout.doubleLayout
-      case _: PortableField[String] => FieldLayout.nameLayout
-      case _: PortableField[Int] => FieldLayout.intLayout
-    }.head)
-    val displayable = !viewResourceIdNames.isEmpty
-    ViewFieldInfo(displayName, fieldLayout, id = derivedId.getOrElse("field" + random.nextInt()), displayable,
-      updateable = displayable && persistedFieldOption.isDefined)
+    val namedFields: List[NamedField] = if (namedViewFields.isEmpty) updateablePersistedFields.map(f => NamedField(f.name, f)) else namedViewFields
+    namedFields.map { namedField =>
+      val fieldLayout = viewFields(namedField.field).headOption.map(_.defaultLayout).getOrElse(namedField.field.deepCollect {
+        case _: PortableField[Double] => FieldLayout.doubleLayout
+        case _: PortableField[String] => FieldLayout.nameLayout
+        case _: PortableField[Int] => FieldLayout.intLayout
+      }.head)
+      val displayable = !namedViewFields.isEmpty
+      ViewFieldInfo(namedField.displayName, fieldLayout, namedField.name, displayable,
+        updateable = displayable && persistedFieldOption.isDefined)
+    }
   }
 
   def guessFieldInfos(crudType: CrudType): List[ViewFieldInfo] =
-    crudType.fields.map(guessFieldInfo(_, crudType.rIdClasses))
+    crudType.fields.flatMap(guessFieldInfos(_, crudType.rIdClasses))
 
   private def writeLayoutFile(name: String, xml: Elem) {
     writeXmlToFile(Path("res") / "layout" / (name + ".xml"), xml)
@@ -245,5 +253,4 @@ object CrudUIGenerator extends PlatformTypes with Logging {
     }
 }
 
-case class ViewFieldInfo(displayName: Option[String], layout: FieldLayout, id: String,
-                         displayable: Boolean, updateable: Boolean)
+case class ViewFieldInfo(displayName: String, layout: FieldLayout, id: String, displayable: Boolean, updateable: Boolean)

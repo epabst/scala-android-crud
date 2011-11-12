@@ -10,6 +10,7 @@ package com.github.scala.android.crud.testres;
 public final class R {
   public static final class id {
     public static final int foo = 123;
+    public static final int bar = 234;
   }
 
   public static final class layout {
