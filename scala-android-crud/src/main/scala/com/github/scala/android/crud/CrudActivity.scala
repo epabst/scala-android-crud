@@ -16,13 +16,18 @@ class CrudActivity(val entityType: CrudType, val application: CrudApplication) e
     super.onCreate(savedInstanceState)
 
     setContentView(entityType.entryLayout)
-    val contextItems = List(currentUriPath, crudContext, Unit)
-    future {
-      withPersistence { persistence =>
-        val readableOrUnit: AnyRef = persistence.find(currentUriPath).getOrElse(Unit)
-        val portableValue = entityType.copyFromItem(readableOrUnit :: contextItems)
-        runOnUiThread { portableValue.copyTo(this) }
+    val currentPath = currentUriPath
+    val contextItems = List(currentPath, crudContext, Unit)
+    if (entityType.IdField.getter(currentPath).isDefined) {
+      future {
+        withPersistence { persistence =>
+          val readableOrUnit: AnyRef = persistence.find(currentPath).getOrElse(Unit)
+          val portableValue = entityType.copyFromItem(readableOrUnit :: contextItems)
+          runOnUiThread { portableValue.copyTo(this) }
+        }
       }
+    } else {
+      entityType.copyFromItem(Unit :: contextItems, this)
     }
   }
 

@@ -29,7 +29,24 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers with MyEntityTesti
   val application = mock[CrudApplication]
 
   @Test
-  def shouldAllowAdding() {
+  def shouldSupportAddingWithoutUsingPersistence() {
+    val entityType = new MyEntityType(persistence, listAdapter)
+    val entity = mutable.Map[String,Any]("name" -> "Bob", "age" -> 25)
+    val uri = UriPath(entityType.entityName)
+    val activity = new CrudActivity(entityType, application) {
+      override lazy val currentAction = UpdateActionName
+      override def currentUriPath = uri
+      override def future[T](body: => T) = new ReadyFuture[T](body)
+    }
+    activity.onCreate(null)
+    entityType.copy(entity, activity)
+    activity.onPause()
+    verify(persistence).save(None, mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))
+    verify(persistence, never()).find(uri)
+  }
+
+  @Test
+  def shouldAddIfIdNotFound() {
     val entityType = new MyEntityType(persistence, listAdapter)
     val entity = mutable.Map[String,Any]("name" -> "Bob", "age" -> 25)
     val uri = UriPath(entityType.entityName)
