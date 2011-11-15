@@ -8,8 +8,10 @@ import org.scalatest.Spec
 import android.widget.ListAdapter
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.junit.Test
-import org.easymock.EasyMock._
+import org.hamcrest.CoreMatchers._
+import org.mockito.Mockito._
 import ParentField.foreignKey
+import org.mockito.Matchers
 
 /**
  * A behavior specification for {@link CrudType}.
@@ -19,7 +21,7 @@ import ParentField.foreignKey
  */
 
 @RunWith(classOf[RobolectricTestRunner])
-class GeneratedCrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with CrudEasyMockSugar {
+class GeneratedCrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with CrudMockitoSugar {
 
   @Test
   def itMustCreateListAdapterWithUriPathUsedForCriteria() {
@@ -34,17 +36,14 @@ class GeneratedCrudTypeSpec extends Spec with MustMatchers with MyEntityTesting 
       def valueFields = List(foreign)
       protected def createEntityPersistence(crudContext: CrudContext) = seqPersistence
     }
-    expecting {
-      val uri = UriPath(otherType.entityName, "123")
-      call(activity.currentUriPath).andStubReturn(uri)
-      call(seqPersistence.findAll(uri)).andReturn(List.empty)
-      call(activity.setListAdapter(notNull())).andAnswer(listAdapterCapture)
-      call(seqPersistence.entityType).andStubReturn(generatedType)
-    }
-    whenExecuting(seqPersistence, crudContext, activity) {
-      generatedType.setListAdapterUsingUri(seqPersistence, crudContext, activity)
-      val listAdapter = listAdapterCapture.params(0).asInstanceOf[ListAdapter]
-      listAdapter.getCount must be (0)
-    }
+    val uri = UriPath(otherType.entityName, "123")
+    stub(activity.currentUriPath).toReturn(uri)
+    when(seqPersistence.findAll(uri)).thenReturn(List.empty)
+    when(activity.setListAdapter(Matchers.argThat(notNullValue()))).thenAnswer(listAdapterCapture)
+    stub(seqPersistence.entityType).toReturn(generatedType)
+
+    generatedType.setListAdapterUsingUri(seqPersistence, crudContext, activity)
+    val listAdapter = listAdapterCapture.params(0).asInstanceOf[ListAdapter]
+    listAdapter.getCount must be (0)
   }
 }
