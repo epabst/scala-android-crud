@@ -46,7 +46,10 @@
       <uniqueVersion>false</uniqueVersion>
     </snapshotRepository>
   </distributionManagement>
-
+  <properties>
+    <!-- skip site:deploy because scala-tools hasn't set me up for this yet. -->
+    <maven.site.deploy.skip>true</maven.site.deploy.skip>
+  </properties>
   <modules>
     <module>scala-android-crud</module>
     <module>sample-app</module>
