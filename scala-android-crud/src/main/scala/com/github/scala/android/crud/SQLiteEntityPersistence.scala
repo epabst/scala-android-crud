@@ -32,9 +32,10 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudType, val crudContext: C
   private def toOption(string: String): Option[String] = if (string == "") None else Some(string)
 
   def findAll(criteria: SQLiteCriteria): CursorStream = {
-    debug("Finding each " + entityType.entityName + "'s " + queryFieldNames.mkString(", ") + " where " + criteria.selection.mkString(" and "))
+    val query = criteria.selection.mkString(" AND ")
+    info("Finding each " + entityType.entityName + "'s " + queryFieldNames.mkString(", ") + " where " + query)
     val cursor = database.query(entityType.tableName, queryFieldNames.toArray,
-      toOption(criteria.selection.mkString(" AND ")).getOrElse(null), criteria.selectionArgs.toArray,
+      toOption(query).getOrElse(null), criteria.selectionArgs.toArray,
       criteria.groupBy.getOrElse(null), criteria.having.getOrElse(null), criteria.orderBy.getOrElse(null))
     cursors += cursor
     CursorStream(cursor, persistedFields)

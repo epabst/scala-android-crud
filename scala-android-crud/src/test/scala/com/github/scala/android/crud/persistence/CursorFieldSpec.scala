@@ -19,6 +19,8 @@ import android.database.Cursor
  */
 @RunWith(classOf[RobolectricTestRunner])
 class CursorFieldSpec extends MustMatchers with EasyMockSugar {
+  val unitAsRef = Unit.asInstanceOf[AnyRef]
+
   @Test
   def shouldGetColumnsForQueryCorrectly() {
     val foreign = persisted[ID]("foreignID")
@@ -41,16 +43,23 @@ class CursorFieldSpec extends MustMatchers with EasyMockSugar {
   }
 
   @Test
-  def shouldGetCriteriaCorrectly() {
+  def shouldGetCriteriaCorrectlyForANumber() {
     val field = sqliteCriteria[Int]("age") + default(19)
-    val criteria: SQLiteCriteria = field.transform(new SQLiteCriteria, Unit)
+    val criteria: SQLiteCriteria = field.transform(new SQLiteCriteria, unitAsRef)
     criteria.selection must be (List("age=19"))
+  }
+
+  @Test
+  def shouldGetCriteriaCorrectlyForAString() {
+    val field = sqliteCriteria[String]("name") + default("John Doe")
+    val criteria: SQLiteCriteria = field.transform(new SQLiteCriteria, unitAsRef)
+    criteria.selection must be (List("name=\"John Doe\""))
   }
 
   @Test
   def shouldHandleMultipleSelectionCriteria() {
     val field = sqliteCriteria[Int]("age") + sqliteCriteria[Int]("alternateAge") + default(19)
-    val criteria: SQLiteCriteria = field.transform(new SQLiteCriteria, Unit)
+    val criteria: SQLiteCriteria = field.transform(new SQLiteCriteria, unitAsRef)
     criteria.selection.sorted must be (List("age=19", "alternateAge=19"))
   }
 }

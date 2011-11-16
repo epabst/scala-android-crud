@@ -47,7 +47,14 @@ object CursorField extends PlatformTypes {
   def queryFieldNames(fields: FieldList): List[String] = persistedFields(fields).map(_.columnName)
 
   def sqliteCriteria[T](name: String): PortableField[T] =
-    PortableField.transformOnlyDirect[SQLiteCriteria,T](criteria => v => criteria.copy(selection = (name + "=" + v) +: criteria.selection), c => c)
+    PortableField.transformOnlyDirect[SQLiteCriteria,T](criteria => v => {
+      val formattedValue = v match {
+        case s: String => "\"" + s + "\""
+        case n => n.toString
+      }
+      criteria.copy(selection = (name + "=" + formattedValue) +: criteria.selection)
+    }, c => c)
+
 }
 
 import CursorField._
