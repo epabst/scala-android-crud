@@ -21,7 +21,8 @@ trait SeqEntityPersistence[T <: AnyRef] extends EntityPersistence {
 }
 
 trait ListBufferEntityPersistence[T <: AnyRef] extends SeqEntityPersistence[T] {
-  private object IdField extends Field[ID](field[IdPk,ID](_.id, e => e.id = _) + CursorField.PersistedId)
+  private object IdField extends Field[ID](readOnly[IdPk,ID](_.id) + transformOnly[IdPk,ID](e => e.id(_)) +
+      writeOnly((e: MutableIdPk) => e.id = _) + CursorField.PersistedId)
   val buffer = mutable.ListBuffer[T]()
 
   var nextId = 10000L

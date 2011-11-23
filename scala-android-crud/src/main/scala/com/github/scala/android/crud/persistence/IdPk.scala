@@ -10,5 +10,16 @@ import com.github.scala.android.crud.common.PlatformTypes
  */
 
 trait IdPk extends PlatformTypes {
+  def id: Option[ID]
+
+  def id(newId: Option[ID]): IdPk
+}
+
+trait MutableIdPk extends IdPk {
   var id: Option[ID] = None
+
+  def id(newId: Option[ID]) = {
+    id = newId
+    this
+  }
 }

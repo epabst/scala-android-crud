@@ -6,7 +6,7 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.Spec
 import com.github.scala.android.crud.action.UriPath
-import persistence.IdPk
+import persistence.MutableIdPk
 
 /**
  * A behavior specification for [[com.github.scala.android.crud.persistence.EntityPersistence]].
@@ -16,7 +16,7 @@ import persistence.IdPk
  */
 @RunWith(classOf[JUnitRunner])
 class CrudPersistenceSpec extends Spec with MustMatchers with MyEntityTesting {
-  class MyEntity(givenId: Option[PlatformTypes#ID] = None) extends IdPk {
+  class MyEntity(givenId: Option[PlatformTypes#ID] = None) extends MutableIdPk {
     this.id = givenId
   }
   val persistence = new SeqCrudPersistence[MyEntity] {
