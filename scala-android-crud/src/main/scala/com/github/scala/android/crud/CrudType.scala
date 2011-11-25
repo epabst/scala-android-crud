@@ -4,7 +4,6 @@ import action._
 import action.UriPath
 import android.view.View
 import com.github.triangle.JavaUtil._
-import android.database.DataSetObserver
 import android.widget.{ListAdapter, BaseAdapter}
 import Action._
 import android.app.{Activity, ListActivity}
@@ -245,11 +244,15 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
       trace("Added value at position " + position + " to the cache for " + activity)
     }
 
-    def cacheClearingObserver(activity: ListActivity) = new DataSetObserver {
-      override def onInvalidated() {
+    def cacheClearingPersistenceListener(activity: ListActivity) = new PersistenceListener {
+      def onSave(id: this.type#ID) {
         trace("Clearing ListView cache in " + activity + " since DataSet was invalidated")
         activity.runOnUiThread { activity.getListView.setTag(null) }
-        super.onInvalidated()
+      }
+
+      def onDelete(uri: UriPath) {
+        trace("Clearing ListView cache in " + activity + " since DataSet was invalidated")
+        activity.runOnUiThread { activity.getListView.setTag(null) }
       }
     }
 
@@ -290,7 +293,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
     setListAdapter(findAllResult, List(activity.currentUriPath, crudContext, Unit), activity)
   }
 
-  def setListAdapter(findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: ListActivity)
+  def setListAdapter(findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: CrudListActivity)
 
   def refreshAfterDataChanged(listAdapter: ListAdapter)
 

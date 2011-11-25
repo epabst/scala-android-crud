@@ -32,7 +32,7 @@ trait GeneratedCrudType[T <: AnyRef] extends CrudType {
     }
   }
 
-  def setListAdapter(findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: ListActivity) {
+  def setListAdapter(findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: CrudListActivity) {
     activity.setListAdapter(new SeqPersistenceAdapter[T](findAllResult, contextItems, activity))
   }
 

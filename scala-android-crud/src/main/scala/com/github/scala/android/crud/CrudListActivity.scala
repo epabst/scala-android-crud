@@ -1,6 +1,6 @@
 package com.github.scala.android.crud
 
-import _root_.android.widget.ListView
+import android.widget.{ListAdapter, ListView}
 import _root_.android.app.ListActivity
 import action.{UriPath, Action}
 import android.os.Bundle
@@ -48,6 +48,14 @@ class CrudListActivity(val entityType: CrudType, val application: CrudApplicatio
     }
   }
 
+  override def setListAdapter(adapter: ListAdapter) {
+    super.setListAdapter(adapter)
+    adapter match {
+      case adapterCaching: entityType.AdapterCaching =>
+        entityType.addPersistenceListener(adapterCaching.cacheClearingPersistenceListener(this), this)
+      case _ =>
+    }
+  }
 
   override def onDestroy() {
     entityType.destroyContextVars(crudContext.vars)

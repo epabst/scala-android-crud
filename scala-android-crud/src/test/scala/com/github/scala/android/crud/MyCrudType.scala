@@ -1,8 +1,6 @@
 package com.github.scala.android.crud
 
-import res.R
 import com.github.triangle.BaseField
-import android.app.ListActivity
 import android.widget.ListAdapter
 import persistence.CursorField.persisted
 
@@ -21,7 +19,7 @@ class MyCrudType extends CrudType with StubEntityType {
 
   def refreshAfterDataChanged(listAdapter: ListAdapter) {}
 
-  def setListAdapter(findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: ListActivity) {
+  def setListAdapter(findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: CrudListActivity) {
     throw new UnsupportedOperationException
   }
 

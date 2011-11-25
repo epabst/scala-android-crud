@@ -2,7 +2,6 @@ package com.github.scala.android.crud
 
 import android.content.{ContentValues, Context}
 import android.view.View
-import android.app.ListActivity
 import android.database.Cursor
 import android.widget.{CursorAdapter, ListAdapter, ResourceCursorAdapter}
 import persistence.{CursorStream, SQLiteUtil}
@@ -21,12 +20,10 @@ trait SQLiteCrudType extends CrudType {
 
   protected def createEntityPersistence(crudContext: CrudContext) = new SQLiteEntityPersistence(this, crudContext)
 
-  def setListAdapter(findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: ListActivity) {
+  def setListAdapter(findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: CrudListActivity) {
     val CursorStream(cursor, _) = findAllResult
     activity.startManagingCursor(cursor)
     activity.setListAdapter(new ResourceCursorAdapter(activity, rowLayout, cursor) with AdapterCaching {
-      cursor.registerDataSetObserver(cacheClearingObserver(activity))
-
       def bindView(view: View, context: Context, cursor: Cursor) {
         bindViewFromCacheOrItems(view, transform(Map[String,Any](), cursor) :: contextItems, cursor.getPosition, activity)
       }

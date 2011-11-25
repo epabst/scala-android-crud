@@ -9,7 +9,6 @@ import view.ViewField._
 import persistence.CursorField._
 import android.widget.ListAdapter
 import res.R
-import android.app.ListActivity
 
 /**
  * An object mother pattern for getting CrudType instances.
@@ -40,7 +39,7 @@ trait MyEntityTesting extends Logging {
 
     protected def createEntityPersistence(crudContext: CrudContext) = persistence
 
-    def setListAdapter(findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: ListActivity) {
+    def setListAdapter(findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: CrudListActivity) {
       activity.setListAdapter(listAdapter)
     }
 

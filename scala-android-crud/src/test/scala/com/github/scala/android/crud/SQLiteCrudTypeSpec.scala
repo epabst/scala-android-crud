@@ -10,13 +10,13 @@ import com.github.triangle._
 import persistence.CursorField._
 import persistence.{CursorStream, SQLiteCriteria}
 import PortableField._
-import android.widget.ListAdapter
 import scala.collection._
 import mutable.Buffer
 import org.mockito.Mockito
 import Mockito._
 import android.app.Activity
 import android.database.{Cursor, DataSetObserver}
+import android.widget.{ListView, ListAdapter}
 
 /**
  * A test for {@link SQLiteCrudType}.
@@ -94,6 +94,7 @@ class SQLiteCrudTypeSpec extends MustMatchers with MyEntityTesting with CrudMock
 
   @Test
   def shouldRefreshCursorWhenDeletingAndSaving() {
+    val listView = mock[ListView]
     val activity = new CrudListActivity(TestEntityType, application) {
       private var listAdapter: ListAdapter = _
       override def setListAdapter(adapter: ListAdapter) {
@@ -101,6 +102,8 @@ class SQLiteCrudTypeSpec extends MustMatchers with MyEntityTesting with CrudMock
         this.listAdapter = adapter
       }
       override def getListAdapter = listAdapter
+
+      override def getListView = listView
     }
     val observer = mock[DataSetObserver]
 
