@@ -12,18 +12,20 @@ import ValueFormat._
 import AndroidResourceAnalyzer._
 import com.github.triangle.Converter._
 import android.widget._
-import collection.immutable
 
 /** A Map of ViewKey with values.
   * Wraps a map so that it is distinguished from persisted fields.
   */
-case class ViewKeyMap(map: Map[PlatformTypes#ViewKey,Any])
-        extends immutable.Map[PlatformTypes#ViewKey,Any] with immutable.MapLike[PlatformTypes#ViewKey,Any,ViewKeyMap] {
-  override def empty = ViewKeyMap(Map.empty[PlatformTypes#ViewKey,Any])
-  override def get(key: PlatformTypes#ViewKey) = map.get(key)
-  override def iterator = map.iterator
-  override def -(key: PlatformTypes#ViewKey) = ViewKeyMap(map - key)
-  override def +[B1 >: Any](kv: (PlatformTypes#ViewKey, B1)) = ViewKeyMap(map + kv)
+case class ViewKeyMap(map: Map[PlatformTypes#ViewKey,Any]) {
+  def get(key: PlatformTypes#ViewKey) = map.get(key)
+  def iterator = map.iterator
+  def -(key: PlatformTypes#ViewKey) = ViewKeyMap(map - key)
+  def +[B1 >: Any](kv: (PlatformTypes#ViewKey, B1)) = ViewKeyMap(map + kv)
+}
+
+object ViewKeyMap {
+  def empty = ViewKeyMap()
+  def apply(elems: (PlatformTypes#ViewKey,Any)*): ViewKeyMap = new ViewKeyMap(Map(elems: _*))
 }
 
 /**
@@ -40,7 +42,7 @@ class ViewField[T](val defaultLayout: FieldLayout, dataField: PortableField[T]) 
 object ViewField extends PlatformTypes {
   /** PortableField for a View resource within a given parent View */
   protected abstract class BaseViewIdField[T](childViewField: PortableField[T])
-          extends FieldWithDelegate[T] with TransformerUsingSetter[T] {
+          extends FieldWithDelegate[T] {
     protected def viewResourceIdOpt: Option[ViewKey]
     protected def viewResourceIdOrError: ViewKey
 
@@ -67,6 +69,11 @@ object ViewField extends PlatformTypes {
     def setter = viewKeyMapField.setter orElse {
       case ChildView(childView) if childViewField.setter.isDefinedAt(childView) =>
         childViewField.setter(childView)
+    }
+
+    def transformer[S <: AnyRef]: PartialFunction[S,Option[T] => S] = viewKeyMapField.transformer[S].orElse[S,Option[T] => S] {
+      case ChildView(childView) if childViewField.transformer.isDefinedAt(childView) =>
+        childViewField.transformer[View](childView).andThen[S](_.asInstanceOf[S])
     }
   }
 

@@ -15,6 +15,7 @@ import com.github.scala.android.crud.action.UriPath
 import android.widget._
 import java.util.{Locale, GregorianCalendar, Calendar, Arrays}
 import com.github.triangle.Getter
+import com.github.triangle.Getter._
 
 /**
  * A behavior specification for {@link ViewField}.
@@ -39,6 +40,13 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
       viewId(101, textView) +
       viewId(102, Getter[MyView,String](v => v.status).withSetter(v => v.status = _, noSetterForEmpty))
     stringField must not be (null)
+  }
+
+  @Test
+  def itMustPopulateAViewKeyMap() {
+    val stringField = persisted[String]("name") + viewId(101, textView)
+    val map = stringField.transform(ViewKeyMap(), Map("name" -> "George"))
+    map must be (ViewKeyMap(101 -> "George"))
   }
 
   @Test
