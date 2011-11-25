@@ -5,7 +5,6 @@ import common.Common
 import scala.collection.mutable
 import mutable.Map
 import com.github.triangle._
-import PortableField._
 import view.ViewField._
 import persistence.CursorField._
 import android.widget.ListAdapter
@@ -32,7 +31,7 @@ trait MyEntityTesting extends Logging {
       persisted[String]("name") + viewId(R.id.name, textView),
       persisted[Int]("age") + viewId(R.id.age, intView),
       //here to test a non-UI field
-      persisted[String]("uri") + readOnly[UriPath,String](u => u.toString))
+      persisted[String]("uri") + Getter[UriPath,String](u => Some(u.toString)))
 
 
     override def rLayoutClasses = classOf[testres.R.layout] +: super.rLayoutClasses

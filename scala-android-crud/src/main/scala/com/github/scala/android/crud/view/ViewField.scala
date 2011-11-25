@@ -44,10 +44,9 @@ object ViewField extends PlatformTypes {
     protected def viewResourceIdOpt: Option[ViewKey]
     protected def viewResourceIdOrError: ViewKey
 
-    lazy val viewKeyMapField =
+    lazy val viewKeyMapField: PortableField[T] =
       viewResourceIdOpt.map { key =>
-        readOnly[ViewKeyMap,T](_.get(key).map(_.asInstanceOf[T])) +
-                transformOnlyDirect[ViewKeyMap,T](map => value => map + (key -> value), _ - key)
+        Getter[ViewKeyMap,T](_.get(key).map(_.asInstanceOf[T])).withTransformer(map => value => map + (key -> value), _ - key)
       }.getOrElse(emptyField)
 
     object ChildView {
@@ -90,7 +89,7 @@ object ViewField extends PlatformTypes {
   }
 
   val textView: ViewField[String] = new ViewField[String](nameLayout,
-    fieldDirect[TextView,String](v => toOption(v.getText.toString.trim), v => v.setText(_), _.setText(""))) {
+    Getter[TextView,String](v => toOption(v.getText.toString.trim)).withSetter(v => v.setText(_), _.setText(""))) {
     override def toString = "textView"
   }
   def textViewWithInputType(inputType: String) = new ViewField[String](textLayout(inputType), textView)
@@ -101,7 +100,7 @@ object ViewField extends PlatformTypes {
   lazy val longView: PortableField[Long] = new ViewField[Long](longLayout, formatted[Long](textView))
   /** Specifically an EditText view in order to get different behavior compared to a plain TextView. */
   val editTextView: ViewField[String] = new ViewField[String](nameLayout,
-    fieldDirect[EditText,String](v => toOption(v.getText.toString.trim), v => v.setText(_), _.setText(""))) {
+    Getter[EditText,String](v => toOption(v.getText.toString.trim)).withSetter(v => v.setText(_), _.setText(""))) {
     override def toString = "editTextView"
   }
 
@@ -121,14 +120,14 @@ object ViewField extends PlatformTypes {
   private def toOption(string: String): Option[String] = if (string == "") None else Some(string)
 
   val calendarDateView: PortableField[Calendar] = new ViewField[Calendar](datePickerLayout,
-    setter[Calendar] {
+    Setter[Calendar] {
       case view: EditText => _.foreach(value => view.setText(calendarValueFormat.toString(value)))
       case view: TextView => _.foreach(value => view.setText(calendarDisplayValueFormat.toString(value)))
       case picker: DatePicker => valueOpt =>
         val calendar = valueOpt.getOrElse(Calendar.getInstance())
         picker.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
-    } + getter(formatted(calendarValueFormat, textView).getter) +
-            readOnly((p: DatePicker) => Some(new GregorianCalendar(p.getYear, p.getMonth, p.getDayOfMonth)))) {
+    } + Getter(formatted(calendarValueFormat, textView).getter) +
+            Getter((p: DatePicker) => Some(new GregorianCalendar(p.getYear, p.getMonth, p.getDayOfMonth)))) {
     override def toString = "calendarDateView"
   }
 
@@ -139,7 +138,7 @@ object ViewField extends PlatformTypes {
     * @param positionFinder a function that takes a value and returns its position in the Adapter
     */
   private[view] def adapterViewField[T,A <: Adapter](adapterFactory: AdapterView[A] => A, positionFinder: T => Int): PortableField[T] = {
-    field[AdapterView[A], T](v => Option(v.getSelectedItem.asInstanceOf[T]), adapterView => valueOpt => {
+    Getter[AdapterView[A], T](v => Option(v.getSelectedItem.asInstanceOf[T])).withSetter(adapterView => valueOpt => {
       //don't do it again if already done from a previous time
       if (adapterView.getAdapter == null) {
         val adapter: A = adapterFactory(adapterView)
@@ -164,7 +163,5 @@ object ViewField extends PlatformTypes {
     }
   }
 
-  def uriIdField(entityName: String): FieldGetter[UriPath,ID] = {
-    PortableField.readOnly[UriPath,ID](_.findId(entityName))
-  }
+  def uriIdField(entityName: String): FieldGetter[UriPath,ID] = Getter[UriPath,ID](_.findId(entityName))
 }

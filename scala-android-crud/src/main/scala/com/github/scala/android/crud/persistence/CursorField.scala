@@ -15,7 +15,7 @@ case class SQLiteCriteria(selection: List[String] = Nil, selectionArgs: List[Str
 
 object CursorField extends PlatformTypes {
   def bundleField[T](name: String)(implicit persistedType: PersistedType[T]) =
-    fieldDirect[Bundle,T](b => persistedType.getValue(b, name), b => v => persistedType.putValue(b, name, v)) +
+    Getter[Bundle,T](b => persistedType.getValue(b, name)).withSetter(b => v => persistedType.putValue(b, name, v), noSetterForEmpty) +
     mapField[T](name)
 
   def persisted[T](name: String)(implicit persistedType: PersistedType[T]): CursorField[T] = {
@@ -47,13 +47,13 @@ object CursorField extends PlatformTypes {
   def queryFieldNames(fields: FieldList): List[String] = persistedFields(fields).map(_.columnName)
 
   def sqliteCriteria[T](name: String): PortableField[T] =
-    PortableField.transformOnlyDirect[SQLiteCriteria,T](criteria => v => {
+    Transformer((criteria: SQLiteCriteria) => (v: T) => {
       val formattedValue = v match {
         case s: String => "\"" + s + "\""
         case n => n.toString
       }
       criteria.copy(selection = (name + "=" + formattedValue) +: criteria.selection)
-    }, c => c)
+    }, noTransformerForEmpty)
 
 }
 
@@ -63,8 +63,8 @@ import CursorField._
  * Also supports accessing a scala Map (mutable.Map for writing) using the same name.
  */
 class CursorField[T](val name: String)(implicit val persistedType: PersistedType[T]) extends DelegatingPortableField[T] with Logging {
-  protected val delegate =
-    readOnly[Cursor,T](getFromCursor) + writeOnlyDirect[ContentValues,T](setIntoContentValues) +
+  protected val delegate = Getter[Cursor,T](getFromCursor) +
+    Setter((c: ContentValues) => (value: T) => persistedType.putValue(c, columnName, value), noSetterForEmpty) +
     bundleField[T](name)
 
   lazy val columnName = SQLiteUtil.toNonReservedWord(name)
@@ -78,8 +78,6 @@ class CursorField[T](val name: String)(implicit val persistedType: PersistedType
       None
     }
   }
-
-  private def setIntoContentValues(contentValues: ContentValues)(value: T) { persistedType.putValue(contentValues, columnName, value) }
 
   override def toString = "persisted(\"" + name + "\")"
 }

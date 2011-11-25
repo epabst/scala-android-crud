@@ -2,9 +2,8 @@ package com.github.scala.android.crud
 
 import action.UriPath
 import common.Common
-import com.github.triangle.PortableField._
-import com.github.triangle.FieldList
 import persistence._
+import com.github.triangle.{Setter, Getter, FieldList}
 
 /**
  * An EntityPersistence for a CrudType.
@@ -22,8 +21,8 @@ trait CrudPersistence extends EntityPersistence {
 
   def toUri(id: ID) = entityType.toUri(id)
 
-  private lazy val idPkField = entityType.IdField + readOnly[IdPk,ID](_.id) +
-    transformOnly[IdPk,ID](e => e.id(_)) + writeOnly[MutableIdPk,ID](e => e.id = _)
+  private lazy val idPkField = entityType.IdField + Getter[IdPk,ID](_.id).withTransformer(e => e.id(_)) +
+    Setter((e: MutableIdPk) => e.id = _)
   private lazy val fieldsIncludingIdPk = FieldList((idPkField +: entityType.fields): _*)
 
   def find[T <: AnyRef](uri: UriPath, instantiateItem: => T): Option[T] =

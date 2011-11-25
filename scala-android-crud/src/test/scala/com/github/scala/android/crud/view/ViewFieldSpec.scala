@@ -14,6 +14,7 @@ import org.mockito.Mockito._
 import com.github.scala.android.crud.action.UriPath
 import android.widget._
 import java.util.{Locale, GregorianCalendar, Calendar, Arrays}
+import com.github.triangle.Getter
 
 /**
  * A behavior specification for {@link ViewField}.
@@ -36,7 +37,7 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
     val stringField =
       persisted[String]("name") +
       viewId(101, textView) +
-      viewId(102, fieldDirect[MyView,String](v => v.status, v => v.status = _))
+      viewId(102, Getter[MyView,String](v => v.status).withSetter(v => v.status = _, noSetterForEmpty))
     stringField must not be (null)
   }
 
@@ -51,7 +52,7 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
     stub(viewGroup.findViewById(103)).toReturn(view3)
     val stringField =
       viewId(101, textView) +
-      viewId(102, fieldDirect[TextView,String](v => Option(v.getText.toString), v => v.setText(_), _.setText("Please Fill")))
+      viewId(102, Getter[TextView,String](v => Option(v.getText.toString)).withSetter(v => v.setText(_), _.setText("Please Fill")))
     stringField.setValue(viewGroup, None)
     verify(view1).setText("")
     verify(view2).setText("Please Fill")
@@ -66,10 +67,9 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
     val group = mock[View]
     val view = mock[TextView]
     stub(group.findViewById(56)).toReturn(view)
-    val stringField = fieldDirect[MyEntity,String](e => e.string, e => e.string = _) +
-      viewId(56, fieldDirect[Spinner,String](
-        _ => throw new IllegalStateException("must not be called"),
-        _ => throw new IllegalStateException("must not be called")))
+    val stringField = Getter[MyEntity,String](e => e.string).withSetter(e => e.string = _, noSetterForEmpty) +
+      viewId(56, Getter[Spinner,String](_ => throw new IllegalStateException("must not be called")).
+        withSetter(_ => throw new IllegalStateException("must not be called")))
     val myEntity1 = new MyEntity("my1", 1)
     stringField.copy(myEntity1, group) //does nothing
     stringField.copy(group, myEntity1) //does nothing
@@ -77,10 +77,9 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
 
   @Test
   def itMustOnlyCopyToAndFromViewByIdIfIdIsFound() {
-    val stringField = fieldDirect[MyEntity,String](e => e.string, e => e.string = _) +
-      viewId(56, fieldDirect[Spinner,String](
-        _ => throw new IllegalStateException("must not be called"),
-        _ => throw new IllegalStateException("must not be called")))
+    val stringField = Getter[MyEntity,String](e => e.string).withSetter(e => e.string = _, noSetterForEmpty) +
+      viewId(56, Getter[Spinner,String](_ => throw new IllegalStateException("must not be called")).
+        withSetter(_ => throw new IllegalStateException("must not be called")))
     val myEntity1 = new MyEntity("my1", 1)
     val group = new LinearLayout(context)
     val view = new Spinner(context)
@@ -92,7 +91,7 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
 
   @Test
   def itMustHandleUnparseableValues() {
-    val intField = intView + fieldDirect[MyEntity,Int](e => e.number, e => e.number = _)
+    val intField = intView + Getter[MyEntity,Int](e => e.number).withSetter(e => e.number = _, noSetterForEmpty)
     val view = new TextView(context)
     view.setText("twenty")
     intField.getter(view) must be (None)

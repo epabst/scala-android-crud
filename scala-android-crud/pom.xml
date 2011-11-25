@@ -103,7 +103,7 @@
     <dependency>
       <groupId>com.github.epabst.triangle</groupId>
       <artifactId>triangle</artifactId>
-      <version>0.5</version>
+      <version>0.6-SNAPSHOT</version>
     </dependency>
 
     <dependency>
