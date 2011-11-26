@@ -25,7 +25,6 @@ class CrudListActivity(val entityType: CrudType, val application: CrudApplicatio
 
     setContentView(entityType.listLayout)
 
-    val uriPath = currentUriPath
     val view = getListView;
 		view.setHeaderDividersEnabled(true);
 		view.addHeaderView(getLayoutInflater.inflate(entityType.headerLayout, null));
@@ -38,13 +37,29 @@ class CrudListActivity(val entityType: CrudType, val application: CrudApplicatio
 
     entityType.setListAdapterUsingUri(crudContext, this)
     future {
-      //copy each parent Entity's data to the Activity if identified in the currentUriPath
-      val portableValues: List[PortableValue] = entityType.parentEntities.flatMap(_ match {
-        case parentType: CrudType => parentType.copyFromPersistedEntity(uriPath, crudContext)
-      })
-      runOnUiThread {
-        portableValues.foreach(_.copyTo(this))
-      }
+      populateFromParentEntities()
+      entityType.addPersistenceListener(new PersistenceListener {
+        def onDelete(uri: UriPath) {
+          //Some of the parent fields may be calculated from the children
+          populateFromParentEntities()
+        }
+
+        def onSave(id: this.type#ID) {
+          //Some of the parent fields may be calculated from the children
+          populateFromParentEntities()
+        }
+      }, this)
+    }
+  }
+
+  private def populateFromParentEntities() {
+    val uriPath = currentUriPath
+    //copy each parent Entity's data to the Activity if identified in the currentUriPath
+    val portableValues: List[PortableValue] = entityType.parentEntities.flatMap(_ match {
+      case parentType: CrudType => parentType.copyFromPersistedEntity(uriPath, crudContext)
+    })
+    runOnUiThread {
+      portableValues.foreach(_.copyTo(this))
     }
   }
 
