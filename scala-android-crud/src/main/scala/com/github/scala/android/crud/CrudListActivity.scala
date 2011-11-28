@@ -101,7 +101,7 @@ class CrudListActivity(val entityType: CrudType, val application: CrudApplicatio
     true
   }
 
-  protected def applicableActions = entityType.getListActions(application)
+  protected def normalActions = entityType.getListActions(application)
 
   override def onListItemClick(l: ListView, v: View, position: Int, id: ID) {
     if (id >= 0) {

@@ -50,7 +50,7 @@ class CrudActivity(val entityType: CrudType, val application: CrudApplication) e
     } catch { case e => error("onPause: Unable to store " + writable, e) }
   }
 
-  protected def applicableActions = entityType.getEntityActions(application).filter {
+  protected def normalActions = entityType.getEntityActions(application).filter {
     case action: EntityAction => action.entityName != entityType.entityName || action.action != currentAction
     case _ => true
   }

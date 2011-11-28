@@ -2,12 +2,11 @@ package com.github.scala.android.crud
 
 import action.{UriPath, ContextVars}
 import org.junit.runner.RunWith
-import persistence.IdPk
+import persistence.CursorField
 import scala.collection.mutable
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.Spec
-import persistence.CursorField._
 import org.mockito._
 import Mockito._
 import Matchers._
@@ -92,7 +91,7 @@ class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with Crud
     val persistence = mock[CrudPersistence]
     val application = mock[CrudApplication]
     val listAdapter = mock[ListAdapter]
-    var parentEntity = new MyEntityType(persistence, listAdapter)
+    val parentEntity = new MyEntityType(persistence, listAdapter)
     val childEntity = new MyEntityType(persistence, listAdapter) {
       override lazy val valueFields = ParentField(parentEntity) :: super.valueFields
     }
@@ -105,21 +104,21 @@ class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with Crud
       List(parentEntity.updateAction.get, childEntity2.listAction, childEntity.createAction.get))
   }
 
-  it("must delete with undo possibility") {
+  it("must delete with undo possibility which must be closable") {
     val persistence = mock[CrudPersistence]
     val listAdapter = mock[ListAdapter]
     val activity = mock[CrudActivity]
     val crudContext = mock[CrudContext]
     stub(crudContext.vars).toReturn(new ContextVars {})
-    var entity = new MyEntityType(persistence, listAdapter)
+    val entity = new MyEntityType(persistence, listAdapter)
     val readable = mutable.Map[String,Any]()
     val uri = UriPath(entity.entityName) / 345L
     stub(activity.crudContext).toReturn(crudContext)
     stub(persistence.find(uri)).toReturn(Some(readable))
-    stub(activity.addUndoableDelete(eql(entity), notNull.asInstanceOf[Undoable[ID]])).toAnswer(answerWithInvocation { invocationOnMock =>
+    stub(activity.allowUndo(notNull.asInstanceOf[Undoable])).toAnswer(answerWithInvocation { invocationOnMock =>
       val currentArguments = invocationOnMock.getArguments
-      val undoable = currentArguments(1).asInstanceOf[Undoable[ID]]
-      undoable.close()
+      val undoable = currentArguments(0).asInstanceOf[Undoable]
+      undoable.closeAction.foreach(_.invoke(uri, activity))
     })
     entity.startDelete(uri, activity)
     verify(persistence).delete(uri)
@@ -130,20 +129,21 @@ class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with Crud
     val activity = mock[CrudActivity]
     val crudContext = mock[CrudContext]
     val listAdapter = mock[ListAdapter]
-    var entity = new MyEntityType(persistence, listAdapter)
-    val readable = mutable.Map[String,Any]("name" -> "George")
+    val entity = new MyEntityType(persistence, listAdapter)
+    val readable = mutable.Map[String,Any](CursorField.idFieldName -> 345L, "name" -> "George")
     val uri = UriPath(entity.entityName) / 345L
-    val id2 = 444L
     stub(activity.crudContext).toReturn(crudContext)
-    stub(crudContext.vars).toReturn(new ContextVars {})
+    val vars = new ContextVars {}
+    stub(crudContext.vars).toReturn(vars)
+    stub(activity.variables).toReturn(vars.variables)
     stub(persistence.find(uri)).toReturn(Some(readable))
-    when(persistence.save(None, mutable.Map("name" -> "George"))).thenReturn(id2)
-    when(activity.addUndoableDelete(eql(entity), notNull.asInstanceOf[Undoable[ID]])).thenAnswer(answerWithInvocation { invocationOnMock =>
+    when(activity.allowUndo(notNull.asInstanceOf[Undoable])).thenAnswer(answerWithInvocation { invocationOnMock =>
       val currentArguments = invocationOnMock.getArguments
-      val undoable = currentArguments(1).asInstanceOf[Undoable[ID]]
-      undoable.undo() must be(id2)
+      val undoable = currentArguments(0).asInstanceOf[Undoable]
+      undoable.undoAction.invoke(uri, activity)
     })
     entity.startDelete(uri, activity)
     verify(persistence).delete(uri)
+    verify(persistence).save(Some(345L), mutable.Map(CursorField.idFieldName -> 345L, "name" -> "George"))
   }
 }

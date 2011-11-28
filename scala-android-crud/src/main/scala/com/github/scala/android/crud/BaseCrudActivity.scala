@@ -1,6 +1,6 @@
 package com.github.scala.android.crud
 
-import action.{ActivityWithVars, Action, UriPath}
+import action.{ContextVar, ActivityWithVars, Action, UriPath}
 import com.github.triangle.Logging
 import android.view.{MenuItem, Menu}
 import android.content.Intent
@@ -43,7 +43,19 @@ trait BaseCrudActivity extends ActivityWithVars with PlatformTypes with Logging 
 
   protected lazy val logTag = Common.tryToEvaluate(entityType.entityName).getOrElse(Common.logTag)
 
-  protected def applicableActions: List[Action]
+  protected def normalActions: List[Action]
+
+  /** A ContextVar that holds an undoable Action if present. */
+  private object LastUndoable extends ContextVar[Undoable]
+
+  def allowUndo(undoable: Undoable) {
+    // Finish any prior undoable first.  This could be re-implemented to support a stack of undoable operations.
+    LastUndoable.clear(this).foreach(_.closeAction.foreach(_.invoke(currentUriPath, this)))
+    // Remember the new undoable operation
+    LastUndoable.set(this, undoable)
+  }
+
+  protected def applicableActions: List[Action] = LastUndoable.get(this).map(_.undoAction).toList ++ normalActions
 
   protected def optionsMenuActions: List[Action] =
     applicableActions.filter(action => action.title.isDefined || action.icon.isDefined)
@@ -75,10 +87,6 @@ trait BaseCrudActivity extends ActivityWithVars with PlatformTypes with Logging 
     } finally {
       persistence.close()
     }
-  }
-
-  def addUndoableDelete(entityType: CrudType, undoable: Undoable[ID]) {
-    //todo implement
   }
 
   override def toString = getClass.getSimpleName + "@" + System.identityHashCode(this)

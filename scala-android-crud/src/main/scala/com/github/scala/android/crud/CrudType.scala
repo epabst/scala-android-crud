@@ -303,19 +303,18 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
     }
   }
 
-  private[crud] def undoableDelete(uri: UriPath, activity: BaseCrudActivity)(persistence: EntityPersistence) {
-    persistence.find(uri).map { readable =>
+  private[crud] def undoableDelete(uri: UriPath, activity: BaseCrudActivity)(persistence: CrudPersistence) {
+    persistence.find(uri).foreach { readable =>
+      val id = idField.getter(readable)
       val writable = transform(newWritable, readable)
       persistence.delete(uri)
-      activity.addUndoableDelete(this, new Undoable[ID] {
-        def undo(): ID = {
-          persistence.save(None, writable)
+      val undoDeleteAction = new PersistenceAction(this, activity.application, None, Some(res.R.string.undo_delete)) {
+        def invoke(uri: UriPath, persistence: CrudPersistence) {
+          persistence.save(id, writable)
         }
-
-        def close() {
-          //todo delete childEntities(application) recursively
-        }
-      })
+      }
+      //todo delete childEntities(application) recursively
+      activity.allowUndo(Undoable(undoDeleteAction, None))
     }
   }
 
@@ -334,13 +333,9 @@ trait HiddenEntityType extends CrudType {
   def listActivityClass: Class[_ <: CrudListActivity] = throw new UnsupportedOperationException
 }
 
-/**
- * An undoable command.  The command should have already completed, but it can be undone or accepted.
- */
-trait Undoable[T] {
-  /** Reverses the action. */
-  def undo(): T
-
-  /** Releases any resources, and is guaranteed to be called.  For example, deleting related entities if undo was not called. */
-  def close()
-}
+/** An undo of an operation.  The operation should have already completed, but it can be undone or accepted.
+  * @param undoAction  An Action that reverses the operation.
+  * @param closeAction  An action that releases any resources, and is guaranteed to be called.
+  *           For example, deleting related entities if undo was not called.
+  */
+case class Undoable(undoAction: Action, closeAction: Option[Action] = None)
