@@ -13,15 +13,15 @@ import java.util.concurrent.atomic.AtomicBoolean
  * Date: 11/30/11
  * Time: 7:48 PM
  */
-trait OptionsMenuActivity extends ActivityWithVars {
-  protected def initialOptionsMenu: List[MenuAction]
+trait OptionsMenuActivity[T <: MenuAction] extends ActivityWithVars {
+  protected def initialOptionsMenu: List[T]
 
   // Use a ContextVar instead of a var to make it thread-safe
-  private object OptionsMenuVar extends ContextVar[List[MenuAction]]
+  private object OptionsMenuVar extends ContextVar[List[T]]
 
-  final def optionsMenu: List[MenuAction] = OptionsMenuVar.get(this).getOrElse(initialOptionsMenu)
+  final def optionsMenu: List[T] = OptionsMenuVar.get(this).getOrElse(initialOptionsMenu)
 
-  def optionsMenu_=(newValue: List[MenuAction]) {
+  def optionsMenu_=(newValue: List[T]) {
     OptionsMenuVar.set(this, newValue)
     invalidateOptionsMenuMethod.map(_.invoke(this)).getOrElse(recreateInPrepare.set(true))
   }
@@ -31,7 +31,7 @@ trait OptionsMenuActivity extends ActivityWithVars {
     try { Option(getClass.getMethod("invalidateOptionsMenu"))}
     catch { case _ => None }
 
-  private[action] def populateMenu(menu: Menu, actions: List[MenuAction]) {
+  private[action] def populateMenu(menu: Menu, actions: List[T]) {
     for ((action, index) <- actions.zip(Stream.from(0))) {
       val menuItem = action.title.map(menu.add(0, action.actionId, index, _)).getOrElse(menu.add(0, action.actionId, index, ""))
       action.icon.map(icon => menuItem.setIcon(icon))

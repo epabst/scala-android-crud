@@ -14,7 +14,7 @@ import PlatformTypes._
  * Time: 7:01 PM
  */
 
-trait BaseCrudActivity extends ActivityWithVars with OptionsMenuActivity with Logging with Timing {
+trait BaseCrudActivity extends ActivityWithVars with OptionsMenuActivity[Action] with Logging with Timing {
   def entityType: CrudType
 
   def application: CrudApplication
@@ -65,7 +65,7 @@ trait BaseCrudActivity extends ActivityWithVars with OptionsMenuActivity with Lo
   def initialOptionsMenu = generateOptionsMenu
 
   override def onOptionsItemSelected(item: MenuItem): Boolean = {
-    val actions = initialOptionsMenu
+    val actions = optionsMenu
     actions.find(_.actionId == item.getItemId) match {
       case Some(action) =>
         action.invoke(currentUriPath, this)

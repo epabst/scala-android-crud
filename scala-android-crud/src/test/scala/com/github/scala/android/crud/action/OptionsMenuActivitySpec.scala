@@ -19,7 +19,7 @@ import com.github.scala.android.crud.common.PlatformTypes._
  */
 @RunWith(classOf[RobolectricTestRunner])
 class OptionsMenuActivitySpec extends MustMatchers with MockitoSugar {
-  class StubOptionsMenuActivity extends Activity with OptionsMenuActivity {
+  class StubOptionsMenuActivity extends Activity with OptionsMenuActivity[MenuAction] {
     protected def initialOptionsMenu = Nil
   }
 
