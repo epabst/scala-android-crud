@@ -5,7 +5,7 @@ import action.UriPath
 import android.view.View
 import com.github.triangle.JavaUtil._
 import android.widget.{ListAdapter, BaseAdapter}
-import Action._
+import Operation._
 import android.app.{Activity, ListActivity}
 import com.github.scala.android.crud.view.ViewField._
 import com.github.triangle._
@@ -121,43 +121,41 @@ trait CrudType extends FieldList with Logging with Timing {
    * Gets the action to display a UI for a user to fill in data for creating an entity.
    * The target Activity should copy Unit into the UI using entityType.copy to populate defaults.
    */
-  lazy val createAction: Option[StartActivityAction] =
+  lazy val createAction: Option[Action] =
     if (isUpdateable)
-      new StartEntityActivityAction(entityName, CreateActionName, android.R.drawable.ic_menu_add, addItemString, activityClass)
+      Some(Action(Command(android.R.drawable.ic_menu_add, addItemString), new StartEntityActivityOperation(entityName, CreateActionName, activityClass)))
     else
       None
 
   /**
    * Gets the action to display the list that matches the criteria copied from criteriaSource using entityType.copy.
    */
-  lazy val listAction = new StartEntityActivityAction(entityName, ListActionName,
-    None, listItemsString, listActivityClass)
+  lazy val listAction = Action(Command(None, listItemsString), new StartEntityActivityOperation(entityName, ListActionName, listActivityClass))
 
-  protected def entityAction(action: String, icon: Option[ImgKey], title: Option[SKey],
-                             activityClass: Class[_ <: Activity]) =
-    new StartEntityIdActivityAction(entityName, action, icon, title, activityClass)
+  protected def entityOperation(action: String, activityClass: Class[_ <: Activity]) =
+    new StartEntityIdActivityOperation(entityName, action, activityClass)
 
   /**
    * Gets the action to display the entity given the id in the UriPath.
    */
-  lazy val displayAction = entityAction(DisplayActionName, None, None, activityClass)
+  lazy val displayAction = Action(Command(None, None), entityOperation(DisplayActionName, activityClass))
 
   /**
    * Gets the action to display a UI for a user to edit data for an entity given its id in the UriPath.
    */
-  lazy val updateAction: Option[StartActivityAction] =
-    if (isUpdateable) Some(entityAction(UpdateActionName, android.R.drawable.ic_menu_edit, editItemString, activityClass))
+  lazy val updateAction: Option[Action] =
+    if (isUpdateable) Some(Action(Command(android.R.drawable.ic_menu_edit, editItemString), entityOperation(UpdateActionName, activityClass)))
     else None
 
   lazy val deleteAction: Option[Action] =
     if (isUpdateable) {
-      new BaseAction(android.R.drawable.ic_menu_delete, deleteItemString) {
+      Some(Action(Command(android.R.drawable.ic_menu_delete, deleteItemString), new Operation {
         def invoke(uri: UriPath, activity: ActivityWithVars) {
           activity match {
             case crudActivity: BaseCrudActivity => startDelete(uri, crudActivity)
           }
         }
-      }
+      }))
     } else None
 
 
@@ -309,13 +307,13 @@ trait CrudType extends FieldList with Logging with Timing {
       val id = idField.getter(readable)
       val writable = transform(newWritable, readable)
       persistence.delete(uri)
-      val undoDeleteAction = new PersistenceAction(this, activity.application, None, Some(res.R.string.undo_delete)) {
+      val undoDeleteOperation = new PersistenceOperation(this, activity.application) {
         def invoke(uri: UriPath, persistence: CrudPersistence) {
           persistence.save(id, writable)
         }
       }
       //todo delete childEntities(application) recursively
-      activity.allowUndo(Undoable(undoDeleteAction, None))
+      activity.allowUndo(Undoable(Action(Command(None, Some(res.R.string.undo_delete)), undoDeleteOperation), None))
     }
   }
 
@@ -339,4 +337,4 @@ trait HiddenEntityType extends CrudType {
   * @param closeAction  An action that releases any resources, and is guaranteed to be called.
   *           For example, deleting related entities if undo was not called.
   */
-case class Undoable(undoAction: Action, closeAction: Option[Action] = None)
+case class Undoable(undoAction: Action, closeOperation: Option[Operation] = None)

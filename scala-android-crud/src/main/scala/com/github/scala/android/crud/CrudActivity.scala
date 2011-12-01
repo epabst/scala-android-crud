@@ -1,6 +1,6 @@
 package com.github.scala.android.crud
 
-import action.{Action, EntityAction}
+import action.{Operation, EntityOperation}
 import android.os.Bundle
 import com.github.triangle.JavaUtil.toRunnable
 
@@ -46,12 +46,12 @@ class CrudActivity(val entityType: CrudType, val application: CrudApplication) e
     try {
       val id = entityType.IdField.getter(currentUriPath)
       val newId = persistence.save(id, writable)
-      if (id.isEmpty) setIntent(getIntent.setData(Action.toUri(uriWithId(newId))))
+      if (id.isEmpty) setIntent(getIntent.setData(Operation.toUri(uriWithId(newId))))
     } catch { case e => error("onPause: Unable to store " + writable, e) }
   }
 
   protected def normalActions = entityType.getEntityActions(application).filter {
-    case action: EntityAction => action.entityName != entityType.entityName || action.action != currentAction
+    case action: EntityOperation => action.entityName != entityType.entityName || action.action != currentAction
     case _ => true
   }
 }

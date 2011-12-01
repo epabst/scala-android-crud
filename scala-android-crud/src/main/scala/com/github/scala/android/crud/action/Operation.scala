@@ -10,19 +10,13 @@ import android.net.Uri
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 8/26/11
  * Time: 6:39 AM
+ * @param icon  The optional icon to display.
+ * @param title  The title to display.
+ *   If the title is None, it can't be displayed in a context menu for a list item.
+ *   If both title and icon are None,
+ *   then it can't be displayed in the main options menu, but can still be triggered as a default.
  */
-trait Command {
-  /** The optional icon to display. */
-  def icon: Option[ImgKey]
-
-  /**
-   * The title to display.
-   * If the title is None, it can't be displayed in a context menu for a list item.
-   * If both title and icon are None,
-   * then it can't be displayed in the main options menu, but can still be triggered as a default.
-   */
-  def title: Option[SKey]
-
+case class Command(icon: Option[ImgKey], title: Option[SKey]) {
   /** A CommandID that can be used to identify if it's the same as another in a list.
     * It uses the title or else the icon or else the hash code.
     */
@@ -30,20 +24,14 @@ trait Command {
 }
 
 /**
- * Represents an action that a user can initiate.
- * It's equals/hashCode MUST be implemented in order to suppress the action that is already happening.
+ * Represents an operation that a user can initiate.
  */
-trait Action extends Command {
-  /** Runs the action, given the uri and the current state of the application. */
+trait Operation {
+  /** Runs the operation, given the uri and the current state of the application. */
   def invoke(uri: UriPath, activity: ActivityWithVars)
 }
 
-/**
-  * An action class that can be mixed in with Action traits, and specifies the icon and title.
-  */
-abstract class BaseAction(val icon: Option[ImgKey], val title: Option[SKey]) extends Action
-
-object Action {
+object Operation {
   val CreateActionName = Intent.ACTION_INSERT
   val ListActionName = Intent.ACTION_PICK
   val DisplayActionName = Intent.ACTION_VIEW
@@ -62,11 +50,23 @@ object Action {
   }
 }
 
+/**
+ * Represents an action that a user can initiate.
+ * It's equals/hashCode MUST be implemented in order to suppress the action that is already happening.
+ */
+case class Action(command: Command, operation: Operation) {
+  def commandId = command.commandId
+
+  def invoke(uri: UriPath, activity: ActivityWithVars) {
+    operation.invoke(uri, activity)
+  }
+}
+
 case class RichIntent(intent: Intent) {
   def uriPath: UriPath = UriPath(intent.getData)
 }
 
-trait StartActivityAction extends Action {
+trait StartActivityOperation extends Operation {
   def determineIntent(uri: UriPath, activity: ActivityWithVars): Intent
 
   def invoke(uri: UriPath, activity: ActivityWithVars) {
@@ -74,42 +74,38 @@ trait StartActivityAction extends Action {
   }
 }
 
-trait BaseStartActivityAction extends StartActivityAction {
+trait BaseStartActivityOperation extends StartActivityOperation {
   def action: String
 
   def activityClass: Class[_ <: Activity]
 
-  def determineIntent(uri: UriPath, activity: ActivityWithVars): Intent = Action.constructIntent(action, uri, activity, activityClass)
+  def determineIntent(uri: UriPath, activity: ActivityWithVars): Intent = Operation.constructIntent(action, uri, activity, activityClass)
 }
 
 //final to guarantee equality is correct
-final case class StartActivityActionFromIntent(intent: Intent,
-                                               icon: Option[ImgKey] = None,
-                                               title: Option[SKey] = None) extends StartActivityAction {
+final case class StartActivityOperationFromIntent(intent: Intent) extends StartActivityOperation {
   def determineIntent(uri: UriPath, activity: ActivityWithVars) = intent
 }
 
 //final to guarantee equality is correct
-final case class StartNamedActivityAction(action: String,
-                                          icon: Option[ImgKey], title: Option[SKey],
-                                          activityClass: Class[_ <: Activity]) extends BaseStartActivityAction
+final case class StartNamedActivityOperation(action: String, activityClass: Class[_ <: Activity]) extends BaseStartActivityOperation
 
-trait EntityAction extends Action {
+trait EntityOperation extends Operation {
   def entityName: String
   def action: String
 }
 
 //final to guarantee equality is correct
-final case class StartEntityActivityAction(entityName: String, action: String,
-                                           icon: Option[ImgKey], title: Option[SKey],
-                                           activityClass: Class[_ <: Activity]) extends BaseStartActivityAction with EntityAction {
+final case class StartEntityActivityOperation(entityName: String, action: String, activityClass: Class[_ <: Activity])
+  extends BaseStartActivityOperation with EntityOperation {
+
   override def determineIntent(uri: UriPath, activity: ActivityWithVars): Intent =
     super.determineIntent(uri.specify(entityName), activity)
 }
 
 //final to guarantee equality is correct
-final case class StartEntityIdActivityAction(entityName: String, action: String,
-                                             icon: Option[ImgKey], title: Option[SKey],
-                                             activityClass: Class[_ <: Activity]) extends BaseStartActivityAction with EntityAction {
+final case class StartEntityIdActivityOperation(entityName: String, action: String, activityClass: Class[_ <: Activity])
+  extends BaseStartActivityOperation with EntityOperation {
+
   override def determineIntent(uri: UriPath, activity: ActivityWithVars) = super.determineIntent(uri.upToIdOf(entityName), activity)
 }

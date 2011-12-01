@@ -14,7 +14,7 @@ import PlatformTypes._
  * Time: 7:01 PM
  */
 
-trait BaseCrudActivity extends ActivityWithVars with OptionsMenuActivity[Action] with Logging with Timing {
+trait BaseCrudActivity extends ActivityWithVars with OptionsMenuActivity with Logging with Timing {
   def entityType: CrudType
 
   def application: CrudApplication
@@ -31,7 +31,7 @@ trait BaseCrudActivity extends ActivityWithVars with OptionsMenuActivity[Action]
     Option(getIntent).map(intent => Option(intent.getData).map(UriPath(_)).getOrElse {
       // If no data was given in the intent (because we were started
       // as a MAIN activity), then use our default content provider.
-      intent.setData(Action.toUri(defaultContentUri))
+      intent.setData(Operation.toUri(defaultContentUri))
       defaultContentUri
     }).getOrElse(defaultContentUri)
   }
@@ -51,18 +51,18 @@ trait BaseCrudActivity extends ActivityWithVars with OptionsMenuActivity[Action]
 
   def allowUndo(undoable: Undoable) {
     // Finish any prior undoable first.  This could be re-implemented to support a stack of undoable operations.
-    LastUndoable.clear(this).foreach(_.closeAction.foreach(_.invoke(currentUriPath, this)))
+    LastUndoable.clear(this).foreach(_.closeOperation.foreach(_.invoke(currentUriPath, this)))
     // Remember the new undoable operation
     LastUndoable.set(this, undoable)
-    optionsMenuCommands = generateOptionsMenu
+    optionsMenuCommands = generateOptionsMenu.map(_.command)
   }
 
   protected def applicableActions: List[Action] = LastUndoable.get(this).map(_.undoAction).toList ++ normalActions
 
   protected def generateOptionsMenu: List[Action] =
-    applicableActions.filter(action => action.title.isDefined || action.icon.isDefined)
+    applicableActions.filter(action => action.command.title.isDefined || action.command.icon.isDefined)
 
-  def initialOptionsMenuCommands = generateOptionsMenu
+  def initialOptionsMenuCommands = generateOptionsMenu.map(_.command)
 
   override def onOptionsItemSelected(item: MenuItem): Boolean = {
     val actions = generateOptionsMenu
@@ -71,7 +71,7 @@ trait BaseCrudActivity extends ActivityWithVars with OptionsMenuActivity[Action]
         action.invoke(currentUriPath, this)
         if (LastUndoable.get(this).exists(_.undoAction.commandId == item.getItemId)) {
           LastUndoable.clear(this)
-          optionsMenuCommands = generateOptionsMenu
+          optionsMenuCommands = generateOptionsMenu.map(_.command)
         }
         true
       case None => super.onOptionsItemSelected(item)

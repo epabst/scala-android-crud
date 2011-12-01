@@ -118,7 +118,7 @@ class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with Crud
     stub(activity.allowUndo(notNull.asInstanceOf[Undoable])).toAnswer(answerWithInvocation { invocationOnMock =>
       val currentArguments = invocationOnMock.getArguments
       val undoable = currentArguments(0).asInstanceOf[Undoable]
-      undoable.closeAction.foreach(_.invoke(uri, activity))
+      undoable.closeOperation.foreach(_.invoke(uri, activity))
     })
     entity.startDelete(uri, activity)
     verify(persistence).delete(uri)

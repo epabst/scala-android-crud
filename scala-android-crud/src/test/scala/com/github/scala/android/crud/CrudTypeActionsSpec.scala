@@ -1,12 +1,12 @@
 package com.github.scala.android.crud
 
 import _root_.android.content.Intent
-import action.UriPath
+import action.{StartActivityOperation, Action, UriPath}
 import org.junit.Test
 import org.junit.runner.RunWith
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.scalatest.matchers.MustMatchers
-import com.github.scala.android.crud.action.Action.toRichItent
+import com.github.scala.android.crud.action.Operation.toRichItent
 
 /**
  * A test for {@link CrudListActivity}.
@@ -21,55 +21,60 @@ class CrudTypeActionsSpec extends MyEntityTesting with MustMatchers with CrudMoc
 
   import MyCrudType.entityName
 
+  val Action(_, createOperation: StartActivityOperation) = MyCrudType.createAction.get
+  val Action(_, listOperation: StartActivityOperation) = MyCrudType.listAction
+  val Action(_, displayOperation: StartActivityOperation) = MyCrudType.displayAction
+  val Action(_, updateOperation: StartActivityOperation) = MyCrudType.updateAction.get
+
   @Test
   def createActionShouldHaveTheRightUri() {
     val activity = null
-    MyCrudType.createAction.get.determineIntent(UriPath("foo"), activity).uriPath must
+    createOperation.determineIntent(UriPath("foo"), activity).uriPath must
       be (UriPath("foo", entityName))
-    MyCrudType.createAction.get.determineIntent(UriPath("foo", entityName), activity).uriPath must
+    createOperation.determineIntent(UriPath("foo", entityName), activity).uriPath must
       be (UriPath("foo", entityName))
-    MyCrudType.createAction.get.determineIntent(UriPath("foo", entityName, "123"), activity).uriPath must
+    createOperation.determineIntent(UriPath("foo", entityName, "123"), activity).uriPath must
       be (UriPath("foo", entityName))
-    MyCrudType.createAction.get.determineIntent(UriPath("foo", entityName, "123", "bar"), activity).uriPath must
+    createOperation.determineIntent(UriPath("foo", entityName, "123", "bar"), activity).uriPath must
       be (UriPath("foo", entityName))
-    MyCrudType.createAction.get.determineIntent(UriPath(), activity).uriPath must
+    createOperation.determineIntent(UriPath(), activity).uriPath must
       be (UriPath(entityName))
   }
 
   @Test
   def listActionShouldHaveTheRightUri() {
     val activity = null
-    MyCrudType.listAction.determineIntent(UriPath("foo"), activity).uriPath must
+    listOperation.determineIntent(UriPath("foo"), activity).uriPath must
       be (UriPath("foo", entityName))
-    MyCrudType.listAction.determineIntent(UriPath("foo", entityName), activity).uriPath must
+    listOperation.determineIntent(UriPath("foo", entityName), activity).uriPath must
       be (UriPath("foo", entityName))
-    MyCrudType.listAction.determineIntent(UriPath("foo", entityName, "123"), activity).uriPath must
+    listOperation.determineIntent(UriPath("foo", entityName, "123"), activity).uriPath must
       be (UriPath("foo", entityName))
-    MyCrudType.listAction.determineIntent(UriPath("foo", entityName, "123", "bar"), activity).uriPath must
+    listOperation.determineIntent(UriPath("foo", entityName, "123", "bar"), activity).uriPath must
       be (UriPath("foo", entityName))
-    MyCrudType.listAction.determineIntent(UriPath(), activity).uriPath must
+    listOperation.determineIntent(UriPath(), activity).uriPath must
       be (UriPath(entityName))
   }
 
   @Test
   def displayActionShouldHaveTheRightUri() {
     val activity = null
-    MyCrudType.displayAction.determineIntent(UriPath("foo", entityName, "35"), activity).uriPath must
+    displayOperation.determineIntent(UriPath("foo", entityName, "35"), activity).uriPath must
       be (UriPath("foo", entityName, "35"))
-    MyCrudType.displayAction.determineIntent(UriPath("foo", entityName, "34", "bar"), activity).uriPath must
+    displayOperation.determineIntent(UriPath("foo", entityName, "34", "bar"), activity).uriPath must
       be (UriPath("foo", entityName, "34"))
-    MyCrudType.displayAction.determineIntent(UriPath("foo", entityName, "34", "bar", "123"), activity).uriPath must
+    displayOperation.determineIntent(UriPath("foo", entityName, "34", "bar", "123"), activity).uriPath must
       be (UriPath("foo", entityName, "34"))
   }
 
   @Test
   def updateActionShouldHaveTheRightUri() {
     val activity = null
-    MyCrudType.updateAction.get.determineIntent(UriPath("foo", entityName, "35"), activity).uriPath must
+    updateOperation.determineIntent(UriPath("foo", entityName, "35"), activity).uriPath must
       be (UriPath("foo", entityName, "35"))
-    MyCrudType.updateAction.get.determineIntent(UriPath("foo", entityName, "34", "bar"), activity).uriPath must
+    updateOperation.determineIntent(UriPath("foo", entityName, "34", "bar"), activity).uriPath must
       be (UriPath("foo", entityName, "34"))
-    MyCrudType.updateAction.get.determineIntent(UriPath("foo", entityName, "34", "bar", "123"), activity).uriPath must
+    updateOperation.determineIntent(UriPath("foo", entityName, "34", "bar", "123"), activity).uriPath must
       be (UriPath("foo", entityName, "34"))
   }
 
@@ -77,10 +82,10 @@ class CrudTypeActionsSpec extends MyEntityTesting with MustMatchers with CrudMoc
   def shouldHaveTheStandardActionNames() {
     if (!isShadowing) {
       val activity = null
-      MyCrudType.createAction.get.determineIntent(UriPath("foo"), activity).getAction must be (Intent.ACTION_INSERT)
-      MyCrudType.listAction.determineIntent(UriPath("foo"), activity).getAction must be (Intent.ACTION_PICK)
-      MyCrudType.displayAction.determineIntent(UriPath("foo"), activity).getAction must be (Intent.ACTION_VIEW)
-      MyCrudType.updateAction.get.determineIntent(UriPath("foo"), activity).getAction must be (Intent.ACTION_EDIT)
+      createOperation.determineIntent(UriPath("foo"), activity).getAction must be (Intent.ACTION_INSERT)
+      listOperation.determineIntent(UriPath("foo"), activity).getAction must be (Intent.ACTION_PICK)
+      displayOperation.determineIntent(UriPath("foo"), activity).getAction must be (Intent.ACTION_VIEW)
+      updateOperation.determineIntent(UriPath("foo"), activity).getAction must be (Intent.ACTION_EDIT)
     }
   }
 }

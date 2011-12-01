@@ -9,7 +9,6 @@ import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
 import org.mockito.Matchers.{eq => eql, _}
 import android.view.{MenuItem, Menu}
-import com.github.scala.android.crud.common.PlatformTypes._
 
 /**
  * A behavior specification for [[com.github.scala.android.crud.action.OptionsMenuActivity]].
@@ -19,16 +18,14 @@ import com.github.scala.android.crud.common.PlatformTypes._
  */
 @RunWith(classOf[RobolectricTestRunner])
 class OptionsMenuActivitySpec extends MustMatchers with MockitoSugar {
-  class StubOptionsMenuActivity extends Activity with OptionsMenuActivity[Command] {
+  class StubOptionsMenuActivity extends Activity with OptionsMenuActivity {
     protected def initialOptionsMenuCommands = Nil
   }
-
-  case class StubCommand(icon: Option[ImgKey], title: Option[SKey]) extends Command
 
   @Test
   def mustUseLatestOptionsMenuForCreate() {
     val activity = new StubOptionsMenuActivity
-    activity.optionsMenuCommands = List(StubCommand(None, Some(10)))
+    activity.optionsMenuCommands = List(Command(None, Some(10)))
 
     val menu = mock[Menu]
     val menuItem = mock[MenuItem]
@@ -40,7 +37,7 @@ class OptionsMenuActivitySpec extends MustMatchers with MockitoSugar {
   @Test
   def mustUseLatestOptionsMenuForPrepare_Android2() {
     val activity = new StubOptionsMenuActivity
-    activity.optionsMenuCommands = List(StubCommand(None, Some(10)))
+    activity.optionsMenuCommands = List(Command(None, Some(10)))
 
     val menu = mock[Menu]
     activity.onPrepareOptionsMenu(menu)

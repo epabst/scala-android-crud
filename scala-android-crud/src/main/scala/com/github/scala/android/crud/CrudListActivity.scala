@@ -1,8 +1,8 @@
 package com.github.scala.android.crud
 
+import action.{Action, UriPath}
 import android.widget.{ListAdapter, ListView}
 import _root_.android.app.ListActivity
-import action.{UriPath, Action}
 import android.os.Bundle
 import android.view.{ContextMenu, View, MenuItem}
 import android.view.ContextMenu.ContextMenuInfo
@@ -85,13 +85,13 @@ class CrudListActivity(val entityType: CrudType, val application: CrudApplicatio
   }
 
   protected def contextMenuActions: List[Action] = entityType.getEntityActions(application) match {
-    case _ :: tail => tail.filter(_.title.isDefined)
+    case _ :: tail => tail.filter(_.command.title.isDefined)
     case Nil => Nil
   }
 
   override def onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo) {
     super.onCreateContextMenu(menu, v, menuInfo)
-    val commands = contextMenuActions
+    val commands = contextMenuActions.map(_.command)
     for ((command, index) <- commands.zip(Stream.from(0)))
       menu.add(0, command.commandId, index, command.title.get)
   }
