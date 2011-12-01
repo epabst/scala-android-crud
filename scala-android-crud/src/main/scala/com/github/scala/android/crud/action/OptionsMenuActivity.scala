@@ -1,24 +1,28 @@
 package com.github.scala.android.crud.action
 
-import android.app.Activity
 import android.view.Menu
 import java.lang.reflect.Method
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * An Activity that has an options menu.
- * This is intended to handle both Android 2 and 3.  The options menu in Android 3 can be left visible all the time
- * until invalidated.
- * So, it is essential that when the options menu changes, the code must call {{{invalidateGeneratedOptionsMenu()}}}.
+ * This is intended to handle both Android 2 and 3.
+ * The options menu in Android 3 can be left visible all the time until invalidated.
+ * When the options menu changes, invoke {{{this.optionsMenu = ...}}}
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 11/30/11
  * Time: 7:48 PM
  */
-trait OptionsMenuActivity extends Activity {
-  protected def generateOptionsMenu: List[MenuAction]
+trait OptionsMenuActivity extends ActivityWithVars {
+  protected def initialOptionsMenu: List[MenuAction]
 
-  // This method must not be named "invalidateOptionsMenu" or it will conflict with the one looked up by reflection
-  def invalidateGeneratedOptionsMenu() {
+  // Use a ContextVar instead of a var to make it thread-safe
+  private object OptionsMenuVar extends ContextVar[List[MenuAction]]
+
+  final def optionsMenu: List[MenuAction] = OptionsMenuVar.get(this).getOrElse(initialOptionsMenu)
+
+  def optionsMenu_=(newValue: List[MenuAction]) {
+    OptionsMenuVar.set(this, newValue)
     invalidateOptionsMenuMethod.map(_.invoke(this)).getOrElse(recreateInPrepare.set(true))
   }
 
@@ -35,14 +39,14 @@ trait OptionsMenuActivity extends Activity {
   }
 
   override def onCreateOptionsMenu(menu: Menu): Boolean = {
-    populateMenu(menu, generateOptionsMenu)
+    populateMenu(menu, optionsMenu)
     true
   }
 
   override def onPrepareOptionsMenu(menu: Menu) = {
     if (recreateInPrepare.getAndSet(false)) {
       menu.clear()
-      populateMenu(menu, generateOptionsMenu)
+      populateMenu(menu, optionsMenu)
       true
     } else {
       super.onPrepareOptionsMenu(menu)

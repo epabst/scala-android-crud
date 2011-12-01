@@ -54,7 +54,7 @@ trait BaseCrudActivity extends ActivityWithVars with OptionsMenuActivity with Lo
     LastUndoable.clear(this).foreach(_.closeAction.foreach(_.invoke(currentUriPath, this)))
     // Remember the new undoable operation
     LastUndoable.set(this, undoable)
-    invalidateGeneratedOptionsMenu()
+    optionsMenu = generateOptionsMenu
   }
 
   protected def applicableActions: List[Action] = LastUndoable.get(this).map(_.undoAction).toList ++ normalActions
@@ -62,8 +62,10 @@ trait BaseCrudActivity extends ActivityWithVars with OptionsMenuActivity with Lo
   protected def generateOptionsMenu: List[Action] =
     applicableActions.filter(action => action.title.isDefined || action.icon.isDefined)
 
+  def initialOptionsMenu = generateOptionsMenu
+
   override def onOptionsItemSelected(item: MenuItem): Boolean = {
-    val actions = generateOptionsMenu
+    val actions = initialOptionsMenu
     actions.find(_.actionId == item.getItemId) match {
       case Some(action) =>
         action.invoke(currentUriPath, this)
