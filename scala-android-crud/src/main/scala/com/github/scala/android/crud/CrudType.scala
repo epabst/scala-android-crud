@@ -9,9 +9,10 @@ import Action._
 import android.app.{Activity, ListActivity}
 import com.github.scala.android.crud.view.ViewField._
 import com.github.triangle._
-import common.{Common, Timing, PlatformTypes}
+import common.{Common, Timing}
+import common.PlatformTypes._
 import persistence.CursorField.PersistedId
-import persistence.{CursorField, PersistenceListener, EntityPersistence}
+import persistence.{CursorField, PersistenceListener}
 import PortableField.toSome
 import view.AndroidResourceAnalyzer._
 import java.lang.IllegalStateException
@@ -23,7 +24,7 @@ import java.lang.IllegalStateException
  * Date: 2/23/11
  * Time: 3:24 PM
  */
-trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
+trait CrudType extends FieldList with Logging with Timing {
   override lazy val logTag = Common.tryToEvaluate(entityName).getOrElse(Common.logTag)
 
   trace("Instantiated CrudType: " + this)
@@ -132,7 +133,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
   lazy val listAction = new StartEntityActivityAction(entityName, ListActionName,
     None, listItemsString, listActivityClass)
 
-  protected def entityAction(action: String, icon: Option[PlatformTypes#ImgKey], title: Option[PlatformTypes#SKey],
+  protected def entityAction(action: String, icon: Option[ImgKey], title: Option[SKey],
                              activityClass: Class[_ <: Activity]) =
     new StartEntityIdActivityAction(entityName, action, icon, title, activityClass)
 
@@ -245,7 +246,7 @@ trait CrudType extends FieldList with PlatformTypes with Logging with Timing {
     }
 
     def cacheClearingPersistenceListener(activity: ListActivity) = new PersistenceListener {
-      def onSave(id: this.type#ID) {
+      def onSave(id: ID) {
         trace("Clearing ListView cache in " + activity + " since DataSet was invalidated")
         activity.runOnUiThread { activity.getListView.setTag(null) }
       }

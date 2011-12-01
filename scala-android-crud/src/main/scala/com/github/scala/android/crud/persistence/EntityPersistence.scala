@@ -1,9 +1,10 @@
 package com.github.scala.android.crud.persistence
 
-import com.github.scala.android.crud.common.{ListenerHolder, Timing, PlatformTypes}
+import com.github.scala.android.crud.common.{ListenerHolder, Timing}
+import com.github.scala.android.crud.common.PlatformTypes._
 import com.github.scala.android.crud.action.UriPath
 
-trait PersistenceListener extends PlatformTypes {
+trait PersistenceListener {
   def onSave(id: ID)
 
   def onDelete(uri: UriPath)
@@ -16,7 +17,7 @@ trait PersistenceListener extends PlatformTypes {
  * Time: 4:12 PM
  */
 
-trait EntityPersistence extends PlatformTypes with Timing with ListenerHolder[PersistenceListener] {
+trait EntityPersistence extends Timing with ListenerHolder[PersistenceListener] {
   def toUri(id: ID): UriPath
 
   /**

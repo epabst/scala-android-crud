@@ -5,6 +5,7 @@ import android.database.Cursor
 import android.content.ContentValues
 import com.github.triangle.Logging
 import common.Common
+import common.PlatformTypes._
 import persistence.{CursorStream, SQLiteCriteria, CursorField}
 import scala.None
 import collection.mutable.SynchronizedQueue

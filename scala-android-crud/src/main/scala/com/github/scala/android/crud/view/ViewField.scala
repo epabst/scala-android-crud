@@ -2,7 +2,7 @@ package com.github.scala.android.crud.view
 
 import _root_.android.app.Activity
 import _root_.android.view.View
-import com.github.scala.android.crud.common.PlatformTypes
+import com.github.scala.android.crud.common.PlatformTypes._
 import com.github.triangle._
 import PortableField._
 import java.util.{Calendar, Date, GregorianCalendar}
@@ -16,16 +16,16 @@ import android.widget._
 /** A Map of ViewKey with values.
   * Wraps a map so that it is distinguished from persisted fields.
   */
-case class ViewKeyMap(map: Map[PlatformTypes#ViewKey,Any]) {
-  def get(key: PlatformTypes#ViewKey) = map.get(key)
+case class ViewKeyMap(map: Map[ViewKey,Any]) {
+  def get(key: ViewKey) = map.get(key)
   def iterator = map.iterator
-  def -(key: PlatformTypes#ViewKey) = ViewKeyMap(map - key)
-  def +[B1 >: Any](kv: (PlatformTypes#ViewKey, B1)) = ViewKeyMap(map + kv)
+  def -(key: ViewKey) = ViewKeyMap(map - key)
+  def +[B1 >: Any](kv: (ViewKey, B1)) = ViewKeyMap(map + kv)
 }
 
 object ViewKeyMap {
   def empty = ViewKeyMap()
-  def apply(elems: (PlatformTypes#ViewKey,Any)*): ViewKeyMap = new ViewKeyMap(Map(elems: _*))
+  def apply(elems: (ViewKey,Any)*): ViewKeyMap = new ViewKeyMap(Map(elems: _*))
 }
 
 /**
@@ -39,7 +39,7 @@ class ViewField[T](val defaultLayout: FieldLayout, dataField: PortableField[T]) 
   protected def delegate = dataField
 }
 
-object ViewField extends PlatformTypes {
+object ViewField {
   /** PortableField for a View resource within a given parent View */
   protected abstract class BaseViewIdField[T](childViewField: PortableField[T])
           extends FieldWithDelegate[T] {

@@ -10,6 +10,7 @@ import CursorField._
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.EasyMockSugar
 import android.database.Cursor
+import com.github.scala.android.crud.common.PlatformTypes._
 
 /**
  * A specification for {@link CursorField}.

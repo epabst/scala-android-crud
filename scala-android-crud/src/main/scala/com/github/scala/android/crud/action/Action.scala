@@ -1,7 +1,7 @@
 package com.github.scala.android.crud.action
 
 import android.app.Activity
-import com.github.scala.android.crud.common.PlatformTypes
+import com.github.scala.android.crud.common.PlatformTypes._
 import android.content.{Context, Intent}
 import android.net.Uri
 
@@ -12,7 +12,7 @@ import android.net.Uri
  * Date: 8/26/11
  * Time: 6:39 AM
  */
-trait Action extends PlatformTypes {
+trait Action {
   /** The optional icon to display for this action. */
   def icon: Option[ImgKey]
 
@@ -31,7 +31,7 @@ trait Action extends PlatformTypes {
 /**
   * An action class that can be mixed in with Action traits, and specifies the icon and title.
   */
-abstract class BaseAction(val icon: Option[PlatformTypes#ImgKey], val title: Option[PlatformTypes#SKey]) extends Action
+abstract class BaseAction(val icon: Option[ImgKey], val title: Option[SKey]) extends Action
 
 object Action {
   val CreateActionName = Intent.ACTION_INSERT
@@ -74,14 +74,14 @@ trait BaseStartActivityAction extends StartActivityAction {
 
 //final to guarantee equality is correct
 final case class StartActivityActionFromIntent(intent: Intent,
-                                               icon: Option[PlatformTypes#ImgKey] = None,
-                                               title: Option[PlatformTypes#SKey] = None) extends StartActivityAction {
+                                               icon: Option[ImgKey] = None,
+                                               title: Option[SKey] = None) extends StartActivityAction {
   def determineIntent(uri: UriPath, activity: ActivityWithVars) = intent
 }
 
 //final to guarantee equality is correct
 final case class StartNamedActivityAction(action: String,
-                                          icon: Option[PlatformTypes#ImgKey], title: Option[PlatformTypes#SKey],
+                                          icon: Option[ImgKey], title: Option[SKey],
                                           activityClass: Class[_ <: Activity]) extends BaseStartActivityAction
 
 trait EntityAction extends Action {
@@ -91,7 +91,7 @@ trait EntityAction extends Action {
 
 //final to guarantee equality is correct
 final case class StartEntityActivityAction(entityName: String, action: String,
-                                           icon: Option[PlatformTypes#ImgKey], title: Option[PlatformTypes#SKey],
+                                           icon: Option[ImgKey], title: Option[SKey],
                                            activityClass: Class[_ <: Activity]) extends BaseStartActivityAction with EntityAction {
   override def determineIntent(uri: UriPath, activity: ActivityWithVars): Intent =
     super.determineIntent(uri.specify(entityName), activity)
@@ -99,7 +99,7 @@ final case class StartEntityActivityAction(entityName: String, action: String,
 
 //final to guarantee equality is correct
 final case class StartEntityIdActivityAction(entityName: String, action: String,
-                                             icon: Option[PlatformTypes#ImgKey], title: Option[PlatformTypes#SKey],
+                                             icon: Option[ImgKey], title: Option[SKey],
                                              activityClass: Class[_ <: Activity]) extends BaseStartActivityAction with EntityAction {
   override def determineIntent(uri: UriPath, activity: ActivityWithVars) = super.determineIntent(uri.upToIdOf(entityName), activity)
 }

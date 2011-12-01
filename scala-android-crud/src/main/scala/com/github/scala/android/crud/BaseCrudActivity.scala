@@ -5,6 +5,7 @@ import com.github.triangle.Logging
 import android.view.{MenuItem, Menu}
 import android.content.Intent
 import common.{Common, Timing, PlatformTypes}
+import PlatformTypes._
 
 /**
  * Support for the different Crud Activity's.
@@ -13,7 +14,7 @@ import common.{Common, Timing, PlatformTypes}
  * Time: 7:01 PM
  */
 
-trait BaseCrudActivity extends ActivityWithVars with PlatformTypes with Logging with Timing {
+trait BaseCrudActivity extends ActivityWithVars with Logging with Timing {
   def entityType: CrudType
 
   def application: CrudApplication

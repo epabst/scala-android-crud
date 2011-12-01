@@ -4,6 +4,7 @@ import action.UriPath
 import common.Common
 import persistence._
 import com.github.triangle.{Setter, Getter, FieldList}
+import common.PlatformTypes._
 
 /**
  * An EntityPersistence for a CrudType.

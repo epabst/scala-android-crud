@@ -1,6 +1,6 @@
 package com.github.scala.android.crud.persistence
 
-import com.github.scala.android.crud.common.PlatformTypes
+import com.github.scala.android.crud.common.PlatformTypes._
 
 /**
  * A trait with a primary key
@@ -9,7 +9,7 @@ import com.github.scala.android.crud.common.PlatformTypes
  * Time: 6:49 AM
  */
 
-trait IdPk extends PlatformTypes {
+trait IdPk {
   def id: Option[ID]
 
   def id(newId: Option[ID]): IdPk

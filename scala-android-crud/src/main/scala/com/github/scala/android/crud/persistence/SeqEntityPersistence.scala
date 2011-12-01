@@ -3,6 +3,7 @@ package com.github.scala.android.crud.persistence
 import scala.collection.mutable
 import com.github.scala.android.crud.action.UriPath
 import com.github.triangle.{Setter, Getter, Field}
+import com.github.scala.android.crud.common.PlatformTypes._
 
 /**
  * EntityPersistence for a simple generated Seq.

@@ -5,6 +5,7 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.Spec
 import com.github.scala.android.crud.action.UriPath
+import com.github.scala.android.crud.common.PlatformTypes._
 
 /**
  * A behavior specification for [[com.github.scala.android.crud.persistence.EntityPersistence]].

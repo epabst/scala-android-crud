@@ -1,6 +1,6 @@
 package com.github.scala.android.crud.action
 
-import com.github.scala.android.crud.common.PlatformTypes
+import com.github.scala.android.crud.common.PlatformTypes._
 import com.github.triangle.ValueFormat._
 import android.net.Uri
 
@@ -11,7 +11,7 @@ import android.net.Uri
  * Date: 9/22/11
  * Time: 10:42 PM
  */
-case class UriPath(segments: String*) extends PlatformTypes {
+case class UriPath(segments: String*) {
   private val idFormat = basicFormat[ID]
 
   def /(segment: String): UriPath = UriPath(segments :+ segment:_*)

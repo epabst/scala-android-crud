@@ -9,6 +9,7 @@ import android.os.ParcelFileDescriptor
 import java.io.{ObjectInputStream, ByteArrayInputStream, ObjectOutputStream, ByteArrayOutputStream}
 import scala.collection.JavaConversions._
 import java.util.{Map => JMap,HashMap}
+import common.PlatformTypes._
 
 object CrudBackupAgent {
   private val backupStrategyVersion: Int = 1

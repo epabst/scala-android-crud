@@ -11,7 +11,8 @@ import com.github.scala.android.crud.view.{ViewField, FieldLayout,AndroidResourc
 import AndroidResourceAnalyzer._
 import com.github.scala.android.crud.view.ViewField.{ViewIdNameField, ViewIdField}
 import com.github.scala.android.crud.{NamingConventions, CrudApplication, ParentField, CrudType}
-import com.github.scala.android.crud.common.{Common, PlatformTypes}
+import com.github.scala.android.crud.common.Common
+import com.github.scala.android.crud.common.PlatformTypes._
 import collection.immutable.List
 
 /**
@@ -21,7 +22,7 @@ import collection.immutable.List
  * Time: 3:19 PM
  */
 
-object CrudUIGenerator extends PlatformTypes with Logging {
+object CrudUIGenerator extends Logging {
   protected def logTag = Common.logTag
   private val lineSeparator = System.getProperty("line.separator")
   private[generate] val random = new Random

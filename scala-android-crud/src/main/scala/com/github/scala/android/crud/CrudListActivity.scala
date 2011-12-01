@@ -10,6 +10,7 @@ import android.widget.AdapterView.AdapterContextMenuInfo
 import com.github.triangle.{JavaUtil, PortableValue}
 import JavaUtil.toRunnable
 import persistence.PersistenceListener
+import common.PlatformTypes._
 
 /**
  * A generic ListActivity for CRUD operations
@@ -44,7 +45,7 @@ class CrudListActivity(val entityType: CrudType, val application: CrudApplicatio
           populateFromParentEntities()
         }
 
-        def onSave(id: this.type#ID) {
+        def onSave(id: ID) {
           //Some of the parent fields may be calculated from the children
           populateFromParentEntities()
         }

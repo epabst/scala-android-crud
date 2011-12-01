@@ -6,14 +6,14 @@ import android.provider.BaseColumns
 import com.github.triangle._
 import PortableField._
 import android.os.Bundle
-import com.github.scala.android.crud.common.PlatformTypes
+import com.github.scala.android.crud.common.PlatformTypes._
 import com.github.scala.android.crud.ParentField
 import com.github.triangle.Converter._
 
 case class SQLiteCriteria(selection: List[String] = Nil, selectionArgs: List[String] = Nil,
                           groupBy: Option[String] = None, having: Option[String] = None, orderBy: Option[String] = None)
 
-object CursorField extends PlatformTypes {
+object CursorField {
   def bundleField[T](name: String)(implicit persistedType: PersistedType[T]) =
     Getter[Bundle,T](b => persistedType.getValue(b, name)).withSetter(b => v => persistedType.putValue(b, name, v), noSetterForEmpty) +
     mapField[T](name)

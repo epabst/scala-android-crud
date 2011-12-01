@@ -1,7 +1,7 @@
 package com.github.scala.android.crud
 
 import action.{ActivityWithVars, UriPath, BaseAction}
-import common.PlatformTypes
+import common.PlatformTypes._
 
 /**
  * An action that interacts with an entity's persistence.
@@ -11,7 +11,7 @@ import common.PlatformTypes
  * Time: 6:59 AM
  */
 abstract class PersistenceAction(entityType: CrudType, val application: CrudApplication,
-                   icon: Option[PlatformTypes#ImgKey], title: Option[PlatformTypes#SKey])
+                   icon: Option[ImgKey], title: Option[SKey])
         extends BaseAction(icon, title) {
   def invoke(uri: UriPath, persistence: CrudPersistence)
 

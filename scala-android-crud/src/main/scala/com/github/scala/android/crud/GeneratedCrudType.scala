@@ -6,6 +6,7 @@ import com.github.triangle.PortableField.identityField
 import android.app.ListActivity
 import android.widget.{ListAdapter, BaseAdapter}
 import com.github.triangle.Field
+import common.PlatformTypes._
 
 trait GeneratedCrudType[T <: AnyRef] extends CrudType {
   def newWritable = throw new UnsupportedOperationException("not supported")

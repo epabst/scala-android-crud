@@ -12,6 +12,7 @@ import org.mockito.Mockito._
 import ParentField.foreignKey
 import org.mockito.Matchers
 import com.github.triangle.PortableField._
+import common.PlatformTypes._
 
 /**
  * A behavior specification for {@link CrudType}.

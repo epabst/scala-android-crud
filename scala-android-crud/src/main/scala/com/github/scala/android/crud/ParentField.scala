@@ -1,6 +1,6 @@
 package com.github.scala.android.crud
 
-import common.PlatformTypes
+import common.PlatformTypes._
 import persistence.CursorField._
 import android.provider.BaseColumns
 import com.github.triangle.{BaseField, DelegatingPortableField}
@@ -11,7 +11,7 @@ import com.github.triangle.{BaseField, DelegatingPortableField}
  * Date: 8/11/11
  * Time: 11:35 PM
  */
-case class ParentField(entityType: CrudType) extends PlatformTypes with DelegatingPortableField[ID] {
+case class ParentField(entityType: CrudType) extends DelegatingPortableField[ID] {
   val fieldName = entityType.entityName.toLowerCase + BaseColumns._ID
 
   protected val delegate = entityType.UriPathId

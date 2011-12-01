@@ -1,6 +1,6 @@
 package com.github.scala.android.crud
 
-import common.PlatformTypes
+import common.PlatformTypes._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.MustMatchers
@@ -16,7 +16,7 @@ import persistence.MutableIdPk
  */
 @RunWith(classOf[JUnitRunner])
 class CrudPersistenceSpec extends Spec with MustMatchers with MyEntityTesting {
-  class MyEntity(givenId: Option[PlatformTypes#ID] = None) extends MutableIdPk {
+  class MyEntity(givenId: Option[ID] = None) extends MutableIdPk {
     this.id = givenId
   }
   val persistence = new SeqCrudPersistence[MyEntity] {
