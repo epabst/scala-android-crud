@@ -48,7 +48,7 @@ class CrudListActivitySpec extends MustMatchers with MyEntityTesting with CrudMo
     val entityType = new MyEntityType(persistence, listAdapter)
     val activity = new CrudListActivity(entityType, application)
     activity.onCreateContextMenu(contextMenu, ignoredView, ignoredMenuInfo)
-    verify(contextMenu).add(0, 0, 0, res.R.string.delete_item)
+    verify(contextMenu).add(0, res.R.string.delete_item, 0, res.R.string.delete_item)
   }
 
   @Test

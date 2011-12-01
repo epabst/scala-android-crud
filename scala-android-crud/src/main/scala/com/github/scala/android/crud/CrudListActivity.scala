@@ -92,7 +92,7 @@ class CrudListActivity(val entityType: CrudType, val application: CrudApplicatio
   override def onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo) {
     super.onCreateContextMenu(menu, v, menuInfo)
     val actions = contextMenuActions
-    actions.foreach(action => menu.add(0, actions.indexOf(action), actions.indexOf(action), action.title.get))
+    actions.foreach(action => menu.add(0, action.actionId, actions.indexOf(action), action.title.get))
   }
 
   override def onContextItemSelected(item: MenuItem) = {
