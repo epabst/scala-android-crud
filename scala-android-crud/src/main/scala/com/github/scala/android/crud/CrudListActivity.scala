@@ -91,14 +91,15 @@ class CrudListActivity(val entityType: CrudType, val application: CrudApplicatio
 
   override def onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo) {
     super.onCreateContextMenu(menu, v, menuInfo)
-    val actions = contextMenuActions
-    actions.foreach(action => menu.add(0, action.actionId, actions.indexOf(action), action.title.get))
+    val commands = contextMenuActions
+    for ((command, index) <- commands.zip(Stream.from(0)))
+      menu.add(0, command.commandId, index, command.title.get)
   }
 
   override def onContextItemSelected(item: MenuItem) = {
     val actions = contextMenuActions
     val info = item.getMenuInfo.asInstanceOf[AdapterContextMenuInfo]
-    actions.find(_.actionId == item.getItemId) match {
+    actions.find(_.commandId == item.getItemId) match {
       case Some(action) => action.invoke(uriWithId(info.id), this); true
       case None => super.onContextItemSelected(item)
     }
