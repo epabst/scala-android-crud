@@ -69,6 +69,10 @@ trait BaseCrudActivity extends ActivityWithVars with OptionsMenuActivity[Action]
     actions.find(_.actionId == item.getItemId) match {
       case Some(action) =>
         action.invoke(currentUriPath, this)
+        if (LastUndoable.get(this).exists(_.undoAction.actionId == item.getItemId)) {
+          LastUndoable.clear(this)
+          optionsMenu = generateOptionsMenu
+        }
         true
       case None => super.onOptionsItemSelected(item)
     }
