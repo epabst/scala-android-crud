@@ -6,29 +6,34 @@ import android.content.{Context, Intent}
 import android.net.Uri
 
 /**
- * Represents an action that a user can initiate.
- * It's equals/hashCode MUST be implemented in order to suppress the action that is already happening.
+ * Represents something that a user can initiate.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 8/26/11
  * Time: 6:39 AM
  */
-trait Action {
-  /** The optional icon to display for this action. */
+trait MenuAction {
+  /** The optional icon to display. */
   def icon: Option[ImgKey]
 
   /**
-   * The title to display for this action.
-   * If the title is None, it can't be displayed in the context menu for an item.
+   * The title to display.
+   * If the title is None, it can't be displayed in a context menu for a list item.
    * If both title and icon are None,
-   * then it can't be displayed in the main options menu, but can still be triggered as a default action.
+   * then it can't be displayed in the main options menu, but can still be triggered as a default.
    */
   def title: Option[SKey]
 
-  /** An actionId that can be used to identify if the Action is the same as another in a list of Actions.
+  /** An actionId that can be used to identify if it's the same as another in a list.
     * It uses the title or else the icon or else the hash code.
     */
   def actionId: ActionId = title.orElse(icon).getOrElse(##)
+}
 
+/**
+ * Represents an action that a user can initiate.
+ * It's equals/hashCode MUST be implemented in order to suppress the action that is already happening.
+ */
+trait Action extends MenuAction {
   /** Runs the action, given the uri and the current state of the application. */
   def invoke(uri: UriPath, activity: ActivityWithVars)
 }

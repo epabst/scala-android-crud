@@ -1,8 +1,8 @@
 package com.github.scala.android.crud
 
-import action.{ContextVar, ActivityWithVars, Action, UriPath}
+import action._
 import com.github.triangle.Logging
-import android.view.{MenuItem, Menu}
+import android.view.MenuItem
 import android.content.Intent
 import common.{Common, Timing, PlatformTypes}
 import PlatformTypes._
@@ -14,7 +14,7 @@ import PlatformTypes._
  * Time: 7:01 PM
  */
 
-trait BaseCrudActivity extends ActivityWithVars with Logging with Timing {
+trait BaseCrudActivity extends ActivityWithVars with OptionsMenuActivity with Logging with Timing {
   def entityType: CrudType
 
   def application: CrudApplication
@@ -54,28 +54,16 @@ trait BaseCrudActivity extends ActivityWithVars with Logging with Timing {
     LastUndoable.clear(this).foreach(_.closeAction.foreach(_.invoke(currentUriPath, this)))
     // Remember the new undoable operation
     LastUndoable.set(this, undoable)
+    invalidateGeneratedOptionsMenu()
   }
 
   protected def applicableActions: List[Action] = LastUndoable.get(this).map(_.undoAction).toList ++ normalActions
 
-  protected def optionsMenuActions: List[Action] =
+  protected def generateOptionsMenu: List[Action] =
     applicableActions.filter(action => action.title.isDefined || action.icon.isDefined)
 
-  private def addActionsToMenu(menu: Menu, actions: scala.List[Action]) {
-    for (action <- actions) {
-      val index = actions.indexOf(action)
-      val menuItem = action.title.map(menu.add(0, action.actionId, index, _)).getOrElse(menu.add(0, action.actionId, index, ""))
-      action.icon.map(icon => menuItem.setIcon(icon))
-    }
-  }
-
-  override def onCreateOptionsMenu(menu: Menu): Boolean = {
-    addActionsToMenu(menu, optionsMenuActions)
-    true
-  }
-
   override def onOptionsItemSelected(item: MenuItem): Boolean = {
-    val actions = optionsMenuActions
+    val actions = generateOptionsMenu
     actions.find(_.actionId == item.getItemId) match {
       case Some(action) =>
         action.invoke(currentUriPath, this)
