@@ -61,21 +61,27 @@ trait BaseCrudActivity extends ActivityWithVars with Logging with Timing {
   protected def optionsMenuActions: List[Action] =
     applicableActions.filter(action => action.title.isDefined || action.icon.isDefined)
 
-  override def onCreateOptionsMenu(menu: Menu): Boolean = {
-    val actions = optionsMenuActions
+  private def addActionsToMenu(menu: Menu, actions: scala.List[Action]) {
     for (action <- actions) {
       val index = actions.indexOf(action)
-      val menuItem = action.title.map(menu.add(0, index, index, _)).getOrElse(menu.add(0, index, index, ""))
+      val menuItem = action.title.map(menu.add(0, action.actionId, index, _)).getOrElse(menu.add(0, action.actionId, index, ""))
       action.icon.map(icon => menuItem.setIcon(icon))
     }
+  }
+
+  override def onCreateOptionsMenu(menu: Menu): Boolean = {
+    addActionsToMenu(menu, optionsMenuActions)
     true
   }
 
   override def onOptionsItemSelected(item: MenuItem): Boolean = {
     val actions = optionsMenuActions
-    val action = actions(item.getItemId)
-    action.invoke(currentUriPath, this)
-    true
+    actions.find(_.actionId == item.getItemId) match {
+      case Some(action) =>
+        action.invoke(currentUriPath, this)
+        true
+      case None => super.onOptionsItemSelected(item)
+    }
   }
 
   //available to be overridden for testing

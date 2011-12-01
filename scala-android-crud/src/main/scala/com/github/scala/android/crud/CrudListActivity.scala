@@ -98,8 +98,10 @@ class CrudListActivity(val entityType: CrudType, val application: CrudApplicatio
   override def onContextItemSelected(item: MenuItem) = {
     val actions = contextMenuActions
     val info = item.getMenuInfo.asInstanceOf[AdapterContextMenuInfo]
-    actions(item.getItemId).invoke(uriWithId(info.id), this)
-    true
+    actions.find(_.actionId == item.getItemId) match {
+      case Some(action) => action.invoke(uriWithId(info.id), this); true
+      case None => super.onContextItemSelected(item)
+    }
   }
 
   protected def normalActions = entityType.getListActions(application)

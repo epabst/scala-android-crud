@@ -24,6 +24,11 @@ trait Action {
    */
   def title: Option[SKey]
 
+  /** An actionId that can be used to identify if the Action is the same as another in a list of Actions.
+    * It uses the title or else the icon or else the hash code.
+    */
+  def actionId: ActionId = title.orElse(icon).getOrElse(##)
+
   /** Runs the action, given the uri and the current state of the application. */
   def invoke(uri: UriPath, activity: ActivityWithVars)
 }
