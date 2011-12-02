@@ -27,10 +27,10 @@ trait AuthorContext {
               getterFromItem[Int] {
                 case UriField(Some(uri)) && CrudContextField(Some(crudContext)) => {
                   println("calculating bookCount for " + uri + " and " + crudContext)
-                  BookCrudType.withEntityPersistence(crudContext, { persistence =>
+                  BookCrudType.withEntityPersistence(crudContext) { persistence =>
                     val books = persistence.findAll(uri)
                     Some(books.size)
-                  })
+                  }
                 }
               }
     )

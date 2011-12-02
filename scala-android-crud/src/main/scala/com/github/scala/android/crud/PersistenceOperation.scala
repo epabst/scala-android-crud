@@ -13,7 +13,7 @@ abstract class PersistenceOperation(entityType: CrudType, val application: CrudA
   def invoke(uri: UriPath, persistence: CrudPersistence)
 
   def invoke(uri: UriPath, activity: ActivityWithVars) {
-    entityType.withEntityPersistence(new CrudContext(activity, application), { persistence => invoke(uri, persistence) })
+    entityType.withEntityPersistence(new CrudContext(activity, application)) { persistence => invoke(uri, persistence) }
   }
 }
 

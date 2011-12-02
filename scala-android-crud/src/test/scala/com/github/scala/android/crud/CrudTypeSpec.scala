@@ -135,6 +135,7 @@ class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with Crud
     stub(activity.crudContext).toReturn(crudContext)
     val vars = new ContextVars {}
     stub(crudContext.vars).toReturn(vars)
+    stub(crudContext.context).toReturn(activity)
     stub(activity.variables).toReturn(vars.variables)
     stub(persistence.find(uri)).toReturn(Some(readable))
     when(activity.allowUndo(notNull.asInstanceOf[Undoable])).thenAnswer(answerWithInvocation { invocationOnMock =>

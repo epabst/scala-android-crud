@@ -114,18 +114,18 @@ class SQLiteCrudTypeSpec extends MustMatchers with MyEntityTesting with CrudMock
 
     val writable = TestEntityType.newWritable
     TestEntityType.copy(unitAsRef, writable)
-    val id = TestEntityType.withEntityPersistence(crudContext, _.save(None, writable))
+    val id = TestEntityType.withEntityPersistence(crudContext) { _.save(None, writable) }
     //it must have refreshed the listAdapter
     listAdapter.getCount must be (if (runningOnRealAndroid) 1 else 0)
 
     TestEntityType.copy(Map("age" -> 50), writable)
     listAdapter.registerDataSetObserver(observer)
-    TestEntityType.withEntityPersistence(crudContext, _.save(Some(id), writable))
+    TestEntityType.withEntityPersistence(crudContext) { _.save(Some(id), writable) }
     //it must have refreshed the listAdapter (notified the observer)
     listAdapter.unregisterDataSetObserver(observer)
     listAdapter.getCount must be (if (runningOnRealAndroid) 1 else 0)
 
-    TestEntityType.withEntityPersistence(crudContext, _.delete(TestEntityType.toUri(id)))
+    TestEntityType.withEntityPersistence(crudContext) { _.delete(TestEntityType.toUri(id)) }
     //it must have refreshed the listAdapter
     listAdapter.getCount must be (0)
   }

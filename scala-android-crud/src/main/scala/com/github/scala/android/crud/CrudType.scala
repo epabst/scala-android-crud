@@ -164,7 +164,7 @@ trait CrudType extends FieldList with Logging with Timing {
 
   def copyFromPersistedEntity(uriPathWithId: UriPath, crudContext: CrudContext): Option[PortableValue] = {
     val contextItems = List(uriPathWithId, crudContext, Unit)
-    withEntityPersistence(crudContext, _.find(uriPathWithId).map { readable =>
+    withEntityPersistence(crudContext)(_.find(uriPathWithId).map { readable =>
       debug("Copying " + entityName + "#" + IdField(readable) + " to " + this)
       copyFromItem(readable +: contextItems)
     })
@@ -225,7 +225,7 @@ trait CrudType extends FieldList with Logging with Timing {
 
   protected def createEntityPersistence(crudContext: CrudContext): CrudPersistence
 
-  final def withEntityPersistence[T](crudContext: CrudContext, f: CrudPersistence => T): T = {
+  final def withEntityPersistence[T](crudContext: CrudContext)(f: CrudPersistence => T): T = {
     val persistence = openEntityPersistence(crudContext)
     try f(persistence)
     finally persistence.close()
@@ -302,24 +302,29 @@ trait CrudType extends FieldList with Logging with Timing {
     }
   }
 
-  private[crud] def undoableDelete(uri: UriPath, activity: BaseCrudActivity)(persistence: CrudPersistence) {
+  private[crud] def undoableDelete(uri: UriPath)(persistence: CrudPersistence) {
     persistence.find(uri).foreach { readable =>
       val id = idField.getter(readable)
       val writable = transform(newWritable, readable)
       persistence.delete(uri)
-      val undoDeleteOperation = new PersistenceOperation(this, activity.application) {
+      val undoDeleteOperation = new PersistenceOperation(this, persistence.crudContext.application) {
         def invoke(uri: UriPath, persistence: CrudPersistence) {
           persistence.save(id, writable)
         }
       }
       //todo delete childEntities(application) recursively
-      activity.allowUndo(Undoable(Action(Command(None, Some(res.R.string.undo_delete)), undoDeleteOperation), None))
+      val context = persistence.crudContext.context
+      context match {
+        case activity: BaseCrudActivity =>
+          activity.allowUndo(Undoable(Action(Command(None, Some(res.R.string.undo_delete)), undoDeleteOperation), None))
+        case _ =>
+      }
     }
   }
 
   /** Delete an entity by Uri with an undo option.  It can be overridden to do a confirmation box if desired. */
   def startDelete(uri: UriPath, activity: BaseCrudActivity) {
-    withEntityPersistence(activity.crudContext, undoableDelete(uri, activity))
+    withEntityPersistence(activity.crudContext)(undoableDelete(uri))
   }
 }
 

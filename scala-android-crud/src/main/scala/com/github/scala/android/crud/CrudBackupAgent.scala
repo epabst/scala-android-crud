@@ -76,13 +76,13 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Con
   }
 
   def onBackup(entityType: CrudType, data: BackupTarget, crudContext: CrudContext) {
-    entityType.withEntityPersistence[Unit](crudContext, persistence => {
-      persistence.findAll(UriPath.EMPTY).foreach(entity => {
+    entityType.withEntityPersistence[Unit](crudContext) { persistence =>
+      persistence.findAll(UriPath.EMPTY).foreach { entity =>
         val map = entityType.transform(Map[String,Any](), entity)
         val id = PersistedId(entity)
         data.writeEntity(entityType.entityName + "#" + id, Some(map))
-      })
-    })
+      }
+    }
   }
 
   final def onRestore(data: BackupDataInput, appVersionCode: Int, newState: ParcelFileDescriptor) {
@@ -128,7 +128,7 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Con
     debug("Restoring " + restoreItem.key + " <- " + restoreItem.map)
     val id = restoreItem.key.substring(restoreItem.key.lastIndexOf("#") + 1).toLong
     val writable = entityType.transform(entityType.newWritable, restoreItem.map)
-    entityType.withEntityPersistence(crudContext, _.save(Some(id), writable))
+    entityType.withEntityPersistence(crudContext) { _.save(Some(id), writable) }
     Unit
   }
 }
@@ -169,19 +169,17 @@ object DeletedEntityIdCrudType extends SQLiteCrudType with HiddenEntityType {
   def recordDeletion(entityType: CrudType, id: ID, context: ContextWithVars) {
     val crudContext = new CrudContext(context, application)
     val writable = transform(newWritable, Map(entityNameField.name -> entityType.entityName, entityIdField.name -> id))
-    withEntityPersistence(crudContext, { persistence =>
-      persistence.save(None, writable)
-    })
+    withEntityPersistence(crudContext) { _.save(None, writable) }
   }
 
   def writeEntityRemovals(data: BackupTarget, context: ContextWithVars) {
     val crudContext = new CrudContext(context, application)
-    withEntityPersistence(crudContext, { persistence =>
+    withEntityPersistence(crudContext) { persistence =>
       persistence.findAll(UriPath.EMPTY).foreach { entity =>
         val deletedEntityName: String = entityNameField(entity)
         val deletedId: ID = entityIdField(entity)
         data.writeEntity(deletedEntityName + "#" + deletedId, None)
       }
-    })
+    }
   }
 }
