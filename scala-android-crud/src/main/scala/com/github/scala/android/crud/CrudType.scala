@@ -4,13 +4,12 @@ import action._
 import android.view.View
 import com.github.triangle.JavaUtil._
 import android.widget.{ListAdapter, BaseAdapter}
-import common.{UriPath, Common, Timing}
+import common.{UriPath, Timing}
 import Operation._
 import android.app.{Activity, ListActivity}
 import com.github.triangle._
 import common.PlatformTypes._
-import persistence.CursorField.PersistedId
-import persistence.{CursorField, PersistenceListener}
+import persistence.{EntityType, CursorField, PersistenceListener}
 import PortableField.toSome
 import view.AndroidResourceAnalyzer._
 import java.lang.IllegalStateException
@@ -22,36 +21,10 @@ import java.lang.IllegalStateException
  * Date: 2/23/11
  * Time: 3:24 PM
  */
-trait CrudType extends FieldList with Logging with Timing {
-  override lazy val logTag = Common.tryToEvaluate(entityName).getOrElse(Common.logTag)
-
+trait CrudType extends EntityType with Timing {
   trace("Instantiated CrudType: " + this)
 
-  //this is the type used for internationalized strings
-  def entityName: String
-
   lazy val entityNameLayoutPrefix = NamingConventions.toLayoutPrefix(entityName)
-
-  object UriPathId extends Field[ID](UriPath.uriIdField(entityName))
-
-  /** This should only be used in order to override this.  IdField should be used instead of this.
-    * A field that uses IdPk.id is NOT included here because it could match a related entity that also extends IdPk,
-    * which results in many problems.
-    */
-  protected def idField: PortableField[ID] = UriPathId + PersistedId
-  object IdField extends Field[ID](idField)
-
-  /**
-   * The fields other than the primary key.
-   */
-  def valueFields: List[BaseField]
-
-  /**
-   * These are all of the entity's fields, which includes IdPk.idField and the valueFields.
-   */
-  final lazy val fields: List[BaseField] = IdField +: valueFields
-
-  def toUri(id: ID) = UriPath(entityName, id.toString)
 
   def rIdClasses: Seq[Class[_]] = detectRIdClasses(this.getClass)
   def rLayoutClasses: Seq[Class[_]] = detectRLayoutClasses(this.getClass)
@@ -75,10 +48,6 @@ trait CrudType extends FieldList with Logging with Timing {
 
   final def hasDisplayPage = displayLayout.isDefined
   lazy val isUpdateable: Boolean = !CursorField.updateablePersistedFields(this, rIdClasses).isEmpty
-
-  //this is here because the IDE thinks that Unit is not an AnyRef
-  val unitAsRef: AnyRef = Unit.asInstanceOf[AnyRef]
-  lazy val unitPortableValue = copyFrom(unitAsRef)
 
   private val persistenceVarForListAdapter = new ContextVar[CrudPersistence]
 
@@ -168,8 +137,6 @@ trait CrudType extends FieldList with Logging with Timing {
     })
   }
 
-  override def toString() = entityName
-
   /**
    * Gets the actions that a user can perform from a list of the entities.
    * May be overridden to modify the list of actions.
@@ -201,12 +168,6 @@ trait CrudType extends FieldList with Logging with Timing {
 
   protected def getReadOnlyEntityActions(application: CrudApplication): List[Action] =
     displayLayout.map(_ => displayAction).toList ::: childEntities(application).map(_.listAction)
-
-  /**
-   * Instantiates a data buffer which can be saved by EntityPersistence.
-   * The fields must support copying into this object.
-   */
-  def newWritable: AnyRef
 
   /** Listeners that will listen to any EntityPersistence that is opened. */
   val persistenceListeners = new ContextVar[Seq[PersistenceListener]]
