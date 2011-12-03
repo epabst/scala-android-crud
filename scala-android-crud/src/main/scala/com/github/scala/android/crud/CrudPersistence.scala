@@ -1,6 +1,6 @@
 package com.github.scala.android.crud
 
-import action.UriPath
+import common.UriPath
 import common.Common
 import persistence._
 import com.github.triangle.{Setter, Getter, FieldList}

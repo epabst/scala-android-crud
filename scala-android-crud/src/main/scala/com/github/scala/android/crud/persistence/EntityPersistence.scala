@@ -2,7 +2,7 @@ package com.github.scala.android.crud.persistence
 
 import com.github.scala.android.crud.common.{ListenerHolder, Timing}
 import com.github.scala.android.crud.common.PlatformTypes._
-import com.github.scala.android.crud.action.UriPath
+import com.github.scala.android.crud.common.UriPath
 
 trait PersistenceListener {
   def onSave(id: ID)

@@ -13,7 +13,7 @@ import EasyMock.notNull
 import com.github.triangle.PortableField._
 import CrudBackupAgent._
 import android.os.ParcelFileDescriptor
-import action.UriPath
+import common.UriPath
 
 /**
  * A test for {@link CrudBackupAgent}.

@@ -4,7 +4,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.scalatest.matchers.MustMatchers
-import action.UriPath
+import common.UriPath
 import org.scalatest.mock.EasyMockSugar
 import persistence.SQLiteCriteria
 import ParentField.foreignKey

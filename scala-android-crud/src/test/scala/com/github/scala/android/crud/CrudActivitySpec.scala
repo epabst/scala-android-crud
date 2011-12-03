@@ -11,7 +11,7 @@ import org.scalatest.matchers.MustMatchers
 import Operation._
 import android.widget.ListAdapter
 import java.lang.IllegalStateException
-import action.UriPath
+import common.UriPath
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
 import actors.Future

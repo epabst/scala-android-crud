@@ -1,8 +1,8 @@
-package com.github.scala.android.crud.action
+package com.github.scala.android.crud.common
 
-import com.github.scala.android.crud.common.PlatformTypes._
+import PlatformTypes._
 import com.github.triangle.ValueFormat._
-import android.net.Uri
+import com.github.triangle.{Getter, FieldGetter}
 
 /**
  * A convenience wrapper for UriPath.
@@ -35,11 +35,10 @@ case class UriPath(segments: String*) {
 object UriPath {
   val EMPTY: UriPath = UriPath()
 
-  import scala.collection.JavaConversions._
-  def apply(uri: Uri): UriPath = UriPath(uri.getPathSegments.toList:_*)
-
   private[UriPath] def replacePathSegments(uri: UriPath, f: Seq[String] => Seq[String]): UriPath = {
     val path = f(uri.segments)
     UriPath(path: _*)
   }
+
+  def uriIdField(entityName: String): FieldGetter[UriPath,ID] = Getter[UriPath,ID](_.findId(entityName))
 }

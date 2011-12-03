@@ -1,15 +1,13 @@
 package com.github.scala.android.crud
 
 import action._
-import action.UriPath
 import android.view.View
 import com.github.triangle.JavaUtil._
 import android.widget.{ListAdapter, BaseAdapter}
+import common.{UriPath, Common, Timing}
 import Operation._
 import android.app.{Activity, ListActivity}
-import com.github.scala.android.crud.view.ViewField._
 import com.github.triangle._
-import common.{Common, Timing}
 import common.PlatformTypes._
 import persistence.CursorField.PersistedId
 import persistence.{CursorField, PersistenceListener}
@@ -34,7 +32,7 @@ trait CrudType extends FieldList with Logging with Timing {
 
   lazy val entityNameLayoutPrefix = NamingConventions.toLayoutPrefix(entityName)
 
-  object UriPathId extends Field[ID](uriIdField(entityName))
+  object UriPathId extends Field[ID](UriPath.uriIdField(entityName))
 
   /** This should only be used in order to override this.  IdField should be used instead of this.
     * A field that uses IdPk.id is NOT included here because it could match a related entity that also extends IdPk,

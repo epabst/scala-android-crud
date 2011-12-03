@@ -1,9 +1,9 @@
 package com.github.scala.android.crud
 
-import action.{ContextWithVars, UriPath}
+import action.ContextWithVars
 import android.app.backup.{BackupDataOutput, BackupDataInput, BackupAgent}
 import com.github.triangle.Logging
-import common.{CalculatedIterator, Common}
+import common.{UriPath, CalculatedIterator, Common}
 import persistence.CursorField._
 import android.os.ParcelFileDescriptor
 import java.io.{ObjectInputStream, ByteArrayInputStream, ObjectOutputStream, ByteArrayOutputStream}

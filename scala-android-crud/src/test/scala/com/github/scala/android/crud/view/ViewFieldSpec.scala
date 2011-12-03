@@ -11,11 +11,11 @@ import org.junit.Test
 import android.content.Context
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
-import com.github.scala.android.crud.action.UriPath
+import com.github.scala.android.crud.common.UriPath
+import UriPath.uriIdField
 import android.widget._
 import java.util.{Locale, GregorianCalendar, Calendar, Arrays}
 import com.github.triangle.Getter
-import com.github.triangle.Getter._
 
 /**
  * A behavior specification for {@link ViewField}.

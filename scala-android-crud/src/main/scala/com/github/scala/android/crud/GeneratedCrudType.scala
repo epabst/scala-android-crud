@@ -1,6 +1,6 @@
 package com.github.scala.android.crud
 
-import action.UriPath
+import common.UriPath
 import android.view.{ViewGroup, View}
 import com.github.triangle.PortableField.identityField
 import android.app.ListActivity

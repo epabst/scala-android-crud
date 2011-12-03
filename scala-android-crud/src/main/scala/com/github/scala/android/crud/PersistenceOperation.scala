@@ -1,6 +1,7 @@
 package com.github.scala.android.crud
 
-import action.{Operation, ActivityWithVars, UriPath}
+import action.{Operation, ActivityWithVars}
+import common.UriPath
 
 /**
  * An operation that interacts with an entity's persistence.

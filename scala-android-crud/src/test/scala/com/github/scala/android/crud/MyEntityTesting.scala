@@ -1,6 +1,6 @@
 package com.github.scala.android.crud
 
-import action.UriPath
+import common.UriPath
 import common.Common
 import scala.collection.mutable
 import mutable.Map

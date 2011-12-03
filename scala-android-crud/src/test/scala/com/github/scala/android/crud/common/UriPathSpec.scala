@@ -1,4 +1,4 @@
-package com.github.scala.android.crud.action
+package com.github.scala.android.crud.common
 
 import org.junit.runner.RunWith
 import org.junit.Test

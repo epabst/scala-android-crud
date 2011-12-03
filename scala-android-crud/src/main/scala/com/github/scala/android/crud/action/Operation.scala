@@ -4,6 +4,7 @@ import android.app.Activity
 import com.github.scala.android.crud.common.PlatformTypes._
 import android.content.{Context, Intent}
 import android.net.Uri
+import com.github.scala.android.crud.common.UriPath
 
 /**
  * Represents something that a user can initiate.
@@ -63,7 +64,13 @@ case class Action(command: Command, operation: Operation) {
 }
 
 case class RichIntent(intent: Intent) {
-  def uriPath: UriPath = UriPath(intent.getData)
+  import RichIntent._
+  def uriPath: UriPath = toUriPath(intent.getData)
+}
+
+object RichIntent {
+  import scala.collection.JavaConversions._
+  def toUriPath(uri: Uri): UriPath = UriPath(uri.getPathSegments.toList:_*)
 }
 
 trait StartActivityOperation extends Operation {

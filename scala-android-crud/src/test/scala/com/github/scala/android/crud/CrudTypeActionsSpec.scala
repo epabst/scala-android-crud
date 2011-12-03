@@ -1,7 +1,8 @@
 package com.github.scala.android.crud
 
 import _root_.android.content.Intent
-import action.{StartActivityOperation, Action, UriPath}
+import action.{StartActivityOperation, Action}
+import common.UriPath
 import org.junit.Test
 import org.junit.runner.RunWith
 import com.xtremelabs.robolectric.RobolectricTestRunner

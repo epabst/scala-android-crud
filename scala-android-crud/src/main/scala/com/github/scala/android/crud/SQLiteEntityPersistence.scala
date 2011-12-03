@@ -11,7 +11,7 @@ import scala.None
 import collection.mutable.SynchronizedQueue
 import android.app.backup.BackupManager
 import android.database.sqlite.{SQLiteOpenHelper, SQLiteDatabase}
-import action.UriPath
+import common.UriPath
 
 /**
  * EntityPersistence for SQLite.

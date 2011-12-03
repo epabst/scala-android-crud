@@ -4,8 +4,9 @@ import action._
 import com.github.triangle.Logging
 import android.view.MenuItem
 import android.content.Intent
-import common.{Common, Timing, PlatformTypes}
+import common.{UriPath, Common, Timing, PlatformTypes}
 import PlatformTypes._
+import RichIntent._
 
 /**
  * Support for the different Crud Activity's.
@@ -28,7 +29,7 @@ trait BaseCrudActivity extends ActivityWithVars with OptionsMenuActivity with Lo
   }
 
   def currentUriPath: UriPath = {
-    Option(getIntent).map(intent => Option(intent.getData).map(UriPath(_)).getOrElse {
+    Option(getIntent).map(intent => Option(intent.getData).map(toUriPath(_)).getOrElse {
       // If no data was given in the intent (because we were started
       // as a MAIN activity), then use our default content provider.
       intent.setData(Operation.toUri(defaultContentUri))

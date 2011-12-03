@@ -1,6 +1,6 @@
 package com.github.scala.android.crud
 
-import action.UriPath
+import common.UriPath
 import org.junit.runner.RunWith
 import scala.collection.mutable
 import org.scalatest.matchers.MustMatchers

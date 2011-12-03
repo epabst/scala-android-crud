@@ -5,7 +5,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.Spec
-import com.github.scala.android.crud.action.UriPath
+import com.github.scala.android.crud.common.UriPath
 import persistence.MutableIdPk
 
 /**

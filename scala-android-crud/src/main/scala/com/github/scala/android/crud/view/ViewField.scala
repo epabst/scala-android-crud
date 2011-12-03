@@ -6,7 +6,6 @@ import com.github.scala.android.crud.common.PlatformTypes._
 import com.github.triangle._
 import PortableField._
 import java.util.{Calendar, Date, GregorianCalendar}
-import com.github.scala.android.crud.action.UriPath
 import FieldLayout._
 import ValueFormat._
 import AndroidResourceAnalyzer._
@@ -169,6 +168,4 @@ object ViewField {
       override def toString = "enumerationView(" + enum.getClass.getSimpleName + ")"
     }
   }
-
-  def uriIdField(entityName: String): FieldGetter[UriPath,ID] = Getter[UriPath,ID](_.findId(entityName))
 }

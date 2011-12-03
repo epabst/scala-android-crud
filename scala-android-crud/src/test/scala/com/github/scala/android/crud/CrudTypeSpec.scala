@@ -1,6 +1,7 @@
 package com.github.scala.android.crud
 
-import action.{UriPath, ContextVars}
+import action.ContextVars
+import common.UriPath
 import org.junit.runner.RunWith
 import persistence.CursorField
 import scala.collection.mutable
@@ -114,6 +115,7 @@ class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with Crud
     val readable = mutable.Map[String,Any]()
     val uri = UriPath(entity.entityName) / 345L
     stub(activity.crudContext).toReturn(crudContext)
+    stub(persistence.crudContext).toReturn(crudContext)
     stub(persistence.find(uri)).toReturn(Some(readable))
     stub(activity.allowUndo(notNull.asInstanceOf[Undoable])).toAnswer(answerWithInvocation { invocationOnMock =>
       val currentArguments = invocationOnMock.getArguments
@@ -137,6 +139,7 @@ class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with Crud
     stub(crudContext.vars).toReturn(vars)
     stub(crudContext.context).toReturn(activity)
     stub(activity.variables).toReturn(vars.variables)
+    stub(persistence.crudContext).toReturn(crudContext)
     stub(persistence.find(uri)).toReturn(Some(readable))
     when(activity.allowUndo(notNull.asInstanceOf[Undoable])).thenAnswer(answerWithInvocation { invocationOnMock =>
       val currentArguments = invocationOnMock.getArguments

@@ -1,6 +1,6 @@
 package com.github.scala.android.crud
 
-import action.{Action, UriPath}
+import action.Action
 import android.widget.{ListAdapter, ListView}
 import _root_.android.app.ListActivity
 import android.os.Bundle
@@ -8,6 +8,7 @@ import android.view.{ContextMenu, View, MenuItem}
 import android.view.ContextMenu.ContextMenuInfo
 import android.widget.AdapterView.AdapterContextMenuInfo
 import com.github.triangle.{JavaUtil, PortableValue}
+import common.UriPath
 import JavaUtil.toRunnable
 import persistence.PersistenceListener
 import common.PlatformTypes._
