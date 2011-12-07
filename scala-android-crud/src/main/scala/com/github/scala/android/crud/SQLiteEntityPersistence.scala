@@ -13,10 +13,6 @@ import android.app.backup.BackupManager
 import android.database.sqlite.{SQLiteOpenHelper, SQLiteDatabase}
 import common.UriPath
 
-object SQLitePersistence {
-  def toTableName(entityName: String): String = SQLiteUtil.toNonReservedWord(entityName)
-}
-
 /**
  * EntityPersistence for SQLite.
  * @author Eric Pabst (epabst@gmail.com)
@@ -26,7 +22,7 @@ object SQLitePersistence {
 class SQLiteEntityPersistence(val entityType: EntityType, val crudContext: CrudContext)
   extends CrudPersistence with Logging {
 
-  lazy val tableName = SQLitePersistence.toTableName(entityType.entityName)
+  lazy val tableName = SQLitePersistenceFactory.toTableName(entityType.entityName)
   lazy val databaseSetup = new GeneratedDatabaseSetup(crudContext)
   lazy val database: SQLiteDatabase = databaseSetup.getWritableDatabase
   private lazy val backupManager = new BackupManager(crudContext.context)
@@ -110,7 +106,7 @@ class GeneratedDatabaseSetup(crudContext: CrudContext) extends SQLiteOpenHelper(
     val application = crudContext.application
     for (entityType <- application.allEntities.collect { case c: PersistedCrudType => c }) {
       val buffer = new StringBuffer
-      buffer.append("CREATE TABLE IF NOT EXISTS ").append(SQLitePersistence.toTableName(entityType.entityName)).append(" (").
+      buffer.append("CREATE TABLE IF NOT EXISTS ").append(SQLitePersistenceFactory.toTableName(entityType.entityName)).append(" (").
           append(BaseColumns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT")
       CursorField.persistedFields(entityType).filter(_.columnName != BaseColumns._ID).foreach { persisted =>
         buffer.append(", ").append(persisted.columnName).append(" ").append(persisted.persistedType.sqliteType)

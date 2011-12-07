@@ -4,7 +4,7 @@ import android.content.{ContentValues, Context}
 import android.view.View
 import android.database.Cursor
 import android.widget.{CursorAdapter, ListAdapter, ResourceCursorAdapter}
-import persistence.{EntityType, CursorStream}
+import persistence.{SQLiteUtil, EntityType, CursorStream}
 
 /**
  * A PersistenceFactory for SQLite.
@@ -32,4 +32,6 @@ object SQLitePersistenceFactory extends PersistenceFactory {
       case cursorAdapter: CursorAdapter => cursorAdapter.getCursor.requery()
     }
   }
+
+  def toTableName(entityName: String): String = SQLiteUtil.toNonReservedWord(entityName)
 }
