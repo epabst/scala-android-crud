@@ -214,7 +214,7 @@ trait CrudType extends EntityType with Timing {
       }
     }
 
-    protected def bindViewFromCacheOrItems(view: View, itemsToCopyAtPosition: => List[AnyRef], position: Long, activity: ListActivity) {
+    protected[crud] def bindViewFromCacheOrItems(view: View, itemsToCopyAtPosition: => List[AnyRef], position: Long, activity: ListActivity) {
       val cachedValue: Option[PortableValue] = findCachedPortableValue(activity, position)
       //set the cached or default values immediately instead of showing the column header names
       cachedValue match {

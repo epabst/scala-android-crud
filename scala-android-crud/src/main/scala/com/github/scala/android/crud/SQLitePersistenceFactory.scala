@@ -4,26 +4,25 @@ import android.content.{ContentValues, Context}
 import android.view.View
 import android.database.Cursor
 import android.widget.{CursorAdapter, ListAdapter, ResourceCursorAdapter}
-import persistence.CursorStream
+import persistence.{EntityType, CursorStream}
 
 /**
- * A CrudType for SQLite.
+ * A PersistenceFactory for SQLite.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 2/24/11
  * Time: 11:22 PM
  */
-
-trait SQLiteCrudType extends PersistedCrudType {
+object SQLitePersistenceFactory extends PersistenceFactory {
   def newWritable = new ContentValues
 
-  protected def createEntityPersistence(crudContext: CrudContext) = new SQLiteEntityPersistence(this, crudContext)
+  def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) = new SQLiteEntityPersistence(entityType, crudContext)
 
-  def setListAdapter(findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: CrudListActivity) {
+  def setListAdapter(crudType: CrudType, findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: CrudListActivity) {
     val CursorStream(cursor, _) = findAllResult
     activity.startManagingCursor(cursor)
-    activity.setListAdapter(new ResourceCursorAdapter(activity, rowLayout, cursor) with AdapterCaching {
+    activity.setListAdapter(new ResourceCursorAdapter(activity, crudType.rowLayout, cursor) with crudType.AdapterCaching {
       def bindView(view: View, context: Context, cursor: Cursor) {
-        bindViewFromCacheOrItems(view, transform(Map[String,Any](), cursor) :: contextItems, cursor.getPosition, activity)
+        bindViewFromCacheOrItems(view, crudType.transform(Map[String,Any](), cursor) :: contextItems, cursor.getPosition, activity)
       }
     })
   }
