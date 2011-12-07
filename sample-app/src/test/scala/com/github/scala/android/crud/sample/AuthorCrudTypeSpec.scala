@@ -35,9 +35,7 @@ class AuthorCrudTypeSpec extends Spec with MustMatchers with MockitoSugar {
         protected def createEntityPersistence(crudContext: CrudContext) = bookPersistence
       }
 
-      object AuthorCrudType extends AuthorCrudType with GeneratedCrudType[Map[String,Any]] {
-        protected def createEntityPersistence(crudContext: CrudContext) = throw new UnsupportedOperationException
-      }
+      object AuthorCrudType extends AuthorCrudType(mock[PersistenceFactory])
     }
     context.BookCrudType.bookPersistence.buffer += Map.empty[String,Any] += Map.empty[String,Any]
 

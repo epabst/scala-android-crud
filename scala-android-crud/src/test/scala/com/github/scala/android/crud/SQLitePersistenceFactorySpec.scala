@@ -19,13 +19,13 @@ import android.database.{Cursor, DataSetObserver}
 import android.widget.{ListView, ListAdapter}
 
 /**
- * A test for {@link SQLiteCrudType}.
+ * A test for {@link SQLitePersistenceFactory}.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 2/18/11
  * Time: 6:22 PM
  */
 @RunWith(classOf[RobolectricTestRunner])
-class SQLiteCrudTypeSpec extends MustMatchers with MyEntityTesting with CrudMockitoSugar {
+class SQLitePersistenceFactorySpec extends MustMatchers with MyEntityTesting with CrudMockitoSugar {
   val runningOnRealAndroid: Boolean = try {
     debug("Seeing if running on Real Android...")
     Class.forName("com.xtremelabs.robolectric.RobolectricTestRunner")
@@ -39,7 +39,7 @@ class SQLiteCrudTypeSpec extends MustMatchers with MyEntityTesting with CrudMock
   }
   val unitAsRef = Unit.asInstanceOf[AnyRef]
 
-  object TestEntityType extends SQLiteCrudType {
+  object TestEntityType extends PersistedCrudType(SQLitePersistenceFactory) {
     def entityName = "Test"
     val valueFields = List(persisted[Int]("age") + default(21))
 
@@ -138,12 +138,7 @@ class SQLiteCrudTypeSpec extends MustMatchers with MyEntityTesting with CrudMock
   }
 
   def tableNameMustNotBeReservedWord(name: String) {
-    val persistence = new SQLiteEntityPersistence(new SQLiteCrudType with HiddenEntityType {
-      def entityName = name
-
-      def valueFields = List.empty[BaseField]
-    }, mock[CrudContext])
-    persistence.tableName must be (name + "0")
+    SQLitePersistenceFactory.toTableName(name) must be (name + "0")
   }
 }
 

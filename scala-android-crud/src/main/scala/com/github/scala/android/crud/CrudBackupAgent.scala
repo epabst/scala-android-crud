@@ -147,7 +147,7 @@ case class RestoreItem(key: String, map: Map[String,Any])
  * This entity is in its own CrudApplication by itself, separate from any other CrudApplication.
  * It is intended to be in a separate database owned by the scala-android-crud framework.
  */
-object DeletedEntityIdCrudType extends SQLiteCrudType with HiddenEntityType {
+object DeletedEntityIdCrudType extends PersistedCrudType(SQLitePersistenceFactory) with HiddenEntityType {
 
   def entityName = "DeletedEntityId"
 

@@ -1,6 +1,6 @@
 package com.github.scala.android.crud
 
-import persistence.{EntityPersistence, EntityType}
+import persistence.EntityType
 import android.widget.ListAdapter
 
 /**
@@ -13,7 +13,7 @@ import android.widget.ListAdapter
 trait PersistenceFactory {
   def newWritable: AnyRef
 
-  def createEntityPersistence(entityType: EntityType, crudContext: CrudContext): EntityPersistence
+  def createEntityPersistence(entityType: EntityType, crudContext: CrudContext): CrudPersistence
 
   def setListAdapter(crudType: CrudType, findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: CrudListActivity)
 

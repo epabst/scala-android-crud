@@ -16,7 +16,7 @@ trait AuthorContext {
 
   def AuthorCrudType: AuthorCrudType
 
-  abstract class AuthorCrudType extends PersistedCrudType {
+  class AuthorCrudType(persistenceFactory: PersistenceFactory) extends PersistedCrudType(persistenceFactory) {
     def entityName = "Author"
 
     def valueFields = List(

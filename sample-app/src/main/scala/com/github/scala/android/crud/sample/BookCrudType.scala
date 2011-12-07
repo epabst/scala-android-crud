@@ -17,7 +17,7 @@ trait BookContext {
 
   def BookCrudType: BookCrudType
 
-  abstract class BookCrudType extends PersistedCrudType {
+  class BookCrudType(persistenceFactory: PersistenceFactory) extends PersistedCrudType(persistenceFactory) {
     def entityName = "Book"
 
     def valueFields = List(

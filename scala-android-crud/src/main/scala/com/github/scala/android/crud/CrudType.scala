@@ -287,7 +287,19 @@ trait CrudType extends EntityType with Timing {
   }
 }
 
-trait PersistedCrudType extends CrudType
+abstract class PersistedCrudType(persistenceFactory: PersistenceFactory) extends CrudType {
+  def newWritable = persistenceFactory.newWritable
+
+  protected def createEntityPersistence(crudContext: CrudContext) = persistenceFactory.createEntityPersistence(this, crudContext)
+
+  def setListAdapter(findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: CrudListActivity) {
+    persistenceFactory.setListAdapter(this, findAllResult,  contextItems, activity)
+  }
+
+  def refreshAfterDataChanged(listAdapter: ListAdapter) {
+    persistenceFactory.refreshAfterDataChanged(listAdapter)
+  }
+}
 
 /**
  * A trait for stubbing out the UI methods of CrudType for use when the entity will
