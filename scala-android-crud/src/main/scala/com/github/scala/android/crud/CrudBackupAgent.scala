@@ -7,6 +7,7 @@ import common.{UriPath, CalculatedIterator, Common}
 import persistence.CursorField._
 import android.os.ParcelFileDescriptor
 import java.io.{ObjectInputStream, ByteArrayInputStream, ObjectOutputStream, ByteArrayOutputStream}
+import persistence.EntityType
 import scala.collection.JavaConversions._
 import java.util.{Map => JMap,HashMap}
 import common.PlatformTypes._
@@ -166,7 +167,7 @@ object DeletedEntityIdCrudType extends SQLiteCrudType with HiddenEntityType {
    * it will be restored independent of this support, and it will then be re-added to the Backup Service later
    * just like any new entity being added.
    */
-  def recordDeletion(entityType: CrudType, id: ID, context: ContextWithVars) {
+  def recordDeletion(entityType: EntityType, id: ID, context: ContextWithVars) {
     val crudContext = new CrudContext(context, application)
     val writable = transform(newWritable, Map(entityNameField.name -> entityType.entityName, entityIdField.name -> id))
     withEntityPersistence(crudContext) { _.save(None, writable) }

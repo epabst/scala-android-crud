@@ -4,7 +4,7 @@ import android.content.{ContentValues, Context}
 import android.view.View
 import android.database.Cursor
 import android.widget.{CursorAdapter, ListAdapter, ResourceCursorAdapter}
-import persistence.{CursorStream, SQLiteUtil}
+import persistence.CursorStream
 
 /**
  * A CrudType for SQLite.
@@ -13,7 +13,7 @@ import persistence.{CursorStream, SQLiteUtil}
  * Time: 11:22 PM
  */
 
-trait SQLiteCrudType extends CrudType {
+trait SQLiteCrudType extends PersistedCrudType {
   def newWritable = new ContentValues
 
   protected def createEntityPersistence(crudContext: CrudContext) = new SQLiteEntityPersistence(this, crudContext)

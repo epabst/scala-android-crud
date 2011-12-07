@@ -6,7 +6,7 @@ import android.content.ContentValues
 import com.github.triangle.Logging
 import common.Common
 import common.PlatformTypes._
-import persistence.{SQLiteUtil, CursorStream, SQLiteCriteria, CursorField}
+import persistence._
 import scala.None
 import collection.mutable.SynchronizedQueue
 import android.app.backup.BackupManager
@@ -23,7 +23,7 @@ object SQLitePersistence {
  * Date: 2/3/11
  * Time: 6:17 PM
  */
-class SQLiteEntityPersistence(val entityType: SQLiteCrudType, val crudContext: CrudContext)
+class SQLiteEntityPersistence(val entityType: EntityType, val crudContext: CrudContext)
   extends CrudPersistence with Logging {
 
   lazy val tableName = SQLitePersistence.toTableName(entityType.entityName)
@@ -108,7 +108,7 @@ class GeneratedDatabaseSetup(crudContext: CrudContext) extends SQLiteOpenHelper(
 
   def onCreate(db: SQLiteDatabase) {
     val application = crudContext.application
-    for (val entityType <- application.allEntities.collect { case c: SQLiteCrudType => c }) {
+    for (entityType <- application.allEntities.collect { case c: PersistedCrudType => c }) {
       val buffer = new StringBuffer
       buffer.append("CREATE TABLE IF NOT EXISTS ").append(SQLitePersistence.toTableName(entityType.entityName)).append(" (").
           append(BaseColumns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT")

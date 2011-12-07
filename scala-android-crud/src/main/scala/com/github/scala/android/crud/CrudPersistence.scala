@@ -16,7 +16,7 @@ import common.PlatformTypes._
 trait CrudPersistence extends EntityPersistence {
   protected def logTag: String = Common.tryToEvaluate(entityType.logTag).getOrElse(Common.logTag)
 
-  def entityType: CrudType
+  def entityType: EntityType
 
   def crudContext: CrudContext
 
@@ -38,7 +38,7 @@ trait CrudPersistence extends EntityPersistence {
 
 trait SeqCrudPersistence[T <: AnyRef] extends SeqEntityPersistence[T] with CrudPersistence
 
-class ListBufferCrudPersistence[T <: AnyRef](val entityType: CrudType, val crudContext: CrudContext)
+class ListBufferCrudPersistence[T <: AnyRef](val entityType: EntityType, val crudContext: CrudContext)
         extends SeqCrudPersistence[T] with ListBufferEntityPersistence[T]
 
 /**

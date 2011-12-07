@@ -287,6 +287,8 @@ trait CrudType extends EntityType with Timing {
   }
 }
 
+trait PersistedCrudType extends CrudType
+
 /**
  * A trait for stubbing out the UI methods of CrudType for use when the entity will
  * never be used with the UI.
