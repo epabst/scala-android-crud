@@ -138,12 +138,12 @@ class SQLiteCrudTypeSpec extends MustMatchers with MyEntityTesting with CrudMock
   }
 
   def tableNameMustNotBeReservedWord(name: String) {
-    val crudType = new SQLiteCrudType with HiddenEntityType {
+    val persistence = new SQLiteEntityPersistence(new SQLiteCrudType with HiddenEntityType {
       def entityName = name
 
       def valueFields = List.empty[BaseField]
-    }
-    crudType.tableName must be (name + "0")
+    }, mock[CrudContext])
+    persistence.tableName must be (name + "0")
   }
 }
 

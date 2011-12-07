@@ -16,8 +16,6 @@ import persistence.{CursorStream, SQLiteUtil}
 trait SQLiteCrudType extends CrudType {
   def newWritable = new ContentValues
 
-  lazy val tableName = SQLiteUtil.toNonReservedWord(entityName)
-
   protected def createEntityPersistence(crudContext: CrudContext) = new SQLiteEntityPersistence(this, crudContext)
 
   def setListAdapter(findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: CrudListActivity) {

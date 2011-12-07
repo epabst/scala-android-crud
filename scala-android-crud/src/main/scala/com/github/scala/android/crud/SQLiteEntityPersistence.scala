@@ -6,12 +6,16 @@ import android.content.ContentValues
 import com.github.triangle.Logging
 import common.Common
 import common.PlatformTypes._
-import persistence.{CursorStream, SQLiteCriteria, CursorField}
+import persistence.{SQLiteUtil, CursorStream, SQLiteCriteria, CursorField}
 import scala.None
 import collection.mutable.SynchronizedQueue
 import android.app.backup.BackupManager
 import android.database.sqlite.{SQLiteOpenHelper, SQLiteDatabase}
 import common.UriPath
+
+object SQLitePersistence {
+  def toTableName(entityName: String): String = SQLiteUtil.toNonReservedWord(entityName)
+}
 
 /**
  * EntityPersistence for SQLite.
@@ -22,6 +26,7 @@ import common.UriPath
 class SQLiteEntityPersistence(val entityType: SQLiteCrudType, val crudContext: CrudContext)
   extends CrudPersistence with Logging {
 
+  lazy val tableName = SQLitePersistence.toTableName(entityType.entityName)
   lazy val databaseSetup = new GeneratedDatabaseSetup(crudContext)
   lazy val database: SQLiteDatabase = databaseSetup.getWritableDatabase
   private lazy val backupManager = new BackupManager(crudContext.context)
@@ -35,7 +40,7 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudType, val crudContext: C
   def findAll(criteria: SQLiteCriteria): CursorStream = {
     val query = criteria.selection.mkString(" AND ")
     info("Finding each " + entityType.entityName + "'s " + queryFieldNames.mkString(", ") + " where " + query)
-    val cursor = database.query(entityType.tableName, queryFieldNames.toArray,
+    val cursor = database.query(tableName, queryFieldNames.toArray,
       toOption(query).getOrElse(null), criteria.selectionArgs.toArray,
       criteria.groupBy.getOrElse(null), criteria.having.getOrElse(null), criteria.orderBy.getOrElse(null))
     cursors += cursor
@@ -55,15 +60,15 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudType, val crudContext: C
     val id = idOption match {
       case None => {
         info("Adding " + entityType.entityName + " with " + contentValues)
-        database.insert(entityType.tableName, null, contentValues)
+        database.insert(tableName, null, contentValues)
       }
       case Some(givenId) => {
         info("Updating " + entityType.entityName + " #" + givenId + " with " + contentValues)
-        val rowCount = database.update(entityType.tableName, contentValues, BaseColumns._ID + "=" + givenId, null)
+        val rowCount = database.update(tableName, contentValues, BaseColumns._ID + "=" + givenId, null)
         if (rowCount == 0) {
           contentValues.put(BaseColumns._ID, givenId)
           info("Added " + entityType.entityName + " #" + givenId + " with " + contentValues + " since id is not present yet")
-          val resultingId = database.insert(entityType.tableName, null, contentValues)
+          val resultingId = database.insert(tableName, null, contentValues)
           if (givenId != resultingId)
             throw new IllegalStateException("id changed from " + givenId + " to " + resultingId +
                     " when restoring " + entityType.entityName + " #" + givenId + " with " + contentValues)
@@ -81,7 +86,7 @@ class SQLiteEntityPersistence(val entityType: SQLiteCrudType, val crudContext: C
   protected def doDelete(uri: UriPath) {
     val ids = findAll(uri).map { readable =>
       val id = entityType.IdField(readable)
-      database.delete(entityType.tableName, BaseColumns._ID + "=" + id, Nil.toArray)
+      database.delete(tableName, BaseColumns._ID + "=" + id, Nil.toArray)
       id
     }
     future {
@@ -105,7 +110,7 @@ class GeneratedDatabaseSetup(crudContext: CrudContext) extends SQLiteOpenHelper(
     val application = crudContext.application
     for (val entityType <- application.allEntities.collect { case c: SQLiteCrudType => c }) {
       val buffer = new StringBuffer
-      buffer.append("CREATE TABLE IF NOT EXISTS ").append(entityType.tableName).append(" (").
+      buffer.append("CREATE TABLE IF NOT EXISTS ").append(SQLitePersistence.toTableName(entityType.entityName)).append(" (").
           append(BaseColumns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT")
       CursorField.persistedFields(entityType).filter(_.columnName != BaseColumns._ID).foreach { persisted =>
         buffer.append(", ").append(persisted.columnName).append(" ").append(persisted.persistedType.sqliteType)
