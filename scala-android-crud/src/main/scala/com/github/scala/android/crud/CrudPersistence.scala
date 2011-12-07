@@ -33,7 +33,7 @@ trait CrudPersistence extends EntityPersistence {
     findAll(uri).map(fieldsIncludingIdPk.transform(instantiateItem, _))
 
   /** Saves the entity.  This assumes that the entityType's fields support copying from the given modelEntity. */
-  def save(modelEntity: IdPk): ID = save(modelEntity.id, entityType.transform(entityType.newWritable, modelEntity))
+  def save(modelEntity: IdPk): ID = save(modelEntity.id, entityType.transform(newWritable, modelEntity))
 }
 
 trait SeqCrudPersistence[T <: AnyRef] extends SeqEntityPersistence[T] with CrudPersistence

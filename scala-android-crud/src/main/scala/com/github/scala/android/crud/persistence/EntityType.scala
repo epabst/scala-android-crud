@@ -45,10 +45,4 @@ trait EntityType extends FieldList with Logging {
   lazy val unitPortableValue = copyFrom(unitAsRef)
 
   override def toString() = entityName
-
-  /**
-   * Instantiates a data buffer which can be saved by EntityPersistence.
-   * The fields must support copying into this object.
-   */
-  def newWritable: AnyRef
 }

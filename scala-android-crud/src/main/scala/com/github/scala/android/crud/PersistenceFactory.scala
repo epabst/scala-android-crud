@@ -11,6 +11,10 @@ import android.widget.ListAdapter
  */
 
 trait PersistenceFactory {
+  /**
+   * Instantiates a data buffer which can be saved by EntityPersistence.
+   * The EntityType must support copying into this object.
+   */
   def newWritable: AnyRef
 
   def createEntityPersistence(entityType: EntityType, crudContext: CrudContext): CrudPersistence

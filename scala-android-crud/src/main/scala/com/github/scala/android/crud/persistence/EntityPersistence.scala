@@ -32,6 +32,9 @@ trait EntityPersistence extends Timing with ListenerHolder[PersistenceListener] 
 
   def findAll(uri: UriPath): Seq[AnyRef]
 
+  /** Should delegate to PersistenceFactory.newWritable. */
+  def newWritable: AnyRef
+
   /** Save a created or updated entity. */
   final def save(idOption: Option[ID], writable: AnyRef): ID = {
     val id = doSave(idOption, writable)

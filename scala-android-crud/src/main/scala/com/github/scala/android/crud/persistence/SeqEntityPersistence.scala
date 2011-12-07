@@ -13,6 +13,8 @@ import com.github.scala.android.crud.common.PlatformTypes._
  */
 
 trait SeqEntityPersistence[T <: AnyRef] extends EntityPersistence {
+  def newWritable = throw new UnsupportedOperationException("write not supported")
+
   protected def doSave(id: Option[ID], data: AnyRef): ID = throw new UnsupportedOperationException("write not supported")
 
   protected def doDelete(uri: UriPath) { throw new UnsupportedOperationException("delete not supported") }

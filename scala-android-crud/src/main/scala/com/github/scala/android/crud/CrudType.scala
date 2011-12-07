@@ -21,7 +21,7 @@ import java.lang.IllegalStateException
  * Date: 2/23/11
  * Time: 3:24 PM
  */
-trait CrudType extends EntityType with Timing {
+abstract class CrudType(persistenceFactory: PersistenceFactory) extends EntityType with Timing {
   trace("Instantiated CrudType: " + this)
 
   lazy val entityNameLayoutPrefix = NamingConventions.toLayoutPrefix(entityName)
@@ -182,7 +182,13 @@ trait CrudType extends EntityType with Timing {
     persistence
   }
 
-  protected def createEntityPersistence(crudContext: CrudContext): CrudPersistence
+  /**
+   * Instantiates a data buffer which can be saved by EntityPersistence.
+   * The fields must support copying into this object.
+   */
+  def newWritable = persistenceFactory.newWritable
+
+  protected def createEntityPersistence(crudContext: CrudContext) = persistenceFactory.createEntityPersistence(this, crudContext)
 
   final def withEntityPersistence[T](crudContext: CrudContext)(f: CrudPersistence => T): T = {
     val persistence = openEntityPersistence(crudContext)
@@ -251,9 +257,13 @@ trait CrudType extends EntityType with Timing {
     setListAdapter(findAllResult, List(activity.currentUriPath, crudContext, Unit), activity)
   }
 
-  def setListAdapter(findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: CrudListActivity)
+  def setListAdapter(findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: CrudListActivity) {
+    persistenceFactory.setListAdapter(this, findAllResult,  contextItems, activity)
+  }
 
-  def refreshAfterDataChanged(listAdapter: ListAdapter)
+  def refreshAfterDataChanged(listAdapter: ListAdapter) {
+    persistenceFactory.refreshAfterDataChanged(listAdapter)
+  }
 
   def destroyContextVars(vars: ContextVars) {
     persistenceVarForListAdapter.clear(vars).map { persistence =>
@@ -287,19 +297,7 @@ trait CrudType extends EntityType with Timing {
   }
 }
 
-abstract class PersistedCrudType(persistenceFactory: PersistenceFactory) extends CrudType {
-  def newWritable = persistenceFactory.newWritable
-
-  protected def createEntityPersistence(crudContext: CrudContext) = persistenceFactory.createEntityPersistence(this, crudContext)
-
-  def setListAdapter(findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: CrudListActivity) {
-    persistenceFactory.setListAdapter(this, findAllResult,  contextItems, activity)
-  }
-
-  def refreshAfterDataChanged(listAdapter: ListAdapter) {
-    persistenceFactory.refreshAfterDataChanged(listAdapter)
-  }
-}
+abstract class PersistedCrudType(persistenceFactory: PersistenceFactory) extends CrudType(persistenceFactory)
 
 /**
  * A trait for stubbing out the UI methods of CrudType for use when the entity will
