@@ -1,7 +1,6 @@
 package com.github.scala.android.crud
 
 import _root_.android.content.Intent
-import android.widget.ListAdapter
 import org.junit.Test
 import org.junit.runner.RunWith
 import com.xtremelabs.robolectric.RobolectricTestRunner
@@ -9,6 +8,7 @@ import com.xtremelabs.robolectric.tester.android.view.TestMenu
 import org.scalatest.matchers.MustMatchers
 import android.view.{View, ContextMenu}
 import org.mockito.Mockito._
+import org.mockito.Matchers._
 
 /**
  * A test for {@link CrudListActivity}.
@@ -17,14 +17,13 @@ import org.mockito.Mockito._
  * Time: 6:22 PM
  */
 @RunWith(classOf[RobolectricTestRunner])
-class CrudListActivitySpec extends MustMatchers with MyEntityTesting with CrudMockitoSugar {
+class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
   @Test
   def shouldAllowAdding() {
-    val persistence = mock[CrudPersistence]
+    val persistenceFactory = mock[PersistenceFactory]
     val application = mock[CrudApplication]
-    val listAdapter = mock[ListAdapter]
-    val entityType = new MyEntityType(persistence, listAdapter)
-    val activity = new CrudListActivity(entityType, application)
+    val crudType = new MyCrudType(persistenceFactory)
+    val activity = new CrudListActivity(crudType, application)
     activity.setIntent(new Intent(Intent.ACTION_MAIN))
     activity.onCreate(null)
     val menu = new TestMenu(activity)
@@ -38,43 +37,40 @@ class CrudListActivitySpec extends MustMatchers with MyEntityTesting with CrudMo
 
   @Test
   def shouldHaveCorrectContextMenu() {
-    val persistence = mock[CrudPersistence]
+    val persistenceFactory = mock[PersistenceFactory]
     val application = mock[CrudApplication]
     val contextMenu = mock[ContextMenu]
-    val listAdapter = mock[ListAdapter]
     val ignoredView: View = null
     val ignoredMenuInfo: ContextMenu.ContextMenuInfo = null
     stub(application.allEntities).toReturn(Nil)
-    val entityType = new MyEntityType(persistence, listAdapter)
-    val activity = new CrudListActivity(entityType, application)
+    val crudType = new MyCrudType(persistenceFactory)
+    val activity = new CrudListActivity(crudType, application)
     activity.onCreateContextMenu(contextMenu, ignoredView, ignoredMenuInfo)
     verify(contextMenu).add(0, res.R.string.delete_item, 0, res.R.string.delete_item)
   }
 
   @Test
   def shouldHandleNoEntityOptions() {
-    val persistence = mock[CrudPersistence]
+    val persistenceFactory = mock[PersistenceFactory]
     val application = mock[CrudApplication]
     val contextMenu = mock[ContextMenu]
-    val listAdapter = mock[ListAdapter]
     val ignoredView: View = null
     val ignoredMenuInfo: ContextMenu.ContextMenuInfo = null
 
-    val entityType = new MyEntityType(persistence, listAdapter) {
+    val crudType = new MyCrudType(persistenceFactory) {
       override def getEntityActions(application: CrudApplication) = Nil
     }
-    val activity = new CrudListActivity(entityType, application)
+    val activity = new CrudListActivity(crudType, application)
     //shouldn't do anything
     activity.onCreateContextMenu(contextMenu, ignoredView, ignoredMenuInfo)
   }
 
   @Test
   def shouldRefreshOnResume() {
-    val persistence = mock[CrudPersistence]
+    val persistenceFactory = mock[PersistenceFactory]
     val application = mock[CrudApplication]
-    val listAdapter = mock[ListAdapter]
-    val entityType = new MyEntityType(persistence, listAdapter)
-    class MyCrudListActivity extends CrudListActivity(entityType, application) {
+    val crudType = new MyCrudType(persistenceFactory)
+    class MyCrudListActivity extends CrudListActivity(crudType, application) {
       //make it public for testing
       override def onPause() {
         super.onPause()
@@ -89,19 +85,18 @@ class CrudListActivitySpec extends MustMatchers with MyEntityTesting with CrudMo
     activity.setIntent(new Intent(Intent.ACTION_MAIN))
     activity.onCreate(null)
     activity.onPause()
-    entityType.refreshCount must be (0)
+    verify(persistenceFactory, never()).refreshAfterDataChanged(anyObject())
 
     activity.onResume()
-    entityType.refreshCount must be (1)
+    verify(persistenceFactory, times(1)).refreshAfterDataChanged(anyObject())
   }
 
   @Test
   def shouldIgnoreClicksOnHeader() {
-    val persistence = mock[CrudPersistence]
+    val persistenceFactory = mock[PersistenceFactory]
     val application = mock[CrudApplication]
-    val listAdapter = mock[ListAdapter]
-    val entityType = new MyEntityType(persistence, listAdapter)
-    val activity = new CrudListActivity(entityType, application)
+    val crudType = new MyCrudType(persistenceFactory)
+    val activity = new CrudListActivity(crudType, application)
     // should do nothing
     activity.onListItemClick(null, null, -1, -1)
   }

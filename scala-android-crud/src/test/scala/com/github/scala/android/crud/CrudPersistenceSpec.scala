@@ -15,12 +15,12 @@ import persistence.MutableIdPk
  * Time: 9:32 PM
  */
 @RunWith(classOf[JUnitRunner])
-class CrudPersistenceSpec extends Spec with MustMatchers with MyEntityTesting {
+class CrudPersistenceSpec extends Spec with MustMatchers {
   class MyEntity(givenId: Option[ID] = None) extends MutableIdPk {
     this.id = givenId
   }
   val persistence = new SeqCrudPersistence[MyEntity] {
-    def entityType = new MyEntityType(this, null)
+    def entityType = new MyEntityType
     def crudContext = null
     def findAll(uri: UriPath) = Seq(new MyEntity(entityType.UriPathId.getter(uri)))
   }

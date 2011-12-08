@@ -12,6 +12,7 @@ import com.github.scala.android.crud.testres.R
 import com.github.scala.android.crud.persistence.CursorField._
 import com.github.scala.android.crud.view.FieldLayout
 import com.github.scala.android.crud._
+import org.scalatest.mock.MockitoSugar
 
 /**
  * A behavior specification for {@link CrudUIGenerator}.
@@ -20,7 +21,7 @@ import com.github.scala.android.crud._
  * Time: 8:13 AM
  */
 @RunWith(classOf[JUnitRunner])
-class CrudUIGeneratorSpec extends Spec with MustMatchers {
+class CrudUIGeneratorSpec extends Spec with MustMatchers with MockitoSugar {
   describe("viewFields") {
     it("must find all ViewFields") {
       val fieldList = FieldList(mapField[String]("foo"), textView, formatted[Int](textView),
@@ -112,7 +113,7 @@ class CrudUIGeneratorSpec extends Spec with MustMatchers {
 
   describe("generateValueStrings") {
     it("must include 'list', 'add' and 'edit' strings for modifiable entities") {
-      val valueStrings = CrudUIGenerator.generateValueStrings(new MyCrudType {
+      val valueStrings = CrudUIGenerator.generateValueStrings(new MyCrudType(mock[PersistenceFactory]) {
         override def valueFields = List(persisted[String]("model"))
       })
       valueStrings.foreach(println(_))
@@ -120,7 +121,7 @@ class CrudUIGeneratorSpec extends Spec with MustMatchers {
     }
 
     it("must not include 'add' and 'edit' strings for unmodifiable entities") {
-      (CrudUIGenerator.generateValueStrings(new MyCrudType {
+      (CrudUIGenerator.generateValueStrings(new MyCrudType(mock[PersistenceFactory]) {
         override def valueFields = List(bundleField[String]("model"))
       }) \\ "string").length must be (1)
     }

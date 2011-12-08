@@ -16,7 +16,7 @@ import com.github.scala.android.crud.action.Operation.toRichItent
  * Time: 6:22 PM
  */
 @RunWith(classOf[RobolectricTestRunner])
-class CrudTypeActionsSpec extends MyEntityTesting with MustMatchers with CrudMockitoSugar {
+class CrudTypeActionsSpec extends MustMatchers with CrudMockitoSugar {
   //todo determine if shadowing, and run tests on real Android device as well.
   val isShadowing = true
 

@@ -9,7 +9,7 @@ import android.widget.ListAdapter
 import persistence.CursorField.PersistedId
 import scala.collection.mutable
 import org.easymock.{IAnswer, EasyMock}
-import EasyMock.notNull
+import EasyMock._
 import com.github.triangle.PortableField._
 import CrudBackupAgent._
 import android.os.ParcelFileDescriptor
@@ -22,7 +22,7 @@ import common.UriPath
  * Time: 6:22 PM
  */
 @RunWith(classOf[RobolectricTestRunner])
-class CrudBackupAgentSpec extends MyEntityTesting with MustMatchers with CrudEasyMockSugar {
+class CrudBackupAgentSpec extends MustMatchers with CrudEasyMockSugar {
   @Test
   def calculatedIteratorShouldWork() {
     val values = List("a", "b", "c").toIterator
@@ -55,6 +55,8 @@ class CrudBackupAgentSpec extends MyEntityTesting with MustMatchers with CrudEas
     val backupTarget = mock[BackupTarget]
     val state1 = mock[ParcelFileDescriptor]
     val state1b = mock[ParcelFileDescriptor]
+    val persistenceFactory = mock[PersistenceFactory]
+    val persistenceFactory2 = mock[PersistenceFactory]
 
     val persistence = new MyEntityPersistence
     persistence.save(Some(100L), mutable.Map("name" -> "Joe", "age" -> 30))
@@ -62,12 +64,16 @@ class CrudBackupAgentSpec extends MyEntityTesting with MustMatchers with CrudEas
     val persistence2 = new MyEntityPersistence
     persistence2.save(Some(101L), mutable.Map("city" -> "Los Angeles", "state" -> "CA"))
     persistence2.save(Some(104L), mutable.Map("city" -> "Chicago", "state" -> "IL"))
-    val entityType = new MyEntityType(persistence, listAdapter)
-    val entityType2 = new MyEntityType(persistence2, listAdapter, "OtherMap")
+    val entityType = new MyCrudType(persistenceFactory)
+    val entityType2 = new MyCrudType(persistenceFactory2) {
+      override def entityName = "OtherMap"
+    }
     val persistenceB = new MyEntityPersistence
     val persistence2B = new MyEntityPersistence
-    val entityTypeB = new MyEntityType(persistenceB, listAdapter)
-    val entityType2B = new MyEntityType(persistence2B, listAdapter, "OtherMap")
+    val entityTypeB = new MyCrudType(mock[PersistenceFactory])
+    val entityType2B = new MyCrudType(mock[PersistenceFactory]) {
+      override def entityName = "OtherMap"
+    }
     val state0 = null
     var restoreItems = mutable.ListBuffer[RestoreItem]()
     expecting {
@@ -115,14 +121,13 @@ class CrudBackupAgentSpec extends MyEntityTesting with MustMatchers with CrudEas
     val listAdapter = mock[ListAdapter]
     val backupTarget = mock[BackupTarget]
     val state1 = mock[ParcelFileDescriptor]
-    val generatedPersistence = mock[MyEntityPersistence]
-
+    val persistenceFactory = mock[GeneratedPersistenceFactory[Map[String, Any]]]
     val persistence = new MyEntityPersistence
-    val entityType = new MyEntityType(persistence, listAdapter)
-    val generatedType = new GeneratedCrudType[mutable.Map[String,Any]] with StubEntityType {
+    call(persistenceFactory.createEntityPersistence(anyObject(), anyObject())).andReturn(persistence)
+    val entityType = new MyCrudType(persistenceFactory)
+    val generatedType = new GeneratedCrudType(persistenceFactory) with StubEntityType {
       def entityName = "Generated"
       def valueFields = List(ParentField(entityType), default[Int](100))
-      protected def createEntityPersistence(crudContext: CrudContext) = generatedPersistence
     }
     val state0 = null
     expecting {

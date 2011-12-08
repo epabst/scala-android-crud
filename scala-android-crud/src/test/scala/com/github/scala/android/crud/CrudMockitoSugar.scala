@@ -21,7 +21,6 @@ trait CrudMockitoSugar extends MockitoSugar {
   class CapturingAnswer[T](result: => T) extends Answer[T] {
     var params: List[Any] = Nil
 
-
     def answer(invocation: InvocationOnMock) = {
       params = invocation.getArguments.toList
       result

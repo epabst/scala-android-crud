@@ -11,7 +11,6 @@ import org.scalatest.Spec
 import org.mockito._
 import Mockito._
 import Matchers._
-import android.widget.ListAdapter
 import com.github.triangle.PortableField._
 import ParentField.foreignKey
 
@@ -23,10 +22,10 @@ import ParentField.foreignKey
  */
 
 @RunWith(classOf[JUnitRunner])
-class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with CrudMockitoSugar {
+class CrudTypeSpec extends Spec with MustMatchers with CrudMockitoSugar {
 
   it("must force having an id field on subtypes") {
-    val crudType = new MyEntityType(null, null) {
+    val crudType = new MyEntityType {
       override def valueFields = List(mapField[String]("name"))
     }
     crudType.deepCollect {
@@ -35,52 +34,48 @@ class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with Crud
   }
 
   it("must derive parent entities from ParentField fields") {
-    val persistence = mock[CrudPersistence]
-    val listAdapter = mock[ListAdapter]
-    val entityType1 = new MyEntityType(persistence, listAdapter)
-    val entityType2 = new MyEntityType(persistence, listAdapter)
-    val entityType3 = new MyEntityType(persistence, listAdapter) {
-      override val valueFields = ParentField(entityType1) +: ParentField(entityType2) +: super.valueFields
+    val persistenceFactory = mock[PersistenceFactory]
+    val crudType1 = new MyCrudType(persistenceFactory)
+    val crudType2 = new MyCrudType(persistenceFactory)
+    val crudType3 = new MyCrudType(persistenceFactory) {
+      override val valueFields = ParentField(crudType1) +: ParentField(crudType2) +: super.valueFields
     }
-    entityType3.parentEntities must be (List(entityType1, entityType2))
+    crudType3.parentEntities must be (List(crudType1, crudType2))
   }
 
   it("must derive parent entities from foreignKey fields") {
-    val persistence = mock[CrudPersistence]
-    val listAdapter = mock[ListAdapter]
-    val entityType1 = new MyEntityType(persistence, listAdapter)
-    val entityType2 = new MyEntityType(persistence, listAdapter)
-    val entityType3 = new MyEntityType(persistence, listAdapter) {
-      override val valueFields = foreignKey(entityType1) +: foreignKey(entityType2) +: super.valueFields
+    val persistenceFactory = mock[PersistenceFactory]
+    val crudType1 = new MyCrudType(persistenceFactory)
+    val crudType2 = new MyCrudType(persistenceFactory)
+    val crudType3 = new MyCrudType(persistenceFactory) {
+      override val valueFields = foreignKey(crudType1) +: foreignKey(crudType2) +: super.valueFields
     }
-    entityType3.parentEntities must be (List(entityType1, entityType2))
+    crudType3.parentEntities must be (List(crudType1, crudType2))
   }
 
   it("must get the correct entity actions with child entities") {
-    val persistence = mock[CrudPersistence]
+    val persistenceFactory = mock[PersistenceFactory]
     val application = mock[CrudApplication]
-    val listAdapter = mock[ListAdapter]
-    val parentEntity = new MyEntityType(persistence, listAdapter)
-    val childEntity = new MyEntityType(persistence, listAdapter) {
-      override lazy val valueFields = ParentField(parentEntity) :: super.valueFields
+    val parentCrudType = new MyCrudType(persistenceFactory)
+    val childCrudType = new MyCrudType(persistenceFactory) {
+      override lazy val valueFields = ParentField(parentCrudType) :: super.valueFields
     }
-    stub(application.allEntities).toReturn(List(parentEntity, childEntity))
-    childEntity.getEntityActions(application) must be (List(childEntity.updateAction.get, childEntity.deleteAction.get))
-    parentEntity.getEntityActions(application) must be (
-      List(childEntity.listAction, parentEntity.updateAction.get, parentEntity.deleteAction.get))
+    stub(application.allEntities).toReturn(List(parentCrudType, childCrudType))
+    childCrudType.getEntityActions(application) must be (List(childCrudType.updateAction.get, childCrudType.deleteAction.get))
+    parentCrudType.getEntityActions(application) must be (
+      List(childCrudType.listAction, parentCrudType.updateAction.get, parentCrudType.deleteAction.get))
   }
 
   it("must get the correct list actions with child entities") {
-    val persistence = mock[CrudPersistence]
+    val persistenceFactory = mock[PersistenceFactory]
     val application = mock[CrudApplication]
-    val listAdapter = mock[ListAdapter]
-    val parentEntity = new MyEntityType(persistence, listAdapter) {
+    val parentEntity = new MyCrudType(persistenceFactory) {
       override lazy val displayLayout = Some(123)
     }
-    val childEntity = new MyEntityType(persistence, listAdapter) {
+    val childEntity = new MyCrudType(persistenceFactory) {
       override lazy val valueFields = ParentField(parentEntity) :: super.valueFields
     }
-    val childEntity2 = new MyEntityType(persistence, listAdapter) {
+    val childEntity2 = new MyCrudType(persistenceFactory) {
       override lazy val valueFields = ParentField(parentEntity) :: super.valueFields
     }
     stub(application.allEntities).toReturn(List(parentEntity, childEntity, childEntity2))
@@ -89,14 +84,13 @@ class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with Crud
   }
 
   it("must get the correct list actions with child entities w/ no parent display") {
-    val persistence = mock[CrudPersistence]
+    val persistenceFactory = mock[PersistenceFactory]
     val application = mock[CrudApplication]
-    val listAdapter = mock[ListAdapter]
-    val parentEntity = new MyEntityType(persistence, listAdapter)
-    val childEntity = new MyEntityType(persistence, listAdapter) {
+    val parentEntity = new MyCrudType(persistenceFactory)
+    val childEntity = new MyCrudType(persistenceFactory) {
       override lazy val valueFields = ParentField(parentEntity) :: super.valueFields
     }
-    val childEntity2 = new MyEntityType(persistence, listAdapter) {
+    val childEntity2 = new MyCrudType(persistenceFactory) {
       override lazy val valueFields = ParentField(parentEntity) :: super.valueFields
     }
     stub(application.allEntities).toReturn(List(parentEntity, childEntity, childEntity2))
@@ -106,12 +100,13 @@ class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with Crud
   }
 
   it("must delete with undo possibility which must be closable") {
+    val persistenceFactory = mock[PersistenceFactory]
     val persistence = mock[CrudPersistence]
-    val listAdapter = mock[ListAdapter]
     val activity = mock[CrudActivity]
     val crudContext = mock[CrudContext]
     stub(crudContext.vars).toReturn(new ContextVars {})
-    val entity = new MyEntityType(persistence, listAdapter)
+    stub(persistenceFactory.createEntityPersistence(anyObject(), anyObject())).toReturn(persistence)
+    val entity = new MyCrudType(persistenceFactory)
     val readable = mutable.Map[String,Any]()
     val uri = UriPath(entity.entityName) / 345L
     stub(activity.crudContext).toReturn(crudContext)
@@ -127,14 +122,15 @@ class CrudTypeSpec extends Spec with MustMatchers with MyEntityTesting with Crud
   }
 
   it("undo of delete must work") {
+    val persistenceFactory = mock[PersistenceFactory]
     val persistence = mock[CrudPersistence]
     val activity = mock[CrudActivity]
     val crudContext = mock[CrudContext]
-    val listAdapter = mock[ListAdapter]
-    val entity = new MyEntityType(persistence, listAdapter)
+    val entity = new MyCrudType(persistenceFactory)
     val readable = mutable.Map[String,Any](CursorField.idFieldName -> 345L, "name" -> "George")
     val uri = UriPath(entity.entityName) / 345L
     stub(activity.crudContext).toReturn(crudContext)
+    stub(persistenceFactory.createEntityPersistence(anyObject(), anyObject())).toReturn(persistence)
     val vars = new ContextVars {}
     stub(crudContext.vars).toReturn(vars)
     stub(crudContext.context).toReturn(activity)

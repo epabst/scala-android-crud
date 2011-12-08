@@ -70,9 +70,9 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Con
     info("Backing up " + application)
     DeletedEntityIdCrudType.writeEntityRemovals(data, this)
     val crudContext = new CrudContext(this, application)
-    application.allEntities.map(_ match {
+    application.allEntities.foreach(_ match {
       case generated: GeneratedCrudType[_] => //skip
-      case entityType: CrudType => onBackup(entityType, data, crudContext)
+      case entityType: PersistedCrudType => onBackup(entityType, data, crudContext)
     })
   }
 

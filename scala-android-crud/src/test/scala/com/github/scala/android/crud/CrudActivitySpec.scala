@@ -14,6 +14,7 @@ import java.lang.IllegalStateException
 import common.UriPath
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
+import org.mockito.Matchers._
 import actors.Future
 
 /**
@@ -23,23 +24,25 @@ import actors.Future
  * Time: 6:22 PM
  */
 @RunWith(classOf[RobolectricTestRunner])
-class CrudActivitySpec extends MockitoSugar with MustMatchers with MyEntityTesting {
+class CrudActivitySpec extends MockitoSugar with MustMatchers {
+  val persistenceFactory = mock[PersistenceFactory]
   val persistence = mock[CrudPersistence]
   val listAdapter = mock[ListAdapter]
   val application = mock[CrudApplication]
 
   @Test
-  def shouldSupportAddingWithoutUsingPersistence() {
-    val entityType = new MyEntityType(persistence, listAdapter)
+  def shouldSupportAddingWithoutEverFinding() {
+    stub(persistenceFactory.createEntityPersistence(anyObject(), anyObject())).toReturn(persistence)
+    val crudType = new MyCrudType(persistenceFactory)
     val entity = mutable.Map[String,Any]("name" -> "Bob", "age" -> 25)
-    val uri = UriPath(entityType.entityName)
-    val activity = new CrudActivity(entityType, application) {
+    val uri = UriPath(crudType.entityName)
+    val activity = new CrudActivity(crudType, application) {
       override lazy val currentAction = UpdateActionName
       override def currentUriPath = uri
       override def future[T](body: => T) = new ReadyFuture[T](body)
     }
     activity.onCreate(null)
-    entityType.copy(entity, activity)
+    crudType.copy(entity, activity)
     activity.onPause()
     verify(persistence).save(None, mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))
     verify(persistence, never()).find(uri)
@@ -47,34 +50,36 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers with MyEntityTesti
 
   @Test
   def shouldAddIfIdNotFound() {
-    val entityType = new MyEntityType(persistence, listAdapter)
+    stub(persistenceFactory.createEntityPersistence(anyObject(), anyObject())).toReturn(persistence)
+    val crudType = new MyCrudType(persistenceFactory)
     val entity = mutable.Map[String,Any]("name" -> "Bob", "age" -> 25)
-    val uri = UriPath(entityType.entityName)
-    val activity = new CrudActivity(entityType, application) {
+    val uri = UriPath(crudType.entityName)
+    val activity = new CrudActivity(crudType, application) {
       override lazy val currentAction = UpdateActionName
       override def currentUriPath = uri
       override def future[T](body: => T) = new ReadyFuture[T](body)
     }
     when(persistence.find(uri)).thenReturn(None)
     activity.onCreate(null)
-    entityType.copy(entity, activity)
+    crudType.copy(entity, activity)
     activity.onPause()
     verify(persistence).save(None, mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))
   }
 
   @Test
   def shouldAllowUpdating() {
-    val entityType = new MyEntityType(persistence, listAdapter)
+    stub(persistenceFactory.createEntityPersistence(anyObject(), anyObject())).toReturn(persistence)
+    val crudType = new MyCrudType(persistenceFactory)
     val entity = mutable.Map[String,Any]("name" -> "Bob", "age" -> 25)
-    val uri = UriPath(entityType.entityName, "101")
+    val uri = UriPath(crudType.entityName, "101")
     stub(persistence.find(uri)).toReturn(Some(entity))
-    val activity = new CrudActivity(entityType, application) {
+    val activity = new CrudActivity(crudType, application) {
       override lazy val currentAction = UpdateActionName
       override lazy val currentUriPath = uri
       override def future[T](body: => T) = new ReadyFuture[T](body)
     }
     activity.onCreate(null)
-    val viewData = entityType.transform(mutable.Map[String,Any](), activity)
+    val viewData = crudType.transform(mutable.Map[String,Any](), activity)
     viewData.get("name") must be (Some("Bob"))
     viewData.get("age") must be (Some(25))
 
@@ -85,16 +90,18 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers with MyEntityTesti
 
   @Test
   def withPersistenceShouldClosePersistence() {
-    val entityType = new MyEntityType(persistence, listAdapter)
-    val activity = new CrudActivity(entityType, application)
+    stub(persistenceFactory.createEntityPersistence(anyObject(), anyObject())).toReturn(persistence)
+    val crudType = new MyCrudType(persistenceFactory)
+    val activity = new CrudActivity(crudType, application)
     activity.withPersistence(p => p.findAll(UriPath.EMPTY))
     verify(persistence).close()
   }
 
   @Test
   def withPersistenceShouldClosePersistenceWithFailure() {
-    val entityType = new MyEntityType(persistence, listAdapter)
-    val activity = new CrudActivity(entityType, application)
+    stub(persistenceFactory.createEntityPersistence(anyObject(), anyObject())).toReturn(persistence)
+    val crudType = new MyCrudType(persistenceFactory)
+    val activity = new CrudActivity(crudType, application)
     try {
       activity.withPersistence(p => throw new IllegalArgumentException("intentional"))
       fail("should have propogated exception")
@@ -106,27 +113,29 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers with MyEntityTesti
 
   @Test
   def onPauseShouldHandleAnyExceptionWhenSaving() {
+    stub(persistenceFactory.createEntityPersistence(anyObject(), anyObject())).toReturn(persistence)
     stub(persistence.save(None, "unsaveable data")).toThrow(new IllegalStateException("intentional"))
-    val entityType = new MyEntityType(persistence, listAdapter)
-    val activity = new CrudActivity(entityType, application)
+    val crudType = new MyCrudType(persistenceFactory)
+    val activity = new CrudActivity(crudType, application)
     //should not throw an exception
     activity.saveForOnPause(persistence, "unsaveable data")
   }
 
   @Test
   def onPauseShouldNotCreateANewIdEveryTime() {
-    val entityType = new MyEntityType(persistence, listAdapter)
+    stub(persistenceFactory.createEntityPersistence(anyObject(), anyObject())).toReturn(persistence)
+    val crudType = new MyCrudType(persistenceFactory)
     val entity = mutable.Map[String,Any]("name" -> "Bob", "age" -> 25)
-    val uri = UriPath(entityType.entityName)
+    val uri = UriPath(crudType.entityName)
     when(persistence.find(uri)).thenReturn(None)
     stub(persistence.save(None, mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))).toReturn(101)
-    val activity = new CrudActivity(entityType, application) {
+    val activity = new CrudActivity(crudType, application) {
       override def future[T](body: => T): Future[T] = new ReadyFuture[T](body)
     }
     activity.setIntent(constructIntent(Operation.CreateActionName, uri, activity, null))
     activity.onCreate(null)
     //simulate a user entering data
-    entityType.copy(entity, activity)
+    crudType.copy(entity, activity)
     activity.onPause()
     activity.onPause()
     verify(persistence, times(1)).save(None, mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))

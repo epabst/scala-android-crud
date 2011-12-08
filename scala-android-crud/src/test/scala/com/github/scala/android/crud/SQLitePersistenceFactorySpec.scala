@@ -25,7 +25,9 @@ import android.widget.{ListView, ListAdapter}
  * Time: 6:22 PM
  */
 @RunWith(classOf[RobolectricTestRunner])
-class SQLitePersistenceFactorySpec extends MustMatchers with MyEntityTesting with CrudMockitoSugar {
+class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar with Logging {
+  protected def logTag = getClass.getSimpleName
+
   val runningOnRealAndroid: Boolean = try {
     debug("Seeing if running on Real Android...")
     Class.forName("com.xtremelabs.robolectric.RobolectricTestRunner")
