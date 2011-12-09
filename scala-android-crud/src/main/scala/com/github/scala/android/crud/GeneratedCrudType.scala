@@ -1,11 +1,11 @@
 package com.github.scala.android.crud
 
-import common.UriPath
 import android.view.{ViewGroup, View}
 import com.github.triangle.PortableField.identityField
 import android.app.ListActivity
 import android.widget.{ListAdapter, BaseAdapter}
 import common.PlatformTypes._
+import common.{CachedFunction, UriPath}
 import persistence.EntityType
 import com.github.triangle.Field
 
@@ -39,6 +39,14 @@ trait GeneratedPersistenceFactory[T <: AnyRef] extends PersistenceFactory {
   }
 
   def refreshAfterDataChanged(listAdapter: ListAdapter) {}
+}
+
+object GeneratedPersistenceFactory {
+  def apply[T <: AnyRef](persistenceFunction: EntityType => SeqCrudPersistence[T]): GeneratedPersistenceFactory[T] = new GeneratedPersistenceFactory[T] {
+    private val cachedPersistenceFunction = CachedFunction(persistenceFunction)
+
+    def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) = cachedPersistenceFunction(entityType)
+  }
 }
 
 abstract class GeneratedCrudType[T <: AnyRef](persistenceFactory: GeneratedPersistenceFactory[T]) extends CrudType(persistenceFactory) {

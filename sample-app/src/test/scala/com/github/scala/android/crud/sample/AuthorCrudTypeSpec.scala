@@ -3,13 +3,13 @@ package com.github.scala.android.crud.sample
 import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers
 import com.github.scala.android.crud.persistence.CursorField._
-import com.github.scala.android.crud._
-import action.ContextVars
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import com.github.scala.android.crud.ParentField._
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
+import com.github.scala.android.crud._
+import action.ContextVars
 
 /**
  * A behavior specification for {@link AuthorCrudType}.
@@ -27,17 +27,17 @@ class AuthorCrudTypeSpec extends Spec with MustMatchers with MockitoSugar {
   it("must calculate the book count") {
     val crudContext = mock[CrudContext]
     stub(crudContext.vars).toReturn(new ContextVars {})
+    val factory = GeneratedPersistenceFactory(new ListBufferCrudPersistence[Map[String, Any]](_, crudContext))
     val context = new AuthorContext {
-      val BookCrudType = new HiddenEntityType with GeneratedCrudType[Map[String,Any]] {
-        val bookPersistence = new ListBufferCrudPersistence[Map[String, Any]](this, crudContext)
+      val BookCrudType = new GeneratedCrudType[Map[String,Any]](factory) with HiddenEntityType {
         def entityName = "Book"
         def valueFields = List(foreignKey(AuthorCrudType))
-        protected def createEntityPersistence(crudContext: CrudContext) = bookPersistence
       }
 
       object AuthorCrudType extends AuthorCrudType(mock[PersistenceFactory])
     }
-    context.BookCrudType.bookPersistence.buffer += Map.empty[String,Any] += Map.empty[String,Any]
+    val bookPersistence = context.BookCrudType.openEntityPersistence(crudContext).asInstanceOf[ListBufferCrudPersistence[Map[String,Any]]]
+    bookPersistence.buffer += Map.empty[String,Any] += Map.empty[String,Any]
 
     val crudType = context.AuthorCrudType
     val authorData = crudType.transformWithItem(Map.empty[String,Any], List(crudType.toUri(100L), crudContext))
