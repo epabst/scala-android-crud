@@ -20,7 +20,7 @@ class CrudPersistenceSpec extends Spec with MustMatchers {
     this.id = givenId
   }
   val persistence = new SeqCrudPersistence[MyEntity] {
-    def entityType = new MyEntityType
+    def entityType = new MyEntityType {}
     def crudContext = null
     def findAll(uri: UriPath) = Seq(new MyEntity(entityType.UriPathId.getter(uri)))
   }

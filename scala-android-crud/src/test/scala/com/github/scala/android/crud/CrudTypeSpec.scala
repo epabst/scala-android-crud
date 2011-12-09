@@ -34,30 +34,27 @@ class CrudTypeSpec extends Spec with MustMatchers with CrudMockitoSugar {
   }
 
   it("must derive parent entities from ParentField fields") {
-    val persistenceFactory = mock[PersistenceFactory]
-    val crudType1 = new MyCrudType(persistenceFactory)
-    val crudType2 = new MyCrudType(persistenceFactory)
-    val crudType3 = new MyCrudType(persistenceFactory) {
+    val crudType1 = new MyCrudType()
+    val crudType2 = new MyCrudType()
+    val crudType3 = new MyCrudType() {
       override val valueFields = ParentField(crudType1) +: ParentField(crudType2) +: super.valueFields
     }
     crudType3.parentEntities must be (List(crudType1, crudType2))
   }
 
   it("must derive parent entities from foreignKey fields") {
-    val persistenceFactory = mock[PersistenceFactory]
-    val crudType1 = new MyCrudType(persistenceFactory)
-    val crudType2 = new MyCrudType(persistenceFactory)
-    val crudType3 = new MyCrudType(persistenceFactory) {
+    val crudType1 = new MyCrudType()
+    val crudType2 = new MyCrudType()
+    val crudType3 = new MyCrudType() {
       override val valueFields = foreignKey(crudType1) +: foreignKey(crudType2) +: super.valueFields
     }
     crudType3.parentEntities must be (List(crudType1, crudType2))
   }
 
   it("must get the correct entity actions with child entities") {
-    val persistenceFactory = mock[PersistenceFactory]
     val application = mock[CrudApplication]
-    val parentCrudType = new MyCrudType(persistenceFactory)
-    val childCrudType = new MyCrudType(persistenceFactory) {
+    val parentCrudType = new MyCrudType()
+    val childCrudType = new MyCrudType() {
       override lazy val valueFields = ParentField(parentCrudType) :: super.valueFields
     }
     stub(application.allEntities).toReturn(List(parentCrudType, childCrudType))
@@ -67,15 +64,14 @@ class CrudTypeSpec extends Spec with MustMatchers with CrudMockitoSugar {
   }
 
   it("must get the correct list actions with child entities") {
-    val persistenceFactory = mock[PersistenceFactory]
     val application = mock[CrudApplication]
-    val parentEntity = new MyCrudType(persistenceFactory) {
+    val parentEntity = new MyCrudType() {
       override lazy val displayLayout = Some(123)
     }
-    val childEntity = new MyCrudType(persistenceFactory) {
+    val childEntity = new MyCrudType() {
       override lazy val valueFields = ParentField(parentEntity) :: super.valueFields
     }
-    val childEntity2 = new MyCrudType(persistenceFactory) {
+    val childEntity2 = new MyCrudType() {
       override lazy val valueFields = ParentField(parentEntity) :: super.valueFields
     }
     stub(application.allEntities).toReturn(List(parentEntity, childEntity, childEntity2))
@@ -84,13 +80,12 @@ class CrudTypeSpec extends Spec with MustMatchers with CrudMockitoSugar {
   }
 
   it("must get the correct list actions with child entities w/ no parent display") {
-    val persistenceFactory = mock[PersistenceFactory]
     val application = mock[CrudApplication]
-    val parentEntity = new MyCrudType(persistenceFactory)
-    val childEntity = new MyCrudType(persistenceFactory) {
+    val parentEntity = new MyCrudType()
+    val childEntity = new MyCrudType() {
       override lazy val valueFields = ParentField(parentEntity) :: super.valueFields
     }
-    val childEntity2 = new MyCrudType(persistenceFactory) {
+    val childEntity2 = new MyCrudType() {
       override lazy val valueFields = ParentField(parentEntity) :: super.valueFields
     }
     stub(application.allEntities).toReturn(List(parentEntity, childEntity, childEntity2))
@@ -100,13 +95,11 @@ class CrudTypeSpec extends Spec with MustMatchers with CrudMockitoSugar {
   }
 
   it("must delete with undo possibility which must be closable") {
-    val persistenceFactory = mock[PersistenceFactory]
     val persistence = mock[CrudPersistence]
     val activity = mock[CrudActivity]
     val crudContext = mock[CrudContext]
     stub(crudContext.vars).toReturn(new ContextVars {})
-    stub(persistenceFactory.createEntityPersistence(anyObject(), anyObject())).toReturn(persistence)
-    val entity = new MyCrudType(persistenceFactory)
+    val entity = new MyCrudType(persistence)
     val readable = mutable.Map[String,Any]()
     val uri = UriPath(entity.entityName) / 345L
     stub(activity.crudContext).toReturn(crudContext)
@@ -122,15 +115,13 @@ class CrudTypeSpec extends Spec with MustMatchers with CrudMockitoSugar {
   }
 
   it("undo of delete must work") {
-    val persistenceFactory = mock[PersistenceFactory]
     val persistence = mock[CrudPersistence]
     val activity = mock[CrudActivity]
     val crudContext = mock[CrudContext]
-    val entity = new MyCrudType(persistenceFactory)
+    val entity = new MyCrudType(persistence)
     val readable = mutable.Map[String,Any](CursorField.idFieldName -> 345L, "name" -> "George")
     val uri = UriPath(entity.entityName) / 345L
     stub(activity.crudContext).toReturn(crudContext)
-    stub(persistenceFactory.createEntityPersistence(anyObject(), anyObject())).toReturn(persistence)
     val vars = new ContextVars {}
     stub(crudContext.vars).toReturn(vars)
     stub(crudContext.context).toReturn(activity)

@@ -14,7 +14,9 @@ class MyEntityPersistence extends ListBufferCrudPersistence[Map[String,Any]](nul
  * @author Eric Pabst (epabst@gmail.com)
  */
 
-class MyEntityType(val entityName: String = "MyMap") extends EntityType {
+trait MyEntityType extends EntityType {
+  def entityName: String = "MyMap"
+
   def valueFields = List[BaseField](
     persisted[String]("name") + viewId(R.id.name, textView),
     persisted[Int]("age") + viewId(R.id.age, intView),

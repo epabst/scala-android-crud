@@ -14,7 +14,6 @@ import java.lang.IllegalStateException
 import common.UriPath
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
-import org.mockito.Matchers._
 import actors.Future
 
 /**
@@ -32,9 +31,8 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
 
   @Test
   def shouldSupportAddingWithoutEverFinding() {
-    stub(persistenceFactory.createEntityPersistence(anyObject(), anyObject())).toReturn(persistence)
-    val crudType = new MyCrudType(persistenceFactory)
-    val entity = mutable.Map[String,Any]("name" -> "Bob", "age" -> 25)
+    val crudType = new MyCrudType(persistence)
+    val entity = Map[String,Any]("name" -> "Bob", "age" -> 25)
     val uri = UriPath(crudType.entityName)
     val activity = new CrudActivity(crudType, application) {
       override lazy val currentAction = UpdateActionName
@@ -44,14 +42,13 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
     activity.onCreate(null)
     crudType.copy(entity, activity)
     activity.onPause()
-    verify(persistence).save(None, mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))
+    verify(persistence).save(None, Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))
     verify(persistence, never()).find(uri)
   }
 
   @Test
   def shouldAddIfIdNotFound() {
-    stub(persistenceFactory.createEntityPersistence(anyObject(), anyObject())).toReturn(persistence)
-    val crudType = new MyCrudType(persistenceFactory)
+    val crudType = new MyCrudType(persistence)
     val entity = mutable.Map[String,Any]("name" -> "Bob", "age" -> 25)
     val uri = UriPath(crudType.entityName)
     val activity = new CrudActivity(crudType, application) {
@@ -68,8 +65,7 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
 
   @Test
   def shouldAllowUpdating() {
-    stub(persistenceFactory.createEntityPersistence(anyObject(), anyObject())).toReturn(persistence)
-    val crudType = new MyCrudType(persistenceFactory)
+    val crudType = new MyCrudType(persistence)
     val entity = mutable.Map[String,Any]("name" -> "Bob", "age" -> 25)
     val uri = UriPath(crudType.entityName, "101")
     stub(persistence.find(uri)).toReturn(Some(entity))
@@ -90,8 +86,7 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
 
   @Test
   def withPersistenceShouldClosePersistence() {
-    stub(persistenceFactory.createEntityPersistence(anyObject(), anyObject())).toReturn(persistence)
-    val crudType = new MyCrudType(persistenceFactory)
+    val crudType = new MyCrudType(persistence)
     val activity = new CrudActivity(crudType, application)
     activity.withPersistence(p => p.findAll(UriPath.EMPTY))
     verify(persistence).close()
@@ -99,8 +94,7 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
 
   @Test
   def withPersistenceShouldClosePersistenceWithFailure() {
-    stub(persistenceFactory.createEntityPersistence(anyObject(), anyObject())).toReturn(persistence)
-    val crudType = new MyCrudType(persistenceFactory)
+    val crudType = new MyCrudType(persistence)
     val activity = new CrudActivity(crudType, application)
     try {
       activity.withPersistence(p => throw new IllegalArgumentException("intentional"))
@@ -113,9 +107,8 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
 
   @Test
   def onPauseShouldHandleAnyExceptionWhenSaving() {
-    stub(persistenceFactory.createEntityPersistence(anyObject(), anyObject())).toReturn(persistence)
     stub(persistence.save(None, "unsaveable data")).toThrow(new IllegalStateException("intentional"))
-    val crudType = new MyCrudType(persistenceFactory)
+    val crudType = new MyCrudType(persistence)
     val activity = new CrudActivity(crudType, application)
     //should not throw an exception
     activity.saveForOnPause(persistence, "unsaveable data")
@@ -123,8 +116,7 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
 
   @Test
   def onPauseShouldNotCreateANewIdEveryTime() {
-    stub(persistenceFactory.createEntityPersistence(anyObject(), anyObject())).toReturn(persistence)
-    val crudType = new MyCrudType(persistenceFactory)
+    val crudType = new MyCrudType(persistence)
     val entity = mutable.Map[String,Any]("name" -> "Bob", "age" -> 25)
     val uri = UriPath(crudType.entityName)
     when(persistence.find(uri)).thenReturn(None)

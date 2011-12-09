@@ -10,7 +10,7 @@ import persistence.EntityType
 import com.github.triangle.Field
 
 trait GeneratedPersistenceFactory[T <: AnyRef] extends PersistenceFactory {
-  def newWritable = throw new UnsupportedOperationException("not supported")
+  def newWritable: T = throw new UnsupportedOperationException("not supported")
 
   def createEntityPersistence(entityType: EntityType, crudContext: CrudContext): SeqCrudPersistence[T]
 
