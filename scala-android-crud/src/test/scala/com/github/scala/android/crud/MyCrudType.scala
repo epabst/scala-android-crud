@@ -10,15 +10,21 @@ import android.widget.ListAdapter
  * Date: 3/15/11
  * Time: 10:40 PM
  */
-object MyCrudType extends MyCrudType(Mockito.mock(classOf[CrudPersistence]))
-
-case class MyCrudType(persistenceFactory: PersistenceFactory) extends PersistedCrudType(persistenceFactory) with MyEntityType with StubEntityType {
-  def this(persistence: CrudPersistence = Mockito.mock(classOf[CrudPersistence])) {
-    this(new MyPersistenceFactory(persistence))
+case class MyCrudType(override val entityType: EntityType, persistenceFactory: PersistenceFactory) extends PersistedCrudType(entityType, persistenceFactory) with StubCrudType {
+  def this(entityType: EntityType, persistence: CrudPersistence = Mockito.mock(classOf[CrudPersistence])) {
+    this(entityType, new MyPersistenceFactory(persistence))
   }
 
-  override def entityName = "MyCrudType"
+  def this(persistenceFactory: PersistenceFactory) {
+    this(new MyEntityType, persistenceFactory)
+  }
+
+  def this(persistence: CrudPersistence) {
+    this(new MyEntityType, persistence)
+  }
 }
+
+object MyCrudType extends MyCrudType(Mockito.mock(classOf[CrudPersistence]))
 
 class MyPersistenceFactory(persistence: CrudPersistence) extends PersistenceFactory {
   override def newWritable = Map.empty[String,Any]
@@ -30,7 +36,7 @@ class MyPersistenceFactory(persistence: CrudPersistence) extends PersistenceFact
   def refreshAfterDataChanged(listAdapter: ListAdapter) {}
 }
 
-trait StubEntityType extends CrudType {
+trait StubCrudType extends CrudType {
   override lazy val entityNameLayoutPrefix = "test"
 
   def listActivityClass = classOf[CrudListActivity]

@@ -40,7 +40,7 @@ class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
     val contextMenu = mock[ContextMenu]
     val ignoredView: View = null
     val ignoredMenuInfo: ContextMenu.ContextMenuInfo = null
-    stub(application.allEntities).toReturn(Nil)
+    stub(application.allCrudTypes).toReturn(Nil)
     val crudType = MyCrudType
     val activity = new CrudListActivity(crudType, application)
     activity.onCreateContextMenu(contextMenu, ignoredView, ignoredMenuInfo)
@@ -54,7 +54,7 @@ class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
     val ignoredView: View = null
     val ignoredMenuInfo: ContextMenu.ContextMenuInfo = null
 
-    val crudType = new MyCrudType() {
+    val crudType = new MyCrudType(new MyEntityType) {
       override def getEntityActions(application: CrudApplication) = Nil
     }
     val activity = new CrudListActivity(crudType, application)

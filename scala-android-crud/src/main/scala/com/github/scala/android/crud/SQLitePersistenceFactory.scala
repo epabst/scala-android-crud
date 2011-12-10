@@ -20,9 +20,11 @@ object SQLitePersistenceFactory extends PersistenceFactory {
   def setListAdapter(crudType: CrudType, findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: CrudListActivity) {
     val CursorStream(cursor, _) = findAllResult
     activity.startManagingCursor(cursor)
-    activity.setListAdapter(new ResourceCursorAdapter(activity, crudType.rowLayout, cursor) with crudType.AdapterCaching {
+    activity.setListAdapter(new ResourceCursorAdapter(activity, crudType.rowLayout, cursor) with AdapterCaching {
+      def entityType = crudType.entityType
+
       def bindView(view: View, context: Context, cursor: Cursor) {
-        bindViewFromCacheOrItems(view, crudType.transform(Map[String,Any](), cursor) :: contextItems, cursor.getPosition, activity)
+        bindViewFromCacheOrItems(view, entityType.transform(Map[String,Any](), cursor) :: contextItems, cursor.getPosition, activity)
       }
     })
   }

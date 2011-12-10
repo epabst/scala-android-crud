@@ -7,14 +7,12 @@ import view.ViewField._
 import persistence.CursorField._
 import res.R
 
-class MyEntityPersistence extends ListBufferCrudPersistence[Map[String,Any]](null, null)
-
 /**
- * An EntityType (not CrudType) for testing.
+ * An EntityType for testing.
  * @author Eric Pabst (epabst@gmail.com)
  */
 
-trait MyEntityType extends EntityType {
+class MyEntityType extends EntityType {
   def entityName: String = "MyMap"
 
   def valueFields = List[BaseField](
@@ -23,3 +21,5 @@ trait MyEntityType extends EntityType {
     //here to test a non-UI field
     persisted[String]("uri") + Getter[UriPath,String](u => Some(u.toString)))
 }
+
+object MyEntityType extends MyEntityType

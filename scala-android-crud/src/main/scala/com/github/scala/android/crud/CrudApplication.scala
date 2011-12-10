@@ -3,6 +3,7 @@ package com.github.scala.android.crud
 import action.{ContextVars, ContextWithVars}
 import com.github.triangle.Logging
 import common.Common
+import persistence.EntityType
 
 /**
  * An Application that works with [[com.github.scala.android.crud.CrudType]]s.
@@ -27,7 +28,10 @@ trait CrudApplication extends Logging {
   /**
    * All entities in the application, in priority order of most interesting first.
    */
-  def allEntities: List[CrudType]
+  def allCrudTypes: List[CrudType]
+
+  def crudType(entityType: EntityType): CrudType =
+    allCrudTypes.find(_.entityType == entityType).getOrElse(Predef.error(entityType + " not found"))
 }
 
 /**
@@ -39,4 +43,10 @@ trait CrudApplication extends Logging {
 
 case class CrudContext(context: ContextWithVars, application: CrudApplication) {
   def vars: ContextVars = context
+
+  def openEntityPersistence(entityType: EntityType): CrudPersistence =
+    application.crudType(entityType).openEntityPersistence(this)
+
+  def withEntityPersistence[T](entityType: EntityType)(f: CrudPersistence => T): T =
+    application.crudType(entityType).withEntityPersistence(this)(f)
 }

@@ -16,13 +16,15 @@ trait GeneratedPersistenceFactory[T <: AnyRef] extends PersistenceFactory {
 
   def setListAdapter(crudType: CrudType, findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: CrudListActivity) {
     class SeqPersistenceAdapter[T <: AnyRef](findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: ListActivity)
-            extends BaseAdapter with crudType.AdapterCaching {
+            extends BaseAdapter with AdapterCaching {
+      def entityType = crudType.entityType
+
       val seq: Seq[T] = findAllResult.asInstanceOf[Seq[T]]
 
       def getCount: Int = seq.size
 
       def getItemId(position: Int): ID = getItem(position) match {
-        case crudType.IdField(Some(id)) => id
+        case crudType.entityType.IdField(Some(id)) => id
         case _ => position
       }
 
@@ -49,7 +51,9 @@ object GeneratedPersistenceFactory {
   }
 }
 
-abstract class GeneratedCrudType[T <: AnyRef](persistenceFactory: GeneratedPersistenceFactory[T]) extends CrudType(persistenceFactory) {
+abstract class GeneratedCrudType[T <: AnyRef](entityType: EntityType, persistenceFactory: GeneratedPersistenceFactory[T])
+  extends CrudType(entityType, persistenceFactory) {
+
   override def getListActions(application: CrudApplication) = super.getReadOnlyListActions(application)
 
   override def getEntityActions(application: CrudApplication) = super.getReadOnlyEntityActions(application)

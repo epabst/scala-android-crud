@@ -2,13 +2,14 @@ package com.github.scala.android.crud
 
 import action.{ContextVars, ContextWithVars}
 import android.provider.BaseColumns
+import common.Common
 import org.junit.Test
 import org.junit.runner.RunWith
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.scalatest.matchers.MustMatchers
 import com.github.triangle._
 import persistence.CursorField._
-import persistence.{CursorStream, SQLiteCriteria}
+import persistence.{EntityType, CursorStream, SQLiteCriteria}
 import PortableField._
 import scala.collection._
 import mutable.Buffer
@@ -17,6 +18,7 @@ import Mockito._
 import android.app.Activity
 import android.database.{Cursor, DataSetObserver}
 import android.widget.{ListView, ListAdapter}
+import Common.unitAsRef
 
 /**
  * A test for {@link SQLitePersistenceFactory}.
@@ -39,12 +41,13 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
       true
     }
   }
-  val unitAsRef = Unit.asInstanceOf[AnyRef]
 
-  object TestEntityType extends PersistedCrudType(SQLitePersistenceFactory) {
+  object TestEntityType extends EntityType {
     def entityName = "Test"
     val valueFields = List(persisted[Int]("age") + default(21))
+  }
 
+  object TestCrudType extends PersistedCrudType(TestEntityType, SQLitePersistenceFactory) {
     def activityClass = classOf[CrudActivity]
     def listActivityClass = classOf[CrudListActivity]
   }
@@ -52,7 +55,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
   object TestApplication extends CrudApplication {
     val name = "Test Application"
 
-    def allEntities = List(TestEntityType)
+    def allCrudTypes = List(TestCrudType)
   }
   val application = TestApplication
 
@@ -81,7 +84,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
         result
       }
     }
-    val writable = TestEntityType.newWritable
+    val writable = TestCrudType.newWritable
     TestEntityType.copy(unitAsRef, writable)
     val id = persistence.save(None, writable)
     val uri = persistence.toUri(id)
@@ -97,7 +100,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
   @Test
   def shouldRefreshCursorWhenDeletingAndSaving() {
     val listView = mock[ListView]
-    val activity = new CrudListActivity(TestEntityType, application) {
+    val activity = new CrudListActivity(TestCrudType, application) {
       private var listAdapter: ListAdapter = _
       override def setListAdapter(adapter: ListAdapter) {
         super.setListAdapter(adapter)
@@ -110,24 +113,24 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
     val observer = mock[DataSetObserver]
 
     val crudContext = new CrudContext(activity, application)
-    TestEntityType.setListAdapterUsingUri(crudContext, activity)
+    TestCrudType.setListAdapterUsingUri(crudContext, activity)
     val listAdapter = activity.getListAdapter
     listAdapter.getCount must be (0)
 
-    val writable = TestEntityType.newWritable
+    val writable = TestCrudType.newWritable
     TestEntityType.copy(unitAsRef, writable)
-    val id = TestEntityType.withEntityPersistence(crudContext) { _.save(None, writable) }
+    val id = TestCrudType.withEntityPersistence(crudContext) { _.save(None, writable) }
     //it must have refreshed the listAdapter
     listAdapter.getCount must be (if (runningOnRealAndroid) 1 else 0)
 
     TestEntityType.copy(Map("age" -> 50), writable)
     listAdapter.registerDataSetObserver(observer)
-    TestEntityType.withEntityPersistence(crudContext) { _.save(Some(id), writable) }
+    TestCrudType.withEntityPersistence(crudContext) { _.save(Some(id), writable) }
     //it must have refreshed the listAdapter (notified the observer)
     listAdapter.unregisterDataSetObserver(observer)
     listAdapter.getCount must be (if (runningOnRealAndroid) 1 else 0)
 
-    TestEntityType.withEntityPersistence(crudContext) { _.delete(TestEntityType.toUri(id)) }
+    TestCrudType.withEntityPersistence(crudContext) { _.delete(TestEntityType.toUri(id)) }
     //it must have refreshed the listAdapter
     listAdapter.getCount must be (0)
   }

@@ -11,6 +11,8 @@ import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.EasyMockSugar
 import android.database.Cursor
 import com.github.scala.android.crud.common.PlatformTypes._
+import com.github.scala.android.crud.common.Common
+import Common.unitAsRef
 
 /**
  * A specification for {@link CursorField}.
@@ -20,8 +22,6 @@ import com.github.scala.android.crud.common.PlatformTypes._
  */
 @RunWith(classOf[RobolectricTestRunner])
 class CursorFieldSpec extends MustMatchers with EasyMockSugar {
-  val unitAsRef = Unit.asInstanceOf[AnyRef]
-
   @Test
   def shouldGetColumnsForQueryCorrectly() {
     val foreign = persisted[ID]("foreignID")

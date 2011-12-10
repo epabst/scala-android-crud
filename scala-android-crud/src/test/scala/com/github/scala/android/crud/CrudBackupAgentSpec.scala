@@ -7,6 +7,7 @@ import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.scalatest.matchers.MustMatchers
 import android.widget.ListAdapter
 import persistence.CursorField.PersistedId
+import persistence.EntityType
 import scala.collection.mutable
 import org.easymock.{IAnswer, EasyMock}
 import EasyMock._
@@ -14,6 +15,7 @@ import com.github.triangle.PortableField._
 import CrudBackupAgent._
 import android.os.ParcelFileDescriptor
 import common.UriPath
+import com.github.triangle.BaseField
 
 /**
  * A test for {@link CrudBackupAgent}.
@@ -63,9 +65,9 @@ class CrudBackupAgentSpec extends MustMatchers with CrudEasyMockSugar {
     persistence2.save(Some(101L), mutable.Map("city" -> "Los Angeles", "state" -> "CA"))
     persistence2.save(Some(104L), mutable.Map("city" -> "Chicago", "state" -> "IL"))
     val entityType = new MyCrudType(persistence)
-    val entityType2 = new MyCrudType(persistence2) {
+    val entityType2 = new MyCrudType(new MyEntityType {
       override def entityName = "OtherMap"
-    }
+    }, persistence2)
     val persistenceB = new MyEntityPersistence
     val persistence2B = new MyEntityPersistence
     val entityTypeB = new MyCrudType(persistenceB)
@@ -75,12 +77,12 @@ class CrudBackupAgentSpec extends MustMatchers with CrudEasyMockSugar {
     val state0 = null
     var restoreItems = mutable.ListBuffer[RestoreItem]()
     expecting {
-      call(application.allEntities).andReturn(List[CrudType](entityType, entityType2))
-      backupTarget.writeEntity(eql("MyCrudType#100"), notNull()).andAnswer(saveRestoreItem(restoreItems))
-      backupTarget.writeEntity(eql("MyCrudType#101"), notNull()).andAnswer(saveRestoreItem(restoreItems))
+      call(application.allCrudTypes).andReturn(List[CrudType](entityType, entityType2))
+      backupTarget.writeEntity(eql("MyMap#100"), notNull()).andAnswer(saveRestoreItem(restoreItems))
+      backupTarget.writeEntity(eql("MyMap#101"), notNull()).andAnswer(saveRestoreItem(restoreItems))
       backupTarget.writeEntity(eql("OtherMap#101"), notNull()).andAnswer(saveRestoreItem(restoreItems))
       backupTarget.writeEntity(eql("OtherMap#104"), notNull()).andAnswer(saveRestoreItem(restoreItems))
-      call(applicationB.allEntities).andReturn(List[CrudType](entityTypeB, entityType2B))
+      call(applicationB.allCrudTypes).andReturn(List[CrudType](entityTypeB, entityType2B))
     }
     whenExecuting(application, applicationB, listAdapter, backupTarget, state1, state1b) {
       val backupAgent = new CrudBackupAgent(application)
@@ -122,13 +124,13 @@ class CrudBackupAgentSpec extends MustMatchers with CrudEasyMockSugar {
     val persistenceFactory = mock[GeneratedPersistenceFactory[Map[String, Any]]]
     val persistence = new MyEntityPersistence
     val entityType = new MyCrudType(persistence)
-    val generatedType = new GeneratedCrudType(persistenceFactory) with StubEntityType {
+    val generatedType = new GeneratedCrudType(new EntityType {
       def entityName = "Generated"
-      def valueFields = List(ParentField(entityType), default[Int](100))
-    }
+      def valueFields = List[BaseField](ParentField(MyEntityType), default[Int](100))
+    }, persistenceFactory) with StubCrudType
     val state0 = null
     expecting {
-      call(application.allEntities).andReturn(List[CrudType](entityType, generatedType))
+      call(application.allCrudTypes).andReturn(List[CrudType](entityType, generatedType))
       //shouldn't call any methods on generatedPersistence
     }
     whenExecuting(application, listAdapter, backupTarget, state1) {
@@ -140,3 +142,5 @@ class CrudBackupAgentSpec extends MustMatchers with CrudEasyMockSugar {
     }
   }
 }
+
+class MyEntityPersistence extends ListBufferCrudPersistence[Map[String,Any]](null, null)

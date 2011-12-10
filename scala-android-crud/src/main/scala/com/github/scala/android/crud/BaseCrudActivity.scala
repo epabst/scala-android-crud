@@ -16,7 +16,8 @@ import RichIntent._
  */
 
 trait BaseCrudActivity extends ActivityWithVars with OptionsMenuActivity with Logging with Timing {
-  def entityType: CrudType
+  def crudType: CrudType
+  final def entityType = crudType.entityType
 
   def application: CrudApplication
 
@@ -80,7 +81,7 @@ trait BaseCrudActivity extends ActivityWithVars with OptionsMenuActivity with Lo
   }
 
   //available to be overridden for testing
-  def openEntityPersistence(): CrudPersistence = entityType.openEntityPersistence(crudContext)
+  def openEntityPersistence(): CrudPersistence = crudType.openEntityPersistence(crudContext)
 
   def withPersistence[T](f: CrudPersistence => T): T = {
     val persistence = openEntityPersistence()

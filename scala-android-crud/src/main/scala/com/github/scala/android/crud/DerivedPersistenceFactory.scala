@@ -7,10 +7,10 @@ import persistence.EntityType
   * @author Eric Pabst (epabst@gmail.com)
   * @see DerivedPersistenceFactory
   */
-abstract class DerivedCrudPersistence[T <: AnyRef](val crudContext: CrudContext, delegates: CrudType*)
+abstract class DerivedCrudPersistence[T <: AnyRef](val crudContext: CrudContext, delegates: EntityType*)
         extends SeqCrudPersistence[T] {
   val delegatePersistenceMap: Map[EntityType,CrudPersistence] =
-    delegates.map(delegate => delegate -> delegate.openEntityPersistence(crudContext)).toMap
+    delegates.map(delegate => delegate -> crudContext.openEntityPersistence(delegate)).toMap
 
   override def close() {
     delegatePersistenceMap.values.foreach(_.close())
@@ -21,7 +21,7 @@ abstract class DerivedCrudPersistence[T <: AnyRef](val crudContext: CrudContext,
 /** A PersistenceFactory that is derived from related CrudType persistence(s).
   * @author Eric Pabst (epabst@gmail.com)
   */
-abstract class DerivedPersistenceFactory[T <: AnyRef](delegates: CrudType*) extends GeneratedPersistenceFactory[T] { self =>
+abstract class DerivedPersistenceFactory[T <: AnyRef](delegates: EntityType*) extends GeneratedPersistenceFactory[T] { self =>
   def findAll(entityType: EntityType, uri: UriPath, delegatePersistenceMap: Map[EntityType,CrudPersistence]): Seq[T]
 
   def createEntityPersistence(_entityType: EntityType, crudContext: CrudContext) = {

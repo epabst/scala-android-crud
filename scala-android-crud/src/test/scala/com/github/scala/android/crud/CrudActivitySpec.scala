@@ -40,7 +40,7 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
       override def future[T](body: => T) = new ReadyFuture[T](body)
     }
     activity.onCreate(null)
-    crudType.copy(entity, activity)
+    crudType.entityType.copy(entity, activity)
     activity.onPause()
     verify(persistence).save(None, Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))
     verify(persistence, never()).find(uri)
@@ -58,7 +58,7 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
     }
     when(persistence.find(uri)).thenReturn(None)
     activity.onCreate(null)
-    crudType.copy(entity, activity)
+    crudType.entityType.copy(entity, activity)
     activity.onPause()
     verify(persistence).save(None, mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))
   }
@@ -75,7 +75,7 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
       override def future[T](body: => T) = new ReadyFuture[T](body)
     }
     activity.onCreate(null)
-    val viewData = crudType.transform(mutable.Map[String,Any](), activity)
+    val viewData = crudType.entityType.transform(mutable.Map[String,Any](), activity)
     viewData.get("name") must be (Some("Bob"))
     viewData.get("age") must be (Some(25))
 
@@ -127,7 +127,7 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
     activity.setIntent(constructIntent(Operation.CreateActionName, uri, activity, null))
     activity.onCreate(null)
     //simulate a user entering data
-    crudType.copy(entity, activity)
+    crudType.entityType.copy(entity, activity)
     activity.onPause()
     activity.onPause()
     verify(persistence, times(1)).save(None, mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))

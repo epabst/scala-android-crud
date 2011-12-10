@@ -2,10 +2,27 @@ package com.github.scala.android.crud.sample
 
 import com.github.scala.android.crud._
 import persistence.CursorField._
+import persistence.EntityType
 import view.ViewField._
 import persistence.PersistedType._
 import java.util.Date
 import com.github.scala.android.crud.ParentField._
+
+object BookEntityType extends EntityType {
+  def entityName = "Book"
+
+  def valueFields = List(
+    foreignKey(AuthorEntityType),
+
+    persisted[String]("name") + viewId(classOf[R], "name", textView),
+
+    persistedEnum[Genre.Value]("genre", Genre) + viewId(classOf[R], "genre", enumerationView(Genre)),
+
+    persisted[Int]("edition") + viewId(classOf[R], "edition", intView),
+
+    persistedDate("publishDate") + viewId[Date](classOf[R], "publishDate", dateView)
+  )
+}
 
 /**
  * A CRUD type for Book.
@@ -17,21 +34,7 @@ trait BookContext {
 
   def BookCrudType: BookCrudType
 
-  class BookCrudType(persistenceFactory: PersistenceFactory) extends PersistedCrudType(persistenceFactory) {
-    def entityName = "Book"
-
-    def valueFields = List(
-      foreignKey(AuthorCrudType),
-
-      persisted[String]("name") + viewId(classOf[R], "name", textView),
-
-      persistedEnum[Genre.Value]("genre", Genre) + viewId(classOf[R], "genre", enumerationView(Genre)),
-
-      persisted[Int]("edition") + viewId(classOf[R], "edition", intView),
-
-      persistedDate("publishDate") + viewId[Date](classOf[R], "publishDate", dateView)
-    )
-
+  class BookCrudType(persistenceFactory: PersistenceFactory) extends CrudType(BookEntityType, persistenceFactory) {
     def activityClass = classOf[BookActivity]
     def listActivityClass = classOf[BookListActivity]
   }

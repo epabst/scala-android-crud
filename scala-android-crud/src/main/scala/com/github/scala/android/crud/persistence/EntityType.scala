@@ -5,6 +5,7 @@ import com.github.scala.android.crud.common._
 import PlatformTypes._
 import CursorField.PersistedId
 import UriPath.uriIdField
+import Common.unitAsRef
 
 /**
  * An entity configuration that provides information needed to map data to and from persistence.
@@ -40,8 +41,6 @@ trait EntityType extends FieldList with Logging {
 
   def toUri(id: ID) = UriPath(entityName, id.toString)
 
-  //this is here because the IDE thinks that Unit is not an AnyRef
-  val unitAsRef: AnyRef = Unit.asInstanceOf[AnyRef]
   lazy val unitPortableValue = copyFrom(unitAsRef)
 
   override def toString() = entityName

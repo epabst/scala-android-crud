@@ -30,11 +30,12 @@ class GeneratedPersistenceFactorySpec extends MustMatchers with CrudMockitoSugar
     val factory = new GeneratedPersistenceFactory[Map[String,Any]] {
       def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) = seqPersistence
     }
-    val generatedCrudType = new GeneratedCrudType[Map[String, Any]](factory) with StubEntityType {
+    val entityType = new EntityType {
       override protected def idField = mapField[ID]("longId") + super.idField
       def entityName = generatedEntityName
       def valueFields = Nil
     }
+    val generatedCrudType = new GeneratedCrudType[Map[String, Any]](entityType, factory) with StubCrudType
     when(listActivity.setListAdapter(anyObject())).thenAnswer(listAdapterCapture)
     factory.setListAdapter(generatedCrudType, List(Map("longId" -> 456L)), Nil, listActivity)
     val listAdapter = listAdapterCapture.params(0).asInstanceOf[ListAdapter]

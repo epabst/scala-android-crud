@@ -12,6 +12,7 @@ import collection.mutable.SynchronizedQueue
 import android.app.backup.BackupManager
 import android.database.sqlite.{SQLiteOpenHelper, SQLiteDatabase}
 import common.UriPath
+import Common.unitAsRef
 
 /**
  * EntityPersistence for SQLite.
@@ -44,7 +45,7 @@ class SQLiteEntityPersistence(val entityType: EntityType, val crudContext: CrudC
   }
 
   //Unit is provided here in the item list for the sake of PortableField.adjustment[SQLiteCriteria] fields
-  def findAll(uri: UriPath) = findAll(entityType.transformWithItem(new SQLiteCriteria, List(uri, Unit)))
+  def findAll(uri: UriPath) = findAll(entityType.transformWithItem(new SQLiteCriteria, List(uri, unitAsRef)))
 
   private def notifyDataChanged() {
     backupManager.dataChanged()
@@ -106,7 +107,7 @@ class GeneratedDatabaseSetup(crudContext: CrudContext) extends SQLiteOpenHelper(
 
   def onCreate(db: SQLiteDatabase) {
     val application = crudContext.application
-    for (entityType <- application.allEntities.collect { case c: PersistedCrudType => c }) {
+    for (entityType <- application.allCrudTypes.collect { case c: PersistedCrudType => c }.map(_.entityType)) {
       val buffer = new StringBuffer
       buffer.append("CREATE TABLE IF NOT EXISTS ").append(SQLitePersistenceFactory.toTableName(entityType.entityName)).append(" (").
           append(BaseColumns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT")

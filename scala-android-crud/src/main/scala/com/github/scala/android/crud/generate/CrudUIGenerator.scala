@@ -12,7 +12,6 @@ import AndroidResourceAnalyzer._
 import com.github.scala.android.crud.view.ViewField.{ViewIdNameField, ViewIdField}
 import com.github.scala.android.crud.{NamingConventions, CrudApplication, ParentField, CrudType}
 import com.github.scala.android.crud.common.Common
-import com.github.scala.android.crud.common.PlatformTypes._
 import collection.immutable.List
 
 /**
@@ -44,7 +43,7 @@ object CrudUIGenerator extends Logging {
   }
 
   def generateAndroidManifest(application: CrudApplication): Node = {
-    val activityNames = application.allEntities.flatMap { entity =>
+    val activityNames = application.allCrudTypes.flatMap { entity =>
       List(entity.listActivityClass.getSimpleName, entity.activityClass.getSimpleName)
     }
     <manifest xmlns:android="http://schemas.android.com/apk/res/android"
@@ -90,12 +89,12 @@ object CrudUIGenerator extends Logging {
   def generateValueStrings(application: CrudApplication): Node = {
     <resources>
       <string name="app_name">{application.name}</string>
-      {application.allEntities.flatMap(generateValueStrings(_))}
+      {application.allCrudTypes.flatMap(generateValueStrings(_))}
     </resources>
   }
 
   def generateLayouts(application: CrudApplication) {
-    application.allEntities.foreach(generateLayouts(_))
+    application.allCrudTypes.foreach(generateLayouts(_))
     writeXmlToFile(Path("AndroidManifest.xml"), generateAndroidManifest(application))
     writeXmlToFile(Path("res") / "values" / "strings.xml", generateValueStrings(application))
   }
@@ -220,7 +219,7 @@ object CrudUIGenerator extends Logging {
   }
 
   def guessFieldInfos(crudType: CrudType): List[ViewFieldInfo] =
-    crudType.fields.flatMap(guessFieldInfos(_, crudType.rIdClasses))
+    crudType.entityType.fields.flatMap(guessFieldInfos(_, crudType.rIdClasses))
 
   private def writeLayoutFile(name: String, xml: Elem) {
     writeXmlToFile(Path("res") / "layout" / (name + ".xml"), xml)

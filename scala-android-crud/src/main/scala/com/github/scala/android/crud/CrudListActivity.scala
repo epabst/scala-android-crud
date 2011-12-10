@@ -19,28 +19,28 @@ import common.PlatformTypes._
  * Date: 2/3/11
  * Time: 7:06 AM
  */
-class CrudListActivity(val entityType: CrudType, val application: CrudApplication)
+class CrudListActivity(val crudType: CrudType, val application: CrudApplication)
   extends ListActivity with BaseCrudActivity {
 
   override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)
 
-    setContentView(entityType.listLayout)
+    setContentView(crudType.listLayout)
 
     val view = getListView;
 		view.setHeaderDividersEnabled(true);
-		view.addHeaderView(getLayoutInflater.inflate(entityType.headerLayout, null));
+		view.addHeaderView(getLayoutInflater.inflate(crudType.headerLayout, null));
     registerForContextMenu(getListView)
 
-    entityType.addPersistenceListener(new PersistenceListener {
-      def onSave(id: ID) { entityType.refreshAfterDataChanged(getListAdapter) }
-      def onDelete(uri: UriPath) { entityType.refreshAfterDataChanged(getListAdapter) }
+    crudType.addPersistenceListener(new PersistenceListener {
+      def onSave(id: ID) { crudType.refreshAfterDataChanged(getListAdapter) }
+      def onDelete(uri: UriPath) { crudType.refreshAfterDataChanged(getListAdapter) }
     }, crudContext.context)
 
-    entityType.setListAdapterUsingUri(crudContext, this)
+    crudType.setListAdapterUsingUri(crudContext, this)
     future {
       populateFromParentEntities()
-      entityType.addPersistenceListener(new PersistenceListener {
+      crudType.addPersistenceListener(new PersistenceListener {
         def onDelete(uri: UriPath) {
           //Some of the parent fields may be calculated from the children
           populateFromParentEntities()
@@ -57,8 +57,8 @@ class CrudListActivity(val entityType: CrudType, val application: CrudApplicatio
   private def populateFromParentEntities() {
     val uriPath = currentUriPath
     //copy each parent Entity's data to the Activity if identified in the currentUriPath
-    val portableValues: List[PortableValue] = entityType.parentEntities.flatMap { parentType =>
-      parentType.copyFromPersistedEntity(uriPath, crudContext)
+    val portableValues: List[PortableValue] = crudType.parentEntities(application).flatMap { parentType =>
+      crudType.copyFromPersistedEntity(uriPath, crudContext)
     }
     runOnUiThread {
       portableValues.foreach(_.copyTo(this))
@@ -68,24 +68,24 @@ class CrudListActivity(val entityType: CrudType, val application: CrudApplicatio
   override def setListAdapter(adapter: ListAdapter) {
     super.setListAdapter(adapter)
     adapter match {
-      case adapterCaching: entityType.AdapterCaching =>
-        entityType.addPersistenceListener(adapterCaching.cacheClearingPersistenceListener(this), this)
+      case adapterCaching: AdapterCaching =>
+        crudType.addPersistenceListener(adapterCaching.cacheClearingPersistenceListener(this), this)
       case _ =>
     }
   }
 
   override def onDestroy() {
-    entityType.destroyContextVars(crudContext.vars)
+    crudType.destroyContextVars(crudContext.vars)
     super.onDestroy()
   }
 
   override def onResume() {
     trace("onResume")
-    entityType.refreshAfterDataChanged(getListAdapter)
+    crudType.refreshAfterDataChanged(getListAdapter)
     super.onResume()
   }
 
-  protected def contextMenuActions: List[Action] = entityType.getEntityActions(application) match {
+  protected def contextMenuActions: List[Action] = crudType.getEntityActions(application) match {
     case _ :: tail => tail.filter(_.command.title.isDefined)
     case Nil => Nil
   }
@@ -106,11 +106,11 @@ class CrudListActivity(val entityType: CrudType, val application: CrudApplicatio
     }
   }
 
-  protected def normalActions = entityType.getListActions(application)
+  protected def normalActions = crudType.getListActions(application)
 
   override def onListItemClick(l: ListView, v: View, position: Int, id: ID) {
     if (id >= 0) {
-      entityType.getEntityActions(application).headOption.map(_.invoke(uriWithId(id), this)).getOrElse {
+      crudType.getEntityActions(application).headOption.map(_.invoke(uriWithId(id), this)).getOrElse {
         warn("There are no entity actions defined for " + entityType)
       }
     } else {

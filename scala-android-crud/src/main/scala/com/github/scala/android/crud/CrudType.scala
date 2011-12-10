@@ -4,7 +4,7 @@ import action._
 import android.view.View
 import com.github.triangle.JavaUtil._
 import android.widget.{ListAdapter, BaseAdapter}
-import common.{UriPath, Timing}
+import common.{Common, UriPath, Timing}
 import Operation._
 import android.app.{Activity, ListActivity}
 import com.github.triangle._
@@ -13,6 +13,7 @@ import persistence.{EntityType, CursorField, PersistenceListener}
 import PortableField.toSome
 import view.AndroidResourceAnalyzer._
 import java.lang.IllegalStateException
+import Common.unitAsRef
 
 /**
  * An entity configuration that provides all custom information needed to
@@ -21,9 +22,12 @@ import java.lang.IllegalStateException
  * Date: 2/23/11
  * Time: 3:24 PM
  */
-abstract class CrudType(persistenceFactory: PersistenceFactory) extends EntityType with Timing {
+abstract class CrudType(val entityType: EntityType, persistenceFactory: PersistenceFactory) extends Timing with Logging {
+  protected def logTag = entityType.logTag
+
   trace("Instantiated CrudType: " + this)
 
+  def entityName = entityType.entityName
   lazy val entityNameLayoutPrefix = NamingConventions.toLayoutPrefix(entityName)
 
   def rIdClasses: Seq[Class[_]] = detectRIdClasses(this.getClass)
@@ -47,7 +51,7 @@ abstract class CrudType(persistenceFactory: PersistenceFactory) extends EntityTy
   lazy val entryLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_entry")
 
   final def hasDisplayPage = displayLayout.isDefined
-  lazy val isUpdateable: Boolean = !CursorField.updateablePersistedFields(this, rIdClasses).isEmpty
+  lazy val isUpdateable: Boolean = !CursorField.updateablePersistedFields(entityType, rIdClasses).isEmpty
 
   private val persistenceVarForListAdapter = new ContextVar[CrudPersistence]
 
@@ -64,11 +68,13 @@ abstract class CrudType(persistenceFactory: PersistenceFactory) extends EntityTy
   def deleteItemString: SKey = res.R.string.delete_item
   def cancelItemString: SKey = android.R.string.cancel
 
-  lazy val parentFields: List[ParentField] = deepCollect {
+  lazy val parentFields: List[ParentField] = entityType.deepCollect {
     case parentField: ParentField => parentField
   }
 
-  lazy val parentEntities: List[CrudType] = parentFields.map(_.entityType)
+  def parentEntityTypes(application: CrudApplication): List[EntityType] = parentFields.map(_.entityType)
+
+  def parentEntities(application: CrudApplication): List[CrudType] = parentFields.map(_.entityType).map(application.crudType(_))
 
   /**
    * The list of entities that refer to this one.
@@ -76,11 +82,11 @@ abstract class CrudType(persistenceFactory: PersistenceFactory) extends EntityTy
    */
   def childEntities(application: CrudApplication): List[CrudType] = {
     val self = this
-    trace("childEntities: allEntities=" + application.allEntities + " self=" + self)
-    application.allEntities.filter { entity =>
-      val entityParents = entity.parentEntities
-      trace("childEntities: parents of " + entity + " are " + entityParents)
-      entityParents.contains(self)
+    trace("childEntities: allCrudTypes=" + application.allCrudTypes + " self=" + self)
+    application.allCrudTypes.filter { entity =>
+      val parentEntityTypes = entity.parentEntityTypes(application)
+      trace("childEntities: parents of " + entity.entityType + " are " + parentEntityTypes)
+      parentEntityTypes.contains(self.entityType)
     }
   }
 
@@ -90,17 +96,18 @@ abstract class CrudType(persistenceFactory: PersistenceFactory) extends EntityTy
    */
   lazy val createAction: Option[Action] =
     if (isUpdateable)
-      Some(Action(Command(android.R.drawable.ic_menu_add, addItemString), new StartEntityActivityOperation(entityName, CreateActionName, activityClass)))
+      Some(Action(Command(android.R.drawable.ic_menu_add, addItemString),
+        new StartEntityActivityOperation(entityType.entityName, CreateActionName, activityClass)))
     else
       None
 
   /**
    * Gets the action to display the list that matches the criteria copied from criteriaSource using entityType.copy.
    */
-  lazy val listAction = Action(Command(None, listItemsString), new StartEntityActivityOperation(entityName, ListActionName, listActivityClass))
+  lazy val listAction = Action(Command(None, listItemsString), new StartEntityActivityOperation(entityType.entityName, ListActionName, listActivityClass))
 
   protected def entityOperation(action: String, activityClass: Class[_ <: Activity]) =
-    new StartEntityIdActivityOperation(entityName, action, activityClass)
+    new StartEntityIdActivityOperation(entityType.entityName, action, activityClass)
 
   /**
    * Gets the action to display the entity given the id in the UriPath.
@@ -130,10 +137,10 @@ abstract class CrudType(persistenceFactory: PersistenceFactory) extends EntityTy
   def activityClass: Class[_ <: CrudActivity]
 
   def copyFromPersistedEntity(uriPathWithId: UriPath, crudContext: CrudContext): Option[PortableValue] = {
-    val contextItems = List(uriPathWithId, crudContext, Unit)
+    val contextItems = List(uriPathWithId, crudContext, unitAsRef)
     withEntityPersistence(crudContext)(_.find(uriPathWithId).map { readable =>
-      debug("Copying " + entityName + "#" + IdField(readable) + " to " + this)
-      copyFromItem(readable +: contextItems)
+      debug("Copying " + entityType.entityName + "#" + entityType.IdField(readable) + " to " + this)
+      entityType.copyFromItem(readable +: contextItems)
     })
   }
 
@@ -148,11 +155,11 @@ abstract class CrudType(persistenceFactory: PersistenceFactory) extends EntityTy
     val thisEntity = this;
     (parentFields match {
       //exactly one parent w/o a display page
-      case parentField :: Nil if !parentField.entityType.hasDisplayPage => {
-        val parentEntity = parentField.entityType
+      case parentField :: Nil if !application.crudType(parentField.entityType).hasDisplayPage => {
+        val parentCrudType = application.crudType(parentField.entityType)
         //the parent's updateAction should be shown since clicking on the parent entity brought the user
         //to the list of child entities instead of to a display page for the parent entity.
-        parentEntity.updateAction.toList ::: parentEntity.childEntities(application).filter(_ != thisEntity).map(_.listAction)
+        parentCrudType.updateAction.toList ::: parentCrudType.childEntities(application).filter(_ != thisEntity).map(_.listAction)
       }
       case _ => Nil
     })
@@ -188,62 +195,12 @@ abstract class CrudType(persistenceFactory: PersistenceFactory) extends EntityTy
    */
   def newWritable = persistenceFactory.newWritable
 
-  protected def createEntityPersistence(crudContext: CrudContext) = persistenceFactory.createEntityPersistence(this, crudContext)
+  protected def createEntityPersistence(crudContext: CrudContext) = persistenceFactory.createEntityPersistence(entityType, crudContext)
 
   final def withEntityPersistence[T](crudContext: CrudContext)(f: CrudPersistence => T): T = {
     val persistence = openEntityPersistence(crudContext)
     try f(persistence)
     finally persistence.close()
-  }
-
-  trait AdapterCaching { self: BaseAdapter =>
-    private def findCachedPortableValue(activity: ListActivity, position: Long): Option[PortableValue] =
-      Option(activity.getListView.getTag.asInstanceOf[Map[Long, PortableValue]]).flatMap(_.get(position))
-
-    private def cachePortableValue(activity: ListActivity, position: Long, portableValue: PortableValue) {
-      val listView = activity.getListView
-      val map = Option(listView.getTag.asInstanceOf[Map[Long,PortableValue]]).getOrElse(Map.empty[Long,PortableValue]) +
-              (position -> portableValue)
-      listView.setTag(map)
-      trace("Added value at position " + position + " to the cache for " + activity)
-    }
-
-    def cacheClearingPersistenceListener(activity: ListActivity) = new PersistenceListener {
-      def onSave(id: ID) {
-        trace("Clearing ListView cache in " + activity + " since DataSet was invalidated")
-        activity.runOnUiThread { activity.getListView.setTag(null) }
-      }
-
-      def onDelete(uri: UriPath) {
-        trace("Clearing ListView cache in " + activity + " since DataSet was invalidated")
-        activity.runOnUiThread { activity.getListView.setTag(null) }
-      }
-    }
-
-    protected[crud] def bindViewFromCacheOrItems(view: View, itemsToCopyAtPosition: => List[AnyRef], position: Long, activity: ListActivity) {
-      val cachedValue: Option[PortableValue] = findCachedPortableValue(activity, position)
-      //set the cached or default values immediately instead of showing the column header names
-      cachedValue match {
-        case Some(portableValue) =>
-          trace("cache hit for " + activity + " at position " + position + ": " + portableValue)
-          portableValue.copyTo(view)
-        case None =>
-          trace("cache miss for " + activity + " at position " + position)
-          unitPortableValue.copyTo(view)
-      }
-      if (cachedValue.isEmpty) {
-        //copy immediately since in the case of a Cursor, it will be advanced to the next row quickly.
-        val positionItems: List[AnyRef] = itemsToCopyAtPosition
-        cachePortableValue(activity, position, unitPortableValue)
-        future {
-          val portableValue = copyFromItem(positionItems)
-          activity.runOnUiThread {
-            cachePortableValue(activity, position, portableValue)
-            notifyDataSetChanged()
-          }
-        }
-      }
-    }
   }
 
   final def setListAdapterUsingUri(crudContext: CrudContext, activity: CrudListActivity) {
@@ -254,7 +211,7 @@ abstract class CrudType(persistenceFactory: PersistenceFactory) extends EntityTy
 
   def setListAdapterUsingUri(persistence: CrudPersistence, crudContext: CrudContext, activity: CrudListActivity) {
     val findAllResult = persistence.findAll(activity.currentUriPath)
-    setListAdapter(findAllResult, List(activity.currentUriPath, crudContext, Unit), activity)
+    setListAdapter(findAllResult, List(activity.currentUriPath, crudContext, unitAsRef), activity)
   }
 
   def setListAdapter(findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: CrudListActivity) {
@@ -273,8 +230,8 @@ abstract class CrudType(persistenceFactory: PersistenceFactory) extends EntityTy
 
   private[crud] def undoableDelete(uri: UriPath)(persistence: CrudPersistence) {
     persistence.find(uri).foreach { readable =>
-      val id = idField.getter(readable)
-      val writable = transform(newWritable, readable)
+      val id = entityType.IdField.getter(readable)
+      val writable = entityType.transform(newWritable, readable)
       persistence.delete(uri)
       val undoDeleteOperation = new PersistenceOperation(this, persistence.crudContext.application) {
         def invoke(uri: UriPath, persistence: CrudPersistence) {
@@ -297,7 +254,61 @@ abstract class CrudType(persistenceFactory: PersistenceFactory) extends EntityTy
   }
 }
 
-abstract class PersistedCrudType(persistenceFactory: PersistenceFactory) extends CrudType(persistenceFactory)
+trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
+  def entityType: EntityType
+
+  protected def logTag = entityType.logTag
+
+  private def findCachedPortableValue(activity: ListActivity, position: Long): Option[PortableValue] =
+    Option(activity.getListView.getTag.asInstanceOf[Map[Long, PortableValue]]).flatMap(_.get(position))
+
+  private def cachePortableValue(activity: ListActivity, position: Long, portableValue: PortableValue) {
+    val listView = activity.getListView
+    val map = Option(listView.getTag.asInstanceOf[Map[Long,PortableValue]]).getOrElse(Map.empty[Long,PortableValue]) +
+            (position -> portableValue)
+    listView.setTag(map)
+    trace("Added value at position " + position + " to the cache for " + activity)
+  }
+
+  def cacheClearingPersistenceListener(activity: ListActivity) = new PersistenceListener {
+    def onSave(id: ID) {
+      trace("Clearing ListView cache in " + activity + " since DataSet was invalidated")
+      activity.runOnUiThread { activity.getListView.setTag(null) }
+    }
+
+    def onDelete(uri: UriPath) {
+      trace("Clearing ListView cache in " + activity + " since DataSet was invalidated")
+      activity.runOnUiThread { activity.getListView.setTag(null) }
+    }
+  }
+
+  protected[crud] def bindViewFromCacheOrItems(view: View, itemsToCopyAtPosition: => List[AnyRef], position: Long, activity: ListActivity) {
+    val cachedValue: Option[PortableValue] = findCachedPortableValue(activity, position)
+    //set the cached or default values immediately instead of showing the column header names
+    cachedValue match {
+      case Some(portableValue) =>
+        trace("cache hit for " + activity + " at position " + position + ": " + portableValue)
+        portableValue.copyTo(view)
+      case None =>
+        trace("cache miss for " + activity + " at position " + position)
+        entityType.unitPortableValue.copyTo(view)
+    }
+    if (cachedValue.isEmpty) {
+      //copy immediately since in the case of a Cursor, it will be advanced to the next row quickly.
+      val positionItems: List[AnyRef] = itemsToCopyAtPosition
+      cachePortableValue(activity, position, entityType.unitPortableValue)
+      future {
+        val portableValue = entityType.copyFromItem(positionItems)
+        activity.runOnUiThread {
+          cachePortableValue(activity, position, portableValue)
+          notifyDataSetChanged()
+        }
+      }
+    }
+  }
+}
+
+abstract class PersistedCrudType(entityType: EntityType, persistenceFactory: PersistenceFactory) extends CrudType(entityType, persistenceFactory)
 
 /**
  * A trait for stubbing out the UI methods of CrudType for use when the entity will

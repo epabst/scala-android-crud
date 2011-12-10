@@ -19,11 +19,11 @@ import ParentField.foreignKey
 class ParentFieldSpec extends MustMatchers with EasyMockSugar {
   @Test
   def shouldGetCriteriaCorrectlyForForeignKey() {
-    val foreign = foreignKey(MyCrudType)
+    val foreign = foreignKey(MyEntityType)
     val uri = UriPath(MyCrudType.entityName, "19")
     //add on extra stuff to make sure it is ignored
     val uriWithExtraStuff = uri / "foo" / 1234
     val criteria = foreign.transform(new SQLiteCriteria, uriWithExtraStuff)
-    criteria.selection must be (List(ParentField(MyCrudType).fieldName + "=19"))
+    criteria.selection must be (List(ParentField(MyEntityType).fieldName + "=19"))
   }
 }

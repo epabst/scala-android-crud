@@ -16,7 +16,7 @@ object SampleApplication extends CrudApplication with AuthorContext with BookCon
   val AuthorCrudType = new AuthorCrudType(SQLitePersistenceFactory)
   val BookCrudType = new BookCrudType(SQLitePersistenceFactory)
 
-  def allEntities = List(AuthorCrudType, BookCrudType)
+  def allCrudTypes = List(AuthorCrudType, BookCrudType)
 }
 
 class SampleBackupAgent extends CrudBackupAgent(SampleApplication)

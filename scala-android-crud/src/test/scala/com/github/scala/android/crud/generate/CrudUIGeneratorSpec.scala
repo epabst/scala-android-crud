@@ -38,12 +38,12 @@ class CrudUIGeneratorSpec extends Spec with MustMatchers with MockitoSugar {
     }
 
     it("must consider a ParentField displayable if it has a viewId field") {
-      val fieldInfo = CrudUIGenerator.guessFieldInfos(ParentField(MyCrudType) + viewId(classOf[R], "foo", longView), Seq(classOf[R])).head
+      val fieldInfo = CrudUIGenerator.guessFieldInfos(ParentField(MyEntityType) + viewId(classOf[R], "foo", longView), Seq(classOf[R])).head
       fieldInfo.displayable must be (true)
     }
 
     it("must not include a ParentField if it has no viewId field") {
-      val fieldInfos = CrudUIGenerator.guessFieldInfos(ParentField(MyCrudType), Seq(classOf[R]))
+      val fieldInfos = CrudUIGenerator.guessFieldInfos(ParentField(MyEntityType), Seq(classOf[R]))
       fieldInfos must be (Nil)
     }
 
@@ -58,12 +58,12 @@ class CrudUIGeneratorSpec extends Spec with MustMatchers with MockitoSugar {
     }
 
     it("must not include the default primary key field") {
-      val fieldInfos = CrudUIGenerator.guessFieldInfos(MyCrudType.IdField, Seq(classOf[R]))
+      val fieldInfos = CrudUIGenerator.guessFieldInfos(MyCrudType.entityType.IdField, Seq(classOf[R]))
       fieldInfos must be (Nil)
     }
 
     it("must not include a ForeignKey if it has no viewId field") {
-      val fieldInfo = CrudUIGenerator.guessFieldInfos(foreignKey(MyCrudType), Seq(classOf[R])).head
+      val fieldInfo = CrudUIGenerator.guessFieldInfos(foreignKey(MyEntityType), Seq(classOf[R])).head
       fieldInfo.updateable must be (false)
     }
 
@@ -113,17 +113,17 @@ class CrudUIGeneratorSpec extends Spec with MustMatchers with MockitoSugar {
 
   describe("generateValueStrings") {
     it("must include 'list', 'add' and 'edit' strings for modifiable entities") {
-      val valueStrings = CrudUIGenerator.generateValueStrings(new MyCrudType() {
+      val valueStrings = CrudUIGenerator.generateValueStrings(new MyCrudType(new MyEntityType {
         override def valueFields = List(persisted[String]("model"))
-      })
+      }))
       valueStrings.foreach(println(_))
       (valueStrings \\ "string").length must be (3)
     }
 
     it("must not include 'add' and 'edit' strings for unmodifiable entities") {
-      (CrudUIGenerator.generateValueStrings(new MyCrudType() {
+      (CrudUIGenerator.generateValueStrings(new MyCrudType(new MyEntityType {
         override def valueFields = List(bundleField[String]("model"))
-      }) \\ "string").length must be (1)
+      })) \\ "string").length must be (1)
     }
   }
 }
