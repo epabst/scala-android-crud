@@ -10,7 +10,7 @@ import com.github.scala.android.crud.{SQLitePersistenceFactory, CrudBackupAgent,
  * Time: 4:53 PM
  */
 
-object SampleApplication extends CrudApplication with AuthorContext with BookContext {
+object SampleApplication extends CrudApplication {
   val name = "Sample Application"
 
   val AuthorCrudType = new AuthorCrudType(SQLitePersistenceFactory)

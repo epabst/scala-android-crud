@@ -32,15 +32,9 @@ object AuthorEntityType extends EntityType {
  * A CRUD type for Author.
  * @author pabstec
  */
-trait AuthorContext {
-  def BookCrudType: CrudType
-
-  def AuthorCrudType: AuthorCrudType
-
-  class AuthorCrudType(persistenceFactory: PersistenceFactory) extends PersistedCrudType(AuthorEntityType, persistenceFactory) {
-    def activityClass = classOf[AuthorActivity]
-    def listActivityClass = classOf[AuthorListActivity]
-  }
+class AuthorCrudType(persistenceFactory: PersistenceFactory) extends PersistedCrudType(AuthorEntityType, persistenceFactory) {
+  def activityClass = classOf[AuthorActivity]
+  def listActivityClass = classOf[AuthorListActivity]
 }
 
 class AuthorListActivity extends CrudListActivity(SampleApplication.AuthorCrudType, SampleApplication)

@@ -5,11 +5,10 @@ import org.scalatest.matchers.MustMatchers
 import com.github.scala.android.crud.persistence.CursorField._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import com.github.scala.android.crud.ParentField._
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
 import com.github.scala.android.crud._
-import action.ContextVars
+import action.{ContextWithVars, ContextVars}
 
 /**
  * A behavior specification for {@link AuthorCrudType}.
@@ -25,22 +24,18 @@ class AuthorCrudTypeSpec extends Spec with MustMatchers with MockitoSugar {
   }
 
   it("must calculate the book count") {
-    val crudContext = mock[CrudContext]
-    stub(crudContext.vars).toReturn(new ContextVars {})
-    val factory = GeneratedPersistenceFactory(new ListBufferCrudPersistence[Map[String, Any]](_, crudContext))
-    val context = new AuthorContext {
-      val BookCrudType = new GeneratedCrudType[Map[String,Any]](factory) with HiddenEntityType {
-        def entityName = "Book"
-        def valueFields = List(foreignKey(AuthorCrudType))
-      }
-
-      object AuthorCrudType extends AuthorCrudType(mock[PersistenceFactory])
+    val contextVars = new ContextVars {}
+    val application = mock[CrudApplication]
+    val crudContext = new CrudContext(mock[ContextWithVars], application) {
+      override def vars = contextVars
     }
-    val bookPersistence = context.BookCrudType.openEntityPersistence(crudContext).asInstanceOf[ListBufferCrudPersistence[Map[String,Any]]]
+    val factory = GeneratedPersistenceFactory(new ListBufferCrudPersistence[Map[String, Any]](_, crudContext))
+    val bookCrudType = new GeneratedCrudType[Map[String,Any]](BookEntityType, factory) with HiddenEntityType
+    val bookPersistence = bookCrudType.openEntityPersistence(crudContext).asInstanceOf[ListBufferCrudPersistence[Map[String,Any]]]
     bookPersistence.buffer += Map.empty[String,Any] += Map.empty[String,Any]
 
-    val crudType = context.AuthorCrudType
-    val authorData = crudType.transformWithItem(Map.empty[String,Any], List(crudType.toUri(100L), crudContext))
+    stub(application.crudType(BookEntityType)).toReturn(bookCrudType)
+    val authorData = AuthorEntityType.transformWithItem(Map.empty[String,Any], List(AuthorEntityType.toUri(100L), crudContext))
     authorData must be (Map[String,Any](idFieldName -> 100L, "bookCount" -> 2))
   }
 }
