@@ -157,7 +157,7 @@ object DeletedEntityIdEntityType extends EntityType {
  * This entity is in its own CrudApplication by itself, separate from any other CrudApplication.
  * It is intended to be in a separate database owned by the scala-android-crud framework.
  */
-object DeletedEntityIdCrudType extends PersistedCrudType(DeletedEntityIdEntityType, SQLitePersistenceFactory) with HiddenEntityType {
+object DeletedEntityIdCrudType extends PersistedCrudType(DeletedEntityIdEntityType, SQLitePersistenceFactory) with HiddenCrudType {
   private val application = new CrudApplication {
     def name = "scala.android.crud_deleted"
 

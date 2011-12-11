@@ -314,7 +314,7 @@ abstract class PersistedCrudType(entityType: EntityType, persistenceFactory: Per
  * A trait for stubbing out the UI methods of CrudType for use when the entity will
  * never be used with the UI.
  */
-trait HiddenEntityType extends CrudType {
+trait HiddenCrudType extends CrudType {
   def activityClass: Class[_ <: CrudActivity] = throw new UnsupportedOperationException
   def listActivityClass: Class[_ <: CrudListActivity] = throw new UnsupportedOperationException
 }
