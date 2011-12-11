@@ -33,10 +33,13 @@ trait CrudPersistence extends EntityPersistence {
     findAll(uri).map(fieldsIncludingIdPk.transform(instantiateItem, _))
 
   /** Saves the entity.  This assumes that the entityType's fields support copying from the given modelEntity. */
-  def save(modelEntity: IdPk): ID = save(modelEntity.id, entityType.transform(newWritable, modelEntity))
+  def save(modelEntity: IdPk): ID = {
+    val writable = newWritable
+    save(modelEntity.id, entityType.transform(writable, modelEntity))
+  }
 }
 
 trait SeqCrudPersistence[T <: AnyRef] extends SeqEntityPersistence[T] with CrudPersistence
 
-class ListBufferCrudPersistence[T <: AnyRef](val entityType: EntityType, val crudContext: CrudContext)
-        extends SeqCrudPersistence[T] with ListBufferEntityPersistence[T]
+class ListBufferCrudPersistence[T <: AnyRef](newWritableFunction: => T, val entityType: EntityType, val crudContext: CrudContext)
+        extends ListBufferEntityPersistence[T](newWritableFunction) with SeqCrudPersistence[T]

@@ -13,6 +13,10 @@ import com.github.scala.android.crud.common.PlatformTypes._
  */
 
 trait SeqEntityPersistence[T <: AnyRef] extends EntityPersistence {
+  def newWritable: T
+}
+
+trait ReadOnlyPersistence extends EntityPersistence {
   def newWritable = throw new UnsupportedOperationException("write not supported")
 
   protected def doSave(id: Option[ID], data: AnyRef): ID = throw new UnsupportedOperationException("write not supported")
@@ -22,7 +26,7 @@ trait SeqEntityPersistence[T <: AnyRef] extends EntityPersistence {
   def close() {}
 }
 
-trait ListBufferEntityPersistence[T <: AnyRef] extends SeqEntityPersistence[T] {
+abstract class ListBufferEntityPersistence[T <: AnyRef](newWritableFunction: => T) extends SeqEntityPersistence[T] {
   private object IdField extends Field[ID](Getter[IdPk,ID](_.id).withTransformer(e => e.id(_)) +
       Setter((e: MutableIdPk) => e.id = _) + CursorField.PersistedId)
   val buffer = mutable.ListBuffer[T]()
@@ -33,7 +37,9 @@ trait ListBufferEntityPersistence[T <: AnyRef] extends SeqEntityPersistence[T] {
   //def findAll(uri: UriPath) = buffer.toList.filter(item => uri.segments.containsSlice(toUri(IdField(item)).segments))
   def findAll(uri: UriPath) = buffer.toList
 
-  override protected def doSave(id: Option[ID], item: AnyRef) = {
+  def newWritable = newWritableFunction
+
+  protected def doSave(id: Option[ID], item: AnyRef) = {
     val newId = id.getOrElse {
       nextId += 1
       nextId
@@ -42,7 +48,9 @@ trait ListBufferEntityPersistence[T <: AnyRef] extends SeqEntityPersistence[T] {
     newId
   }
 
-  override protected def doDelete(uri: UriPath) {
+  protected def doDelete(uri: UriPath) {
     findAll(uri).foreach(entity => buffer -= entity)
   }
+
+  def close() {}
 }

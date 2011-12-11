@@ -1,14 +1,14 @@
 package com.github.scala.android.crud
 
 import common.UriPath
-import persistence.EntityType
+import persistence.{ReadOnlyPersistence, EntityType}
 
 /** A CrudPersistence that is derived from related CrudType persistence(s).
   * @author Eric Pabst (epabst@gmail.com)
   * @see DerivedPersistenceFactory
   */
 abstract class DerivedCrudPersistence[T <: AnyRef](val crudContext: CrudContext, delegates: EntityType*)
-        extends SeqCrudPersistence[T] {
+        extends SeqCrudPersistence[T] with ReadOnlyPersistence {
   val delegatePersistenceMap: Map[EntityType,CrudPersistence] =
     delegates.map(delegate => delegate -> crudContext.openEntityPersistence(delegate)).toMap
 

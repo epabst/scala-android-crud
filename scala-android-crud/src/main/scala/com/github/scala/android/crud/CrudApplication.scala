@@ -4,6 +4,7 @@ import action.{ContextVars, ContextWithVars}
 import com.github.triangle.Logging
 import common.Common
 import persistence.EntityType
+import java.util.NoSuchElementException
 
 /**
  * An Application that works with [[com.github.scala.android.crud.CrudType]]s.
@@ -31,7 +32,7 @@ trait CrudApplication extends Logging {
   def allCrudTypes: List[CrudType]
 
   def crudType(entityType: EntityType): CrudType =
-    allCrudTypes.find(_.entityType == entityType).getOrElse(Predef.error(entityType + " not found"))
+    allCrudTypes.find(_.entityType == entityType).getOrElse(throw new NoSuchElementException(entityType + " not found"))
 }
 
 /**

@@ -143,4 +143,4 @@ class CrudBackupAgentSpec extends MustMatchers with CrudEasyMockSugar {
   }
 }
 
-class MyEntityPersistence extends ListBufferCrudPersistence[Map[String,Any]](null, null)
+class MyEntityPersistence extends ListBufferCrudPersistence(Map.empty[String, Any], null, null)

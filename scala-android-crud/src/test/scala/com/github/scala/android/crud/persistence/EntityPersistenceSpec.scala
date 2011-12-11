@@ -17,7 +17,7 @@ import com.github.scala.android.crud.common.PlatformTypes._
 class EntityPersistenceSpec extends Spec with MustMatchers {
   describe("find") {
     it("must delegate to findAll and return the first result") {
-      val persistence = new SeqEntityPersistence[String] {
+      val persistence = new SeqEntityPersistence[String] with ReadOnlyPersistence {
         def findAll(uri: UriPath) = Seq("the result")
 
         def toUri(id: ID) = throw new UnsupportedOperationException
@@ -27,7 +27,7 @@ class EntityPersistenceSpec extends Spec with MustMatchers {
     }
 
     it("must handle no results") {
-      val persistence = new SeqEntityPersistence[String] {
+      val persistence = new SeqEntityPersistence[String] with ReadOnlyPersistence {
         def findAll(uri: UriPath) = Nil
 
         def toUri(id: ID) = throw new UnsupportedOperationException
@@ -37,7 +37,7 @@ class EntityPersistenceSpec extends Spec with MustMatchers {
     }
 
     it("must fail if multiple matches are found") {
-      val persistence = new SeqEntityPersistence[String] {
+      val persistence = new SeqEntityPersistence[String] with ReadOnlyPersistence {
         def findAll(uri: UriPath) = Seq("one", "two")
 
         def toUri(id: ID) = throw new UnsupportedOperationException
