@@ -206,8 +206,16 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
   }
 
   @Test
-  def defaultLayoutMustBeOverridable() {
+  def defaultLayoutMustBeOverriddenByDisplayLayout() {
     val viewField = textView
     viewField.displayOnly.defaultLayout.editXml must be (viewField.defaultLayout.displayXml)
+  }
+
+  @Test
+  def defaultLayoutMustBeAbleToBeOverridden() {
+    val viewField = textView
+    val newLayout = FieldLayout.textLayout("numberDecimal")
+    val adjustedViewField = viewField.withDefaultLayout(newLayout)
+    adjustedViewField.defaultLayout.editXml must be (newLayout.editXml)
   }
 }

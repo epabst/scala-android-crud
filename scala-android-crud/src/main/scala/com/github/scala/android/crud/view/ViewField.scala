@@ -39,6 +39,7 @@ class ViewField[T](val defaultLayout: FieldLayout, dataField: PortableField[T]) 
   protected def delegate = dataField
 
   lazy val displayOnly: ViewField[T] = new ViewField[T](defaultLayout.displayOnly, dataField)
+  def withDefaultLayout(newDefaultLayout: FieldLayout): ViewField[T] = new ViewField[T](newDefaultLayout, dataField)
 }
 
 object ViewField {
