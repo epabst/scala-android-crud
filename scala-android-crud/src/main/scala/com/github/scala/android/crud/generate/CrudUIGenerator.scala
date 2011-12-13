@@ -70,7 +70,7 @@ object CrudUIGenerator extends PlatformTypes with Logging {
 
   def generateValueStrings(entity: CrudType): NodeSeq = {
     <string name={entity.entityNameLayoutPrefix + "_list"}>{entity.entityName} List</string> +: {
-      if (entity.createAction.isDefined) {
+      if (attemptToEvaluate(entity.createAction.isDefined).getOrElse(true)) {
         Seq(<string name={"add_" + entity.entityNameLayoutPrefix}>Add {entity.entityName}</string>,
             <string name={"edit_" + entity.entityNameLayoutPrefix}>Edit {entity.entityName}</string>)
       } else {
@@ -78,6 +78,13 @@ object CrudUIGenerator extends PlatformTypes with Logging {
       }
     }
   }
+
+  def attemptToEvaluate[T](f: => T): Option[T] =
+    try {
+      Some(f)
+    } catch {
+      case e => debug(e.toString); None
+    }
 
   def generateValueStrings(application: CrudApplication): Node = {
     <resources>
