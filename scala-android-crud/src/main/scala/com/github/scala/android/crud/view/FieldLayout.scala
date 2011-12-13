@@ -10,9 +10,14 @@ import xml.Elem
  * Date: 9/10/11
  * Time: 12:08 AM
  */
-abstract class FieldLayout {
+abstract class FieldLayout { self =>
   def displayXml: Elem
   def editXml: Elem
+  /** Returns a similar FieldLayout but where the editXml is overridden to use displayXml. */
+  lazy val displayOnly: FieldLayout = new FieldLayout {
+    def displayXml = self.displayXml
+    def editXml = self.displayXml
+  }
 }
 
 object FieldLayout {

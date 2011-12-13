@@ -204,4 +204,10 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
     field.setValue(adapterView, Some("blah"))
     adapterView.getSelectedItemPosition must be (AdapterView.INVALID_POSITION)
   }
+
+  @Test
+  def defaultLayoutMustBeOverridable() {
+    val viewField = textView
+    viewField.displayOnly.defaultLayout.editXml must be (viewField.defaultLayout.displayXml)
+  }
 }

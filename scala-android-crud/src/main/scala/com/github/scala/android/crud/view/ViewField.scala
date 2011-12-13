@@ -36,6 +36,8 @@ object ViewKeyMap {
  */
 class ViewField[T](val defaultLayout: FieldLayout, dataField: PortableField[T]) extends DelegatingPortableField[T] {
   protected def delegate = dataField
+
+  lazy val displayOnly: ViewField[T] = new ViewField[T](defaultLayout.displayOnly, dataField)
 }
 
 object ViewField {

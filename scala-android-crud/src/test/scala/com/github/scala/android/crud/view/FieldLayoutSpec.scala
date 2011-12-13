@@ -29,4 +29,12 @@ class FieldLayoutSpec extends Spec with MustMatchers {
       toDisplayName("a_cool_identifier") must be ("A Cool Identifier")
     }
   }
+
+  describe("displayOnly") {
+    val fieldLayout = FieldLayout.datePickerLayout
+    fieldLayout.editXml must not(be(fieldLayout.displayXml))
+    fieldLayout.displayOnly.editXml must be (fieldLayout.displayXml)
+    fieldLayout.displayOnly.displayXml must be (fieldLayout.displayXml)
+  }
+
 }
