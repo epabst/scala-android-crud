@@ -27,7 +27,7 @@ class CrudUIGeneratorSpec extends Spec with MustMatchers with MockitoSugar {
       val fieldList = FieldList(mapField[String]("foo"), textView, formatted[Int](textView),
         viewId(45, formatted[Double](textView)), dateView)
       val fields = CrudUIGenerator.viewFields(fieldList)
-      fields must be(List(textView, textView, textView, calendarDateView))
+      fields must be(List(textView, textView, textView, dateView))
     }
   }
 

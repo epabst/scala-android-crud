@@ -11,6 +11,7 @@ import ValueFormat._
 import AndroidResourceAnalyzer._
 import com.github.triangle.Converter._
 import android.widget._
+import scala.collection.JavaConversions._
 
 /** A Map of ViewKey with values.
   * Wraps a map so that it is distinguished from persisted fields.
@@ -100,12 +101,12 @@ object ViewField {
     Getter[TextView,String](v => toOption(v.getText.toString.trim)).withSetter(v => v.setText(_), _.setText(""))) {
     override def toString = "textView"
   }
-  def textViewWithInputType(inputType: String) = new ViewField[String](textLayout(inputType), textView)
-  lazy val phoneView: PortableField[String] = textViewWithInputType("phone")
-  lazy val doubleView: PortableField[Double] = new ViewField[Double](doubleLayout, formatted(textView))
+  def textViewWithInputType(inputType: String): ViewField[String] = new ViewField[String](textLayout(inputType), textView)
+  lazy val phoneView: ViewField[String] = textViewWithInputType("phone")
+  lazy val doubleView: ViewField[Double] = new ViewField[Double](doubleLayout, formatted(textView))
   lazy val currencyView = new ViewField[Double](currencyLayout, formatted(currencyValueFormat, textView))
-  lazy val intView: PortableField[Int] = new ViewField[Int](intLayout, formatted[Int](textView))
-  lazy val longView: PortableField[Long] = new ViewField[Long](longLayout, formatted[Long](textView))
+  lazy val intView: ViewField[Int] = new ViewField[Int](intLayout, formatted[Int](textView))
+  lazy val longView: ViewField[Long] = new ViewField[Long](longLayout, formatted[Long](textView))
   /** Specifically an EditText view in order to get different behavior compared to a plain TextView. */
   val editTextView: ViewField[String] = new ViewField[String](nameLayout,
     Getter[EditText,String](v => toOption(v.getText.toString.trim)).withSetter(v => v.setText(_), _.setText(""))) {
@@ -127,7 +128,7 @@ object ViewField {
 
   private def toOption(string: String): Option[String] = if (string == "") None else Some(string)
 
-  val calendarDateView: PortableField[Calendar] = new ViewField[Calendar](datePickerLayout,
+  val calendarDateView: ViewField[Calendar] = new ViewField[Calendar](datePickerLayout,
     Setter[Calendar] {
       case view: EditText => _.foreach(value => view.setText(calendarValueFormat.toString(value)))
       case view: TextView => _.foreach(value => view.setText(calendarDisplayValueFormat.toString(value)))
@@ -139,7 +140,10 @@ object ViewField {
     override def toString = "calendarDateView"
   }
 
-  implicit val dateView: PortableField[Date] = converted(dateToCalendar, calendarToDate, calendarDateView)
+  implicit val dateView: ViewField[Date] =
+    new ViewField[Date](calendarDateView.defaultLayout, converted(dateToCalendar, calendarToDate, calendarDateView)) {
+      override def toString = "dateView"
+    }
 
   /**
     * @param adapterFactory a function that takes the adapter View and returns the Adapter to put into it.
@@ -156,13 +160,13 @@ object ViewField {
     })
   }
 
-  def enumerationView[E <: Enumeration#Value](enum: Enumeration): PortableField[E] = {
+  def enumerationView[E <: Enumeration#Value](enum: Enumeration): ViewField[E] = {
     val itemViewResourceId = _root_.android.R.layout.simple_spinner_dropdown_item
     val defaultLayout = new FieldLayout {
       def displayXml = <TextView/>
       def editXml = <Spinner android:drawSelectorOnTop = "true"/>
     }
-    val valueArray: Array[E] = enum.values.toArray.asInstanceOf[Array[E]]
+    val valueArray: List[E] = enum.values.toList.asInstanceOf[List[E]]
     val adapterField = adapterViewField[E, BaseAdapter](
       view => new ArrayAdapter[E](view.getContext, itemViewResourceId, valueArray),
       value => valueArray.indexOf(value))
