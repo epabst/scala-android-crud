@@ -1,5 +1,6 @@
 package com.github.scala.android.crud
 
+import common.UriPath
 import persistence.EntityType
 import android.widget.ListAdapter
 
@@ -22,4 +23,10 @@ trait PersistenceFactory {
   def setListAdapter(crudType: CrudType, findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: CrudListActivity)
 
   def refreshAfterDataChanged(listAdapter: ListAdapter)
+
+  /** Returns true if the URI is worth calling EntityPersistence.find to try to get an entity instance.
+    * It may be overridden in cases where an entity instance can be found even if no ID is present in the URI.
+    */
+  def maySpecifyEntityInstance(entityType: EntityType, uri: UriPath): Boolean =
+    entityType.IdField.getter(uri).isDefined
 }

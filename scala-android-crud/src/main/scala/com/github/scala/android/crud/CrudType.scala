@@ -22,7 +22,7 @@ import Common.unitAsRef
  * Date: 2/23/11
  * Time: 3:24 PM
  */
-abstract class CrudType(val entityType: EntityType, persistenceFactory: PersistenceFactory) extends Timing with Logging {
+abstract class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFactory) extends Timing with Logging {
   protected def logTag = entityType.logTag
 
   trace("Instantiated CrudType: " + this)
@@ -143,6 +143,9 @@ abstract class CrudType(val entityType: EntityType, persistenceFactory: Persiste
       entityType.copyFromItem(readable +: contextItems)
     })
   }
+
+  /** Returns true if the URI is worth calling EntityPersistence.find to try to get an entity instance. */
+  def maySpecifyEntityInstance(uri: UriPath): Boolean = persistenceFactory.maySpecifyEntityInstance(entityType, uri)
 
   /**
    * Gets the actions that a user can perform from a list of the entities.

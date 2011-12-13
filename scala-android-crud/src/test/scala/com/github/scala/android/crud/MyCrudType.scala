@@ -10,7 +10,9 @@ import android.widget.ListAdapter
  * Date: 3/15/11
  * Time: 10:40 PM
  */
-case class MyCrudType(override val entityType: EntityType, persistenceFactory: PersistenceFactory) extends PersistedCrudType(entityType, persistenceFactory) with StubCrudType {
+case class MyCrudType(override val entityType: EntityType, override val persistenceFactory: PersistenceFactory)
+  extends PersistedCrudType(entityType, persistenceFactory) with StubCrudType {
+
   def this(entityType: EntityType, persistence: CrudPersistence = Mockito.mock(classOf[CrudPersistence])) {
     this(entityType, new MyPersistenceFactory(persistence))
   }

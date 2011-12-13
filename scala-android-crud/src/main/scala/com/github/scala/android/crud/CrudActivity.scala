@@ -19,7 +19,7 @@ class CrudActivity(val crudType: CrudType, val application: CrudApplication) ext
     setContentView(crudType.entryLayout)
     val currentPath = currentUriPath
     val contextItems = List(currentPath, crudContext, unitAsRef)
-    if (entityType.IdField.getter(currentPath).isDefined) {
+    if (crudType.maySpecifyEntityInstance(currentPath)) {
       future {
         withPersistence { persistence =>
           val readableOrUnit: AnyRef = persistence.find(currentPath).getOrElse(unitAsRef)
