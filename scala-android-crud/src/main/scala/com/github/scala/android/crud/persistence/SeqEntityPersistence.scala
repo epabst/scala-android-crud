@@ -19,9 +19,9 @@ trait SeqEntityPersistence[T <: AnyRef] extends EntityPersistence {
 trait ReadOnlyPersistence extends EntityPersistence {
   def newWritable = throw new UnsupportedOperationException("write not supported")
 
-  protected def doSave(id: Option[ID], data: AnyRef): ID = throw new UnsupportedOperationException("write not supported")
+  def doSave(id: Option[ID], data: AnyRef): ID = throw new UnsupportedOperationException("write not supported")
 
-  protected def doDelete(uri: UriPath) { throw new UnsupportedOperationException("delete not supported") }
+  def doDelete(uri: UriPath) { throw new UnsupportedOperationException("delete not supported") }
 
   def close() {}
 }
@@ -39,7 +39,7 @@ abstract class ListBufferEntityPersistence[T <: AnyRef](newWritableFunction: => 
 
   def newWritable = newWritableFunction
 
-  protected def doSave(id: Option[ID], item: AnyRef) = {
+  def doSave(id: Option[ID], item: AnyRef) = {
     val newId = id.getOrElse {
       nextId += 1
       nextId
@@ -48,7 +48,7 @@ abstract class ListBufferEntityPersistence[T <: AnyRef](newWritableFunction: => 
     newId
   }
 
-  protected def doDelete(uri: UriPath) {
+  def doDelete(uri: UriPath) {
     findAll(uri).foreach(entity => buffer -= entity)
   }
 

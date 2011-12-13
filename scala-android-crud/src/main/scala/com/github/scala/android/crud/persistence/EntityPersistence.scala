@@ -42,7 +42,7 @@ trait EntityPersistence extends Timing with ListenerHolder[PersistenceListener] 
     id
   }
 
-  protected def doSave(id: Option[ID], writable: AnyRef): ID
+  def doSave(id: Option[ID], writable: AnyRef): ID
 
   /**
    * Delete a set of entities by uri.
@@ -54,7 +54,7 @@ trait EntityPersistence extends Timing with ListenerHolder[PersistenceListener] 
     listeners.foreach(_.onDelete(uri))
   }
 
-  protected def doDelete(uri: UriPath)
+  def doDelete(uri: UriPath)
 
   def close()
 }
