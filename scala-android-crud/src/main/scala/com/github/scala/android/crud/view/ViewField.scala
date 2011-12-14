@@ -12,6 +12,9 @@ import AndroidResourceAnalyzer._
 import com.github.triangle.Converter._
 import android.widget._
 import scala.collection.JavaConversions._
+import com.github.scala.android.crud.common.UriPath
+import com.github.scala.android.crud.res.R
+import com.github.scala.android.crud.action.Operation.toUri
 
 /** A Map of ViewKey with values.
   * Wraps a map so that it is distinguished from persisted fields.
@@ -174,5 +177,26 @@ object ViewField {
     new ViewField[E](defaultLayout, adapterField + formatted[E](enumFormat(enum), textView)) {
       override def toString = "enumerationView(" + enum.getClass.getSimpleName + ")"
     }
+  }
+
+  val capturedImageView: ViewField[UriPath] = {
+    def setImageUri(imageView: ImageView, uriOpt: Option[UriPath]) {
+      uriOpt match {
+        case Some(uri) =>
+          imageView.setTag(uri)
+          imageView.setImageURI(toUri(uri))
+        case None =>
+          imageView.setImageResource(R.drawable.android_camera_256)
+      }
+    }
+
+    def imageUri(imageView: ImageView): Option[UriPath] = Option(imageView.getTag.asInstanceOf[UriPath])
+
+    val defaultLayout = new FieldLayout {
+      def displayXml = <ImageView android:adjustViewBounds="true"/>
+
+      def editXml = <ImageView android:adjustViewBounds="true"/>
+    }
+    new ViewField[UriPath](defaultLayout, Getter((v: ImageView) => imageUri(v)).withSetter(v => uri => setImageUri(v, uri)))
   }
 }

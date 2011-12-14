@@ -36,4 +36,20 @@ class UriPathSpec extends MustMatchers {
     val uri = UriPath("abc", "123", "def")
     uri.upToIdOf(entityName).segments.startsWith(uri.segments) must be (true)
   }
+
+  @Test
+  def mustConvertFromString() {
+    val uriPath = UriPath("abc", "123", "def")
+    UriPath(uriPath.toString) must be (uriPath)
+  }
+
+  @Test
+  def mustConvertFromEmptyUri() {
+    UriPath(UriPath.EMPTY.toString) must be(UriPath.EMPTY)
+  }
+
+  @Test
+  def mustConvertFromEmptyString() {
+    UriPath("") must be (UriPath.EMPTY)
+  }
 }

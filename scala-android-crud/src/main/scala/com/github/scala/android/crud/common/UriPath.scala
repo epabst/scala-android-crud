@@ -12,7 +12,7 @@ import com.github.triangle.{Getter, FieldGetter}
  * Time: 10:42 PM
  */
 case class UriPath(segments: String*) {
-  private val idFormat = basicFormat[ID]
+  private lazy val idFormat = basicFormat[ID]
 
   def /(segment: String): UriPath = UriPath(segments :+ segment:_*)
 
@@ -34,6 +34,10 @@ case class UriPath(segments: String*) {
 
 object UriPath {
   val EMPTY: UriPath = UriPath()
+
+  private def toOption(string: String): Option[String] = if (string == "") None else Some(string)
+
+  def apply(string: String): UriPath = UriPath(toOption(string.stripPrefix("/")).map(_.split("/").toSeq).getOrElse(Nil):_*)
 
   private[UriPath] def replacePathSegments(uri: UriPath, f: Seq[String] => Seq[String]): UriPath = {
     val path = f(uri.segments)
