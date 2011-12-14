@@ -14,14 +14,26 @@ import com.xtremelabs.robolectric.RobolectricTestRunner
  */
 @RunWith(classOf[RobolectricTestRunner])
 class UriPathSpec extends MustMatchers {
+  val entityName = MyCrudType.entityName
 
   @Test
   def mustFindTheIdFollowingTheEntityName() {
-    val entityName = MyCrudType.entityName
     UriPath("foo").findId(entityName) must be (None)
     UriPath(entityName).findId(entityName) must be (None)
     UriPath(entityName, "123").findId(entityName) must be (Some(123))
     UriPath(entityName, "123", "foo").findId(entityName) must be (Some(123))
     UriPath(entityName, "blah").findId(entityName) must be (None)
+  }
+
+  @Test
+  def upToIdOfMustStripOfWhateverIsAfterTheID() {
+    val uri = UriPath("abc", "123", entityName, "456", "def")
+    uri.upToIdOf(entityName) must be (UriPath("abc", "123", entityName, "456"))
+  }
+
+  @Test
+  def upToIdOfMustNotFailIfNoIDFoundButAlsoPreserveWhatIsThereAlready() {
+    val uri = UriPath("abc", "123", "def")
+    uri.upToIdOf(entityName).segments.startsWith(uri.segments) must be (true)
   }
 }
