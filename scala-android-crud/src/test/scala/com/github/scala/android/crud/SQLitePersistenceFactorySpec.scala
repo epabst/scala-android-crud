@@ -18,7 +18,6 @@ import Mockito._
 import android.app.Activity
 import android.database.{Cursor, DataSetObserver}
 import android.widget.{ListView, ListAdapter}
-import Common.unitAsRef
 
 /**
  * A test for {@link SQLitePersistenceFactory}.
@@ -85,7 +84,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
       }
     }
     val writable = TestCrudType.newWritable
-    TestEntityType.copy(unitAsRef, writable)
+    TestEntityType.copy(PortableField.UseDefaults, writable)
     val id = persistence.save(None, writable)
     val uri = persistence.toUri(id)
     persistence.find(uri)
@@ -118,7 +117,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
     listAdapter.getCount must be (0)
 
     val writable = TestCrudType.newWritable
-    TestEntityType.copy(unitAsRef, writable)
+    TestEntityType.copy(PortableField.UseDefaults, writable)
     val id = TestCrudType.withEntityPersistence(crudContext) { _.save(None, writable) }
     //it must have refreshed the listAdapter
     listAdapter.getCount must be (if (runningOnRealAndroid) 1 else 0)

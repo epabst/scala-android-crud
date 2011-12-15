@@ -3,7 +3,6 @@ package com.github.scala.android.crud
 import android.provider.BaseColumns
 import android.database.Cursor
 import android.content.ContentValues
-import com.github.triangle.Logging
 import common.Common
 import common.PlatformTypes._
 import persistence._
@@ -12,7 +11,7 @@ import collection.mutable.SynchronizedQueue
 import android.app.backup.BackupManager
 import android.database.sqlite.{SQLiteOpenHelper, SQLiteDatabase}
 import common.UriPath
-import Common.unitAsRef
+import com.github.triangle.{PortableField, Logging}
 
 /**
  * EntityPersistence for SQLite.
@@ -44,8 +43,9 @@ class SQLiteEntityPersistence(val entityType: EntityType, val crudContext: CrudC
     CursorStream(cursor, persistedFields)
   }
 
-  //Unit is provided here in the item list for the sake of PortableField.adjustment[SQLiteCriteria] fields
-  def findAll(uri: UriPath) = findAll(entityType.transformWithItem(new SQLiteCriteria, List(uri, unitAsRef)))
+  //UseDefaults is provided here in the item list for the sake of PortableField.adjustment[SQLiteCriteria] fields
+  def findAll(uri: UriPath): CursorStream =
+    findAll(entityType.transformWithItem(new SQLiteCriteria, List(uri, PortableField.UseDefaults)))
 
   private def notifyDataChanged() {
     backupManager.dataChanged()

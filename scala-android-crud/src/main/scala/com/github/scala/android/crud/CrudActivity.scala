@@ -3,7 +3,7 @@ package com.github.scala.android.crud
 import action.{Operation, EntityOperation}
 import android.os.Bundle
 import com.github.triangle.JavaUtil.toRunnable
-import common.Common.unitAsRef
+import com.github.triangle.PortableField
 
 /**
  * A generic Activity for CRUD operations
@@ -18,23 +18,23 @@ class CrudActivity(val crudType: CrudType, val application: CrudApplication) ext
 
     setContentView(crudType.entryLayout)
     val currentPath = currentUriPath
-    val contextItems = List(currentPath, crudContext, unitAsRef)
+    val contextItems = List(currentPath, crudContext, PortableField.UseDefaults)
     if (crudType.maySpecifyEntityInstance(currentPath)) {
       future {
         withPersistence { persistence =>
-          val readableOrUnit: AnyRef = persistence.find(currentPath).getOrElse(unitAsRef)
+          val readableOrUnit: AnyRef = persistence.find(currentPath).getOrElse(PortableField.UseDefaults)
           val portableValue = entityType.copyFromItem(readableOrUnit :: contextItems)
           runOnUiThread { portableValue.copyTo(this) }
         }
       }
     } else {
-      entityType.copyFromItem(unitAsRef :: contextItems, this)
+      entityType.copyFromItem(PortableField.UseDefaults :: contextItems, this)
     }
   }
 
   override def onPause() {
     //intentionally don't include CrudContext presumably those are only used for calculated fields, which shouldn't be persisted.
-    val contextItems = List(currentUriPath, unitAsRef)
+    val contextItems = List(currentUriPath, PortableField.UseDefaults)
     val writable = crudType.newWritable
     withPersistence { persistence =>
       val transformedWritable = entityType.transformWithItem(writable, this :: contextItems)

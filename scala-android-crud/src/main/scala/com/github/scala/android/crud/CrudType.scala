@@ -13,7 +13,6 @@ import persistence.{EntityType, CursorField, PersistenceListener}
 import PortableField.toSome
 import view.AndroidResourceAnalyzer._
 import java.lang.IllegalStateException
-import Common.unitAsRef
 
 /**
  * An entity configuration that provides all custom information needed to
@@ -137,7 +136,7 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
   def activityClass: Class[_ <: CrudActivity]
 
   def copyFromPersistedEntity(uriPathWithId: UriPath, crudContext: CrudContext): Option[PortableValue] = {
-    val contextItems = List(uriPathWithId, crudContext, unitAsRef)
+    val contextItems = List(uriPathWithId, crudContext, PortableField.UseDefaults)
     withEntityPersistence(crudContext)(_.find(uriPathWithId).map { readable =>
       debug("Copying " + entityType.entityName + "#" + entityType.IdField(readable) + " to " + this)
       entityType.copyFromItem(readable +: contextItems)
@@ -214,7 +213,7 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
 
   def setListAdapterUsingUri(persistence: CrudPersistence, crudContext: CrudContext, activity: CrudListActivity) {
     val findAllResult = persistence.findAll(activity.currentUriPath)
-    setListAdapter(findAllResult, List(activity.currentUriPath, crudContext, unitAsRef), activity)
+    setListAdapter(findAllResult, List(activity.currentUriPath, crudContext, PortableField.UseDefaults), activity)
   }
 
   def setListAdapter(findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: CrudListActivity) {
@@ -294,12 +293,12 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
         portableValue.copyTo(view)
       case None =>
         trace("cache miss for " + activity + " at position " + position)
-        entityType.unitPortableValue.copyTo(view)
+        entityType.defaultPortableValue.copyTo(view)
     }
     if (cachedValue.isEmpty) {
       //copy immediately since in the case of a Cursor, it will be advanced to the next row quickly.
       val positionItems: List[AnyRef] = itemsToCopyAtPosition
-      cachePortableValue(activity, position, entityType.unitPortableValue)
+      cachePortableValue(activity, position, entityType.defaultPortableValue)
       future {
         val portableValue = entityType.copyFromItem(positionItems)
         activity.runOnUiThread {
