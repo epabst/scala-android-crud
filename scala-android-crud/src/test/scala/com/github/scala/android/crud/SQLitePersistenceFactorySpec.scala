@@ -2,7 +2,6 @@ package com.github.scala.android.crud
 
 import action.{ContextVars, ContextWithVars}
 import android.provider.BaseColumns
-import common.Common
 import org.junit.Test
 import org.junit.runner.RunWith
 import com.xtremelabs.robolectric.RobolectricTestRunner

@@ -59,7 +59,7 @@ class SQLiteEntityPersistence(val entityType: EntityType, val crudContext: CrudC
     val id = idOption match {
       case None => {
         info("Adding " + entityType.entityName + " with " + contentValues)
-        database.insert(tableName, null, contentValues)
+        database.insertOrThrow(tableName, null, contentValues)
       }
       case Some(givenId) => {
         info("Updating " + entityType.entityName + " #" + givenId + " with " + contentValues)
