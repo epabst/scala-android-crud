@@ -52,7 +52,7 @@ object CrudUIGenerator extends PlatformTypes with Logging {
               android:versionCode="${versionCode}">
       <application android:label="@string/app_name" android:icon="@drawable/icon"
                    android:theme="@android:style/Theme.NoTitleBar"
-                   android:debuggable="${android.debuggable}"
+                   android:debuggable="true"
                    android:backupAgent={application.classNamePrefix + "BackupAgent"} android:restoreAnyVersion="true">
         <meta-data android:name="com.google.android.backup.api_key"
                    android:value="TODO: get a backup key from http://code.google.com/android/backup/signup.html and put it here."/>
