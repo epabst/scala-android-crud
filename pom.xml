@@ -32,7 +32,7 @@
   </licenses>
   <scm>
     <connection>scm:git:git://github.com/epabst/scala-android-crud.git</connection>
-    <developerConnection>scm:git:https://epabst@github.com/epabst/scala-android-crud.git</developerConnection>
+    <developerConnection>scm:git:git@github.com:epabst/scala-android-crud.git</developerConnection>
     <url>https://github.com/epabst/scala-android-crud</url>
   </scm>
   <distributionManagement>
