@@ -18,7 +18,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.epabst.scala-android-crud</groupId>
   <artifactId>sample-app</artifactId>
-  <version>0.3-alpha6-SNAPSHOT</version>
+  <version>0.3-alpha6</version>
   <packaging>apk</packaging>
   <name>sample-app</name>
   <scm>
