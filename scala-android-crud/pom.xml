@@ -17,7 +17,7 @@
   <parent>
     <groupId>com.github.epabst.scala-android-crud</groupId>
     <artifactId>scala-android-crud-parent</artifactId>
-    <version>0.3-alpha6</version>
+    <version>0.3-alpha7-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>scala-android-crud</artifactId>
