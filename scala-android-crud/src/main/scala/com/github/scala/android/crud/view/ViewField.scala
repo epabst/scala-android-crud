@@ -15,6 +15,8 @@ import scala.collection.JavaConversions._
 import com.github.scala.android.crud.common.UriPath
 import com.github.scala.android.crud.res.R
 import com.github.scala.android.crud.action.Operation.toUri
+import android.content.Intent
+import com.github.scala.android.crud.action.StartActivityOperationFromIntent
 
 /** A Map of ViewKey with values.
   * Wraps a map so that it is distinguished from persisted fields.
@@ -197,6 +199,7 @@ object ViewField {
 
       def editXml = <ImageView android:adjustViewBounds="true"/>
     }
-    new ViewField[UriPath](defaultLayout, Getter((v: ImageView) => imageUri(v)).withSetter(v => uri => setImageUri(v, uri)))
+    new ViewField[UriPath](defaultLayout, Getter((v: ImageView) => imageUri(v)).withSetter(v => uri => setImageUri(v, uri)) +
+      OnClickOperationSetter(StartActivityOperationFromIntent(new Intent("android.media.action.IMAGE_CAPTURE"))))
   }
 }
