@@ -102,21 +102,29 @@ class SQLiteEntityPersistence(val entityType: EntityType, val crudContext: CrudC
   }
 }
 
-class GeneratedDatabaseSetup(crudContext: CrudContext) extends SQLiteOpenHelper(crudContext.context, crudContext.application.nameId, null, 1) with Logging {
+class GeneratedDatabaseSetup(crudContext: CrudContext)
+  extends SQLiteOpenHelper(crudContext.context, crudContext.application.nameId, null, crudContext.application.dataVersion) with Logging {
+
   protected lazy val logTag = Common.tryToEvaluate(crudContext.application.logTag).getOrElse(Common.logTag)
 
-  def onCreate(db: SQLiteDatabase) {
+  private def createMissingTables(db: SQLiteDatabase) {
     val application = crudContext.application
-    for (entityType <- application.allCrudTypes.collect { case c: PersistedCrudType => c }.map(_.entityType)) {
+    for (entityType <- application.allCrudTypes.collect {
+      case c: PersistedCrudType => c
+    }.map(_.entityType)) {
       val buffer = new StringBuffer
       buffer.append("CREATE TABLE IF NOT EXISTS ").append(SQLitePersistenceFactory.toTableName(entityType.entityName)).append(" (").
-          append(BaseColumns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT")
+        append(BaseColumns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT")
       CursorField.persistedFields(entityType).filter(_.columnName != BaseColumns._ID).foreach { persisted =>
         buffer.append(", ").append(persisted.columnName).append(" ").append(persisted.persistedType.sqliteType)
       }
       buffer.append(")")
       execSQL(db, buffer.toString)
     }
+  }
+
+  def onCreate(db: SQLiteDatabase) {
+    createMissingTables(db)
   }
 
   private def execSQL(db: SQLiteDatabase, sql: String) {
@@ -126,7 +134,6 @@ class GeneratedDatabaseSetup(crudContext: CrudContext) extends SQLiteOpenHelper(
 
   def onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
     // Steps to upgrade the database for the new version ...
-    // This shouldn't be necessary here since a new database is created when
-    // a new version of the application is installed.
+    createMissingTables(db)
   }
 }

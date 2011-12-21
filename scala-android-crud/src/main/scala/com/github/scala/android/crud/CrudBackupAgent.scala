@@ -162,6 +162,8 @@ object DeletedEntityIdCrudType extends PersistedCrudType(DeletedEntityIdEntityTy
     def name = "scala.android.crud_deleted"
 
     def allCrudTypes = List(DeletedEntityIdCrudType)
+
+    def dataVersion = 1
   }
 
   /**

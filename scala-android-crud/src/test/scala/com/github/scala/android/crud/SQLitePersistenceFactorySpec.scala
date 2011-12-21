@@ -12,11 +12,12 @@ import persistence.{EntityType, CursorStream, SQLiteCriteria}
 import PortableField._
 import scala.collection._
 import mutable.Buffer
-import org.mockito.Mockito
+import org.mockito.{Mockito, Matchers}
 import Mockito._
 import android.app.Activity
 import android.database.{Cursor, DataSetObserver}
 import android.widget.{ListView, ListAdapter}
+import android.database.sqlite.SQLiteDatabase
 
 /**
  * A test for {@link SQLitePersistenceFactory}.
@@ -54,6 +55,8 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
     val name = "Test Application"
 
     def allCrudTypes = List(TestCrudType)
+
+    def dataVersion = 1
   }
   val application = TestApplication
 
@@ -142,6 +145,24 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
 
   def tableNameMustNotBeReservedWord(name: String) {
     SQLitePersistenceFactory.toTableName(name) must be (name + "0")
+  }
+
+  @Test
+  def onCreateShouldCreateTables() {
+    val context = mock[MyContextWithVars]
+    val dbSetup = new GeneratedDatabaseSetup(CrudContext(context, application))
+    val db = mock[SQLiteDatabase]
+    dbSetup.onCreate(db)
+    verify(db, times(1)).execSQL(Matchers.contains("CREATE TABLE IF NOT EXISTS"))
+  }
+
+  @Test
+  def onUpgradeShouldCreateMissingTables() {
+    val context = mock[MyContextWithVars]
+    val dbSetup = new GeneratedDatabaseSetup(CrudContext(context, application))
+    val db = mock[SQLiteDatabase]
+    dbSetup.onUpgrade(db, 1, 2)
+    verify(db, times(1)).execSQL(Matchers.contains("CREATE TABLE IF NOT EXISTS"))
   }
 }
 

@@ -18,6 +18,7 @@ class CrudApplicationSpec extends Spec with MustMatchers {
     val application = new CrudApplication {
       def name = "A diFFicult name to use as an ID"
       def allCrudTypes = List()
+      def dataVersion = 1
     }
     application.nameId must be ("a_difficult_name_to_use_as_an_id")
   }
