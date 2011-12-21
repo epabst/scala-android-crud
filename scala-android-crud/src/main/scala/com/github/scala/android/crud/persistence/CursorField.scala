@@ -9,6 +9,7 @@ import android.os.Bundle
 import com.github.scala.android.crud.common.PlatformTypes._
 import com.github.scala.android.crud.ParentField
 import com.github.triangle.Converter._
+import com.github.scala.android.crud.common.UriPath
 
 case class SQLiteCriteria(selection: List[String] = Nil, selectionArgs: List[String] = Nil,
                           groupBy: Option[String] = None, having: Option[String] = None, orderBy: Option[String] = None)
@@ -21,6 +22,9 @@ object CursorField {
   def persisted[T](name: String)(implicit persistedType: PersistedType[T]): CursorField[T] = {
     new CursorField[T](name)(persistedType)
   }
+
+  def persistedUri(name: String): PortableField[UriPath] =
+    converted[UriPath,String](anyToString, Converter(s => Some(UriPath(s))), persisted(name))
 
   def persistedEnum[E <: Enumeration#Value](name: String, enumeration: Enumeration)(implicit m: Manifest[E]): PortableField[E] =
     formatted[E](ValueFormat.enumFormat(enumeration), persisted(name))
