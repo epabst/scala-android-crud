@@ -181,7 +181,7 @@ object ViewField {
     }
   }
 
-  val capturedImageView: ViewField[UriPath] = {
+  lazy val capturedImageView: ViewField[UriPath] = {
     def setImageUri(imageView: ImageView, uriOpt: Option[UriPath]) {
       uriOpt match {
         case Some(uri) =>
