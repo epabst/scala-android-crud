@@ -200,6 +200,6 @@ object ViewField {
       def editXml = <ImageView android:adjustViewBounds="true"/>
     }
     new ViewField[UriPath](defaultLayout, Getter((v: ImageView) => imageUri(v)).withSetter(v => uri => setImageUri(v, uri)) +
-      OnClickOperationSetter(StartActivityOperationFromIntent(new Intent("android.media.action.IMAGE_CAPTURE"))))
+      OnClickOperationSetter(new StartActivityOperationFromIntent(new Intent("android.media.action.IMAGE_CAPTURE"))))
   }
 }

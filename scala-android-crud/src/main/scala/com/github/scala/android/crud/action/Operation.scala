@@ -89,8 +89,9 @@ trait BaseStartActivityOperation extends StartActivityOperation {
   def determineIntent(uri: UriPath, activity: ActivityWithVars): Intent = Operation.constructIntent(action, uri, activity, activityClass)
 }
 
-//final to guarantee equality is correct
-final case class StartActivityOperationFromIntent(intent: Intent) extends StartActivityOperation {
+/** An Operation that starts an Activity using the provided Intent.
+  * @param intent the Intent to use to start the Activity.  It is pass-by-name because the SDK's Intent has a "Stub!" error. */
+class StartActivityOperationFromIntent(intent: => Intent) extends StartActivityOperation {
   def determineIntent(uri: UriPath, activity: ActivityWithVars) = intent
 }
 
