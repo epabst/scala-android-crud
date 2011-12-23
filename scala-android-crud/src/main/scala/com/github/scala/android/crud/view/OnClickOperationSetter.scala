@@ -17,7 +17,7 @@ object OnClickOperationSetter {
   }
 
   def apply[T](operation: Operation): PortableField[T] = SetterUsingItems[T] {
-    case (view: View, CrudContextField(Some(CrudContext(activity: ActivityWithVars, _)))) => uri => {
+    case (view: View, CrudContextField(Some(CrudContext(activity: ActivityWithVars, _)))) => ignoredValue => {
       view.setOnClickListener { view: View =>
         operation.invoke(UriPath.EMPTY, activity)
       }
