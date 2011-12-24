@@ -61,7 +61,7 @@ class CrudListActivity(val crudType: CrudType, val application: CrudApplication)
       crudType.copyFromPersistedEntity(uriPath, crudContext)
     }
     runOnUiThread {
-      portableValues.foreach(_.copyTo(this))
+      portableValues.foreach(_.copyTo(this, List(crudContext)))
     }
   }
 

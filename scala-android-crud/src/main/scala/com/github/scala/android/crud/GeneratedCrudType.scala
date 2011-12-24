@@ -32,7 +32,7 @@ trait GeneratedPersistenceFactory[T <: AnyRef] extends PersistenceFactory {
 
       def getView(position: Int, convertView: View, parent: ViewGroup): View = {
         val view = if (convertView == null) activity.getLayoutInflater.inflate(crudType.rowLayout, parent, false) else convertView
-        bindViewFromCacheOrItems(view, getItem(position) :: contextItems, position, activity)
+        bindViewFromCacheOrItems(view, getItem(position), contextItems, position, activity)
         view
       }
     }

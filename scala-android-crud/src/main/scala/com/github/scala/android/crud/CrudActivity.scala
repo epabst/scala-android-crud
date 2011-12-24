@@ -24,7 +24,7 @@ class CrudActivity(val crudType: CrudType, val application: CrudApplication) ext
         withPersistence { persistence =>
           val readableOrUnit: AnyRef = persistence.find(currentPath).getOrElse(PortableField.UseDefaults)
           val portableValue = entityType.copyFromItem(readableOrUnit :: contextItems)
-          runOnUiThread { portableValue.copyTo(this) }
+          runOnUiThread { portableValue.copyTo(this, contextItems) }
         }
       }
     } else {

@@ -24,7 +24,7 @@ object SQLitePersistenceFactory extends PersistenceFactory {
       def entityType = crudType.entityType
 
       def bindView(view: View, context: Context, cursor: Cursor) {
-        bindViewFromCacheOrItems(view, entityType.transform(Map[String,Any](), cursor) :: contextItems, cursor.getPosition, activity)
+        bindViewFromCacheOrItems(view, entityType.transform(Map[String,Any](), cursor), contextItems, cursor.getPosition, activity)
       }
     })
   }

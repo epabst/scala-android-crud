@@ -284,20 +284,20 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
     }
   }
 
-  protected[crud] def bindViewFromCacheOrItems(view: View, itemsToCopyAtPosition: => List[AnyRef], position: Long, activity: ListActivity) {
+  protected[crud] def bindViewFromCacheOrItems(view: View, entity: => AnyRef, contextItems: List[AnyRef], position: Long, activity: ListActivity) {
     val cachedValue: Option[PortableValue] = findCachedPortableValue(activity, position)
     //set the cached or default values immediately instead of showing the column header names
     cachedValue match {
       case Some(portableValue) =>
         trace("cache hit for " + activity + " at position " + position + ": " + portableValue)
-        portableValue.copyTo(view)
+        portableValue.copyTo(view, contextItems)
       case None =>
         trace("cache miss for " + activity + " at position " + position)
-        entityType.defaultPortableValue.copyTo(view)
+        entityType.defaultPortableValue.copyTo(view, contextItems)
     }
     if (cachedValue.isEmpty) {
       //copy immediately since in the case of a Cursor, it will be advanced to the next row quickly.
-      val positionItems: List[AnyRef] = itemsToCopyAtPosition
+      val positionItems: List[AnyRef] = entity +: contextItems
       cachePortableValue(activity, position, entityType.defaultPortableValue)
       future {
         val portableValue = entityType.copyFromItem(positionItems)
