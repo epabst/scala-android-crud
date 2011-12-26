@@ -50,14 +50,16 @@ class ViewField[T](val defaultLayout: FieldLayout, dataField: PortableField[T]) 
 object ViewField {
   /** PortableField for a View resource within a given parent View */
   protected abstract class BaseViewIdField[T](childViewField: PortableField[T])
-          extends FieldWithDelegate[T] {
+          extends PartialDelegatingField[T] {
     protected def viewResourceIdOpt: Option[ViewKey]
     protected def viewResourceIdOrError: ViewKey
 
-    lazy val viewKeyMapField: PortableField[T] =
+    private lazy val viewKeyMapField: PortableField[T] =
       viewResourceIdOpt.map { key =>
         Getter[ViewKeyMap,T](_.get(key).map(_.asInstanceOf[T])).withTransformer(map => value => map + (key -> value), _ - key)
       }.getOrElse(emptyField)
+
+    def withViewKeyMapField: PortableField[T] = this + viewKeyMapField
 
     object ChildView {
       def unapply(target: Any): Option[View] = target match {
@@ -67,21 +69,10 @@ object ViewField {
       }
     }
 
-    protected def delegate = childViewField + viewKeyMapField
+    protected def delegate = childViewField
 
-    def getter = viewKeyMapField.getter orElse {
-      case ChildView(childView) if childViewField.getter.isDefinedAt(childView) =>
-        childViewField.getter(childView)
-    }
-
-    def setter = viewKeyMapField.setter orElse {
-      case ChildView(childView) if childViewField.setter.isDefinedAt(childView) =>
-        childViewField.setter(childView)
-    }
-
-    def transformer[S <: AnyRef]: PartialFunction[S,Option[T] => S] = viewKeyMapField.transformer[S].orElse[S,Option[T] => S] {
-      case ChildView(childView) if childViewField.transformer.isDefinedAt(childView) =>
-        childViewField.transformer[View](childView).andThen[S](_.asInstanceOf[S])
+    protected def subjectGetter = {
+      case ChildView(childView) => childView
     }
   }
 
@@ -119,9 +110,8 @@ object ViewField {
     override def toString = "editTextView"
   }
 
-  def viewId[T](viewResourceId: ViewKey, childViewField: PortableField[T]): ViewIdField[T] = {
-    new ViewIdField[T](viewResourceId, childViewField)
-  }
+  def viewId[T](viewResourceId: ViewKey, childViewField: PortableField[T]): PortableField[T] =
+    new ViewIdField[T](viewResourceId, childViewField).withViewKeyMapField
 
   /**
    * This should be used when R.id doesn't yet have the needed name, and used like this:
@@ -130,7 +120,7 @@ object ViewField {
    * {{{viewId(R.id.name, ...)}}}.
    */
   def viewId[T](rIdClass: Class[_], viewResourceIdName: String, childViewField: PortableField[T]): PortableField[T] =
-    new ViewIdNameField[T](viewResourceIdName, childViewField, detectRIdClasses(rIdClass))
+    new ViewIdNameField[T](viewResourceIdName, childViewField, detectRIdClasses(rIdClass)).withViewKeyMapField
 
   private def toOption(string: String): Option[String] = if (string == "") None else Some(string)
 
