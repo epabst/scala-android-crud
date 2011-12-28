@@ -3,8 +3,8 @@ package com.github.scala.android.crud.action
 import android.app.Activity
 import com.github.scala.android.crud.common.PlatformTypes._
 import android.content.{Context, Intent}
-import android.net.Uri
 import com.github.scala.android.crud.common.UriPath
+import com.github.scala.android.crud.view.AndroidConversions._
 
 /**
  * Represents something that a user can initiate.
@@ -39,13 +39,11 @@ object Operation {
   val UpdateActionName = Intent.ACTION_EDIT
   val DeleteActionName = Intent.ACTION_DELETE
 
-  def toUri(uriPath: UriPath): Uri = uriPath.segments.foldLeft(Uri.EMPTY)((uri, segment) => Uri.withAppendedPath(uri, segment))
-
   implicit def toRichItent(intent: Intent) = new RichIntent(intent)
 
   //this is a workaround because Robolectric doesn't handle the full constructor
   def constructIntent(action: String, uriPath: UriPath, context: Context, clazz: Class[_]): Intent = {
-    val intent = new Intent(action, toUri(uriPath))
+    val intent = new Intent(action, uriPath)
     intent.setClass(context, clazz)
     intent
   }
@@ -64,13 +62,7 @@ case class Action(command: Command, operation: Operation) {
 }
 
 case class RichIntent(intent: Intent) {
-  import RichIntent._
-  def uriPath: UriPath = toUriPath(intent.getData)
-}
-
-object RichIntent {
-  import scala.collection.JavaConversions._
-  def toUriPath(uri: Uri): UriPath = UriPath(uri.getPathSegments.toList:_*)
+  def uriPath: UriPath = intent.getData
 }
 
 trait StartActivityOperation extends Operation {

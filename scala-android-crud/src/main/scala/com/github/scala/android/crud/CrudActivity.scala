@@ -1,9 +1,10 @@
 package com.github.scala.android.crud
 
-import action.{Operation, EntityOperation}
+import action.EntityOperation
 import android.os.Bundle
 import com.github.triangle.JavaUtil.toRunnable
 import com.github.triangle.PortableField
+import com.github.scala.android.crud.view.AndroidConversions._
 
 /**
  * A generic Activity for CRUD operations
@@ -47,7 +48,7 @@ class CrudActivity(val crudType: CrudType, val application: CrudApplication) ext
     try {
       val id = entityType.IdField.getter(currentUriPath)
       val newId = persistence.save(id, writable)
-      if (id.isEmpty) setIntent(getIntent.setData(Operation.toUri(uriWithId(newId))))
+      if (id.isEmpty) setIntent(getIntent.setData(uriWithId(newId)))
     } catch { case e => error("onPause: Unable to store " + writable, e) }
   }
 

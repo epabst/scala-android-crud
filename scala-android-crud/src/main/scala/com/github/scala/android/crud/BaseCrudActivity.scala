@@ -6,7 +6,7 @@ import android.view.MenuItem
 import android.content.Intent
 import common.{UriPath, Common, Timing, PlatformTypes}
 import PlatformTypes._
-import RichIntent._
+import com.github.scala.android.crud.view.AndroidConversions._
 
 /**
  * Support for the different Crud Activity's.
@@ -33,7 +33,7 @@ trait BaseCrudActivity extends ActivityWithVars with OptionsMenuActivity with Lo
     Option(getIntent).map(intent => Option(intent.getData).map(toUriPath(_)).getOrElse {
       // If no data was given in the intent (because we were started
       // as a MAIN activity), then use our default content provider.
-      intent.setData(Operation.toUri(defaultContentUri))
+      intent.setData(defaultContentUri)
       defaultContentUri
     }).getOrElse(defaultContentUri)
   }

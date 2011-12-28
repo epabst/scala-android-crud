@@ -11,7 +11,7 @@ import android.widget._
 import scala.collection.JavaConversions._
 import com.github.scala.android.crud.common.UriPath
 import com.github.scala.android.crud.res.R
-import com.github.scala.android.crud.action.Operation.toUri
+import com.github.scala.android.crud.view.AndroidConversions._
 import android.content.Intent
 import com.github.scala.android.crud.action.StartActivityOperationFromIntent
 import com.github.scala.android.crud.view.AndroidResourceAnalyzer._
@@ -128,7 +128,7 @@ object ViewField {
       uriOpt match {
         case Some(uri) =>
           imageView.setTag(uri)
-          imageView.setImageURI(toUri(uri))
+          imageView.setImageURI(uri)
         case None =>
           imageView.setImageResource(R.drawable.android_camera_256)
       }
