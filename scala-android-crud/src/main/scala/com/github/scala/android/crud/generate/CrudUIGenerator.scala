@@ -7,12 +7,11 @@ import com.github.triangle._
 import util.Random
 import scala.tools.nsc.io.Path
 import xml._
-import com.github.scala.android.crud.view.{ViewField, FieldLayout,AndroidResourceAnalyzer}
-import AndroidResourceAnalyzer._
-import com.github.scala.android.crud.view.ViewField.{ViewIdNameField, ViewIdField}
+import com.github.scala.android.crud.view.AndroidResourceAnalyzer._
 import com.github.scala.android.crud.{NamingConventions, CrudApplication, ParentField, CrudType}
 import com.github.scala.android.crud.common.Common
 import collection.immutable.List
+import com.github.scala.android.crud.view._
 
 /**
  * A UI Generator for a CrudTypes.
