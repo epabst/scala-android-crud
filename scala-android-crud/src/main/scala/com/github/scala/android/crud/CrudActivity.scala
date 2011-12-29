@@ -62,7 +62,8 @@ class CrudActivity(val crudType: CrudType, val application: CrudApplication) ext
   override def onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
     super.onActivityResult(requestCode, resultCode, data)
     if (resultCode == Activity.RESULT_OK) {
-      entityType.copyFromItem(List(OperationResponse(requestCode, data), crudContext), this)
+      //"this" is included in the list so that existing data isn't cleared.
+      entityType.copyFromItem(List(OperationResponse(requestCode, data), crudContext, this), this)
     } else {
       debug("onActivityResult received resultCode of " + resultCode + " and data " + data + " for request " + requestCode)
     }
