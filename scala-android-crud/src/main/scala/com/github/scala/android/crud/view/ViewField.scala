@@ -121,6 +121,10 @@ object ViewField {
     }
   }
 
+  /** An image that can be captured using the camera.  It currently puts the image into external storage, which
+    * requires the following in the AndroidManifest.xml:
+    * {{{<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />}}}
+    */
   lazy val capturedImageView: ViewField[Uri] = {
     def setImageUri(imageView: ImageView, uriOpt: Option[Uri]) {
       Toast.makeText(imageView.getContext, "setting uri on image to " + uriOpt, Toast.LENGTH_LONG)
