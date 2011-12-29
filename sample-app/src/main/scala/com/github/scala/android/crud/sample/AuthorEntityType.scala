@@ -28,10 +28,9 @@ object AuthorEntityType extends EntityType {
   )
 }
 
-/**
- * A CRUD type for Author.
- * @author pabstec
- */
+/** A CRUD type for Author.
+  * @author pabstec
+  */
 class AuthorCrudType(persistenceFactory: PersistenceFactory) extends PersistedCrudType(AuthorEntityType, persistenceFactory) {
   def activityClass = classOf[AuthorActivity]
   def listActivityClass = classOf[AuthorListActivity]

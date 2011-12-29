@@ -19,12 +19,9 @@ trait PersistedType[T] {
   def putValue(bundle: Bundle, name: String, value: T)
 }
 
-/**
- * An android PersistedType based on the [[android.database.Cursor]] and [[android.content.ContentValues]] api's.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 2/12/11
- * Time: 10:30 AM
- */
+/** An android PersistedType based on the [[android.database.Cursor]] and [[android.content.ContentValues]] api's.
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 
 private class ConvertedPersistedType[T,P](toValue: P => Option[T], toPersisted: T => P)
                                           (implicit persistedType: PersistedType[P], implicit val valueManifest: Manifest[T])
@@ -102,10 +99,9 @@ object PersistedType {
   implicit lazy val doubleType: PersistedType[Double] = castedPersistedType[Double,java.lang.Double]
   implicit lazy val floatType: PersistedType[Float] = castedPersistedType[Float,java.lang.Float]
 
-  /**
-   * @param P the persisted type
-   * @param T the value type
-   */
+  /** P is the persisted type
+    * T is the value type
+    */
   def castedPersistedType[T,P](implicit persistedType: PersistedType[P], valueManifest: Manifest[T]): PersistedType[T] =
     new ConvertedPersistedType[T,P](p => Option(p.asInstanceOf[T]), v => v.asInstanceOf[P])
 

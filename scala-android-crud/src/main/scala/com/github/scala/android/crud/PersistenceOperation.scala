@@ -3,13 +3,10 @@ package com.github.scala.android.crud
 import action.{Operation, ActivityWithVars}
 import common.UriPath
 
-/**
- * An operation that interacts with an entity's persistence.
- * The CrudContext is available as persistence.crudContext to implementing classes.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 10/21/11
- * Time: 6:59 AM
- */
+/** An operation that interacts with an entity's persistence.
+  * The CrudContext is available as persistence.crudContext to implementing classes.
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 abstract class PersistenceOperation(entityType: CrudType, val application: CrudApplication) extends Operation {
   def invoke(uri: UriPath, persistence: CrudPersistence)
 

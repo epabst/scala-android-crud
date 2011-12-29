@@ -8,12 +8,9 @@ import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
 import android.database.Cursor
 
-/**
- * A behavior specification for [[com.github.scala.android.crud.persistence.EntityPersistence]].
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 11/1/11
- * Time: 9:32 PM
- */
+/** A behavior specification for [[com.github.scala.android.crud.persistence.EntityPersistence]].
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 @RunWith(classOf[JUnitRunner])
 class CursorStreamSpec extends Spec with MustMatchers with MockitoSugar {
   it("must handle an empty Cursor") {

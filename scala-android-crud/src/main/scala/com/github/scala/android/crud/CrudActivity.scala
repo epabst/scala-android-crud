@@ -8,12 +8,9 @@ import android.content.Intent
 import android.app.Activity
 import com.github.scala.android.crud.view.AndroidConversions._
 
-/**
- * A generic Activity for CRUD operations
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 2/3/11
- * Time: 7:06 AM
- */
+/** A generic Activity for CRUD operations
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 class CrudActivity(val crudType: CrudType, val application: CrudApplication) extends BaseCrudActivity {
 
   override def onCreate(savedInstanceState: Bundle) {

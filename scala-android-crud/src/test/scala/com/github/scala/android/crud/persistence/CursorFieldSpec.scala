@@ -12,12 +12,9 @@ import org.scalatest.mock.EasyMockSugar
 import android.database.Cursor
 import com.github.scala.android.crud.common.PlatformTypes._
 
-/**
- * A specification for {@link CursorField}.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 2/18/11
- * Time: 6:22 PM
- */
+/** A specification for [[com.github.scala.android.crud.persistence.CursorField]].
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 @RunWith(classOf[RobolectricTestRunner])
 class CursorFieldSpec extends MustMatchers with EasyMockSugar {
   @Test

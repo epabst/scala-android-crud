@@ -13,12 +13,9 @@ import com.github.scala.android.crud.common.Common
 import collection.immutable.List
 import com.github.scala.android.crud.view._
 
-/**
- * A UI Generator for a CrudTypes.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 8/4/11
- * Time: 3:19 PM
- */
+/** A UI Generator for a CrudTypes.
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 
 object CrudUIGenerator extends Logging {
   protected def logTag = Common.logTag

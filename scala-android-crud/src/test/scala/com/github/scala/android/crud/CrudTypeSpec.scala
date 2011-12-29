@@ -14,13 +14,9 @@ import Matchers._
 import com.github.triangle.PortableField._
 import ParentField.foreignKey
 
-/**
- * A behavior specification for {@link CrudType}.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 3/22/11
- * Time: 7:59 PM
- */
-
+/** A behavior specification for [[com.github.scala.android.crud.CrudType]].
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 @RunWith(classOf[JUnitRunner])
 class CrudTypeSpec extends Spec with MustMatchers with CrudMockitoSugar {
 

@@ -17,12 +17,9 @@ import android.widget._
 import java.util.{Locale, GregorianCalendar, Calendar, Arrays}
 import com.github.triangle.Getter
 
-/**
- * A behavior specification for {@link ViewField}.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 2/9/11
- * Time: 7:59 PM
- */
+/** A behavior specification for [[com.github.scala.android.crud.view.ViewField]].
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 
 @RunWith(classOf[RobolectricTestRunner])
 class ViewFieldSpec extends MustMatchers with MockitoSugar {

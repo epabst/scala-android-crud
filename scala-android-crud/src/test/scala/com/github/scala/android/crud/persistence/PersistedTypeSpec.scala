@@ -8,12 +8,9 @@ import org.junit.Test
 import android.os.Bundle
 
 
-/**
- * A behavior specification for {@link PersistedType}.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 2/9/11
- * Time: 7:59 PM
- */
+/** A behavior specification for [[com.github.scala.android.crud.persistence.PersistedType]].
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 
 @RunWith(classOf[RobolectricTestRunner])
 class PersistedTypeSpec extends MustMatchers with EasyMockSugar {

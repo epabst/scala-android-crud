@@ -4,12 +4,9 @@ import org.mockito.Mockito
 import persistence.EntityType
 import android.widget.ListAdapter
 
-/**
- * A simple CrudType for testing.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 3/15/11
- * Time: 10:40 PM
- */
+/** A simple CrudType for testing.
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 case class MyCrudType(override val entityType: EntityType, override val persistenceFactory: PersistenceFactory)
   extends PersistedCrudType(entityType, persistenceFactory) with StubCrudType {
 

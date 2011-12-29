@@ -16,12 +16,9 @@ import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
 import actors.Future
 
-/**
- * A test for {@link CrudListActivity}.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 2/18/11
- * Time: 6:22 PM
- */
+/** A test for [[com.github.scala.android.crud.CrudListActivity]].
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 @RunWith(classOf[RobolectricTestRunner])
 class CrudActivitySpec extends MockitoSugar with MustMatchers {
   val persistenceFactory = mock[PersistenceFactory]

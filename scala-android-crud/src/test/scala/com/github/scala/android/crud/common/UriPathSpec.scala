@@ -6,12 +6,9 @@ import org.scalatest.matchers.MustMatchers
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.Spec
 
-/**
- * A behavior specification for [[com.github.scala.android.crud.common.UriPath]].
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 9/22/11
- * Time: 10:40 PM
- */
+/** A behavior specification for [[com.github.scala.android.crud.common.UriPath]].
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 @RunWith(classOf[JUnitRunner])
 class UriPathSpec extends Spec with MustMatchers {
   val entityName = MyCrudType.entityName

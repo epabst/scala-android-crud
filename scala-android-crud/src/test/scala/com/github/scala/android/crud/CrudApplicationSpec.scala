@@ -5,12 +5,9 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.Spec
 
-/**
- * A behavior specification for {@link CrudApplication}.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 4/19/11
- * Time: 11:30 PM
- */
+/** A behavior specification for [[com.github.scala.android.crud.CrudApplication]].
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 @RunWith(classOf[JUnitRunner])
 class CrudApplicationSpec extends Spec with MustMatchers {
 

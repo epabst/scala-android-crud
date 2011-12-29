@@ -10,12 +10,9 @@ import android.view.{View, ContextMenu}
 import org.mockito.Mockito._
 import org.mockito.Matchers._
 
-/**
- * A test for {@link CrudListActivity}.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 2/18/11
- * Time: 6:22 PM
- */
+/** A test for [[com.github.scala.android.crud.CrudListActivity]].
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 @RunWith(classOf[RobolectricTestRunner])
 class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
   @Test

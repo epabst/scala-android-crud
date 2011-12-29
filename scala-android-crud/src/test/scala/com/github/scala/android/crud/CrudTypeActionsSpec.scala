@@ -9,12 +9,9 @@ import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.scalatest.matchers.MustMatchers
 import com.github.scala.android.crud.action.Operation.toRichItent
 
-/**
- * A test for {@link CrudListActivity}.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 2/18/11
- * Time: 6:22 PM
- */
+/** A test for [[com.github.scala.android.crud.CrudListActivity]].
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 @RunWith(classOf[RobolectricTestRunner])
 class CrudTypeActionsSpec extends MustMatchers with CrudMockitoSugar {
   //todo determine if shadowing, and run tests on real Android device as well.

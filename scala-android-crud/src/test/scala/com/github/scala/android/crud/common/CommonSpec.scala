@@ -5,12 +5,9 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.Spec
 
-/**
- * A behavior specification for [[com.github.scala.android.crud.common.Common]].
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 4/5/11
- * Time: 7:59 PM
- */
+/** A behavior specification for [[com.github.scala.android.crud.common.Common]].
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 
 @RunWith(classOf[JUnitRunner])
 class CommonSpec extends Spec with MustMatchers {

@@ -6,12 +6,9 @@ import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers
 import com.github.scala.android.crud.testres._
 
-/**
- * A behavior specification for {@link AndroidResourceAnalyzer}.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 9/13/11
- * Time: 9:55 PM
- */
+/** A behavior specification for [[com.github.scala.android.crud.view.AndroidResourceAnalyzer]].
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 @RunWith(classOf[JUnitRunner])
 class AndroidResourceAnalyzerSpec extends Spec with MustMatchers {
   describe("detectRIdClasses") {

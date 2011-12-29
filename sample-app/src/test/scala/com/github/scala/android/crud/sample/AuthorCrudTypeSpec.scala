@@ -10,12 +10,9 @@ import org.mockito.Mockito._
 import com.github.scala.android.crud._
 import action.{ContextWithVars, ContextVars}
 
-/**
- * A behavior specification for {@link AuthorCrudType}.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 5/21/11
- * Time: 9:17 PM
- */
+/** A behavior specification for [[com.github.scala.android.crud.sample.AuthorCrudType]].
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 @RunWith(classOf[JUnitRunner])
 class AuthorCrudTypeSpec extends Spec with MustMatchers with MockitoSugar {
   it("must have the right children") {

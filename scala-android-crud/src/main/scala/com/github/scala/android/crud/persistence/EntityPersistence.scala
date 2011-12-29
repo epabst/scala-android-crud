@@ -10,18 +10,14 @@ trait PersistenceListener {
   def onDelete(uri: UriPath)
 }
 
-/**
- * Persistence support for an entity.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 2/2/11
- * Time: 4:12 PM
- */
+/** Persistence support for an entity.
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 
 trait EntityPersistence extends Timing with ListenerHolder[PersistenceListener] {
   def toUri(id: ID): UriPath
 
-  /**
-    * Finds one result for a given uri.  The UriPath should uniquely identify an entity.
+  /** Finds one result for a given uri.  The UriPath should uniquely identify an entity.
     * @throws IllegalStateException if more than one entity matches the UriPath.
     */
   def find(uri: UriPath): Option[AnyRef] = {
@@ -44,11 +40,10 @@ trait EntityPersistence extends Timing with ListenerHolder[PersistenceListener] 
 
   def doSave(id: Option[ID], writable: AnyRef): ID
 
-  /**
-   * Delete a set of entities by uri.
-   * This should NOT delete child entities because that would make the "undo" functionality incomplete.
-   * Instead, assume that the CrudType will handle deleting all child entities explicitly.
-   */
+  /** Delete a set of entities by uri.
+    * This should NOT delete child entities because that would make the "undo" functionality incomplete.
+    * Instead, assume that the CrudType will handle deleting all child entities explicitly.
+    */
   final def delete(uri: UriPath) {
     doDelete(uri)
     listeners.foreach(_.onDelete(uri))

@@ -14,12 +14,9 @@ import com.github.scala.android.crud.view.FieldLayout
 import com.github.scala.android.crud._
 import org.scalatest.mock.MockitoSugar
 
-/**
- * A behavior specification for {@link CrudUIGenerator}.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 8/6/11
- * Time: 8:13 AM
- */
+/** A behavior specification for [[com.github.scala.android.crud.generate.CrudUIGenerator]].
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 @RunWith(classOf[JUnitRunner])
 class CrudUIGeneratorSpec extends Spec with MustMatchers with MockitoSugar {
   describe("viewFields") {

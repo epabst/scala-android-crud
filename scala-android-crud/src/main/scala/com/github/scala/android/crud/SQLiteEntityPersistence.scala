@@ -13,12 +13,9 @@ import android.database.sqlite.{SQLiteOpenHelper, SQLiteDatabase}
 import common.UriPath
 import com.github.triangle.{PortableField, Logging}
 
-/**
- * EntityPersistence for SQLite.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 2/3/11
- * Time: 6:17 PM
- */
+/** EntityPersistence for SQLite.
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 class SQLiteEntityPersistence(val entityType: EntityType, val crudContext: CrudContext)
   extends CrudPersistence with Logging {
 

@@ -63,9 +63,7 @@ object CursorField {
 
 import CursorField._
 
-/**
- * Also supports accessing a scala Map (mutable.Map for writing) using the same name.
- */
+/** Also supports accessing a scala Map (mutable.Map for writing) using the same name. */
 class CursorField[T](val name: String)(implicit val persistedType: PersistedType[T]) extends DelegatingPortableField[T] with Logging {
   protected val delegate = Getter[Cursor,T](getFromCursor) +
     Setter((c: ContentValues) => (value: T) => persistedType.putValue(c, columnName, value), noSetterForEmpty) +

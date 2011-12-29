@@ -4,12 +4,9 @@ import java.lang.reflect.{Modifier, Field}
 import com.github.triangle.Logging
 import com.github.scala.android.crud.common.Common
 
-/**
- * An "R" analyzer.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 9/13/11
- * Time: 9:53 PM
- */
+/** An "R" analyzer.
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 
 object AndroidResourceAnalyzer extends Logging {
   protected def logTag = Common.logTag

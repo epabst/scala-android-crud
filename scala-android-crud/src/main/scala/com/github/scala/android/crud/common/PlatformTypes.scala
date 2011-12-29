@@ -1,11 +1,8 @@
 package com.github.scala.android.crud.common
 
-/**
- * A single place to specify types that could vary between different platforms.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 3/31/11
- * Time: 10:13 PM
- */
+/** A single place to specify types that could vary between different platforms.
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 
 object PlatformTypes {
   /** An entity ID */

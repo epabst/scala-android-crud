@@ -8,12 +8,9 @@ import common.{UriPath, Common, Timing, PlatformTypes}
 import PlatformTypes._
 import com.github.scala.android.crud.view.AndroidConversions._
 
-/**
- * Support for the different Crud Activity's.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 2/25/11
- * Time: 7:01 PM
- */
+/** Support for the different Crud Activity's.
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 
 trait BaseCrudActivity extends ActivityWithVars with OptionsMenuActivity with Logging with Timing {
   def crudType: CrudType

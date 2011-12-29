@@ -10,12 +10,9 @@ import org.mockito.Mockito._
 import org.mockito.Matchers.{eq => eql, _}
 import android.view.{MenuItem, Menu}
 
-/**
- * A behavior specification for [[com.github.scala.android.crud.action.OptionsMenuActivity]].
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 9/22/11
- * Time: 10:40 PM
- */
+/** A behavior specification for [[com.github.scala.android.crud.action.OptionsMenuActivity]].
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 @RunWith(classOf[RobolectricTestRunner])
 class OptionsMenuActivitySpec extends MustMatchers with MockitoSugar {
   class StubOptionsMenuActivity extends Activity with OptionsMenuActivity {

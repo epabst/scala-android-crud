@@ -6,12 +6,9 @@ import android.provider.BaseColumns
 import com.github.triangle.{BaseField, DelegatingPortableField}
 import persistence.EntityType
 
-/**
- * A ParentField to a CrudType.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 8/11/11
- * Time: 11:35 PM
- */
+/** A ParentField to a CrudType.
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 case class ParentField(entityType: EntityType) extends DelegatingPortableField[ID] {
   val fieldName = entityType.entityName.toLowerCase + BaseColumns._ID
 

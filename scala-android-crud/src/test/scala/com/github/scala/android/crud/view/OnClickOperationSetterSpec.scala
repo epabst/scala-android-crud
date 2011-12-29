@@ -12,12 +12,9 @@ import com.github.scala.android.crud.{CrudApplication, CrudContext}
 import com.github.triangle.PortableField
 import com.github.scala.android.crud.common.UriPath
 
-/**
- * A specification of [[com.github.scala.android.crud.view.OnClickOperationSetter]].
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 12/23/11
- * Time: 2:06 PM
- */
+/** A specification of [[com.github.scala.android.crud.view.OnClickOperationSetter]].
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 @RunWith(classOf[RobolectricTestRunner])
 class OnClickOperationSetterSpec extends MockitoSugar {
   @Test

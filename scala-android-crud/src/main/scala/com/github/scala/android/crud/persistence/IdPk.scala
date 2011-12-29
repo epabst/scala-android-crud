@@ -2,13 +2,9 @@ package com.github.scala.android.crud.persistence
 
 import com.github.scala.android.crud.common.PlatformTypes._
 
-/**
- * A trait with a primary key
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 2/2/11
- * Time: 6:49 AM
- */
-
+/** A trait with a primary key
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 trait IdPk {
   def id: Option[ID]
 

@@ -5,12 +5,9 @@ import com.github.scala.android.crud.common.UriPath
 import com.github.triangle.{Setter, Getter, Field}
 import com.github.scala.android.crud.common.PlatformTypes._
 
-/**
- * EntityPersistence for a simple generated Seq.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 3/11/11
- * Time: 5:05 PM
- */
+/** EntityPersistence for a simple generated Seq.
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 
 trait SeqEntityPersistence[T <: AnyRef] extends EntityPersistence {
   def newWritable: T

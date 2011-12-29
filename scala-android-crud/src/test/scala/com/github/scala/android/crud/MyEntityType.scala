@@ -7,10 +7,9 @@ import view.ViewField._
 import persistence.CursorField._
 import res.R
 
-/**
- * An EntityType for testing.
- * @author Eric Pabst (epabst@gmail.com)
- */
+/** An EntityType for testing.
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 
 class MyEntityType extends EntityType {
   def entityName: String = "MyMap"

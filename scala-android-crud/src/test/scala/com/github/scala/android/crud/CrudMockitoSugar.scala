@@ -5,12 +5,9 @@ import org.mockito.stubbing.Answer
 import org.mockito.invocation.InvocationOnMock
 import org.mockito.{Matchers, Mockito}
 
-/**
- * MockitoSugar with some additions.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 8/19/11
- * Time: 9:47 AM
- */
+/** MockitoSugar with some additions.
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 
 trait CrudMockitoSugar extends MockitoSugar {
 

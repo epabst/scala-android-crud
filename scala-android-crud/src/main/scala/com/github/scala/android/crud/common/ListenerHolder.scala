@@ -5,12 +5,9 @@ import collection.mutable.ConcurrentMap
 import scala.collection.JavaConversions._
 import scala.collection.Set
 
-/**
- * A Listener holder
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 8/16/11
- * Time: 10:41 PM
- */
+/** A Listener holder
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 
 trait ListenerHolder[L] {
   private val theListeners: ConcurrentMap[L,L] = new ConcurrentHashMap[L,L]()

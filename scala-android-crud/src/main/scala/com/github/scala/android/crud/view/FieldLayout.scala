@@ -2,14 +2,11 @@ package com.github.scala.android.crud.view
 
 import xml.Elem
 
-/**
- * The layout piece for a field.
- * It provides the XML for the part of an Android Layout that corresponds to a single field.
- * Standards attributes are separately added such as android:id and those needed by the parent View.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 9/10/11
- * Time: 12:08 AM
- */
+/** The layout piece for a field.
+  * It provides the XML for the part of an Android Layout that corresponds to a single field.
+  * Standards attributes are separately added such as android:id and those needed by the parent View.
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 abstract class FieldLayout { self =>
   def displayXml: Elem
   def editXml: Elem

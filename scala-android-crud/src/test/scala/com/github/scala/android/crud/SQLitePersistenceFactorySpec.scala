@@ -19,12 +19,9 @@ import android.database.{Cursor, DataSetObserver}
 import android.widget.{ListView, ListAdapter}
 import android.database.sqlite.SQLiteDatabase
 
-/**
- * A test for {@link SQLitePersistenceFactory}.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 2/18/11
- * Time: 6:22 PM
- */
+/** A test for [[com.github.scala.android.crud.SQLitePersistenceFactorySpec]].
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 @RunWith(classOf[RobolectricTestRunner])
 class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar with Logging {
   protected def logTag = getClass.getSimpleName

@@ -13,12 +13,9 @@ import JavaUtil.toRunnable
 import persistence.PersistenceListener
 import common.PlatformTypes._
 
-/**
- * A generic ListActivity for CRUD operations
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 2/3/11
- * Time: 7:06 AM
- */
+/** A generic ListActivity for CRUD operations
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 class CrudListActivity(val crudType: CrudType, val application: CrudApplication)
   extends ListActivity with BaseCrudActivity {
 

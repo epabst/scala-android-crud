@@ -3,12 +3,9 @@ package com.github.scala.android.crud
 import org.scalatest.mock.EasyMockSugar
 import org.easymock.{IAnswer, EasyMock}
 
-/**
- * EasyMockSugar with some additions.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 8/19/11
- * Time: 9:47 AM
- */
+/** EasyMockSugar with some additions.
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 
 trait CrudEasyMockSugar extends EasyMockSugar {
 

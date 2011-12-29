@@ -1,11 +1,8 @@
 package com.github.scala.android.crud.common
 
-/**
- * An Iterator whose items are calculated lazily.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 11/11/11
- * Time: 3:39 PM
- */
+/** An Iterator whose items are calculated lazily.
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 private[crud] trait CalculatedIterator[T] extends BufferedIterator[T] {
   private var calculatedNextValue: Option[Option[T]] = None
 

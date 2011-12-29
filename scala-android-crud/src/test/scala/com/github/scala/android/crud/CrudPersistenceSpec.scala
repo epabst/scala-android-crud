@@ -8,12 +8,9 @@ import org.scalatest.Spec
 import com.github.scala.android.crud.common.UriPath
 import persistence.{ReadOnlyPersistence, MutableIdPk}
 
-/**
- * A behavior specification for [[com.github.scala.android.crud.persistence.EntityPersistence]].
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 11/1/11
- * Time: 9:32 PM
- */
+/** A behavior specification for [[com.github.scala.android.crud.persistence.EntityPersistence]].
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 @RunWith(classOf[JUnitRunner])
 class CrudPersistenceSpec extends Spec with MustMatchers {
   class MyEntity(givenId: Option[ID] = None) extends MutableIdPk {

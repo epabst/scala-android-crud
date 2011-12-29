@@ -4,15 +4,12 @@ import android.view.Menu
 import java.lang.reflect.Method
 import java.util.concurrent.atomic.AtomicBoolean
 
-/**
- * An Activity that has an options menu.
- * This is intended to handle both Android 2 and 3.
- * The options menu in Android 3 can be left visible all the time until invalidated.
- * When the options menu changes, invoke {{{this.optionsMenuCommands = ...}}}
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 11/30/11
- * Time: 7:48 PM
- */
+/** An Activity that has an options menu.
+  * This is intended to handle both Android 2 and 3.
+  * The options menu in Android 3 can be left visible all the time until invalidated.
+  * When the options menu changes, invoke {{{this.optionsMenuCommands = ...}}}
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 trait OptionsMenuActivity extends ActivityWithVars {
   protected def initialOptionsMenuCommands: List[Command]
 

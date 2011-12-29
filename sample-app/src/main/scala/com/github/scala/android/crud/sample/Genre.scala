@@ -1,9 +1,8 @@
 package com.github.scala.android.crud.sample
 
-/**
- * A Book Genre.
- * @author pabstec
- */
+/** A Book Genre.
+  * @author pabstec
+  */
 
 object Genre extends Enumeration {
   val Fantasy = Value("Fantasy")

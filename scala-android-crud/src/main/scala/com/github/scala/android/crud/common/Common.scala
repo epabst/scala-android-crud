@@ -1,11 +1,8 @@
 package com.github.scala.android.crud.common
 
-/**
- * Common functionality that are use throughout scala-android-crud.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 11/11/11
- * Time: 6:34 AM
- */
+/** Common functionality that are use throughout scala-android-crud.
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 
 object Common {
   val logTag = "scala-android-crud"

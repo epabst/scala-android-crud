@@ -5,12 +5,9 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers
 
-/**
- * A behavior specification for {@link FieldLayout}.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 9/10/11
- * Time: 10:01 AM
- */
+/** A behavior specification for [[com.github.scala.android.crud.view.FieldLayout]].
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 
 @RunWith(classOf[JUnitRunner])
 class FieldLayoutSpec extends Spec with MustMatchers {

@@ -14,13 +14,10 @@ import PortableField.toSome
 import view.AndroidResourceAnalyzer._
 import java.lang.IllegalStateException
 
-/**
- * An entity configuration that provides all custom information needed to
- * implement CRUD on the entity.  This shouldn't depend on the platform (e.g. android).
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 2/23/11
- * Time: 3:24 PM
- */
+/** An entity configuration that provides all custom information needed to
+  * implement CRUD on the entity.  This shouldn't depend on the platform (e.g. android).
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 abstract class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFactory) extends Timing with Logging {
   protected def logTag = entityType.logTag
 
@@ -75,10 +72,9 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
 
   def parentEntities(application: CrudApplication): List[CrudType] = parentFields.map(_.entityType).map(application.crudType(_))
 
-  /**
-   * The list of entities that refer to this one.
-   * Those entities should have a ParentField (or foreignKey) in their fields list.
-   */
+  /** The list of entities that refer to this one.
+    * Those entities should have a ParentField (or foreignKey) in their fields list.
+    */
   def childEntities(application: CrudApplication): List[CrudType] = {
     val self = this
     trace("childEntities: allCrudTypes=" + application.allCrudTypes + " self=" + self)
@@ -89,10 +85,9 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
     }
   }
 
-  /**
-   * Gets the action to display a UI for a user to fill in data for creating an entity.
-   * The target Activity should copy Unit into the UI using entityType.copy to populate defaults.
-   */
+  /** Gets the action to display a UI for a user to fill in data for creating an entity.
+    * The target Activity should copy Unit into the UI using entityType.copy to populate defaults.
+    */
   lazy val createAction: Option[Action] =
     if (isUpdateable)
       Some(Action(Command(android.R.drawable.ic_menu_add, addItemString),
@@ -100,22 +95,16 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
     else
       None
 
-  /**
-   * Gets the action to display the list that matches the criteria copied from criteriaSource using entityType.copy.
-   */
+  /** Gets the action to display the list that matches the criteria copied from criteriaSource using entityType.copy. */
   lazy val listAction = Action(Command(None, listItemsString), new StartEntityActivityOperation(entityType.entityName, ListActionName, listActivityClass))
 
   protected def entityOperation(action: String, activityClass: Class[_ <: Activity]) =
     new StartEntityIdActivityOperation(entityType.entityName, action, activityClass)
 
-  /**
-   * Gets the action to display the entity given the id in the UriPath.
-   */
+  /** Gets the action to display the entity given the id in the UriPath. */
   lazy val displayAction = Action(Command(None, None), entityOperation(DisplayActionName, activityClass))
 
-  /**
-   * Gets the action to display a UI for a user to edit data for an entity given its id in the UriPath.
-   */
+  /** Gets the action to display a UI for a user to edit data for an entity given its id in the UriPath. */
   lazy val updateAction: Option[Action] =
     if (isUpdateable) Some(Action(Command(android.R.drawable.ic_menu_edit, editItemString), entityOperation(UpdateActionName, activityClass)))
     else None
@@ -146,10 +135,9 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
   /** Returns true if the URI is worth calling EntityPersistence.find to try to get an entity instance. */
   def maySpecifyEntityInstance(uri: UriPath): Boolean = persistenceFactory.maySpecifyEntityInstance(entityType, uri)
 
-  /**
-   * Gets the actions that a user can perform from a list of the entities.
-   * May be overridden to modify the list of actions.
-   */
+  /** Gets the actions that a user can perform from a list of the entities.
+    * May be overridden to modify the list of actions.
+    */
   def getListActions(application: CrudApplication): List[Action] =
     getReadOnlyListActions(application) ::: createAction.toList
 
@@ -167,11 +155,10 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
     })
   }
 
-  /**
-   * Gets the actions that a user can perform from a specific entity instance.
-   * The first one is the one that will be used when the item is clicked on.
-   * May be overridden to modify the list of actions.
-   */
+  /** Gets the actions that a user can perform from a specific entity instance.
+    * The first one is the one that will be used when the item is clicked on.
+    * May be overridden to modify the list of actions.
+    */
   def getEntityActions(application: CrudApplication): List[Action] =
     getReadOnlyEntityActions(application) ::: updateAction.toList ::: deleteAction.toList
 
@@ -191,10 +178,9 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
     persistence
   }
 
-  /**
-   * Instantiates a data buffer which can be saved by EntityPersistence.
-   * The fields must support copying into this object.
-   */
+  /** Instantiates a data buffer which can be saved by EntityPersistence.
+    * The fields must support copying into this object.
+    */
   def newWritable = persistenceFactory.newWritable
 
   protected def createEntityPersistence(crudContext: CrudContext) = persistenceFactory.createEntityPersistence(entityType, crudContext)
@@ -312,10 +298,7 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
 
 abstract class PersistedCrudType(entityType: EntityType, persistenceFactory: PersistenceFactory) extends CrudType(entityType, persistenceFactory)
 
-/**
- * A trait for stubbing out the UI methods of CrudType for use when the entity will
- * never be used with the UI.
- */
+/** A trait for stubbing out the UI methods of CrudType for use when the entity will never be used with the UI. */
 trait HiddenCrudType extends CrudType {
   def activityClass: Class[_ <: CrudActivity] = throw new UnsupportedOperationException
   def listActivityClass: Class[_ <: CrudListActivity] = throw new UnsupportedOperationException

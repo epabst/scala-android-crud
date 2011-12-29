@@ -17,12 +17,9 @@ import android.os.ParcelFileDescriptor
 import common.UriPath
 import com.github.triangle.BaseField
 
-/**
- * A test for {@link CrudBackupAgent}.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 4/7/11
- * Time: 6:22 PM
- */
+/** A test for [[com.github.scala.android.crud.CrudBackupAgent]].
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 @RunWith(classOf[RobolectricTestRunner])
 class CrudBackupAgentSpec extends MustMatchers with CrudEasyMockSugar {
   @Test

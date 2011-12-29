@@ -9,12 +9,9 @@ import org.scalatest.mock.EasyMockSugar
 import persistence.SQLiteCriteria
 import ParentField.foreignKey
 
-/**
- * A specification for {@link ParentField}.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 2/18/11
- * Time: 6:22 PM
- */
+/** A specification for [[com.github.scala.android.crud.ParentField]].
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 @RunWith(classOf[RobolectricTestRunner])
 class ParentFieldSpec extends MustMatchers with EasyMockSugar {
   @Test

@@ -11,12 +11,9 @@ import org.mockito.Matchers._
 import com.github.triangle.PortableField._
 import common.PlatformTypes._
 
-/**
- * A behavior specification for {@link GeneratedPersistenceFactory}.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 4/12/11
- * Time: 7:59 PM
- */
+/** A behavior specification for [[com.github.scala.android.crud.GeneratedPersistenceFactory]].
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 
 @RunWith(classOf[RobolectricTestRunner])
 class GeneratedPersistenceFactorySpec extends MustMatchers with CrudMockitoSugar {

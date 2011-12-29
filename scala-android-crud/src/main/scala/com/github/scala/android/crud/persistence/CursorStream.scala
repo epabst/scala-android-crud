@@ -3,12 +3,9 @@ package com.github.scala.android.crud.persistence
 import android.database.Cursor
 import com.github.triangle.FieldList
 
-/**
- * A Stream that wraps a Cursor.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 11/11/11
- * Time: 3:37 PM
- */
+/** A Stream that wraps a Cursor.
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 case class CursorStream(cursor: Cursor, persistedFields: List[CursorField[_]]) extends Stream[Map[String,Any]] {
   override lazy val headOption = {
     if (cursor.moveToNext) {

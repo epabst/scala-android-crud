@@ -2,12 +2,9 @@ package com.github.scala.android.crud.common
 
 import actors.{InputChannel, Future}
 
-/**
- * A Future that is ready.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 7/25/11
- * Time: 9:52 AM
- */
+/** A Future that is ready.
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 class ReadyFuture[+T](val readyValue: T) extends Future[T] {
   def isSet = true
 

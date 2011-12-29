@@ -6,12 +6,9 @@ import android.database.Cursor
 import android.widget.{CursorAdapter, ListAdapter, ResourceCursorAdapter}
 import persistence.{SQLiteUtil, EntityType, CursorStream}
 
-/**
- * A PersistenceFactory for SQLite.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 2/24/11
- * Time: 11:22 PM
- */
+/** A PersistenceFactory for SQLite.
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 object SQLitePersistenceFactory extends PersistenceFactory {
   def newWritable = new ContentValues
 

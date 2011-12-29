@@ -1,11 +1,8 @@
 package com.github.scala.android.crud
 
-/**
- * A utility that defines the naming conventions for Crud applications.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 9/27/11
- * Time: 6:18 PM
- */
+/** A utility that defines the naming conventions for Crud applications.
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 
 object NamingConventions {
   def toLayoutPrefix(entityName: String): String = entityName.collect {

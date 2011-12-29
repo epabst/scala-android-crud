@@ -4,13 +4,10 @@ import PlatformTypes._
 import com.github.triangle.ValueFormat._
 import com.github.triangle.{Getter, FieldGetter}
 
-/**
- * A convenience wrapper for UriPath.
- * It helps in that UriPath.EMPTY is null when running unit tests, and helps prepare for multi-platform support.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 9/22/11
- * Time: 10:42 PM
- */
+/** A convenience wrapper for UriPath.
+  * It helps in that UriPath.EMPTY is null when running unit tests, and helps prepare for multi-platform support.
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 case class UriPath(segments: String*) {
   private lazy val idFormat = basicFormat[ID]
 

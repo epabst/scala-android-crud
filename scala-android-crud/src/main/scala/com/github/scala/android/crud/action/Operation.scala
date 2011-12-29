@@ -7,17 +7,14 @@ import com.github.scala.android.crud.common.UriPath
 import com.github.scala.android.crud.view.AndroidConversions._
 import android.view.View
 
-/**
- * Represents something that a user can initiate.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 8/26/11
- * Time: 6:39 AM
- * @param icon  The optional icon to display.
- * @param title  The title to display.
- *   If the title is None, it can't be displayed in a context menu for a list item.
- *   If both title and icon are None,
- *   then it can't be displayed in the main options menu, but can still be triggered as a default.
- */
+/** Represents something that a user can initiate.
+  * @author Eric Pabst (epabst@gmail.com)
+  * @param icon  The optional icon to display.
+  * @param title  The title to display.
+  *   If the title is None, it can't be displayed in a context menu for a list item.
+  *   If both title and icon are None,
+  *   then it can't be displayed in the main options menu, but can still be triggered as a default.
+  */
 case class Command(icon: Option[ImgKey], title: Option[SKey]) {
   /** A CommandID that can be used to identify if it's the same as another in a list.
     * It uses the title or else the icon or else the hash code.
@@ -25,9 +22,7 @@ case class Command(icon: Option[ImgKey], title: Option[SKey]) {
   def commandId: CommandId = title.orElse(icon).getOrElse(##)
 }
 
-/**
- * Represents an operation that a user can initiate.
- */
+/** Represents an operation that a user can initiate. */
 trait Operation {
   /** Runs the operation, given the uri and the current state of the application. */
   def invoke(uri: UriPath, activity: ActivityWithVars)
@@ -50,10 +45,9 @@ object Operation {
   }
 }
 
-/**
- * Represents an action that a user can initiate.
- * It's equals/hashCode MUST be implemented in order to suppress the action that is already happening.
- */
+/** Represents an action that a user can initiate.
+  * It's equals/hashCode MUST be implemented in order to suppress the action that is already happening.
+  */
 case class Action(command: Command, operation: Operation) {
   def commandId: CommandId = command.commandId
 

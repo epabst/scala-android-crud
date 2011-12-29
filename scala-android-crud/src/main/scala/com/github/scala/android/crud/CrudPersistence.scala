@@ -6,13 +6,9 @@ import persistence._
 import com.github.triangle.{Setter, Getter, FieldList}
 import common.PlatformTypes._
 
-/**
- * An EntityPersistence for a CrudType.
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 9/21/11
- * Time: 6:39 AM
- */
-
+/** An EntityPersistence for a CrudType.
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 trait CrudPersistence extends EntityPersistence {
   protected def logTag: String = Common.tryToEvaluate(entityType.logTag).getOrElse(Common.logTag)
 

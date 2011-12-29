@@ -3,13 +3,9 @@ package com.github.scala.android.crud.sample
 import com.github.scala.android.crud.{SQLitePersistenceFactory, CrudBackupAgent, CrudApplication}
 
 
-/**
- * The sample application
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 3/31/11
- * Time: 4:53 PM
- */
-
+/** The sample application
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 object SampleApplication extends CrudApplication {
   val name = "Sample Application"
 

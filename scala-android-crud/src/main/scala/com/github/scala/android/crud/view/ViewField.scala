@@ -34,13 +34,10 @@ object ViewKeyMap {
   def apply(elems: (ViewKey,Any)*): ViewKeyMap = new ViewKeyMap(Map(elems: _*))
 }
 
-/**
- * PortableField for Views.
- * @param defaultLayout the default layout used as an example and by [[com.github.scala.android.crud.generate.CrudUIGenerator]].
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 2/16/11
- * Time: 6:30 AM
- */
+/** PortableField for Views.
+  * @param defaultLayout the default layout used as an example and by [[com.github.scala.android.crud.generate.CrudUIGenerator]].
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 class ViewField[T](val defaultLayout: FieldLayout, dataField: PortableField[T]) extends DelegatingPortableField[T] {
   protected def delegate = dataField
 
@@ -52,12 +49,11 @@ object ViewField {
   def viewId[T](viewResourceId: ViewKey, childViewField: PortableField[T]): PortableField[T] =
     new ViewIdField[T](viewResourceId, childViewField).withViewKeyMapField
 
-  /**
-   * This should be used when R.id doesn't yet have the needed name, and used like this:
-   * {{{viewId(classOf[R.id], "name", ...)}}}
-   * Which is conceptually identical to
-   * {{{viewId(R.id.name, ...)}}}.
-   */
+  /** This should be used when R.id doesn't yet have the needed name, and used like this:
+    * {{{viewId(classOf[R.id], "name", ...)}}}
+    * Which is conceptually identical to
+    * {{{viewId(R.id.name, ...)}}}.
+    */
   def viewId[T](rIdClass: Class[_], viewResourceIdName: String, childViewField: PortableField[T]): PortableField[T] =
     new ViewIdNameField[T](viewResourceIdName, childViewField, detectRIdClasses(rIdClass)).withViewKeyMapField
 
@@ -96,8 +92,7 @@ object ViewField {
       override def toString = "dateView"
     }
 
-  /**
-    * @param adapterFactory a function that takes the adapter View and returns the Adapter to put into it.
+  /** @param adapterFactory a function that takes the adapter View and returns the Adapter to put into it.
     * @param positionFinder a function that takes a value and returns its position in the Adapter
     */
   private[view] def adapterViewField[T,A <: Adapter](adapterFactory: AdapterView[A] => A, positionFinder: T => Int): PortableField[T] = {

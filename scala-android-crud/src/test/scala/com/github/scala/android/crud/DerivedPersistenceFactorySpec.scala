@@ -9,12 +9,9 @@ import org.scalatest.matchers.MustMatchers
 import persistence.EntityType
 import org.mockito.Mockito._
 
-/**
- * A specification for [[com.github.scala.android.crud.DerivedPersistenceFactory]].
- * @author Eric Pabst (epabst@gmail.com)
- * Date: 12/9/11
- * Time: 6:44 AM
- */
+/** A specification for [[com.github.scala.android.crud.DerivedPersistenceFactory]].
+  * @author Eric Pabst (epabst@gmail.com)
+  */
 @RunWith(classOf[JUnitRunner])
 class DerivedPersistenceFactorySpec extends Spec with MustMatchers with CrudMockitoSugar {
   it("must instantiate the CrudPersistence for the delegate CrudTypes and make them available") {
