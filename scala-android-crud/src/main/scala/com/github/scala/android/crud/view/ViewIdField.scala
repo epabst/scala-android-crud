@@ -34,8 +34,10 @@ protected abstract class BaseViewIdField[T](childViewField: PortableField[T])
   private lazy val GivenViewId = viewResourceIdOpt.getOrElse(View.NO_ID)
 
   protected def subjectGetter = {
-    case ChildView(childView) => childView
-    case actionResponse @ OperationResponse(GivenViewId, _) => actionResponse
+    case ChildView(childView) =>
+      childView
+    case actionResponse @ OperationResponse(GivenViewId, _) =>
+      actionResponse
   }
 }
 

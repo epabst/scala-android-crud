@@ -127,7 +127,7 @@ object ViewField {
     */
   lazy val capturedImageView: ViewField[Uri] = {
     def setImageUri(imageView: ImageView, uriOpt: Option[Uri]) {
-      Toast.makeText(imageView.getContext, "setting uri on image to " + uriOpt, Toast.LENGTH_LONG)
+      Toast.makeText(imageView.getContext, "setting uri on image to " + uriOpt, Toast.LENGTH_LONG).show()
       uriOpt match {
         case Some(uri) =>
           imageView.setTag(uri.toString)
@@ -155,11 +155,11 @@ object ViewField {
         val imageUri = Uri.fromFile(File.createTempFile("image", "jpg", Environment.getExternalStorageDirectory))
         intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
         view.setTag(ProposedUriKey, imageUri.toString)
-        Toast.makeText(view.getContext, "set proposed uri", Toast.LENGTH_SHORT)
+        Toast.makeText(view.getContext, "set proposed uri", Toast.LENGTH_SHORT).show()
         intent
       })) + GetterFromItem {
         case (response: OperationResponse) && (view: View) =>
-          Toast.makeText(view.getContext, "getting uri from result", Toast.LENGTH_SHORT)
+          Toast.makeText(view.getContext, "getting uri from result", Toast.LENGTH_SHORT).show()
           Option(response.intent.getData).orElse(tagToUri(view.getTag(ProposedUriKey)))
       }
     )
