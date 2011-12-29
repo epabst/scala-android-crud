@@ -9,12 +9,11 @@ import ValueFormat._
 import com.github.triangle.Converter._
 import android.widget._
 import scala.collection.JavaConversions._
-import com.github.scala.android.crud.common.UriPath
 import com.github.scala.android.crud.res.R
-import com.github.scala.android.crud.view.AndroidConversions._
 import android.content.Intent
 import com.github.scala.android.crud.view.AndroidResourceAnalyzer._
 import com.github.scala.android.crud.action.{OperationResponse, StartActivityForResultOperation}
+import android.net.Uri
 
 /** A Map of ViewKey with values.
   * Wraps a map so that it is distinguished from persisted fields.
@@ -123,27 +122,27 @@ object ViewField {
     }
   }
 
-  lazy val capturedImageView: ViewField[UriPath] = {
-    def setImageUri(imageView: ImageView, uriOpt: Option[UriPath]) {
+  lazy val capturedImageView: ViewField[Uri] = {
+    def setImageUri(imageView: ImageView, uriOpt: Option[Uri]) {
       uriOpt match {
         case Some(uri) =>
-          imageView.setTag(uri)
+          imageView.setTag(uri.toString)
           imageView.setImageURI(uri)
         case None =>
           imageView.setImageResource(R.drawable.android_camera_256)
       }
     }
 
-    def imageUri(imageView: ImageView): Option[UriPath] = Option(imageView.getTag.asInstanceOf[UriPath])
+    def imageUri(imageView: ImageView): Option[Uri] = Option(imageView.getTag.asInstanceOf[String]).map(Uri.parse(_))
 
     val defaultLayout = new FieldLayout {
       def displayXml = <ImageView android:adjustViewBounds="true"/>
 
       def editXml = <ImageView android:adjustViewBounds="true"/>
     }
-    new ViewField[UriPath](defaultLayout, Getter((v: ImageView) => imageUri(v)).withSetter(v => uri => setImageUri(v, uri)) +
+    new ViewField[Uri](defaultLayout, Getter((v: ImageView) => imageUri(v)).withSetter(v => uri => setImageUri(v, uri)) +
       OnClickOperationSetter(StartActivityForResultOperation(_, new Intent("android.media.action.IMAGE_CAPTURE"))) +
-      Getter[OperationResponse,UriPath](r => Option(r.intent.getData))
+      Getter[OperationResponse,Uri](r => Option(r.intent.getData))
     )
   }
 }
