@@ -60,6 +60,7 @@ class CrudActivity(val crudType: CrudType, val application: CrudApplication) ext
   }
 
   override def onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+    super.onActivityResult(requestCode, resultCode, data)
     if (resultCode == Activity.RESULT_OK) {
       entityType.copyFromItem(List(OperationResponse(requestCode, data), crudContext), this)
     } else {
