@@ -21,12 +21,23 @@ import com.github.scala.android.crud.common.UriPath
 @RunWith(classOf[RobolectricTestRunner])
 class OnClickOperationSetterSpec extends MockitoSugar {
   @Test
-  def itMustSetOnClickListener() {
+  def itMustSetOnClickListenerWhenClicableIsTrue() {
     val operation = mock[Operation]
     val view = mock[View]
+    stub(view.isClickable).toReturn(true)
     val setter = OnClickOperationSetter[Unit](_ => operation)
     setter.setValue(view, None, List(UriPath.EMPTY, CrudContext(mock[MyActivityWithVars], mock[CrudApplication]), PortableField.UseDefaults))
     verify(view).setOnClickListener(any())
+  }
+
+  @Test
+  def itMustNotSetOnClickListenerWhenClickableIsFalse() {
+    val operation = mock[Operation]
+    val view = mock[View]
+    stub(view.isClickable).toReturn(false)
+    val setter = OnClickOperationSetter[Unit](_ => operation)
+    setter.setValue(view, None, List(UriPath.EMPTY, CrudContext(mock[MyActivityWithVars], mock[CrudApplication]), PortableField.UseDefaults))
+    verify(view, never()).setOnClickListener(any())
   }
 }
 

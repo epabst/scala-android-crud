@@ -145,7 +145,7 @@ object ViewField {
     val defaultLayout = new FieldLayout {
       def displayXml = <ImageView android:adjustViewBounds="true"/>
 
-      def editXml = <ImageView android:adjustViewBounds="true"/>
+      def editXml = <ImageView android:adjustViewBounds="true" android:clickable="true"/>
     }
 
     val ProposedUriKey = 5
