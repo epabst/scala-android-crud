@@ -16,7 +16,7 @@ object AuthorEntityType extends EntityType {
 
     viewId(classOf[R], "bookCount", intView) +
             mapField[Int]("bookCount") +
-            getterFromItem[Int] {
+            GetterFromItem[Int] {
               case UriField(Some(uri)) && CrudContextField(Some(crudContext)) => {
                 println("calculating bookCount for " + uri + " and " + crudContext)
                 crudContext.withEntityPersistence(BookEntityType) { persistence =>
