@@ -14,6 +14,10 @@ import android.content.Intent
 import com.github.scala.android.crud.view.AndroidResourceAnalyzer._
 import com.github.scala.android.crud.action.{OperationResponse, StartActivityForResultOperation}
 import android.net.Uri
+import java.io.File
+import android.os.Environment
+import android.provider.MediaStore
+import android.view.View
 
 /** A Map of ViewKey with values.
   * Wraps a map so that it is distinguished from persisted fields.
@@ -124,6 +128,7 @@ object ViewField {
 
   lazy val capturedImageView: ViewField[Uri] = {
     def setImageUri(imageView: ImageView, uriOpt: Option[Uri]) {
+      Toast.makeText(imageView.getContext, "setting uri on image to " + uriOpt, Toast.LENGTH_LONG)
       uriOpt match {
         case Some(uri) =>
           imageView.setTag(uri.toString)
@@ -133,16 +138,30 @@ object ViewField {
       }
     }
 
-    def imageUri(imageView: ImageView): Option[Uri] = Option(imageView.getTag.asInstanceOf[String]).map(Uri.parse(_))
+    def tagToUri(tag: Object): Option[Uri] = Option(tag.asInstanceOf[String]).map(Uri.parse(_))
+
+    def imageUri(imageView: ImageView): Option[Uri] = tagToUri(imageView.getTag)
 
     val defaultLayout = new FieldLayout {
       def displayXml = <ImageView android:adjustViewBounds="true"/>
 
       def editXml = <ImageView android:adjustViewBounds="true"/>
     }
+
+    val ProposedUriKey = 5
     new ViewField[Uri](defaultLayout, Getter((v: ImageView) => imageUri(v)).withSetter(v => uri => setImageUri(v, uri)) +
-      OnClickOperationSetter(StartActivityForResultOperation(_, new Intent("android.media.action.IMAGE_CAPTURE"))) +
-      Getter[OperationResponse,Uri](r => Option(r.intent.getData))
+      OnClickOperationSetter(view => StartActivityForResultOperation(view, {
+        val intent = new Intent("android.media.action.IMAGE_CAPTURE")
+        val imageUri = Uri.fromFile(File.createTempFile("image", "jpg", Environment.getExternalStorageDirectory))
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
+        view.setTag(ProposedUriKey, imageUri.toString)
+        Toast.makeText(view.getContext, "set proposed uri", Toast.LENGTH_SHORT)
+        intent
+      })) + GetterFromItem {
+        case (response: OperationResponse) && (view: View) =>
+          Toast.makeText(view.getContext, "getting uri from result", Toast.LENGTH_SHORT)
+          Option(response.intent.getData).orElse(tagToUri(view.getTag(ProposedUriKey)))
+      }
     )
   }
 }
