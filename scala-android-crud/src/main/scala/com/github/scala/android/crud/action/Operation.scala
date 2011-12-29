@@ -5,6 +5,7 @@ import com.github.scala.android.crud.common.PlatformTypes._
 import android.content.{Context, Intent}
 import com.github.scala.android.crud.common.UriPath
 import com.github.scala.android.crud.view.AndroidConversions._
+import android.view.View
 
 /**
  * Represents something that a user can initiate.
@@ -54,7 +55,7 @@ object Operation {
  * It's equals/hashCode MUST be implemented in order to suppress the action that is already happening.
  */
 case class Action(command: Command, operation: Operation) {
-  def commandId = command.commandId
+  def commandId: CommandId = command.commandId
 
   def invoke(uri: UriPath, activity: ActivityWithVars) {
     operation.invoke(uri, activity)
@@ -109,3 +110,23 @@ final case class StartEntityIdActivityOperation(entityName: String, action: Stri
 
   override def determineIntent(uri: UriPath, activity: ActivityWithVars) = super.determineIntent(uri.upToIdOf(entityName), activity)
 }
+
+trait StartActivityForResultOperation extends StartActivityOperation {
+  def viewIdToRespondTo: ViewKey
+
+  override def invoke(uri: UriPath, activity: ActivityWithVars) {
+    activity.startActivityForResult(determineIntent(uri, activity), viewIdToRespondTo)
+  }
+}
+
+object StartActivityForResultOperation {
+  def apply(view: View, intent: => Intent): StartActivityForResultOperation =
+    new StartActivityOperationFromIntent(intent) with StartActivityForResultOperation {
+      def viewIdToRespondTo = view.getId
+    }
+}
+
+/** The response to a [[com.github.scala.android.crud.action.StartActivityForResultOperation]].
+  * This is used by [[com.github.scala.android.crud.CrudActivity]]'s startActivityForResult.
+  */
+case class OperationResponse(viewIdRespondingTo: ViewKey, intent: Intent)

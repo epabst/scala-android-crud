@@ -6,6 +6,7 @@ import android.view.View
 import android.app.Activity
 import com.github.scala.android.crud.view.AndroidResourceAnalyzer._
 import com.github.triangle.{Getter, PartialDelegatingField, PortableField}
+import com.github.scala.android.crud.action.OperationResponse
 
 /** PortableField for a View resource within a given parent View */
 protected abstract class BaseViewIdField[T](childViewField: PortableField[T])
@@ -30,8 +31,11 @@ protected abstract class BaseViewIdField[T](childViewField: PortableField[T])
 
   protected def delegate = childViewField
 
+  private lazy val GivenViewId = viewResourceIdOpt.getOrElse(View.NO_ID)
+
   protected def subjectGetter = {
     case ChildView(childView) => childView
+    case actionResponse @ OperationResponse(GivenViewId, _) => actionResponse
   }
 }
 

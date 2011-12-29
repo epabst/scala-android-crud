@@ -24,7 +24,7 @@ class OnClickOperationSetterSpec extends MockitoSugar {
   def itMustSetOnClickListener() {
     val operation = mock[Operation]
     val view = mock[View]
-    val setter = OnClickOperationSetter[Unit](operation)
+    val setter = OnClickOperationSetter[Unit](_ => operation)
     setter.setValue(view, None, List(UriPath.EMPTY, CrudContext(mock[MyActivityWithVars], mock[CrudApplication]), PortableField.UseDefaults))
     verify(view).setOnClickListener(any())
   }

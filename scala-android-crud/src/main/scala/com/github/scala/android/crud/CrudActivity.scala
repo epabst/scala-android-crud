@@ -1,9 +1,11 @@
 package com.github.scala.android.crud
 
-import action.EntityOperation
+import action.{OperationResponse, EntityOperation}
 import android.os.Bundle
 import com.github.triangle.JavaUtil.toRunnable
 import com.github.triangle.PortableField
+import android.content.Intent
+import android.app.Activity
 import com.github.scala.android.crud.view.AndroidConversions._
 
 /**
@@ -55,5 +57,13 @@ class CrudActivity(val crudType: CrudType, val application: CrudApplication) ext
   protected def normalActions = crudType.getEntityActions(application).filter {
     case action: EntityOperation => action.entityName != entityType.entityName || action.action != currentAction
     case _ => true
+  }
+
+  override def onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+    if (resultCode == Activity.RESULT_OK) {
+      entityType.copyFromItem(List(OperationResponse(requestCode, data), crudContext), this)
+    } else {
+      debug("onActivityResult received resultCode of " + resultCode + " and data " + data + " for request " + requestCode)
+    }
   }
 }
