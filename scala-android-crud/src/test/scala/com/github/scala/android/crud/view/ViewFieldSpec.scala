@@ -16,6 +16,8 @@ import UriPath.uriIdField
 import android.widget._
 import java.util.{Locale, GregorianCalendar, Calendar, Arrays}
 import com.github.triangle.Getter
+import com.github.scala.android.crud.action.OperationResponse
+import android.net.Uri
 
 /** A behavior specification for [[com.github.scala.android.crud.view.ViewField]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -214,5 +216,17 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
     val newLayout = FieldLayout.textLayout("numberDecimal")
     val adjustedViewField = viewField.withDefaultLayout(newLayout)
     adjustedViewField.defaultLayout.editXml must be (newLayout.editXml)
+  }
+
+  @Test
+  def capturedImageViewMustGetImageUriFromOperationResponse() {
+    val TheViewId = 101
+    val field = viewId(TheViewId, ViewField.capturedImageView)
+    val outerView = mock[View]
+    val view = mock[View]
+    stub(outerView.getId).toReturn(TheViewId)
+    stub(outerView.findViewById(TheViewId)).toReturn(view)
+    stub(view.getTag(ViewField.DefaultValueTagKey)).toReturn("file://foo/bar.jpg")
+    field.getterFromItem(List(OperationResponse(TheViewId, null), outerView)) must be (Some(Uri.parse("file://foo/bar.jpg")))
   }
 }

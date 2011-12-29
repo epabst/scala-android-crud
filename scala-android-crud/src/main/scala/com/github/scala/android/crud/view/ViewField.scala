@@ -121,6 +121,9 @@ object ViewField {
     }
   }
 
+  // This could be any value.  Android requires that it is some entry in R.
+  val DefaultValueTagKey = R.drawable.icon
+
   /** An image that can be captured using the camera.  It currently puts the image into external storage, which
     * requires the following in the AndroidManifest.xml:
     * {{{<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />}}}
@@ -147,20 +150,21 @@ object ViewField {
       def editXml = <ImageView android:adjustViewBounds="true" android:clickable="true"/>
     }
 
-    // This could be any value.  Android requires that it is some entry in R.
-    val ProposedUriKey = R.drawable.icon
+    object OperationResponseExtractor extends Field(identityField[OperationResponse])
+    object ViewExtractor extends Field(identityField[View])
+
     new ViewField[Uri](defaultLayout, Getter((v: ImageView) => imageUri(v)).withSetter(v => uri => setImageUri(v, uri)) +
       OnClickOperationSetter(view => StartActivityForResultOperation(view, {
         val intent = new Intent("android.media.action.IMAGE_CAPTURE")
         val imageUri = Uri.fromFile(File.createTempFile("image", "jpg", Environment.getExternalStorageDirectory))
         intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
-        view.setTag(ProposedUriKey, imageUri.toString)
-        Toast.makeText(view.getContext, "set proposed uri", Toast.LENGTH_SHORT).show()
+        view.setTag(DefaultValueTagKey, imageUri.toString)
+        Toast.makeText(view.getContext, "set proposed uri to " + imageUri, Toast.LENGTH_SHORT).show()
         intent
       })) + GetterFromItem {
-        case (response: OperationResponse) && (view: View) =>
+        case OperationResponseExtractor(Some(response)) && ViewExtractor(Some(view)) =>
           Toast.makeText(view.getContext, "getting uri from result", Toast.LENGTH_SHORT).show()
-          Option(response.intent.getData).orElse(tagToUri(view.getTag(ProposedUriKey)))
+          Option(response.intent.getData).orElse(tagToUri(view.getTag(DefaultValueTagKey)))
       }
     )
   }
