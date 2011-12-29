@@ -147,7 +147,8 @@ object ViewField {
       def editXml = <ImageView android:adjustViewBounds="true" android:clickable="true"/>
     }
 
-    val ProposedUriKey = 5
+    // This could be any value.  Android requires that it is some entry in R.
+    val ProposedUriKey = R.drawable.icon
     new ViewField[Uri](defaultLayout, Getter((v: ImageView) => imageUri(v)).withSetter(v => uri => setImageUri(v, uri)) +
       OnClickOperationSetter(view => StartActivityForResultOperation(view, {
         val intent = new Intent("android.media.action.IMAGE_CAPTURE")
