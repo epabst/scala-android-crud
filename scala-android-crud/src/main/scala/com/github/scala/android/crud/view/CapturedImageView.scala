@@ -9,9 +9,11 @@ import android.content.Intent
 import java.io.File
 import android.os.Environment
 import android.provider.MediaStore
-import com.github.triangle.&&
+import com.github.triangle._
 import com.github.scala.android.crud.action.{StartActivityForResultOperation, OperationResponse}
-import com.github.triangle.{Getter, GetterFromItem, Field}
+import android.graphics.BitmapFactory
+import android.graphics.drawable.{BitmapDrawable}
+import com.github.scala.android.crud.common.Common.withCloseable
 import com.github.scala.android.crud.common.PlatformTypes.ImgKey
 
 /** A ViewField for an image that can be captured using the camera.
@@ -31,13 +33,25 @@ private object CapturedImageViewFactory {
     def editXml = <ImageView android:adjustViewBounds="true" android:clickable="true"/>
   }
 
+  private def bitmapFactoryOptions = {
+    val options = new BitmapFactory.Options
+    options.inDither = true
+    //todo make this depend on the actual image's dimensions
+    options.inSampleSize = 4
+    options
+  }
+
   def setImageUri(imageView: ImageView, uriOpt: Option[Uri]) {
     Toast.makeText(imageView.getContext, "setting uri on image to " + uriOpt, Toast.LENGTH_LONG).show()
     imageView.setImageBitmap(null)
     uriOpt match {
       case Some(uri) =>
         imageView.setTag(uri.toString)
-        imageView.setImageURI(uri)
+        val contentResolver = imageView.getContext.getContentResolver
+        withCloseable(contentResolver.openInputStream(uri)) { stream =>
+          val drawable = new BitmapDrawable(BitmapFactory.decodeStream(stream, null, bitmapFactoryOptions))
+          imageView.setImageDrawable(drawable)
+        }
       case None =>
         imageView.setImageResource(R.drawable.android_camera_256)
     }

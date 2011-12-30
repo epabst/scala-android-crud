@@ -12,4 +12,9 @@ object Common {
     try { Some(f) }
     catch { case _ => None }
   }
+
+  def withCloseable[T <: {def close()}](closeable: T)(f: T => Unit) {
+    try { f(closeable) }
+    finally { closeable.close() }
+  }
 }
