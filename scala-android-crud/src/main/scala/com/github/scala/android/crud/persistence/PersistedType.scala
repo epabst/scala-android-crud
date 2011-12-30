@@ -84,14 +84,14 @@ object PersistedType {
     def getJFloat(index: Int): java.lang.Float = cursor.getFloat(index).asInstanceOf[java.lang.Float]
   }
   private implicit def toRichCursor(cursor: Cursor): RichCursor = new RichCursor(cursor)
-  implicit lazy val stringType: PersistedType[String] = directPersistedType[String]("TEXT", _.getString, _.put, _.getString, _.putString)
-  implicit lazy val longRefType: PersistedType[java.lang.Long] = directPersistedType[java.lang.Long]("INTEGER", _.getJLong, _.put, _.getJLong, _.putJLong)
-  implicit lazy val intRefType: PersistedType[java.lang.Integer] = directPersistedType[java.lang.Integer]("INTEGER", _.getJInt, _.put, _.getJInt, _.putJInt)
-  implicit lazy val shortRefType: PersistedType[java.lang.Short] = directPersistedType[java.lang.Short]("INTEGER", _.getJShort, _.put, _.getJShort, _.putJShort)
-  implicit lazy val byteRefType: PersistedType[java.lang.Byte] = directPersistedType[java.lang.Byte]("INTEGER", _.getJByte, _.put, _.getJByte, _.putJByte)
-  implicit lazy val doubleRefType: PersistedType[java.lang.Double] = directPersistedType[java.lang.Double]("REAL", _.getJDouble, _.put, _.getJDouble, _.putJDouble)
-  implicit lazy val floatRefType: PersistedType[java.lang.Float] = directPersistedType[java.lang.Float]("REAL", _.getJFloat, _.put, _.getJFloat, _.putJFloat)
-  implicit lazy val blobType: PersistedType[Array[Byte]] = directPersistedType[Array[Byte]]("BLOB", _.getBlob, _.put, _.getByteArray, _.putByteArray)
+  implicit lazy val stringType: PersistedType[String] = directPersistedType[String]("TEXT", c => c.getString, c => c.put(_, _), c => c.getString, c => c.putString(_, _))
+  implicit lazy val longRefType: PersistedType[java.lang.Long] = directPersistedType[java.lang.Long]("INTEGER", c => c.getJLong, c => c.put(_, _), c => c.getJLong, c => c.putJLong)
+  implicit lazy val intRefType: PersistedType[java.lang.Integer] = directPersistedType[java.lang.Integer]("INTEGER", c => c.getJInt, c => c.put(_, _), c => c.getJInt, c => c.putJInt)
+  implicit lazy val shortRefType: PersistedType[java.lang.Short] = directPersistedType[java.lang.Short]("INTEGER", c => c.getJShort, c => c.put(_, _), c => c.getJShort, c => c.putJShort)
+  implicit lazy val byteRefType: PersistedType[java.lang.Byte] = directPersistedType[java.lang.Byte]("INTEGER", c => c.getJByte, c => c.put(_, _), c => c.getJByte, c => c.putJByte)
+  implicit lazy val doubleRefType: PersistedType[java.lang.Double] = directPersistedType[java.lang.Double]("REAL", c => c.getJDouble, c => c.put(_, _), c => c.getJDouble, c => c.putJDouble)
+  implicit lazy val floatRefType: PersistedType[java.lang.Float] = directPersistedType[java.lang.Float]("REAL", c => c.getJFloat, c => c.put(_, _), c => c.getJFloat, c => c.putJFloat)
+  implicit lazy val blobType: PersistedType[Array[Byte]] = directPersistedType[Array[Byte]]("BLOB", c => c.getBlob, c => c.put(_, _), c => c.getByteArray, c => c.putByteArray(_, _))
   implicit lazy val longType: PersistedType[Long] = castedPersistedType[Long,java.lang.Long]
   implicit lazy val intType: PersistedType[Int] = castedPersistedType[Int,java.lang.Integer]
   implicit lazy val shortType: PersistedType[Short] = castedPersistedType[Short,java.lang.Short]
