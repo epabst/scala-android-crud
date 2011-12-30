@@ -18,6 +18,7 @@ import java.io.File
 import android.os.Environment
 import android.provider.MediaStore
 import android.view.View
+import android.graphics.drawable.BitmapDrawable
 
 /** A Map of ViewKey with values.
   * Wraps a map so that it is distinguished from persisted fields.
@@ -131,6 +132,10 @@ object ViewField {
   lazy val capturedImageView: ViewField[Uri] = {
     def setImageUri(imageView: ImageView, uriOpt: Option[Uri]) {
       Toast.makeText(imageView.getContext, "setting uri on image to " + uriOpt, Toast.LENGTH_LONG).show()
+      imageView.getDrawable match {
+        case drawable: BitmapDrawable => drawable.getBitmap.recycle()
+        case _ =>
+      }
       uriOpt match {
         case Some(uri) =>
           imageView.setTag(uri.toString)
@@ -156,7 +161,7 @@ object ViewField {
     new ViewField[Uri](defaultLayout, Getter((v: ImageView) => imageUri(v)).withSetter(v => uri => setImageUri(v, uri)) +
       OnClickOperationSetter(view => StartActivityForResultOperation(view, {
         val intent = new Intent("android.media.action.IMAGE_CAPTURE")
-        val imageUri = Uri.fromFile(File.createTempFile("image", "jpg", Environment.getExternalStorageDirectory))
+        val imageUri = Uri.fromFile(File.createTempFile("image", ".jpg", Environment.getExternalStorageDirectory))
         intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
         view.setTag(DefaultValueTagKey, imageUri.toString)
         Toast.makeText(view.getContext, "set proposed uri to " + imageUri, Toast.LENGTH_SHORT).show()
