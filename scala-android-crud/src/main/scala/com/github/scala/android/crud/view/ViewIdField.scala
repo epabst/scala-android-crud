@@ -23,7 +23,13 @@ protected abstract class BaseViewIdField[T](childViewField: PortableField[T])
 
   object ChildView {
     def unapply(target: Any): Option[View] = target match {
-      case view: View => viewResourceIdOpt.flatMap(id => Option(view.findViewById(id)))
+      case view: View =>
+        // uses the "Alternative to the ViewHolder" pattern: http://www.screaming-penguin.com/node/7767#comment-16978
+        viewResourceIdOpt.flatMap(id => Option(view.getTag(id).asInstanceOf[View]).orElse {
+          val foundView = Option(view.findViewById(id))
+          foundView.foreach(view.setTag(id, _))
+          foundView
+        })
       case activity: Activity => viewResourceIdOpt.flatMap(id => Option(activity.findViewById(id)))
       case _ => None
     }
