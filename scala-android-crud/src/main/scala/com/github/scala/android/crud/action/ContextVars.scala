@@ -40,6 +40,14 @@ class ContextVar[T] {
   def clear(context: ContextVars): Option[T] = {
     context.variables.remove(this).map(_.asInstanceOf[T])
   }
+
+  def getOrSet(context: ContextVars, initialValue: => T): T = {
+    get(context).getOrElse {
+      val value = initialValue
+      set(context, value)
+      value
+    }
+  }
 }
 
 /** A ContextVars that has been mixed with a Context.
