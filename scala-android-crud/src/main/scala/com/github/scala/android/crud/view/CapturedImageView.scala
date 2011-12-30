@@ -74,7 +74,7 @@ private object CapturedImageViewFactory {
   val DefaultValueTagKey = R.drawable.icon
 
   val dataField = Getter((v: ImageView) => imageUri(v)) + SetterUsingItems[Uri] {
-    case ViewExtractor(Some(view: ImageView)) && CrudContextField(Some(crudContext)) => uri =>
+    case (ViewExtractor(Some(view: ImageView)), CrudContextField(Some(crudContext))) => uri =>
       setImageUri(view, uri, crudContext.vars)
   } + OnClickOperationSetter(view => StartActivityForResultOperation(view, {
       val intent = new Intent("android.media.action.IMAGE_CAPTURE")
