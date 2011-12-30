@@ -9,16 +9,8 @@ import ValueFormat._
 import com.github.triangle.Converter._
 import android.widget._
 import scala.collection.JavaConversions._
-import com.github.scala.android.crud.res.R
-import android.content.Intent
 import com.github.scala.android.crud.view.AndroidResourceAnalyzer._
-import com.github.scala.android.crud.action.{OperationResponse, StartActivityForResultOperation}
 import android.net.Uri
-import java.io.File
-import android.os.Environment
-import android.provider.MediaStore
-import android.view.View
-import android.graphics.drawable.BitmapDrawable
 
 /** A Map of ViewKey with values.
   * Wraps a map so that it is distinguished from persisted fields.
@@ -122,52 +114,5 @@ object ViewField {
     }
   }
 
-  // This could be any value.  Android requires that it is some entry in R.
-  val DefaultValueTagKey = R.drawable.icon
-
-  /** An image that can be captured using the camera.  It currently puts the image into external storage, which
-    * requires the following in the AndroidManifest.xml:
-    * {{{<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />}}}
-    */
-  lazy val capturedImageView: ViewField[Uri] = {
-    def setImageUri(imageView: ImageView, uriOpt: Option[Uri]) {
-      Toast.makeText(imageView.getContext, "setting uri on image to " + uriOpt, Toast.LENGTH_LONG).show()
-      imageView.setImageBitmap(null)
-      uriOpt match {
-        case Some(uri) =>
-          imageView.setTag(uri.toString)
-          imageView.setImageURI(uri)
-        case None =>
-          imageView.setImageResource(R.drawable.android_camera_256)
-      }
-    }
-
-    def tagToUri(tag: Object): Option[Uri] = Option(tag.asInstanceOf[String]).map(Uri.parse(_))
-
-    def imageUri(imageView: ImageView): Option[Uri] = tagToUri(imageView.getTag)
-
-    val defaultLayout = new FieldLayout {
-      def displayXml = <ImageView android:adjustViewBounds="true"/>
-
-      def editXml = <ImageView android:adjustViewBounds="true" android:clickable="true"/>
-    }
-
-    object OperationResponseExtractor extends Field(identityField[OperationResponse])
-    object ViewExtractor extends Field(identityField[View])
-
-    new ViewField[Uri](defaultLayout, Getter((v: ImageView) => imageUri(v)).withSetter(v => uri => setImageUri(v, uri)) +
-      OnClickOperationSetter(view => StartActivityForResultOperation(view, {
-        val intent = new Intent("android.media.action.IMAGE_CAPTURE")
-        val imageUri = Uri.fromFile(File.createTempFile("image", ".jpg", Environment.getExternalStorageDirectory))
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
-        view.setTag(DefaultValueTagKey, imageUri.toString)
-        Toast.makeText(view.getContext, "set proposed uri to " + imageUri, Toast.LENGTH_SHORT).show()
-        intent
-      })) + GetterFromItem {
-        case OperationResponseExtractor(Some(response)) && ViewExtractor(Some(view)) =>
-          Toast.makeText(view.getContext, "getting uri from result", Toast.LENGTH_SHORT).show()
-          Option(response.intent).map(_.getData).orElse(tagToUri(view.getTag(DefaultValueTagKey)))
-      }
-    )
-  }
+  lazy val capturedImageView: ViewField[Uri] = CapturedImageView
 }
