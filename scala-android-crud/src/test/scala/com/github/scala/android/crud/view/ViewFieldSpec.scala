@@ -8,7 +8,6 @@ import ViewField._
 import android.view.View
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.junit.Test
-import android.content.Context
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
 import com.github.scala.android.crud.common.UriPath
@@ -18,6 +17,7 @@ import java.util.{Locale, GregorianCalendar, Calendar, Arrays}
 import com.github.triangle.Getter
 import com.github.scala.android.crud.action.OperationResponse
 import android.net.Uri
+import android.content.{Intent, Context}
 
 /** A behavior specification for [[com.github.scala.android.crud.view.ViewField]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -220,6 +220,21 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
 
   @Test
   def capturedImageViewMustGetImageUriFromOperationResponse() {
+    val uri = Uri.parse("file://foo/bar.jpg")
+    val TheViewId = 101
+    val field = viewId(TheViewId, ViewField.capturedImageView)
+    val outerView = mock[View]
+    val view = mock[View]
+    val intent = mock[Intent]
+    stub(outerView.getId).toReturn(TheViewId)
+    stub(outerView.findViewById(TheViewId)).toReturn(view)
+    stub(intent.getData).toReturn(uri)
+    stub(view.getTag(ViewField.DefaultValueTagKey)).toReturn(uri.toString)
+    field.getterFromItem(List(OperationResponse(TheViewId, intent), outerView)) must be (Some(uri))
+  }
+
+  @Test
+  def capturedImageViewMustGetImageUriFromViewTagOperationResponseDoesNotHaveIt() {
     val TheViewId = 101
     val field = viewId(TheViewId, ViewField.capturedImageView)
     val outerView = mock[View]
