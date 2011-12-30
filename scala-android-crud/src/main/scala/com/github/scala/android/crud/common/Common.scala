@@ -13,7 +13,7 @@ object Common {
     catch { case _ => None }
   }
 
-  def withCloseable[T <: {def close()}](closeable: T)(f: T => Unit) {
+  def withCloseable[C <: {def close()},T](closeable: C)(f: C => T): T = {
     try { f(closeable) }
     finally { closeable.close() }
   }

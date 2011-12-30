@@ -9,12 +9,14 @@ import android.content.Intent
 import java.io.File
 import android.os.Environment
 import android.provider.MediaStore
-import com.github.triangle._
-import com.github.scala.android.crud.action.{StartActivityForResultOperation, OperationResponse}
-import android.graphics.BitmapFactory
-import android.graphics.drawable.{BitmapDrawable}
-import com.github.scala.android.crud.common.Common.withCloseable
 import com.github.scala.android.crud.common.PlatformTypes.ImgKey
+import com.github.triangle._
+import com.github.scala.android.crud.GeneratedCrudType.CrudContextField
+import com.github.scala.android.crud.action.{ContextVar, ContextVars, StartActivityForResultOperation, OperationResponse}
+import com.github.scala.android.crud.common.CachedFunction
+import com.github.scala.android.crud.common.Common.withCloseable
+import android.graphics.BitmapFactory
+import android.graphics.drawable.{BitmapDrawable, Drawable}
 
 /** A ViewField for an image that can be captured using the camera.
   * It currently puts the image into external storage, which requires the following in the AndroidManifest.xml:
@@ -33,6 +35,8 @@ private object CapturedImageViewFactory {
     def editXml = <ImageView android:adjustViewBounds="true" android:clickable="true"/>
   }
 
+  object DrawableByUriCache extends ContextVar[CachedFunction[Uri,Drawable]]
+
   private def bitmapFactoryOptions = {
     val options = new BitmapFactory.Options
     options.inDither = true
@@ -41,17 +45,19 @@ private object CapturedImageViewFactory {
     options
   }
 
-  def setImageUri(imageView: ImageView, uriOpt: Option[Uri]) {
+  def setImageUri(imageView: ImageView, uriOpt: Option[Uri], contextVars: ContextVars) {
     Toast.makeText(imageView.getContext, "setting uri on image to " + uriOpt, Toast.LENGTH_LONG).show()
     imageView.setImageBitmap(null)
     uriOpt match {
       case Some(uri) =>
         imageView.setTag(uri.toString)
         val contentResolver = imageView.getContext.getContentResolver
-        withCloseable(contentResolver.openInputStream(uri)) { stream =>
-          val drawable = new BitmapDrawable(BitmapFactory.decodeStream(stream, null, bitmapFactoryOptions))
-          imageView.setImageDrawable(drawable)
-        }
+        val cachingResolver = DrawableByUriCache.getOrSet(contextVars, CachedFunction(uri => {
+          withCloseable(contentResolver.openInputStream(uri)) { stream =>
+            new BitmapDrawable(BitmapFactory.decodeStream(stream, null, bitmapFactoryOptions))
+          }
+        }))
+        imageView.setImageDrawable(cachingResolver(uri))
       case None =>
         imageView.setImageResource(R.drawable.android_camera_256)
     }
@@ -67,8 +73,10 @@ private object CapturedImageViewFactory {
   // This could be any value.  Android requires that it is some entry in R.
   val DefaultValueTagKey = R.drawable.icon
 
-  val dataField = Getter((v: ImageView) => imageUri(v)).withSetter(v => uri => setImageUri(v, uri)) +
-    OnClickOperationSetter(view => StartActivityForResultOperation(view, {
+  val dataField = Getter((v: ImageView) => imageUri(v)) + SetterUsingItems[Uri] {
+    case ViewExtractor(Some(view: ImageView)) && CrudContextField(Some(crudContext)) => uri =>
+      setImageUri(view, uri, crudContext.vars)
+  } + OnClickOperationSetter(view => StartActivityForResultOperation(view, {
       val intent = new Intent("android.media.action.IMAGE_CAPTURE")
       val imageUri = Uri.fromFile(File.createTempFile("image", ".jpg", Environment.getExternalStorageDirectory))
       intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
