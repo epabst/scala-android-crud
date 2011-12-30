@@ -164,7 +164,7 @@ object ViewField {
       })) + GetterFromItem {
         case OperationResponseExtractor(Some(response)) && ViewExtractor(Some(view)) =>
           Toast.makeText(view.getContext, "getting uri from result", Toast.LENGTH_SHORT).show()
-          Option(response.intent.getData).orElse(tagToUri(view.getTag(DefaultValueTagKey)))
+          Option(response.intent).map(_.getData).orElse(tagToUri(view.getTag(DefaultValueTagKey)))
       }
     )
   }
