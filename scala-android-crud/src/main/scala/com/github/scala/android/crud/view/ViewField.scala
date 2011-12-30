@@ -132,10 +132,7 @@ object ViewField {
   lazy val capturedImageView: ViewField[Uri] = {
     def setImageUri(imageView: ImageView, uriOpt: Option[Uri]) {
       Toast.makeText(imageView.getContext, "setting uri on image to " + uriOpt, Toast.LENGTH_LONG).show()
-      imageView.getDrawable match {
-        case drawable: BitmapDrawable => drawable.getBitmap.recycle()
-        case _ =>
-      }
+      imageView.setImageBitmap(null)
       uriOpt match {
         case Some(uri) =>
           imageView.setTag(uri.toString)
