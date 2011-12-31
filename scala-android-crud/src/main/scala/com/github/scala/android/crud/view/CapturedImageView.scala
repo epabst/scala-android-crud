@@ -58,6 +58,12 @@ object CapturedImageView extends ViewField[Uri](new FieldLayout {
   // This could be any value.  Android requires that it is some entry in R.
   val DefaultValueTagKey = R.drawable.icon
 
+  lazy val dcimDirectory: File = {
+    val dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)
+    dir.mkdirs()
+    dir
+  }
+
   protected val delegate = GetterFromItem {
     case OperationResponseExtractor(Some(response)) && ViewExtractor(Some(view)) =>
       Option(response.intent).map(_.getData).orElse(tagToUri(view.getTag(DefaultValueTagKey)))
@@ -66,7 +72,7 @@ object CapturedImageView extends ViewField[Uri](new FieldLayout {
       setImageUri(view, uri, crudContext.vars)
   } + OnClickOperationSetter(view => StartActivityForResultOperation(view, {
       val intent = new Intent("android.media.action.IMAGE_CAPTURE")
-      val imageUri = Uri.fromFile(File.createTempFile("image", ".jpg", Environment.getExternalStorageDirectory))
+    val imageUri = Uri.fromFile(File.createTempFile("image", ".jpg", dcimDirectory))
       intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
       view.setTag(DefaultValueTagKey, imageUri.toString)
       intent
