@@ -36,7 +36,7 @@ class CapturedImageViewSpec extends MustMatchers with MockitoSugar {
   @Test
   def capturedImageViewMustGetImageUriFromViewTagOperationResponseDoesNotHaveIt() {
     val TheViewId = 101
-    val field = viewId(TheViewId, ViewField.capturedImageView)
+    val field = viewId(TheViewId, CapturedImageView)
     val outerView = mock[View]
     val view = mock[View]
     stub(outerView.getId).toReturn(TheViewId)

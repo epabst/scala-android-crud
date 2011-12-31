@@ -10,7 +10,6 @@ import com.github.triangle.Converter._
 import android.widget._
 import scala.collection.JavaConversions._
 import com.github.scala.android.crud.view.AndroidResourceAnalyzer._
-import android.net.Uri
 
 /** A Map of ViewKey with values.
   * Wraps a map so that it is distinguished from persisted fields.
@@ -31,11 +30,10 @@ object ViewKeyMap {
   * @param defaultLayout the default layout used as an example and by [[com.github.scala.android.crud.generate.CrudUIGenerator]].
   * @author Eric Pabst (epabst@gmail.com)
   */
-class ViewField[T](val defaultLayout: FieldLayout, dataField: PortableField[T]) extends DelegatingPortableField[T] {
-  protected def delegate = dataField
+abstract class ViewField[T](val defaultLayout: FieldLayout) extends DelegatingPortableField[T] { self =>
+  lazy val displayOnly: ViewField[T] = ViewField[T](defaultLayout.displayOnly, this)
 
-  lazy val displayOnly: ViewField[T] = new ViewField[T](defaultLayout.displayOnly, dataField)
-  def withDefaultLayout(newDefaultLayout: FieldLayout): ViewField[T] = new ViewField[T](newDefaultLayout, dataField)
+  def withDefaultLayout(newDefaultLayout: FieldLayout): ViewField[T] = ViewField[T](newDefaultLayout, this)
 }
 
 object ViewField {
@@ -50,38 +48,43 @@ object ViewField {
   def viewId[T](rIdClass: Class[_], viewResourceIdName: String, childViewField: PortableField[T]): PortableField[T] =
     new ViewIdNameField[T](viewResourceIdName, childViewField, detectRIdClasses(rIdClass)).withViewKeyMapField
 
-  val textView: ViewField[String] = new ViewField[String](nameLayout,
-    Getter[TextView,String](v => toOption(v.getText.toString.trim)).withSetter(v => v.setText(_), _.setText(""))) {
+  def apply[T](defaultLayout: FieldLayout, dataField: PortableField[T]): ViewField[T] = new ViewField[T](defaultLayout) {
+    protected def delegate = dataField
+  }
+
+  val textView: ViewField[String] = new ViewField[String](nameLayout) {
+    val delegate = Getter[TextView,String](v => toOption(v.getText.toString.trim)).withSetter(v => v.setText(_), _.setText(""))
     override def toString = "textView"
   }
-  def textViewWithInputType(inputType: String): ViewField[String] = new ViewField[String](textLayout(inputType), textView)
+  def textViewWithInputType(inputType: String): ViewField[String] = textView.withDefaultLayout(textLayout(inputType))
   lazy val phoneView: ViewField[String] = textViewWithInputType("phone")
-  lazy val doubleView: ViewField[Double] = new ViewField[Double](doubleLayout, formatted(textView))
-  lazy val currencyView = new ViewField[Double](currencyLayout, formatted(currencyValueFormat, textView))
-  lazy val intView: ViewField[Int] = new ViewField[Int](intLayout, formatted[Int](textView))
-  lazy val longView: ViewField[Long] = new ViewField[Long](longLayout, formatted[Long](textView))
+  lazy val doubleView: ViewField[Double] = ViewField[Double](doubleLayout, formatted(textView))
+  lazy val currencyView = ViewField[Double](currencyLayout, formatted(currencyValueFormat, textView))
+  lazy val intView: ViewField[Int] = ViewField[Int](intLayout, formatted[Int](textView))
+  lazy val longView: ViewField[Long] = ViewField[Long](longLayout, formatted[Long](textView))
   /** Specifically an EditText view in order to get different behavior compared to a plain TextView. */
-  val editTextView: ViewField[String] = new ViewField[String](nameLayout,
-    Getter[EditText,String](v => toOption(v.getText.toString.trim)).withSetter(v => v.setText(_), _.setText(""))) {
+  val editTextView: ViewField[String] = new ViewField[String](nameLayout) {
+    val delegate = Getter[EditText,String](v => toOption(v.getText.toString.trim)).withSetter(v => v.setText(_), _.setText(""))
     override def toString = "editTextView"
   }
 
   private def toOption(string: String): Option[String] = if (string == "") None else Some(string)
 
-  val calendarDateView: ViewField[Calendar] = new ViewField[Calendar](datePickerLayout,
-    Setter[Calendar] {
+  val calendarDateView: ViewField[Calendar] = new ViewField[Calendar](datePickerLayout) {
+    val delegate = Setter[Calendar] {
       case view: EditText => _.foreach(value => view.setText(calendarValueFormat.toString(value)))
       case view: TextView => _.foreach(value => view.setText(calendarDisplayValueFormat.toString(value)))
       case picker: DatePicker => valueOpt =>
         val calendar = valueOpt.getOrElse(Calendar.getInstance())
         picker.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
     } + Getter(formatted(calendarValueFormat, textView).getter) +
-            Getter((p: DatePicker) => Some(new GregorianCalendar(p.getYear, p.getMonth, p.getDayOfMonth)))) {
+            Getter((p: DatePicker) => Some(new GregorianCalendar(p.getYear, p.getMonth, p.getDayOfMonth)))
     override def toString = "calendarDateView"
   }
 
   implicit val dateView: ViewField[Date] =
-    new ViewField[Date](calendarDateView.defaultLayout, converted(dateToCalendar, calendarToDate, calendarDateView)) {
+    new ViewField[Date](calendarDateView.defaultLayout) {
+      val delegate = converted(dateToCalendar, calendarToDate, calendarDateView)
       override def toString = "dateView"
     }
 
@@ -109,10 +112,9 @@ object ViewField {
     val adapterField = adapterViewField[E, BaseAdapter](
       view => new ArrayAdapter[E](view.getContext, itemViewResourceId, valueArray),
       value => valueArray.indexOf(value))
-    new ViewField[E](defaultLayout, adapterField + formatted[E](enumFormat(enum), textView)) {
+    new ViewField[E](defaultLayout) {
+      val delegate = adapterField + formatted[E](enumFormat(enum), textView)
       override def toString = "enumerationView(" + enum.getClass.getSimpleName + ")"
     }
   }
-
-  lazy val capturedImageView: ViewField[Uri] = CapturedImageView
 }

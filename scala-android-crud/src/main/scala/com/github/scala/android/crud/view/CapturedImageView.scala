@@ -23,19 +23,11 @@ import android.graphics.drawable.{BitmapDrawable, Drawable}
   * {{{<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />}}}
   * @author Eric Pabst (epabst@gmail.com)
   */
-object CapturedImageView extends ViewField[Uri](CapturedImageViewFactory.defaultLayout, CapturedImageViewFactory.dataField) {
-  val DefaultValueTagKey: ImgKey = CapturedImageViewFactory.DefaultValueTagKey
-}
-
-/** Just a convenient place to put code used to instantiate the CapturedImageView object. */
-private object CapturedImageViewFactory {
-  val defaultLayout = new FieldLayout {
-    def displayXml = <ImageView android:adjustViewBounds="true"/>
-
-    def editXml = <ImageView android:adjustViewBounds="true" android:clickable="true"/>
-  }
-
-  object DrawableByUriCache extends ContextVar[CachedFunction[Uri,Drawable]]
+object CapturedImageView extends ViewField[Uri](new FieldLayout {
+  def displayXml = <ImageView android:adjustViewBounds="true"/>
+  def editXml = <ImageView android:adjustViewBounds="true" android:clickable="true"/>
+}) {
+  private object DrawableByUriCache extends ContextVar[CachedFunction[Uri,Drawable]]
 
   private def bitmapFactoryOptions = {
     val options = new BitmapFactory.Options
@@ -45,7 +37,7 @@ private object CapturedImageViewFactory {
     options
   }
 
-  def setImageUri(imageView: ImageView, uriOpt: Option[Uri], contextVars: ContextVars) {
+  private def setImageUri(imageView: ImageView, uriOpt: Option[Uri], contextVars: ContextVars) {
     Toast.makeText(imageView.getContext, "setting uri on image to " + uriOpt, Toast.LENGTH_LONG).show()
     imageView.setImageBitmap(null)
     uriOpt match {
@@ -63,17 +55,17 @@ private object CapturedImageViewFactory {
     }
   }
 
-  def tagToUri(tag: Object): Option[Uri] = Option(tag.asInstanceOf[String]).map(Uri.parse(_))
+  private def tagToUri(tag: Object): Option[Uri] = Option(tag.asInstanceOf[String]).map(Uri.parse(_))
 
-  def imageUri(imageView: ImageView): Option[Uri] = tagToUri(imageView.getTag)
+  private def imageUri(imageView: ImageView): Option[Uri] = tagToUri(imageView.getTag)
 
-  object OperationResponseExtractor extends Field(identityField[OperationResponse])
-  object ViewExtractor extends Field(identityField[View])
+  private object OperationResponseExtractor extends Field(identityField[OperationResponse])
+  private object ViewExtractor extends Field(identityField[View])
 
   // This could be any value.  Android requires that it is some entry in R.
   val DefaultValueTagKey = R.drawable.icon
 
-  val dataField = Getter((v: ImageView) => imageUri(v)) + SetterUsingItems[Uri] {
+  protected val delegate = Getter((v: ImageView) => imageUri(v)) + SetterUsingItems[Uri] {
     case (ViewExtractor(Some(view: ImageView)), CrudContextField(Some(crudContext))) => uri =>
       setImageUri(view, uri, crudContext.vars)
   } + OnClickOperationSetter(view => StartActivityForResultOperation(view, {
