@@ -10,6 +10,7 @@ import com.github.triangle.Converter._
 import android.widget._
 import scala.collection.JavaConversions._
 import com.github.scala.android.crud.view.AndroidResourceAnalyzer._
+import android.view.View
 
 /** A Map of ViewKey with values.
   * Wraps a map so that it is distinguished from persisted fields.
@@ -25,6 +26,9 @@ object ViewKeyMap {
   def empty = ViewKeyMap()
   def apply(elems: (ViewKey,Any)*): ViewKeyMap = new ViewKeyMap(Map(elems: _*))
 }
+
+/** An extractor to get the View from the items being copied from. */
+object ViewExtractor extends Field(identityField[View])
 
 /** PortableField for Views.
   * @param defaultLayout the default layout used as an example and by [[com.github.scala.android.crud.generate.CrudUIGenerator]].

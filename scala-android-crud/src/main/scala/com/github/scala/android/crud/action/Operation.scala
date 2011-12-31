@@ -6,6 +6,8 @@ import android.content.{Context, Intent}
 import com.github.scala.android.crud.common.UriPath
 import com.github.scala.android.crud.view.AndroidConversions._
 import android.view.View
+import com.github.triangle.Field
+import com.github.triangle.PortableField._
 
 /** Represents something that a user can initiate.
   * @author Eric Pabst (epabst@gmail.com)
@@ -124,3 +126,6 @@ object StartActivityForResultOperation {
   * This is used by [[com.github.scala.android.crud.CrudActivity]]'s startActivityForResult.
   */
 case class OperationResponse(viewIdRespondingTo: ViewKey, intent: Intent)
+
+/** An extractor to get the OperationResponse from the items being copied from. */
+object OperationResponseExtractor extends Field(identityField[OperationResponse])
