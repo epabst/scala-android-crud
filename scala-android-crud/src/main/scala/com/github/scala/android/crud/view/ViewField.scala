@@ -8,7 +8,6 @@ import FieldLayout._
 import ValueFormat._
 import com.github.triangle.Converter._
 import android.widget._
-import scala.collection.JavaConversions._
 import com.github.scala.android.crud.view.AndroidResourceAnalyzer._
 import android.view.View
 
@@ -106,19 +105,6 @@ object ViewField {
     })
   }
 
-  def enumerationView[E <: Enumeration#Value](enum: Enumeration): ViewField[E] = {
-    val itemViewResourceId = _root_.android.R.layout.simple_spinner_dropdown_item
-    val defaultLayout = new FieldLayout {
-      def displayXml = <TextView/>
-      def editXml = <Spinner android:drawSelectorOnTop = "true"/>
-    }
-    val valueArray: List[E] = enum.values.toList.asInstanceOf[List[E]]
-    val adapterField = adapterViewField[E, BaseAdapter](
-      view => new ArrayAdapter[E](view.getContext, itemViewResourceId, valueArray),
-      value => valueArray.indexOf(value))
-    new ViewField[E](defaultLayout) {
-      val delegate = adapterField + formatted[E](enumFormat(enum), textView)
-      override def toString = "enumerationView(" + enum.getClass.getSimpleName + ")"
-    }
-  }
+  @Deprecated //use EnumerationView
+  def enumerationView[E <: Enumeration#Value](enum: Enumeration): ViewField[E] = EnumerationView[E](enum)
 }

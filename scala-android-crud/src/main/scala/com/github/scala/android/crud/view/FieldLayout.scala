@@ -18,6 +18,15 @@ abstract class FieldLayout { self =>
 }
 
 object FieldLayout {
+  def apply(displayXml: Elem, editXml: Elem): FieldLayout = {
+    val _displayXml = displayXml
+    val _editXml = editXml
+    new FieldLayout {
+      def displayXml = _displayXml
+      def editXml = _editXml
+    }
+  }
+
   def textLayout(inputType: String) = new FieldLayout {
     def displayXml = <TextView/>
     def editXml = <EditText android:inputType={inputType}/>

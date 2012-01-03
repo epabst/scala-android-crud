@@ -3,6 +3,7 @@ package com.github.scala.android.crud.sample
 import com.github.scala.android.crud._
 import persistence.CursorField._
 import persistence.EntityType
+import view.EnumerationView
 import view.ViewField._
 import persistence.PersistedType._
 import java.util.Date
@@ -16,7 +17,7 @@ object BookEntityType extends EntityType {
 
     persisted[String]("name") + viewId(classOf[R], "name", textView),
 
-    persistedEnum[Genre.Value]("genre", Genre) + viewId(classOf[R], "genre", enumerationView(Genre)),
+    persistedEnum[Genre.Value]("genre", Genre) + viewId(classOf[R], "genre", EnumerationView[Genre.Value](Genre)),
 
     persisted[Int]("edition") + viewId(classOf[R], "edition", intView),
 
