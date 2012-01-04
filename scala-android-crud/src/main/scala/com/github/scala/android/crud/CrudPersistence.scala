@@ -18,12 +18,15 @@ trait CrudPersistence extends EntityPersistence {
 
   def toUri(id: ID) = entityType.toUri(id)
 
-  private lazy val idPkField = entityType.IdField + Getter[IdPk,ID](_.id).withTransformer(e => e.id(_)) +
+  lazy val idPkField = entityType.IdField + Getter[IdPk,ID](_.id).withTransformer(e => e.id(_)) +
     Setter((e: MutableIdPk) => e.id = _)
   private lazy val fieldsIncludingIdPk = FieldList((idPkField +: entityType.fields): _*)
 
   def find[T <: AnyRef](uri: UriPath, instantiateItem: => T): Option[T] =
     find(uri).map(fieldsIncludingIdPk.transform(instantiateItem, _))
+
+  /** Find an entity with a given ID using a baseUri. */
+  def find(id: ID, baseUri: UriPath): Option[AnyRef] = find(baseUri.specify(entityType.entityName, id.toString))
 
   def findAll[T <: AnyRef](uri: UriPath, instantiateItem: => T): Seq[T] =
     findAll(uri).map(fieldsIncludingIdPk.transform(instantiateItem, _))

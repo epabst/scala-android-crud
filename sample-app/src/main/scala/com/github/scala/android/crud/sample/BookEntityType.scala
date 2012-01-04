@@ -3,17 +3,19 @@ package com.github.scala.android.crud.sample
 import com.github.scala.android.crud._
 import persistence.CursorField._
 import persistence.EntityType
-import view.EnumerationView
 import view.ViewField._
 import persistence.PersistedType._
 import java.util.Date
 import com.github.scala.android.crud.ParentField._
+import view.{EntityView, EnumerationView}
 
 object BookEntityType extends EntityType {
   def entityName = "Book"
 
   def valueFields = List(
     foreignKey(AuthorEntityType),
+
+    foreignKey(PublisherEntityType) + EntityView(PublisherEntityType),
 
     persisted[String]("name") + viewId(classOf[R], "name", textView),
 
@@ -26,7 +28,7 @@ object BookEntityType extends EntityType {
 }
 
 /** A CRUD type for Book.
-  * @book pabstec
+  * @author pabstec
   */
 class BookCrudType(persistenceFactory: PersistenceFactory) extends CrudType(BookEntityType, persistenceFactory) {
   def activityClass = classOf[BookActivity]

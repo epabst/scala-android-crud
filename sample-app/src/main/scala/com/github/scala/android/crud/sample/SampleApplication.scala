@@ -11,10 +11,11 @@ object SampleApplication extends CrudApplication {
 
   val AuthorCrudType = new AuthorCrudType(SQLitePersistenceFactory)
   val BookCrudType = new BookCrudType(SQLitePersistenceFactory)
+  val PublisherCrudType = new PublisherCrudType(SQLitePersistenceFactory)
 
-  def allCrudTypes = List(AuthorCrudType, BookCrudType)
+  def allCrudTypes = List(AuthorCrudType, BookCrudType, PublisherCrudType)
 
-  def dataVersion = 1
+  def dataVersion = 2
 }
 
 class SampleBackupAgent extends CrudBackupAgent(SampleApplication)
