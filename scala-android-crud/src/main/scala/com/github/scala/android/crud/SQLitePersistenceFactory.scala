@@ -5,6 +5,7 @@ import android.view.View
 import android.database.Cursor
 import android.widget.{CursorAdapter, ListAdapter, ResourceCursorAdapter}
 import persistence.{SQLiteUtil, EntityType, CursorStream}
+import view.AdapterCaching
 
 /** A PersistenceFactory for SQLite.
   * @author Eric Pabst (epabst@gmail.com)

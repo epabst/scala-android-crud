@@ -12,6 +12,7 @@ import common.UriPath
 import JavaUtil.toRunnable
 import persistence.PersistenceListener
 import common.PlatformTypes._
+import view.AdapterCaching
 
 /** A generic ListActivity for CRUD operations
   * @author Eric Pabst (epabst@gmail.com)

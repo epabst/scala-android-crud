@@ -1,12 +1,10 @@
 package com.github.scala.android.crud
 
 import action._
-import android.view.View
-import com.github.triangle.JavaUtil._
-import android.widget.{ListAdapter, BaseAdapter}
-import common.{Common, UriPath, Timing}
+import android.widget.ListAdapter
+import common.{UriPath, Timing}
 import Operation._
-import android.app.{Activity, ListActivity}
+import android.app.Activity
 import com.github.triangle._
 import common.PlatformTypes._
 import persistence.{EntityType, CursorField, PersistenceListener}
@@ -242,60 +240,6 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
   }
 }
 
-trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
-  def entityType: EntityType
-
-  protected def logTag = entityType.logTag
-
-  private def findCachedPortableValue(activity: ListActivity, position: Long): Option[PortableValue] =
-    Option(activity.getListView.getTag.asInstanceOf[Map[Long, PortableValue]]).flatMap(_.get(position))
-
-  private def cachePortableValue(activity: ListActivity, position: Long, portableValue: PortableValue) {
-    val listView = activity.getListView
-    val map = Option(listView.getTag.asInstanceOf[Map[Long,PortableValue]]).getOrElse(Map.empty[Long,PortableValue]) +
-            (position -> portableValue)
-    listView.setTag(map)
-    trace("Added value at position " + position + " to the cache for " + activity)
-  }
-
-  def cacheClearingPersistenceListener(activity: ListActivity) = new PersistenceListener {
-    def onSave(id: ID) {
-      trace("Clearing ListView cache in " + activity + " since DataSet was invalidated")
-      activity.runOnUiThread { activity.getListView.setTag(null) }
-    }
-
-    def onDelete(uri: UriPath) {
-      trace("Clearing ListView cache in " + activity + " since DataSet was invalidated")
-      activity.runOnUiThread { activity.getListView.setTag(null) }
-    }
-  }
-
-  protected[crud] def bindViewFromCacheOrItems(view: View, entity: => AnyRef, contextItems: List[AnyRef], position: Long, activity: ListActivity) {
-    val cachedValue: Option[PortableValue] = findCachedPortableValue(activity, position)
-    //set the cached or default values immediately instead of showing the column header names
-    cachedValue match {
-      case Some(portableValue) =>
-        trace("cache hit for " + activity + " at position " + position + ": " + portableValue)
-        portableValue.copyTo(view, contextItems)
-      case None =>
-        trace("cache miss for " + activity + " at position " + position)
-        entityType.defaultPortableValue.copyTo(view, contextItems)
-    }
-    if (cachedValue.isEmpty) {
-      //copy immediately since in the case of a Cursor, it will be advanced to the next row quickly.
-      val positionItems: List[AnyRef] = entity +: contextItems
-      cachePortableValue(activity, position, entityType.defaultPortableValue)
-      future {
-        val portableValue = entityType.copyFromItem(positionItems)
-        activity.runOnUiThread {
-          cachePortableValue(activity, position, portableValue)
-          notifyDataSetChanged()
-        }
-      }
-    }
-  }
-}
-
 abstract class PersistedCrudType(entityType: EntityType, persistenceFactory: PersistenceFactory) extends CrudType(entityType, persistenceFactory)
 
 /** A trait for stubbing out the UI methods of CrudType for use when the entity will never be used with the UI. */
@@ -306,7 +250,7 @@ trait HiddenCrudType extends CrudType {
 
 /** An undo of an operation.  The operation should have already completed, but it can be undone or accepted.
   * @param undoAction  An Action that reverses the operation.
-  * @param closeAction  An action that releases any resources, and is guaranteed to be called.
+  * @param closeOperation  An operation that releases any resources, and is guaranteed to be called.
   *           For example, deleting related entities if undo was not called.
   */
 case class Undoable(undoAction: Action, closeOperation: Option[Operation] = None)
