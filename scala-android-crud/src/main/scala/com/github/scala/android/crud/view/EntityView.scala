@@ -19,7 +19,7 @@ import android.app.Activity
 case class EntityView(entityType: EntityType)
   extends ViewField[ID](FieldLayout(displayXml = <TextView/>, editXml = <Spinner android:drawSelectorOnTop = "true"/>)) {
 
-  private val itemViewResourceId = _root_.android.R.layout.simple_spinner_dropdown_item
+  protected val itemViewResourceId = _root_.android.R.layout.simple_spinner_dropdown_item
 
   private object AndroidUIElement {
     def unapply(target: AnyRef): Option[AnyRef] = target match {
