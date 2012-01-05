@@ -18,6 +18,8 @@ case class CursorStream(cursor: Cursor, persistedFields: List[CursorField[_]]) e
 
   override def isEmpty : scala.Boolean = headOption.isEmpty
   override def head = headOption.get
+  override def length = cursor.getCount
+
   def tailDefined = !isEmpty
   // Must be a val so that we don't create more than one CursorStream.
   // Must be lazy so that we don't instantiate the entire stream

@@ -20,6 +20,7 @@ class CursorStreamSpec extends Spec with MustMatchers with MockitoSugar {
     val stream = CursorStream(cursor, List(field))
     stream.isEmpty must be (true)
     stream.size must be (0)
+    stream.headOption must be (None)
   }
 
   it("must not instantiate the entire Stream for an infinite Cursor") {
@@ -35,7 +36,7 @@ class CursorStreamSpec extends Spec with MustMatchers with MockitoSugar {
     field(second) must be ("Bryce")
   }
 
-  it("must have correct size") {
+  it("must have correct number of elements") {
     val field = CursorField.persisted[String]("name")
 
     val cursor = mock[Cursor]
@@ -44,7 +45,16 @@ class CursorStreamSpec extends Spec with MustMatchers with MockitoSugar {
     stub(cursor.getString(1)).toReturn("Allen")
 
     val stream = CursorStream(cursor, List(field))
-    stream.size must be (2)
+    stream.toList.size must be (2)
+  }
+
+  it("must have correct size") {
+    val cursor = mock[Cursor]
+    stub(cursor.getCount).toReturn(500)
+
+    val stream = CursorStream(cursor, List(CursorField.persisted[String]("name")))
+    stream.size must be (500)
+    stream.length must be (500)
   }
 
   it("must allow accessing data from different positions in any order") {
