@@ -214,22 +214,25 @@ object CrudUIGenerator extends Logging {
     }
   }
 
-  def guessFieldInfos(crudType: CrudType): List[ViewFieldInfo] =
-    crudType.entityType.fields.flatMap(guessFieldInfos(_, crudType.rIdClasses))
-
   private def writeLayoutFile(name: String, xml: Elem) {
     writeXmlToFile(Path("res") / "layout" / (name + ".xml"), xml)
   }
 
+  case class ViewFieldInfo(displayName: String, layout: FieldLayout, id: String, displayable: Boolean, updateable: Boolean)
+
+  case class CrudTypeInfo(crudType: CrudType) {
+    lazy val fieldInfos: List[ViewFieldInfo] = crudType.entityType.fields.flatMap(guessFieldInfos(_, crudType.rIdClasses))
+    lazy val displayFields = fieldInfos.filter(_.displayable)
+    lazy val updateableFields = fieldInfos.filter(_.updateable)
+  }
+
   def generateLayouts(crudType: CrudType) {
     println("Generating layout for " + crudType)
-    val fieldInfos = guessFieldInfos(crudType)
-    val displayFields = fieldInfos.filter(_.displayable)
-    val updateableFields = fieldInfos.filter(_.updateable)
+    val info = CrudTypeInfo(crudType)
     val layoutPrefix = NamingConventions.toLayoutPrefix(crudType.entityName)
-    writeLayoutFile(layoutPrefix + "_header", headerLayout(displayFields))
-    writeLayoutFile(layoutPrefix + "_row", rowLayout(displayFields))
-    if (!updateableFields.isEmpty) writeLayoutFile(layoutPrefix + "_entry", entryLayout(updateableFields))
+    writeLayoutFile(layoutPrefix + "_header", headerLayout(info.displayFields))
+    writeLayoutFile(layoutPrefix + "_row", rowLayout(info.displayFields))
+    if (!info.updateableFields.isEmpty) writeLayoutFile(layoutPrefix + "_entry", entryLayout(info.updateableFields))
   }
 
   private[generate] def fieldsWithViewSubject(field: BaseField): List[SubjectField] = {
@@ -255,5 +258,3 @@ object CrudUIGenerator extends Logging {
       case matchingField: ViewIdNameField[_] => matchingField
     }
 }
-
-case class ViewFieldInfo(displayName: String, layout: FieldLayout, id: String, displayable: Boolean, updateable: Boolean)
