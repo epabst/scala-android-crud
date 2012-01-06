@@ -13,7 +13,7 @@ import org.mockito.Mockito._
 import com.github.scala.android.crud.common.UriPath
 import UriPath.uriIdField
 import android.widget._
-import java.util.{Locale, GregorianCalendar, Calendar, Arrays}
+import java.util.{Locale, GregorianCalendar, Calendar}
 import com.github.triangle.Getter
 import android.content.Context
 
@@ -162,44 +162,6 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
     val view = new TextView(context)
     field.setValue(view, Some(new GregorianCalendar(2020, Calendar.JANUARY, 20)))
     view.getText.toString must include ("Jan")
-  }
-
-  @Test
-  def adapterViewFieldMustSetTheAdapterForAnAdapterView() {
-    val list = Arrays.asList("a", "b", "c")
-    val field = ViewField.adapterViewField[String,BaseAdapter](view => new ArrayAdapter[String](context, itemLayoutId, list), list.indexOf(_))
-    val adapterView = new Spinner(context)
-    field.setValue(adapterView, Some("c"))
-    val adapter = adapterView.getAdapter
-    (0 to (adapter.getCount - 1)).toList.map(adapter.getItem(_)) must be (List("a", "b", "c"))
-  }
-
-  @Test
-  def adapterViewFieldMustSetTheAdapterForAnAdapterViewEvenIfTheValueIsNotSet() {
-    val list = Arrays.asList("a", "b", "c")
-    val field = ViewField.adapterViewField[String,BaseAdapter](view => new ArrayAdapter[String](context, itemLayoutId, list), list.indexOf(_))
-    val adapterView = new Spinner(context)
-    field.setValue(adapterView, None)
-    val adapter = adapterView.getAdapter
-    (0 to (adapter.getCount - 1)).toList.map(adapter.getItem(_)) must be (List("a", "b", "c"))
-  }
-
-  @Test
-  def adapterViewFieldMustSetThePositionCorrectly() {
-    val list = Arrays.asList("a", "b", "c")
-    val field = ViewField.adapterViewField[String,BaseAdapter](view => new ArrayAdapter[String](context, itemLayoutId, list), list.indexOf(_))
-    val adapterView = new Spinner(context)
-    field.setValue(adapterView, Some("c"))
-    adapterView.getSelectedItemPosition must be (2)
-  }
-
-  @Test
-  def adapterViewFieldMustHandleInvalidValueForAnAdapterView() {
-    val list = Arrays.asList("a", "b", "c")
-    val field = ViewField.adapterViewField[String,BaseAdapter](view => new ArrayAdapter[String](context, itemLayoutId, list), list.indexOf(_))
-    val adapterView = new Spinner(context)
-    field.setValue(adapterView, Some("blah"))
-    adapterView.getSelectedItemPosition must be (AdapterView.INVALID_POSITION)
   }
 
   @Test

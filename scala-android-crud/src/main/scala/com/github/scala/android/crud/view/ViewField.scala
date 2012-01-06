@@ -91,20 +91,6 @@ object ViewField {
       override def toString = "dateView"
     }
 
-  /** @param adapterFactory a function that takes the adapter View and returns the Adapter to put into it.
-    * @param positionFinder a function that takes a value and returns its position in the Adapter
-    */
-  private[view] def adapterViewField[T,A <: Adapter](adapterFactory: AdapterView[A] => A, positionFinder: T => Int): PortableField[T] = {
-    Getter[AdapterView[A], T](v => Option(v.getSelectedItem.asInstanceOf[T])).withSetter(adapterView => valueOpt => {
-      //don't do it again if already done from a previous time
-      if (adapterView.getAdapter == null) {
-        val adapter: A = adapterFactory(adapterView)
-        adapterView.setAdapter(adapter)
-      }
-      adapterView.setSelection(valueOpt.map(positionFinder(_)).getOrElse(-1))
-    })
-  }
-
   @Deprecated //use EnumerationView
   def enumerationView[E <: Enumeration#Value](enum: Enumeration): ViewField[E] = EnumerationView[E](enum)
 }
