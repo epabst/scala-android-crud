@@ -12,6 +12,7 @@ import com.github.scala.android.crud.testres.R
 import com.github.scala.android.crud.persistence.CursorField._
 import com.github.scala.android.crud.view.FieldLayout
 import com.github.scala.android.crud._
+import generate.CrudUIGenerator.{ViewFieldInfo, EntityFieldInfo}
 import org.scalatest.mock.MockitoSugar
 
 /** A behavior specification for [[com.github.scala.android.crud.generate.CrudUIGenerator]].
@@ -23,14 +24,15 @@ class CrudUIGeneratorSpec extends Spec with MustMatchers with MockitoSugar {
     it("must find all ViewFields") {
       val fieldList = FieldList(mapField[String]("foo"), textView, formatted[Int](textView),
         viewId(45, formatted[Double](textView)), dateView)
-      val fields = CrudUIGenerator.viewFields(fieldList)
+      val info = EntityFieldInfo(null, Nil)
+      val fields = info.viewFields(fieldList)
       fields must be(List(textView, textView, textView, dateView))
     }
   }
 
-  describe("guessFieldInfos") {
+  describe("EntityFieldInfo") {
     it("must handle a viewId name that does not exist") {
-      val fieldInfo = CrudUIGenerator.guessFieldInfos(viewId(classOf[R.id], "bogus", textView), List(classOf[R])).head
+      val fieldInfo = EntityFieldInfo(viewId(classOf[R.id], "bogus", textView), List(classOf[R])).viewFieldInfos.head
       fieldInfo.id must be ("bogus")
     }
 

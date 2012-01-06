@@ -8,7 +8,7 @@ import util.Random
 import scala.tools.nsc.io.Path
 import xml._
 import com.github.scala.android.crud.view.AndroidResourceAnalyzer._
-import com.github.scala.android.crud.{NamingConventions, CrudApplication, ParentField, CrudType}
+import com.github.scala.android.crud.{NamingConventions, CrudApplication, CrudType}
 import com.github.scala.android.crud.common.Common
 import collection.immutable.List
 import com.github.scala.android.crud.view._
@@ -183,26 +183,41 @@ object CrudUIGenerator extends Logging {
     def apply(name: String, viewField: PortableField[_]): NamedField = NamedField(name, viewField, FieldLayout.toDisplayName(name))
   }
 
-  def guessFieldInfos(field: BaseField, rIdClasses: Seq[Class[_]]): List[ViewFieldInfo] = {
-    val updateablePersistedFields = CursorField.updateablePersistedFields(field, rIdClasses)
-    val persistedFieldOption = updateablePersistedFields.headOption
+  case class EntityFieldInfo(field: BaseField, rIdClasses: Seq[Class[_]]) {
+    lazy val updateablePersistedFields = CursorField.updateablePersistedFields(field, rIdClasses)
+    lazy val persistedFieldOption = updateablePersistedFields.headOption
 
-    val viewIdFields = this.viewIdFields(field)
-    val viewIdNameFields = this.viewIdNameFields(field)
-    val viewFieldsWithId = this.fieldsWithViewSubject(FieldList.toFieldList(viewIdFields))
-    val otherViewFields = this.fieldsWithViewSubject(field).filterNot(viewFieldsWithId.contains)
-    val namedViewFields = viewIdNameFields.map(f => NamedField(f.viewResourceIdName, f)) ++ viewIdFields.map { f =>
+
+    lazy val viewIdFields: List[ViewIdField[_]] = field.deepCollect[ViewIdField[_]] {
+      case matchingField: ViewIdField[_] => matchingField
+    }
+    lazy val viewIdNameFields: List[ViewIdNameField[_]] = field.deepCollect[ViewIdNameField[_]] {
+      case matchingField: ViewIdNameField[_] => matchingField
+    }
+
+    private[generate] def fieldsWithViewSubject(field: BaseField): List[SubjectField] = field.deepCollect[SubjectField] {
+      case matchingField: SubjectField if classOf[View].isAssignableFrom(matchingField.subjectManifest.erasure) => {
+        matchingField
+      }
+    }
+
+    lazy val viewFieldsWithId = this.fieldsWithViewSubject(FieldList.toFieldList(viewIdFields))
+    lazy val otherViewFields = this.fieldsWithViewSubject(field).filterNot(viewFieldsWithId.contains)
+    lazy val namedViewFields = viewIdNameFields.map(f => NamedField(f.viewResourceIdName, f)) ++ viewIdFields.map { f =>
       NamedField(findResourceFieldWithIntValue(rIdClasses, f.viewResourceId).map(_.getName).getOrElse {
         throw new IllegalStateException("Unable to find R.id with value " + f.viewResourceId + " in " + rIdClasses.mkString(", "))
       }, f)
     }
-    val persistedFieldsWithTypes = updateablePersistedFields.map(p => p.toString + ":" + p.persistedType.valueManifest.erasure.getSimpleName)
-    println("viewIds: " + namedViewFields.map(_.name) + " tied to " +
-            viewFieldsWithId + "  /  other views: " + otherViewFields +
-            "  /  parentFields: " + ParentField.parentFields(field) +
-            " / other persisted: " + persistedFieldsWithTypes)
-    val namedFields: List[NamedField] = if (namedViewFields.isEmpty) updateablePersistedFields.map(f => NamedField(f.name, f)) else namedViewFields
-    namedFields.map { namedField =>
+    lazy val persistedFieldsWithTypes =
+      updateablePersistedFields.map(p => p.toString + ":" + p.persistedType.valueManifest.erasure.getSimpleName)
+
+    lazy val namedFields: List[NamedField] = if (namedViewFields.isEmpty) updateablePersistedFields.map(f => NamedField(f.name, f)) else namedViewFields
+
+    private[generate] def viewFields(field: BaseField): List[ViewField[_]] = field.deepCollect {
+      case matchingField: ViewField[_] => matchingField
+    }
+
+    lazy val viewFieldInfos: List[ViewFieldInfo] = namedFields.map { namedField =>
       val fieldLayout = viewFields(namedField.field).headOption.map(_.defaultLayout).getOrElse(namedField.field.deepCollect {
         case _: PortableField[Double] => FieldLayout.doubleLayout
         case _: PortableField[String] => FieldLayout.nameLayout
@@ -214,6 +229,9 @@ object CrudUIGenerator extends Logging {
     }
   }
 
+  def guessFieldInfos(field: BaseField, rIdClasses: Seq[Class[_]]): List[ViewFieldInfo] =
+    EntityFieldInfo(field, rIdClasses).viewFieldInfos
+
   private def writeLayoutFile(name: String, xml: Elem) {
     writeXmlToFile(Path("res") / "layout" / (name + ".xml"), xml)
   }
@@ -221,7 +239,7 @@ object CrudUIGenerator extends Logging {
   case class ViewFieldInfo(displayName: String, layout: FieldLayout, id: String, displayable: Boolean, updateable: Boolean)
 
   case class CrudTypeInfo(crudType: CrudType) {
-    lazy val fieldInfos: List[ViewFieldInfo] = crudType.entityType.fields.flatMap(guessFieldInfos(_, crudType.rIdClasses))
+    lazy val fieldInfos: List[ViewFieldInfo] = crudType.entityType.fields.flatMap(EntityFieldInfo(_, crudType.rIdClasses).viewFieldInfos)
     lazy val displayFields = fieldInfos.filter(_.displayable)
     lazy val updateableFields = fieldInfos.filter(_.updateable)
   }
@@ -234,27 +252,4 @@ object CrudUIGenerator extends Logging {
     writeLayoutFile(layoutPrefix + "_row", rowLayout(info.displayFields))
     if (!info.updateableFields.isEmpty) writeLayoutFile(layoutPrefix + "_entry", entryLayout(info.updateableFields))
   }
-
-  private[generate] def fieldsWithViewSubject(field: BaseField): List[SubjectField] = {
-    field.deepCollect[SubjectField] {
-      case matchingField: SubjectField if classOf[View].isAssignableFrom(matchingField.subjectManifest.erasure) => {
-        matchingField
-      }
-    }
-  }
-
-  private[generate] def viewFields(field: BaseField): List[ViewField[_]] =
-    field.deepCollect {
-      case matchingField: ViewField[_] => matchingField
-    }
-
-  private[generate] def viewIdFields(field: BaseField): List[ViewIdField[_]] =
-    field.deepCollect[ViewIdField[_]] {
-      case matchingField: ViewIdField[_] => matchingField
-    }
-
-  private[generate] def viewIdNameFields(field: BaseField): List[ViewIdNameField[_]] =
-    field.deepCollect[ViewIdNameField[_]] {
-      case matchingField: ViewIdNameField[_] => matchingField
-    }
 }
