@@ -89,7 +89,7 @@ object CrudUIGenerator extends Logging {
     writeXmlToFile(Path("res") / "values" / "strings.xml", generateValueStrings(application))
   }
 
-  protected[generate] def fieldLayoutForHeader(field: ViewFieldInfo, position: Int): Elem = {
+  protected[generate] def fieldLayoutForHeader(field: ViewIdFieldInfo, position: Int): Elem = {
     val textAppearance = if (position < 2) "?android:attr/textAppearanceLarge" else "?android:attr/textAppearanceSmall"
     val gravity = if (position % 2 == 0) "left" else "right"
     val layoutWidth = if (position % 2 == 0) "wrap_content" else "fill_parent"
@@ -100,7 +100,7 @@ object CrudUIGenerator extends Logging {
               android:textAppearance={textAppearance}/>
   }
 
-  protected[generate] def fieldLayoutForRow(field: ViewFieldInfo, position: Int): Elem = {
+  protected[generate] def fieldLayoutForRow(field: ViewIdFieldInfo, position: Int): Elem = {
     val textAppearance = if (position < 2) "?android:attr/textAppearanceLarge" else "?android:attr/textAppearanceSmall"
     val gravity = if (position % 2 == 0) "left" else "right"
     val layoutWidth = if (position % 2 == 0) "wrap_content" else "fill_parent"
@@ -112,7 +112,7 @@ object CrudUIGenerator extends Logging {
     field.layout.displayXml % attributes
   }
 
-  protected def headerLayout(fields: List[ViewFieldInfo]) =
+  protected def headerLayout(fields: List[ViewIdFieldInfo]) =
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                   android:paddingTop="2dip"
                   android:paddingBottom="2dip"
@@ -132,7 +132,7 @@ object CrudUIGenerator extends Logging {
     }
     </LinearLayout>
 
-  protected def rowLayout(fields: List[ViewFieldInfo]) =
+  protected def rowLayout(fields: List[ViewIdFieldInfo]) =
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                   android:paddingTop="2dip"
                   android:paddingBottom="2dip"
@@ -152,7 +152,7 @@ object CrudUIGenerator extends Logging {
     }
     </LinearLayout>
 
-  protected def fieldLayoutForEntry(field: ViewFieldInfo, position: Int): Elem = {
+  protected def fieldLayoutForEntry(field: ViewIdFieldInfo, position: Int): Elem = {
     val gravity = "right"
     val textAppearance = "?android:attr/textAppearanceLarge"
     val attributes = <EditText android:id={"@+id/" + field.id}/>.attributes
@@ -162,7 +162,7 @@ object CrudUIGenerator extends Logging {
     </TableRow>
   }
 
-  def entryLayout(fields: List[ViewFieldInfo]) = {
+  def entryLayout(fields: List[ViewIdFieldInfo]) = {
     <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
                  android:layout_width="fill_parent"
                  android:layout_height="wrap_content"
@@ -179,8 +179,8 @@ object CrudUIGenerator extends Logging {
     println("Generating layout for " + entityType)
     val info = EntityTypeViewInfo(entityType)
     val layoutPrefix = NamingConventions.toLayoutPrefix(entityType.entityName)
-    writeLayoutFile(layoutPrefix + "_header", headerLayout(info.displayableViewFieldInfos))
-    writeLayoutFile(layoutPrefix + "_row", rowLayout(info.displayableViewFieldInfos))
-    if (info.isUpdateable) writeLayoutFile(layoutPrefix + "_entry", entryLayout(info.updateableViewFieldInfos))
+    writeLayoutFile(layoutPrefix + "_header", headerLayout(info.displayableViewIdFieldInfos))
+    writeLayoutFile(layoutPrefix + "_row", rowLayout(info.displayableViewIdFieldInfos))
+    if (info.isUpdateable) writeLayoutFile(layoutPrefix + "_entry", entryLayout(info.updateableViewIdFieldInfos))
   }
 }

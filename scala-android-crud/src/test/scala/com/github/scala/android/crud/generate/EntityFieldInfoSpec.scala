@@ -21,13 +21,13 @@ class EntityFieldInfoSpec extends Spec with MustMatchers with MockitoSugar {
     it("must find all ViewFields") {
       val dummyFormat = ValueFormat[String](s => Some(s + "."), _.stripSuffix("."))
       val fieldList = mapField[String]("foo") + textView + formatted[String](dummyFormat, textView) + viewId(45, textView)
-      val info = ViewFieldInfo("foo", fieldList)
+      val info = ViewIdFieldInfo("foo", fieldList)
       info.viewFields must be(List(textView, textView, textView))
     }
   }
 
   it("must handle a viewId name that does not exist") {
-    val fieldInfo = EntityFieldInfo(viewId(classOf[R.id], "bogus", textView), List(classOf[R])).viewFieldInfos.head
+    val fieldInfo = EntityFieldInfo(viewId(classOf[R.id], "bogus", textView), List(classOf[R])).viewIdFieldInfos.head
     fieldInfo.id must be ("bogus")
   }
 
@@ -37,22 +37,22 @@ class EntityFieldInfoSpec extends Spec with MustMatchers with MockitoSugar {
   }
 
   it("must not include a ParentField if it has no viewId field") {
-    val fieldInfos = EntityFieldInfo(ParentField(MyEntityType), Seq(classOf[R])).viewFieldInfos
+    val fieldInfos = EntityFieldInfo(ParentField(MyEntityType), Seq(classOf[R])).viewIdFieldInfos
     fieldInfos must be (Nil)
   }
 
   it("must not include adjustment fields") {
-    val fieldInfos = EntityFieldInfo(adjustment[String](_ + "foo"), Seq(classOf[R])).viewFieldInfos
+    val fieldInfos = EntityFieldInfo(adjustment[String](_ + "foo"), Seq(classOf[R])).viewIdFieldInfos
     fieldInfos must be (Nil)
   }
 
   it("must not include adjustmentInPlace fields") {
-    val fieldInfos = EntityFieldInfo(adjustmentInPlace[StringBuffer] { s => s.append("foo"); Unit }, Seq(classOf[R])).viewFieldInfos
+    val fieldInfos = EntityFieldInfo(adjustmentInPlace[StringBuffer] { s => s.append("foo"); Unit }, Seq(classOf[R])).viewIdFieldInfos
     fieldInfos must be (Nil)
   }
 
   it("must not include the default primary key field") {
-    val fieldInfos = EntityFieldInfo(MyCrudType.entityType.IdField, Seq(classOf[R])).viewFieldInfos
+    val fieldInfos = EntityFieldInfo(MyCrudType.entityType.IdField, Seq(classOf[R])).viewIdFieldInfos
     fieldInfos must be (Nil)
   }
 
@@ -62,7 +62,7 @@ class EntityFieldInfoSpec extends Spec with MustMatchers with MockitoSugar {
   }
 
   it("must detect multiple ViewFields in the same field") {
-    val fieldInfos = EntityFieldInfo(viewId(R.id.foo, textView) + viewId(R.id.bar, textView), Seq(classOf[R.id])).viewFieldInfos
+    val fieldInfos = EntityFieldInfo(viewId(R.id.foo, textView) + viewId(R.id.bar, textView), Seq(classOf[R.id])).viewIdFieldInfos
     fieldInfos.map(_.id) must be (List("foo", "bar"))
   }
 }
