@@ -1,11 +1,10 @@
 package com.github.scala.android.crud.generate
 
-import com.github.scala.android.crud.persistence.CursorField
 import android.view.View
 import com.github.scala.android.crud.view.AndroidResourceAnalyzer._
 import com.github.triangle.{PortableField, FieldList, SubjectField, BaseField}
 import com.github.scala.android.crud.view.{FieldLayout, ViewField, ViewIdNameField, ViewIdField}
-import com.github.scala.android.crud.CrudType
+import com.github.scala.android.crud.persistence.{EntityType, CursorField}
 
 case class EntityFieldInfo(field: BaseField, rIdClasses: Seq[Class[_]]) {
   lazy val updateablePersistedFields = CursorField.updateablePersistedFields(field, rIdClasses)
@@ -48,8 +47,11 @@ object ViewFieldInfo {
   def apply(id: String, viewField: PortableField[_]): ViewFieldInfo = ViewFieldInfo(id, FieldLayout.toDisplayName(id), viewField)
 }
 
-case class CrudTypeInfo(crudType: CrudType) {
-  lazy val entityFieldInfos = crudType.entityType.fields.map(EntityFieldInfo(_, crudType.rIdClasses))
+case class EntityTypeViewInfo(entityType: EntityType) {
+  lazy val rIdClasses: Seq[Class[_]] = detectRIdClasses(entityType.getClass)
+  lazy val entityFieldInfos = entityType.fields.map(EntityFieldInfo(_, rIdClasses))
   lazy val displayableViewFieldInfos = entityFieldInfos.filter(_.displayable).flatMap(_.viewFieldInfos)
-  lazy val updateableViewFieldInfos = entityFieldInfos.filter(_.updateable).flatMap(_.viewFieldInfos)
+  lazy val updateableEntityFieldInfos = entityFieldInfos.filter(_.updateable)
+  def isUpdateable: Boolean = !updateableEntityFieldInfos.isEmpty
+  lazy val updateableViewFieldInfos = updateableEntityFieldInfos.flatMap(_.viewFieldInfos)
 }

@@ -6,6 +6,7 @@ import xml._
 import com.github.scala.android.crud.{NamingConventions, CrudApplication, CrudType}
 import com.github.scala.android.crud.common.Common
 import collection.immutable.List
+import com.github.scala.android.crud.persistence.EntityType
 
 /** A UI Generator for a CrudTypes.
   * @author Eric Pabst (epabst@gmail.com)
@@ -57,11 +58,11 @@ object CrudUIGenerator extends Logging {
     </manifest>
   }
 
-  def generateValueStrings(entity: CrudType): NodeSeq = {
-    <string name={entity.entityNameLayoutPrefix + "_list"}>{entity.entityName} List</string> +: {
-      if (attemptToEvaluate(entity.createAction.isDefined).getOrElse(true)) {
-        Seq(<string name={"add_" + entity.entityNameLayoutPrefix}>Add {entity.entityName}</string>,
-            <string name={"edit_" + entity.entityNameLayoutPrefix}>Edit {entity.entityName}</string>)
+  def generateValueStrings(crudType: CrudType): NodeSeq = {
+    <string name={crudType.entityNameLayoutPrefix + "_list"}>{crudType.entityName} List</string> +: {
+      if (attemptToEvaluate(crudType.createAction.isDefined).getOrElse(true)) {
+        Seq(<string name={"add_" + crudType.entityNameLayoutPrefix}>Add {crudType.entityName}</string>,
+            <string name={"edit_" + crudType.entityNameLayoutPrefix}>Edit {crudType.entityName}</string>)
       } else {
         Nil
       }
@@ -83,7 +84,7 @@ object CrudUIGenerator extends Logging {
   }
 
   def generateLayouts(application: CrudApplication) {
-    application.allCrudTypes.foreach(generateLayouts(_))
+    application.allEntityTypes.foreach(generateLayouts(_))
     writeXmlToFile(Path("AndroidManifest.xml"), generateAndroidManifest(application))
     writeXmlToFile(Path("res") / "values" / "strings.xml", generateValueStrings(application))
   }
@@ -174,12 +175,12 @@ object CrudUIGenerator extends Logging {
     writeXmlToFile(Path("res") / "layout" / (name + ".xml"), xml)
   }
 
-  def generateLayouts(crudType: CrudType) {
-    println("Generating layout for " + crudType)
-    val info = CrudTypeInfo(crudType)
-    val layoutPrefix = NamingConventions.toLayoutPrefix(crudType.entityName)
+  def generateLayouts(entityType: EntityType) {
+    println("Generating layout for " + entityType)
+    val info = EntityTypeViewInfo(entityType)
+    val layoutPrefix = NamingConventions.toLayoutPrefix(entityType.entityName)
     writeLayoutFile(layoutPrefix + "_header", headerLayout(info.displayableViewFieldInfos))
     writeLayoutFile(layoutPrefix + "_row", rowLayout(info.displayableViewFieldInfos))
-    if (!info.updateableViewFieldInfos.isEmpty) writeLayoutFile(layoutPrefix + "_entry", entryLayout(info.updateableViewFieldInfos))
+    if (info.isUpdateable) writeLayoutFile(layoutPrefix + "_entry", entryLayout(info.updateableViewFieldInfos))
   }
 }

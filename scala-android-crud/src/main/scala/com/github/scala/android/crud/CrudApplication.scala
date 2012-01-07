@@ -30,6 +30,7 @@ trait CrudApplication extends Logging {
 
   /** All entities in the application, in priority order of most interesting first. */
   def allCrudTypes: List[CrudType]
+  def allEntityTypes: List[EntityType] = allCrudTypes.map(_.entityType)
 
   def crudType(entityType: EntityType): CrudType =
     allCrudTypes.find(_.entityType == entityType).getOrElse(throw new NoSuchElementException(entityType + " not found"))

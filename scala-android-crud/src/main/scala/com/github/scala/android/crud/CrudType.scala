@@ -3,11 +3,12 @@ package com.github.scala.android.crud
 import action._
 import android.widget.ListAdapter
 import common.{UriPath, Timing}
+import generate.EntityTypeViewInfo
 import Operation._
 import android.app.Activity
 import com.github.triangle._
 import common.PlatformTypes._
-import persistence.{EntityType, CursorField, PersistenceListener}
+import persistence.{EntityType, PersistenceListener}
 import PortableField.toSome
 import view.AndroidResourceAnalyzer._
 import java.lang.IllegalStateException
@@ -24,7 +25,6 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
   def entityName = entityType.entityName
   lazy val entityNameLayoutPrefix = NamingConventions.toLayoutPrefix(entityName)
 
-  def rIdClasses: Seq[Class[_]] = detectRIdClasses(this.getClass)
   def rLayoutClasses: Seq[Class[_]] = detectRLayoutClasses(this.getClass)
   private lazy val rLayoutClassesVal = rLayoutClasses
   def rStringClasses: Seq[Class[_]] = detectRStringClasses(this.getClass)
@@ -45,7 +45,8 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
   lazy val entryLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_entry")
 
   final def hasDisplayPage = displayLayout.isDefined
-  lazy val isUpdateable: Boolean = !CursorField.updateablePersistedFields(entityType, rIdClasses).isEmpty
+  lazy val viewInfo = EntityTypeViewInfo(entityType)
+  def isUpdateable: Boolean = viewInfo.isUpdateable
 
   private val persistenceVarForListAdapter = new ContextVar[CrudPersistence]
 

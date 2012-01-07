@@ -59,7 +59,7 @@ class CrudUIGeneratorSpec extends Spec with MustMatchers with MockitoSugar {
   describe("generateValueStrings") {
     it("must include 'list', 'add' and 'edit' strings for modifiable entities") {
       val valueStrings = CrudUIGenerator.generateValueStrings(new MyCrudType(new MyEntityType {
-        override def valueFields = List(persisted[String]("model"))
+        override def valueFields = List(persisted[String]("model") + viewId(classOf[testres.R], "model", textView))
       }))
       valueStrings.foreach(println(_))
       (valueStrings \\ "string").length must be (3)
