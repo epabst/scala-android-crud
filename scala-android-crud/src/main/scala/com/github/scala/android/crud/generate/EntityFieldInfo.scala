@@ -32,6 +32,9 @@ case class EntityFieldInfo(field: BaseField, rIdClasses: Seq[Class[_]]) {
   lazy val isDisplayable: Boolean = !viewIdFieldInfos.isEmpty
   def isPersisted: Boolean = !updateablePersistedFields.isEmpty
   def isUpdateable: Boolean = isDisplayable && isPersisted
+
+  lazy val displayableViewIdFieldInfos: List[ViewIdFieldInfo] = if (isDisplayable) viewIdFieldInfos else Nil
+  lazy val updateableViewIdFieldInfos: List[ViewIdFieldInfo] = if (isUpdateable) viewIdFieldInfos else Nil
 }
 
 case class ViewIdFieldInfo(id: String, displayName: String, field: PortableField[_]) {
@@ -51,8 +54,7 @@ object ViewIdFieldInfo {
 case class EntityTypeViewInfo(entityType: EntityType) {
   lazy val rIdClasses: Seq[Class[_]] = detectRIdClasses(entityType.getClass)
   lazy val entityFieldInfos: List[EntityFieldInfo] = entityType.fields.map(EntityFieldInfo(_, rIdClasses))
-  lazy val displayableViewIdFieldInfos: List[ViewIdFieldInfo] = entityFieldInfos.filter(_.isDisplayable).flatMap(_.viewIdFieldInfos)
-  lazy val updateableEntityFieldInfos: List[EntityFieldInfo] = entityFieldInfos.filter(_.isUpdateable)
-  def isUpdateable: Boolean = !updateableEntityFieldInfos.isEmpty
-  lazy val updateableViewIdFieldInfos: List[ViewIdFieldInfo] = updateableEntityFieldInfos.flatMap(_.viewIdFieldInfos)
+  lazy val displayableViewIdFieldInfos: List[ViewIdFieldInfo] = entityFieldInfos.flatMap(_.displayableViewIdFieldInfos)
+  lazy val updateableViewIdFieldInfos: List[ViewIdFieldInfo] = entityFieldInfos.flatMap(_.updateableViewIdFieldInfos)
+  def isUpdateable: Boolean = !updateableViewIdFieldInfos.isEmpty
 }
