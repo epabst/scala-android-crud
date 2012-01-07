@@ -33,7 +33,7 @@ class EntityFieldInfoSpec extends Spec with MustMatchers with MockitoSugar {
 
   it("must consider a ParentField displayable if it has a viewId field") {
     val fieldInfo = EntityFieldInfo(ParentField(MyEntityType) + viewId(classOf[R], "foo", longView), Seq(classOf[R]))
-    fieldInfo.displayable must be (true)
+    fieldInfo.isDisplayable must be (true)
   }
 
   it("must not include a ParentField if it has no viewId field") {
@@ -58,7 +58,7 @@ class EntityFieldInfoSpec extends Spec with MustMatchers with MockitoSugar {
 
   it("must not include a ForeignKey if it has no viewId field") {
     val fieldInfo = EntityFieldInfo(foreignKey(MyEntityType), Seq(classOf[R]))
-    fieldInfo.updateable must be (false)
+    fieldInfo.isUpdateable must be (false)
   }
 
   it("must detect multiple ViewFields in the same field") {

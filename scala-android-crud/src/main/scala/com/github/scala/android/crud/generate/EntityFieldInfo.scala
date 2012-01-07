@@ -7,13 +7,12 @@ import com.github.scala.android.crud.view.{FieldLayout, ViewField, ViewIdNameFie
 import com.github.scala.android.crud.persistence.{EntityType, CursorField}
 
 case class EntityFieldInfo(field: BaseField, rIdClasses: Seq[Class[_]]) {
-  lazy val updateablePersistedFields = CursorField.updateablePersistedFields(field, rIdClasses)
-  lazy val persistedFieldOption = updateablePersistedFields.headOption
+  private lazy val updateablePersistedFields = CursorField.updateablePersistedFields(field, rIdClasses)
 
-  lazy val viewIdFields: List[ViewIdField[_]] = field.deepCollect[ViewIdField[_]] {
+  private lazy val viewIdFields: List[ViewIdField[_]] = field.deepCollect[ViewIdField[_]] {
     case matchingField: ViewIdField[_] => matchingField
   }
-  lazy val viewIdNameFields: List[ViewIdNameField[_]] = field.deepCollect[ViewIdNameField[_]] {
+  private lazy val viewIdNameFields: List[ViewIdNameField[_]] = field.deepCollect[ViewIdNameField[_]] {
     case matchingField: ViewIdNameField[_] => matchingField
   }
 
@@ -23,15 +22,16 @@ case class EntityFieldInfo(field: BaseField, rIdClasses: Seq[Class[_]]) {
     }
   }
 
-  lazy val viewFieldsWithId = this.fieldsWithViewSubject(FieldList.toFieldList(viewIdFields))
+  private lazy val viewFieldsWithId = this.fieldsWithViewSubject(FieldList.toFieldList(viewIdFields))
   lazy val otherViewFields = this.fieldsWithViewSubject(field).filterNot(viewFieldsWithId.contains)
   lazy val viewFieldInfos: List[ViewFieldInfo] = viewIdNameFields.map(f => ViewFieldInfo(f.viewResourceIdName, f)) ++
     viewIdFields.map { viewIdField =>
       ViewFieldInfo(resourceFieldWithIntValue(rIdClasses, viewIdField.viewResourceId).getName, viewIdField)
     }
 
-  lazy val displayable = !viewFieldInfos.isEmpty
-  lazy val updateable = displayable && persistedFieldOption.isDefined
+  lazy val isDisplayable: Boolean = !viewFieldInfos.isEmpty
+  def isPersisted: Boolean = !updateablePersistedFields.isEmpty
+  def isUpdateable: Boolean = isDisplayable && isPersisted
 }
 
 case class ViewFieldInfo(id: String, displayName: String, field: PortableField[_]) {
@@ -50,8 +50,8 @@ object ViewFieldInfo {
 case class EntityTypeViewInfo(entityType: EntityType) {
   lazy val rIdClasses: Seq[Class[_]] = detectRIdClasses(entityType.getClass)
   lazy val entityFieldInfos = entityType.fields.map(EntityFieldInfo(_, rIdClasses))
-  lazy val displayableViewFieldInfos = entityFieldInfos.filter(_.displayable).flatMap(_.viewFieldInfos)
-  lazy val updateableEntityFieldInfos = entityFieldInfos.filter(_.updateable)
+  lazy val displayableViewFieldInfos = entityFieldInfos.filter(_.isDisplayable).flatMap(_.viewFieldInfos)
+  lazy val updateableEntityFieldInfos = entityFieldInfos.filter(_.isUpdateable)
   def isUpdateable: Boolean = !updateableEntityFieldInfos.isEmpty
   lazy val updateableViewFieldInfos = updateableEntityFieldInfos.flatMap(_.viewFieldInfos)
 }
