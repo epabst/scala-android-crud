@@ -45,6 +45,13 @@ object AndroidResourceAnalyzer extends Logging {
   def findResourceFieldWithIntValue(classes: Seq[Class[_]], value: Int): Option[Field] =
     findMatchingResourceField(classes, field => field.getInt(null) == value)
 
+  def resourceFieldWithIntValue(classes: Seq[Class[_]], value: Int): Field =
+    findResourceFieldWithIntValue(classes, value).getOrElse {
+      classes.foreach(rStringClass => error("Contents of " + rStringClass + " are " + rStringClass.getFields.mkString(", ")))
+      throw new IllegalStateException("Unable to find R.id with value " + value + " not found.  You may want to run the CrudUIGenerator.generateLayouts." +
+              classes.mkString("(string classes: ", ",", ")"))
+    }
+
   def findResourceFieldWithName(classes: Seq[Class[_]], name: String): Option[Field] =
     findMatchingResourceField(classes, field => field.getName == name)
 

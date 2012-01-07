@@ -4,7 +4,7 @@ import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import com.github.triangle.{PortableField, FieldList}
+import com.github.triangle.{PortableField, ValueFormat}
 import PortableField._
 import com.github.scala.android.crud.view.ViewField._
 import com.github.scala.android.crud.ParentField._
@@ -19,11 +19,10 @@ import org.scalatest.mock.MockitoSugar
 class EntityFieldInfoSpec extends Spec with MustMatchers with MockitoSugar {
   describe("viewFields") {
     it("must find all ViewFields") {
-      val fieldList = FieldList(mapField[String]("foo"), textView, formatted[Int](textView),
-        viewId(45, formatted[Double](textView)), dateView)
-      val info = EntityFieldInfo(null, Nil)
-      val fields = info.viewFields(fieldList)
-      fields must be(List(textView, textView, textView, dateView))
+      val dummyFormat = ValueFormat[String](s => Some(s + "."), _.stripSuffix("."))
+      val fieldList = mapField[String]("foo") + textView + formatted[String](dummyFormat, textView) + viewId(45, textView)
+      val info = ViewFieldInfo("foo", fieldList)
+      info.viewFields must be(List(textView, textView, textView))
     }
   }
 

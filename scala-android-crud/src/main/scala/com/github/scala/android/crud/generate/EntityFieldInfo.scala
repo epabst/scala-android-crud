@@ -7,12 +7,6 @@ import com.github.triangle.{PortableField, FieldList, SubjectField, BaseField}
 import com.github.scala.android.crud.view.{FieldLayout, ViewField, ViewIdNameField, ViewIdField}
 import com.github.scala.android.crud.CrudType
 
-case class NamedField(name: String, field: PortableField[_], displayName: String)
-
-object NamedField {
-  def apply(name: String, viewField: PortableField[_]): NamedField = NamedField(name, viewField, FieldLayout.toDisplayName(name))
-}
-
 case class EntityFieldInfo(field: BaseField, rIdClasses: Seq[Class[_]]) {
   lazy val updateablePersistedFields = CursorField.updateablePersistedFields(field, rIdClasses)
   lazy val persistedFieldOption = updateablePersistedFields.headOption
@@ -32,34 +26,27 @@ case class EntityFieldInfo(field: BaseField, rIdClasses: Seq[Class[_]]) {
 
   lazy val viewFieldsWithId = this.fieldsWithViewSubject(FieldList.toFieldList(viewIdFields))
   lazy val otherViewFields = this.fieldsWithViewSubject(field).filterNot(viewFieldsWithId.contains)
-  lazy val namedViewFields = viewIdNameFields.map(f => NamedField(f.viewResourceIdName, f)) ++ viewIdFields.map { f =>
-    NamedField(findResourceFieldWithIntValue(rIdClasses, f.viewResourceId).map(_.getName).getOrElse {
-      throw new IllegalStateException("Unable to find R.id with value " + f.viewResourceId + " in " + rIdClasses.mkString(", "))
-    }, f)
-  }
-  lazy val persistedFieldsWithTypes =
-    updateablePersistedFields.map(p => p.toString + ":" + p.persistedType.valueManifest.erasure.getSimpleName)
+  lazy val viewFieldInfos: List[ViewFieldInfo] = viewIdNameFields.map(f => ViewFieldInfo(f.viewResourceIdName, f)) ++
+    viewIdFields.map { viewIdField =>
+      ViewFieldInfo(resourceFieldWithIntValue(rIdClasses, viewIdField.viewResourceId).getName, viewIdField)
+    }
 
-  lazy val namedFields: List[NamedField] = if (namedViewFields.isEmpty) updateablePersistedFields.map(f => NamedField(f.name, f)) else namedViewFields
+  lazy val displayable = !viewFieldInfos.isEmpty
+  lazy val updateable = displayable && persistedFieldOption.isDefined
+}
 
-  private[generate] def viewFields(field: BaseField): List[ViewField[_]] = field.deepCollect {
+case class ViewFieldInfo(id: String, displayName: String, field: PortableField[_]) {
+  lazy val viewFields: List[ViewField[_]] = field.deepCollect {
     case matchingField: ViewField[_] => matchingField
   }
 
-  lazy val displayable = !namedViewFields.isEmpty
-  lazy val updateable = displayable && persistedFieldOption.isDefined
-
-  lazy val viewFieldInfos: List[ViewFieldInfo] = namedFields.map { namedField =>
-    val fieldLayout = viewFields(namedField.field).headOption.map(_.defaultLayout).getOrElse(namedField.field.deepCollect {
-      case _: PortableField[Double] => FieldLayout.doubleLayout
-      case _: PortableField[String] => FieldLayout.nameLayout
-      case _: PortableField[Int] => FieldLayout.intLayout
-    }.head)
-    ViewFieldInfo(namedField.displayName, fieldLayout, namedField.name)
-  }
+  def firstViewField = viewFields.headOption.getOrElse(Predef.error("No ViewField in " + this))
+  def layout = firstViewField.defaultLayout
 }
 
-case class ViewFieldInfo(displayName: String, layout: FieldLayout, id: String)
+object ViewFieldInfo {
+  def apply(id: String, viewField: PortableField[_]): ViewFieldInfo = ViewFieldInfo(id, FieldLayout.toDisplayName(id), viewField)
+}
 
 case class CrudTypeInfo(crudType: CrudType) {
   lazy val entityFieldInfos = crudType.entityType.fields.map(EntityFieldInfo(_, crudType.rIdClasses))
