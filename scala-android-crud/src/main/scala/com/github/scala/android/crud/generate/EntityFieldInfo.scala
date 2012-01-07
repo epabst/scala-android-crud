@@ -17,7 +17,6 @@ case class EntityFieldInfo(field: BaseField, rIdClasses: Seq[Class[_]]) {
   lazy val updateablePersistedFields = CursorField.updateablePersistedFields(field, rIdClasses)
   lazy val persistedFieldOption = updateablePersistedFields.headOption
 
-
   lazy val viewIdFields: List[ViewIdField[_]] = field.deepCollect[ViewIdField[_]] {
     case matchingField: ViewIdField[_] => matchingField
   }
@@ -47,22 +46,23 @@ case class EntityFieldInfo(field: BaseField, rIdClasses: Seq[Class[_]]) {
     case matchingField: ViewField[_] => matchingField
   }
 
+  lazy val displayable = !namedViewFields.isEmpty
+  lazy val updateable = displayable && persistedFieldOption.isDefined
+
   lazy val viewFieldInfos: List[ViewFieldInfo] = namedFields.map { namedField =>
     val fieldLayout = viewFields(namedField.field).headOption.map(_.defaultLayout).getOrElse(namedField.field.deepCollect {
       case _: PortableField[Double] => FieldLayout.doubleLayout
       case _: PortableField[String] => FieldLayout.nameLayout
       case _: PortableField[Int] => FieldLayout.intLayout
     }.head)
-    val displayable = !namedViewFields.isEmpty
-    ViewFieldInfo(namedField.displayName, fieldLayout, namedField.name, displayable,
-      updateable = displayable && persistedFieldOption.isDefined)
+    ViewFieldInfo(namedField.displayName, fieldLayout, namedField.name)
   }
 }
 
-case class ViewFieldInfo(displayName: String, layout: FieldLayout, id: String, displayable: Boolean, updateable: Boolean)
+case class ViewFieldInfo(displayName: String, layout: FieldLayout, id: String)
 
 case class CrudTypeInfo(crudType: CrudType) {
-  lazy val fieldInfos: List[ViewFieldInfo] = crudType.entityType.fields.flatMap(EntityFieldInfo(_, crudType.rIdClasses).viewFieldInfos)
-  lazy val displayFields = fieldInfos.filter(_.displayable)
-  lazy val updateableFields = fieldInfos.filter(_.updateable)
+  lazy val entityFieldInfos = crudType.entityType.fields.map(EntityFieldInfo(_, crudType.rIdClasses))
+  lazy val displayableViewFieldInfos = entityFieldInfos.filter(_.displayable).flatMap(_.viewFieldInfos)
+  lazy val updateableViewFieldInfos = entityFieldInfos.filter(_.updateable).flatMap(_.viewFieldInfos)
 }

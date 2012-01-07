@@ -178,8 +178,8 @@ object CrudUIGenerator extends Logging {
     println("Generating layout for " + crudType)
     val info = CrudTypeInfo(crudType)
     val layoutPrefix = NamingConventions.toLayoutPrefix(crudType.entityName)
-    writeLayoutFile(layoutPrefix + "_header", headerLayout(info.displayFields))
-    writeLayoutFile(layoutPrefix + "_row", rowLayout(info.displayFields))
-    if (!info.updateableFields.isEmpty) writeLayoutFile(layoutPrefix + "_entry", entryLayout(info.updateableFields))
+    writeLayoutFile(layoutPrefix + "_header", headerLayout(info.displayableViewFieldInfos))
+    writeLayoutFile(layoutPrefix + "_row", rowLayout(info.displayableViewFieldInfos))
+    if (!info.updateableViewFieldInfos.isEmpty) writeLayoutFile(layoutPrefix + "_entry", entryLayout(info.updateableViewFieldInfos))
   }
 }
