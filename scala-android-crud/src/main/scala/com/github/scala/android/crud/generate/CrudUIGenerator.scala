@@ -1,7 +1,6 @@
 package com.github.scala.android.crud.generate
 
 import com.github.triangle._
-import util.Random
 import scala.tools.nsc.io.Path
 import xml._
 import com.github.scala.android.crud.{NamingConventions, CrudApplication, CrudType}
@@ -15,7 +14,6 @@ import collection.immutable.List
 object CrudUIGenerator extends Logging {
   protected def logTag = Common.logTag
   private val lineSeparator = System.getProperty("line.separator")
-  private[generate] val random = new Random
   private[generate] val prettyPrinter = new PrettyPrinter(80, 2) {
     override protected def traverse(node: Node, namespace: NamespaceBinding, indent: Int) {
       node match {
@@ -171,9 +169,6 @@ object CrudUIGenerator extends Logging {
       {fields.map(field => fieldLayoutForEntry(field, fields.indexOf(field)))}
     </TableLayout>
   }
-
-  def guessFieldInfos(field: BaseField, rIdClasses: Seq[Class[_]]): List[ViewFieldInfo] =
-    EntityFieldInfo(field, rIdClasses).viewFieldInfos
 
   private def writeLayoutFile(name: String, xml: Elem) {
     writeXmlToFile(Path("res") / "layout" / (name + ".xml"), xml)

@@ -33,37 +33,37 @@ class EntityFieldInfoSpec extends Spec with MustMatchers with MockitoSugar {
   }
 
   it("must consider a ParentField displayable if it has a viewId field") {
-    val fieldInfo = CrudUIGenerator.guessFieldInfos(ParentField(MyEntityType) + viewId(classOf[R], "foo", longView), Seq(classOf[R])).head
+    val fieldInfo = EntityFieldInfo(ParentField(MyEntityType) + viewId(classOf[R], "foo", longView), Seq(classOf[R])).viewFieldInfos.head
     fieldInfo.displayable must be (true)
   }
 
   it("must not include a ParentField if it has no viewId field") {
-    val fieldInfos = CrudUIGenerator.guessFieldInfos(ParentField(MyEntityType), Seq(classOf[R]))
+    val fieldInfos = EntityFieldInfo(ParentField(MyEntityType), Seq(classOf[R])).viewFieldInfos
     fieldInfos must be (Nil)
   }
 
   it("must not include adjustment fields") {
-    val fieldInfos = CrudUIGenerator.guessFieldInfos(adjustment[String](_ + "foo"), Seq(classOf[R]))
+    val fieldInfos = EntityFieldInfo(adjustment[String](_ + "foo"), Seq(classOf[R])).viewFieldInfos
     fieldInfos must be (Nil)
   }
 
   it("must not include adjustmentInPlace fields") {
-    val fieldInfos = CrudUIGenerator.guessFieldInfos(adjustmentInPlace[StringBuffer] { s => s.append("foo"); Unit }, Seq(classOf[R]))
+    val fieldInfos = EntityFieldInfo(adjustmentInPlace[StringBuffer] { s => s.append("foo"); Unit }, Seq(classOf[R])).viewFieldInfos
     fieldInfos must be (Nil)
   }
 
   it("must not include the default primary key field") {
-    val fieldInfos = CrudUIGenerator.guessFieldInfos(MyCrudType.entityType.IdField, Seq(classOf[R]))
+    val fieldInfos = EntityFieldInfo(MyCrudType.entityType.IdField, Seq(classOf[R])).viewFieldInfos
     fieldInfos must be (Nil)
   }
 
   it("must not include a ForeignKey if it has no viewId field") {
-    val fieldInfo = CrudUIGenerator.guessFieldInfos(foreignKey(MyEntityType), Seq(classOf[R])).head
+    val fieldInfo = EntityFieldInfo(foreignKey(MyEntityType), Seq(classOf[R])).viewFieldInfos.head
     fieldInfo.updateable must be (false)
   }
 
   it("must detect multiple ViewFields in the same field") {
-    val fieldInfos = CrudUIGenerator.guessFieldInfos(viewId(R.id.foo, textView) + viewId(R.id.bar, textView), Seq(classOf[R.id]))
+    val fieldInfos = EntityFieldInfo(viewId(R.id.foo, textView) + viewId(R.id.bar, textView), Seq(classOf[R.id])).viewFieldInfos
     fieldInfos.map(_.id) must be (List("foo", "bar"))
   }
 }
