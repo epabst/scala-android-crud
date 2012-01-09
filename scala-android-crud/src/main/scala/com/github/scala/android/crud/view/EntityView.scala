@@ -10,6 +10,7 @@ import scala.collection.JavaConversions._
 import android.widget._
 import android.view.View
 import android.app.Activity
+import xml.NodeSeq
 
 /** A ViewField that allows choosing a specific entity of a given EntityType or displaying its fields' values.
   * The layout for the EntityType that contains this EntityView may refer to fields of this view's EntityType
@@ -17,7 +18,7 @@ import android.app.Activity
   * @author Eric Pabst (epabst@gmail.com)
   */
 case class EntityView(entityType: EntityType)
-  extends ViewField[ID](FieldLayout(displayXml = <TextView/>, editXml = <Spinner android:drawSelectorOnTop = "true"/>)) {
+  extends ViewField[ID](FieldLayout(displayXml = NodeSeq.Empty, editXml = <Spinner android:drawSelectorOnTop = "true"/>)) {
 
   protected val itemViewResourceId = _root_.android.R.layout.simple_spinner_dropdown_item
 

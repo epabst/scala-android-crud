@@ -11,6 +11,8 @@ import com.github.scala.android.crud.ParentField._
 import com.github.scala.android.crud.testres.R
 import com.github.scala.android.crud._
 import org.scalatest.mock.MockitoSugar
+import testres.R.id
+import view.EntityView
 
 /** A behavior specification for [[com.github.scala.android.crud.generate.EntityFieldInfo]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -64,5 +66,22 @@ class EntityFieldInfoSpec extends Spec with MustMatchers with MockitoSugar {
   it("must detect multiple ViewFields in the same field") {
     val fieldInfos = EntityFieldInfo(viewId(R.id.foo, textView) + viewId(R.id.bar, textView), Seq(classOf[R.id])).viewIdFieldInfos
     fieldInfos.map(_.id) must be (List("foo", "bar"))
+  }
+
+  val entityFieldInfo = EntityFieldInfo(viewId(R.id.foo, foreignKey(MyEntityType) + EntityView(MyEntityType)), Seq(classOf[id]))
+
+  describe("updateableViewIdFieldInfos") {
+    it("must provide a single field for an EntityView field to allow choosing Entity instance") {
+      val fieldInfos = entityFieldInfo.updateableViewIdFieldInfos
+      fieldInfos.map(_.id) must be (List("foo"))
+      fieldInfos.map(_.layout).head.editXml.head.label must be ("Spinner")
+    }
+  }
+
+  describe("displayableViewIdFieldInfos") {
+    it("must provide each displayable field in the referenced EntityType for an EntityView field") {
+      val fieldInfos = entityFieldInfo.displayableViewIdFieldInfos
+      fieldInfos must be (EntityTypeViewInfo(MyEntityType).displayableViewIdFieldInfos)
+    }
   }
 }

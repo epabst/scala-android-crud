@@ -1,6 +1,7 @@
 package com.github.scala.android.crud.view
 
-import xml.Elem
+import xml.NodeSeq
+
 
 /** The layout piece for a field.
   * It provides the XML for the part of an Android Layout that corresponds to a single field.
@@ -8,8 +9,8 @@ import xml.Elem
   * @author Eric Pabst (epabst@gmail.com)
   */
 abstract class FieldLayout { self =>
-  def displayXml: Elem
-  def editXml: Elem
+  def displayXml: NodeSeq
+  def editXml: NodeSeq
   /** Returns a similar FieldLayout but where the editXml is overridden to use displayXml. */
   lazy val displayOnly: FieldLayout = new FieldLayout {
     def displayXml = self.displayXml
@@ -18,7 +19,7 @@ abstract class FieldLayout { self =>
 }
 
 object FieldLayout {
-  def apply(displayXml: Elem, editXml: Elem): FieldLayout = {
+  def apply(displayXml: NodeSeq, editXml: NodeSeq): FieldLayout = {
     val _displayXml = displayXml
     val _editXml = editXml
     new FieldLayout {

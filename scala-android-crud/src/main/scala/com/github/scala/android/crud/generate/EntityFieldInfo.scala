@@ -2,8 +2,9 @@ package com.github.scala.android.crud.generate
 
 import com.github.scala.android.crud.view.AndroidResourceAnalyzer._
 import com.github.triangle.{PortableField, FieldList, BaseField}
-import com.github.scala.android.crud.view.{FieldLayout, ViewField, ViewIdNameField, ViewIdField}
 import com.github.scala.android.crud.persistence.{EntityType, CursorField}
+import com.github.scala.android.crud.view._
+import xml.NodeSeq
 
 case class EntityFieldInfo(field: BaseField, rIdClasses: Seq[Class[_]]) {
   private lazy val updateablePersistedFields = CursorField.updateablePersistedFields(field, rIdClasses)
@@ -26,12 +27,18 @@ case class EntityFieldInfo(field: BaseField, rIdClasses: Seq[Class[_]]) {
       }
   }
 
-  lazy val isDisplayable: Boolean = !viewIdFieldInfos.isEmpty
+  lazy val isDisplayable: Boolean = !displayableViewIdFieldInfos.isEmpty
   def isPersisted: Boolean = !updateablePersistedFields.isEmpty
   def isUpdateable: Boolean = isDisplayable && isPersisted
 
-  lazy val displayableViewIdFieldInfos: List[ViewIdFieldInfo] = if (isDisplayable) viewIdFieldInfos else Nil
-  lazy val updateableViewIdFieldInfos: List[ViewIdFieldInfo] = if (isUpdateable) viewIdFieldInfos else Nil
+  lazy val nestedEntityTypeViewInfos: List[EntityTypeViewInfo] = field.deepCollect {
+    case entityView: EntityView => EntityTypeViewInfo(entityView.entityType)
+  }
+
+  lazy val displayableViewIdFieldInfos: List[ViewIdFieldInfo] =
+    viewIdFieldInfos.filter(_.layout.displayXml != NodeSeq.Empty) ++ nestedEntityTypeViewInfos.flatMap(_.displayableViewIdFieldInfos)
+
+  lazy val updateableViewIdFieldInfos: List[ViewIdFieldInfo] = if (isPersisted) viewIdFieldInfos else Nil
 
   lazy val otherViewFields = {
     val viewFieldsWithinViewIdFields = viewFields(FieldList(viewIdFieldInfos.map(_.field):_*))

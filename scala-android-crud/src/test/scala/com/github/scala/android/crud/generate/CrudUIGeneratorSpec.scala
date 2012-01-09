@@ -44,15 +44,15 @@ class CrudUIGeneratorSpec extends Spec with MustMatchers with MockitoSugar {
     it("must put the first field on the left side of the screen") {
       val position = 0
       val fieldLayout = CrudUIGenerator.fieldLayoutForRow(viewIdFieldInfo, position)
-      fieldLayout.attributes.find(_.key == "layout_width").get.value.text must be ("wrap_content")
-      fieldLayout.attributes.find(_.key == "gravity").get.value.text must be ("left")
+      fieldLayout.head.attributes.find(_.key == "layout_width").get.value.text must be ("wrap_content")
+      fieldLayout.head.attributes.find(_.key == "gravity").get.value.text must be ("left")
     }
 
     it("must put the second field on the right side of the screen") {
       val position = 1
       val fieldLayout = CrudUIGenerator.fieldLayoutForRow(viewIdFieldInfo, position)
-      fieldLayout.attributes.find(_.key == "layout_width").get.value.text must be ("fill_parent")
-      fieldLayout.attributes.find(_.key == "gravity").get.value.text must be ("right")
+      fieldLayout.head.attributes.find(_.key == "layout_width").get.value.text must be ("fill_parent")
+      fieldLayout.head.attributes.find(_.key == "gravity").get.value.text must be ("right")
     }
   }
 

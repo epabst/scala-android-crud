@@ -100,7 +100,7 @@ object CrudUIGenerator extends Logging {
               android:textAppearance={textAppearance}/>
   }
 
-  protected[generate] def fieldLayoutForRow(field: ViewIdFieldInfo, position: Int): Elem = {
+  protected[generate] def fieldLayoutForRow(field: ViewIdFieldInfo, position: Int): NodeSeq = {
     val textAppearance = if (position < 2) "?android:attr/textAppearanceLarge" else "?android:attr/textAppearanceSmall"
     val gravity = if (position % 2 == 0) "left" else "right"
     val layoutWidth = if (position % 2 == 0) "wrap_content" else "fill_parent"
@@ -109,7 +109,7 @@ object CrudUIGenerator extends Logging {
                                android:layout_height="wrap_content"
                                android:paddingRight="3sp"
                                android:textAppearance={textAppearance}/>.attributes
-    field.layout.displayXml % attributes
+    applyAttributesToHead(field.layout.displayXml, attributes)
   }
 
   protected def headerLayout(fields: List[ViewIdFieldInfo]) =
@@ -152,13 +152,18 @@ object CrudUIGenerator extends Logging {
     }
     </LinearLayout>
 
+  private def applyAttributesToHead(xml: NodeSeq, attributes: MetaData): NodeSeq = xml.headOption.map {
+    case e: Elem => e % attributes
+    case x => x
+  }.map(_ +: xml.tail).getOrElse(NodeSeq.Empty)
+
   protected def fieldLayoutForEntry(field: ViewIdFieldInfo, position: Int): Elem = {
     val gravity = "right"
     val textAppearance = "?android:attr/textAppearanceLarge"
     val attributes = <EditText android:id={"@+id/" + field.id}/>.attributes
     <TableRow>
       <TextView android:text={field.displayName + ":"} android:textAppearance={textAppearance} android:gravity={gravity}/>
-      {field.layout.editXml % attributes}
+      {applyAttributesToHead(field.layout.editXml, attributes)}
     </TableRow>
   }
 
