@@ -13,6 +13,8 @@ android:versionCode="${versionCode}" android:versionName="${project.version}" pa
     <activity android:label="@string/app_name" android:name=".AuthorActivity"/>
     <activity android:label="@string/app_name" android:name=".BookListActivity"/>
     <activity android:label="@string/app_name" android:name=".BookActivity"/>
+    <activity android:label="@string/app_name" android:name=".PublisherListActivity"/>
+    <activity android:label="@string/app_name" android:name=".PublisherActivity"/>
 </application>
   <uses-sdk android:minSdkVersion="8"/>
 </manifest>

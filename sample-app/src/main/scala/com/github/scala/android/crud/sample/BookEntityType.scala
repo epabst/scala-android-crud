@@ -3,10 +3,10 @@ package com.github.scala.android.crud.sample
 import com.github.scala.android.crud._
 import persistence.CursorField._
 import persistence.EntityType
-import view.ViewField._
 import persistence.PersistedType._
 import java.util.Date
 import com.github.scala.android.crud.ParentField._
+import view.ViewField._
 import view.{EntityView, EnumerationView}
 
 object BookEntityType extends EntityType {
@@ -15,13 +15,13 @@ object BookEntityType extends EntityType {
   def valueFields = List(
     foreignKey(AuthorEntityType),
 
-    foreignKey(PublisherEntityType) + EntityView(PublisherEntityType),
-
     persisted[String]("name") + viewId(classOf[R], "name", textView),
+
+    persisted[Int]("edition") + viewId(classOf[R], "edition", intView),
 
     persistedEnum[Genre.Value]("genre", Genre) + viewId(classOf[R], "genre", EnumerationView[Genre.Value](Genre)),
 
-    persisted[Int]("edition") + viewId(classOf[R], "edition", intView),
+    foreignKey(PublisherEntityType) + viewId(classOf[R], "publisher", EntityView(PublisherEntityType)),
 
     persistedDate("publishDate") + viewId[Date](classOf[R], "publishDate", dateView)
   )

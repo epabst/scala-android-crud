@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">sample-app</string>
-    <string name="add_author">Add Author</string>
-    <string name="edit_author">Edit Author</string>
-    <string name="add_book">Add Book</string>
-    <string name="edit_book">Edit Book</string>
+  <string name="app_name">Sample Application</string>
+  <string name="author_list">Author List</string>
+  <string name="add_author">Add Author</string>
+  <string name="edit_author">Edit Author</string>
+  <string name="book_list">Book List</string>
+  <string name="add_book">Add Book</string>
+  <string name="edit_book">Edit Book</string>
+  <string name="publisher_list">Publisher List</string>
+  <string name="add_publisher">Add Publisher</string>
+  <string name="edit_publisher">Edit Publisher</string>
 </resources>
