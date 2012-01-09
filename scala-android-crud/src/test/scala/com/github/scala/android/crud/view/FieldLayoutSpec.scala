@@ -4,6 +4,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers
+import xml.NodeSeq
 
 /** A behavior specification for [[com.github.scala.android.crud.view.FieldLayout]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -28,10 +29,18 @@ class FieldLayoutSpec extends Spec with MustMatchers {
   }
 
   describe("displayOnly") {
-    val fieldLayout = FieldLayout.datePickerLayout
-    fieldLayout.editXml must not(be(fieldLayout.displayXml))
-    fieldLayout.displayOnly.editXml must be (fieldLayout.displayXml)
-    fieldLayout.displayOnly.displayXml must be (fieldLayout.displayXml)
+    it("must make the editXml empty but preserve the displayXml") {
+      val fieldLayout = FieldLayout.datePickerLayout
+      fieldLayout.displayOnly.editXml must be (NodeSeq.Empty)
+      fieldLayout.displayOnly.displayXml must be (fieldLayout.displayXml)
+    }
   }
 
+  describe("editOnly") {
+    it("must make the displayXml empty but preserve the editXml") {
+      val fieldLayout = FieldLayout.datePickerLayout
+      fieldLayout.editOnly.displayXml must be (NodeSeq.Empty)
+      fieldLayout.editOnly.editXml must be (fieldLayout.editXml)
+    }
+  }
 }

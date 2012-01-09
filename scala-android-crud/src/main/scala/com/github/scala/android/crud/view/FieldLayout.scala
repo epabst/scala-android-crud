@@ -11,10 +11,15 @@ import xml.NodeSeq
 abstract class FieldLayout { self =>
   def displayXml: NodeSeq
   def editXml: NodeSeq
-  /** Returns a similar FieldLayout but where the editXml is overridden to use displayXml. */
+  /** Returns a similar FieldLayout but where the editXml is overridden to be empty. */
   lazy val displayOnly: FieldLayout = new FieldLayout {
     def displayXml = self.displayXml
-    def editXml = self.displayXml
+    def editXml = NodeSeq.Empty
+  }
+  /** Returns a similar FieldLayout but where the displayXml is overridden to be empty. */
+  lazy val editOnly: FieldLayout = new FieldLayout {
+    def displayXml = NodeSeq.Empty
+    def editXml = self.editXml
   }
 }
 

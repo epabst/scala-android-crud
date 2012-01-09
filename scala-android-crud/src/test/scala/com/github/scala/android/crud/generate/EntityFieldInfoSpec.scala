@@ -71,6 +71,12 @@ class EntityFieldInfoSpec extends Spec with MustMatchers with MockitoSugar {
   val entityFieldInfo = EntityFieldInfo(viewId(R.id.foo, foreignKey(MyEntityType) + EntityView(MyEntityType)), Seq(classOf[id]))
 
   describe("updateableViewIdFieldInfos") {
+    it("must not include fields whose editXml is Empty") {
+      val info = EntityFieldInfo(viewId(R.id.foo, textView.displayOnly), Seq(classOf[id]))
+      val fieldInfos = info.updateableViewIdFieldInfos
+      fieldInfos must be ('empty)
+    }
+
     it("must provide a single field for an EntityView field to allow choosing Entity instance") {
       val fieldInfos = entityFieldInfo.updateableViewIdFieldInfos
       fieldInfos.map(_.id) must be (List("foo"))
@@ -79,6 +85,12 @@ class EntityFieldInfoSpec extends Spec with MustMatchers with MockitoSugar {
   }
 
   describe("displayableViewIdFieldInfos") {
+    it("must not include fields whose displayXml is Empty") {
+      val info = EntityFieldInfo(viewId(R.id.foo, textView.editOnly), Seq(classOf[id]))
+      val fieldInfos = info.displayableViewIdFieldInfos
+      fieldInfos must be ('empty)
+    }
+
     it("must provide each displayable field in the referenced EntityType for an EntityView field") {
       val fieldInfos = entityFieldInfo.displayableViewIdFieldInfos
       fieldInfos must be (EntityTypeViewInfo(MyEntityType).displayableViewIdFieldInfos)

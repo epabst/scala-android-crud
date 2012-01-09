@@ -38,7 +38,8 @@ case class EntityFieldInfo(field: BaseField, rIdClasses: Seq[Class[_]]) {
   lazy val displayableViewIdFieldInfos: List[ViewIdFieldInfo] =
     viewIdFieldInfos.filter(_.layout.displayXml != NodeSeq.Empty) ++ nestedEntityTypeViewInfos.flatMap(_.displayableViewIdFieldInfos)
 
-  lazy val updateableViewIdFieldInfos: List[ViewIdFieldInfo] = if (isPersisted) viewIdFieldInfos else Nil
+  lazy val updateableViewIdFieldInfos: List[ViewIdFieldInfo] =
+    if (isPersisted) viewIdFieldInfos.filter(_.layout.editXml != NodeSeq.Empty) else Nil
 
   lazy val otherViewFields = {
     val viewFieldsWithinViewIdFields = viewFields(FieldList(viewIdFieldInfos.map(_.field):_*))

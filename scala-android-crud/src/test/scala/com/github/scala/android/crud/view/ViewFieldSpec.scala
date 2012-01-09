@@ -16,6 +16,7 @@ import android.widget._
 import java.util.{Locale, GregorianCalendar, Calendar}
 import com.github.triangle.Getter
 import android.content.Context
+import xml.NodeSeq
 
 /** A behavior specification for [[com.github.scala.android.crud.view.ViewField]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -165,9 +166,9 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
   }
 
   @Test
-  def defaultLayoutMustBeOverriddenByDisplayLayout() {
+  def defaultLayoutEditXmlMustBeEliminatedByDisplayLayout() {
     val viewField = textView
-    viewField.displayOnly.defaultLayout.editXml must be (viewField.defaultLayout.displayXml)
+    viewField.displayOnly.defaultLayout.editXml must be (NodeSeq.Empty)
   }
 
   @Test
