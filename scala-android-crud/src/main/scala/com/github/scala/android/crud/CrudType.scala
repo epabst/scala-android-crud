@@ -193,12 +193,12 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
   final def setListAdapterUsingUri(crudContext: CrudContext, activity: CrudListActivity) {
     val persistence = openEntityPersistence(crudContext)
     persistenceVarForListAdapter.set(crudContext.vars, persistence)
-    setListAdapterUsingUri(persistence, crudContext, activity)
+    setListAdapterUsingUri(persistence, activity)
   }
 
-  def setListAdapterUsingUri(persistence: CrudPersistence, crudContext: CrudContext, activity: CrudListActivity) {
+  def setListAdapterUsingUri(persistence: CrudPersistence, activity: CrudListActivity) {
     val findAllResult = persistence.findAll(activity.currentUriPath)
-    setListAdapter(findAllResult, List(activity.currentUriPath, crudContext, PortableField.UseDefaults), activity)
+    setListAdapter(findAllResult, activity.contextItems, activity)
   }
 
   def setListAdapter(findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: CrudListActivity) {

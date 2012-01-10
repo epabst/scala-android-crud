@@ -6,11 +6,11 @@ import com.github.triangle.PortableField._
 import com.github.triangle.{SetterUsingItems, Getter}
 import com.github.scala.android.crud.GeneratedCrudType.{UriField, CrudContextField}
 import com.github.triangle.&&
-import scala.collection.JavaConversions._
 import android.widget._
 import android.view.View
 import android.app.Activity
 import xml.NodeSeq
+import com.github.scala.android.crud.{BaseCrudActivity, CrudContext}
 
 /** A ViewField that allows choosing a specific entity of a given EntityType or displaying its fields' values.
   * The layout for the EntityType that contains this EntityView may refer to fields of this view's EntityType
@@ -31,7 +31,7 @@ case class EntityView(entityType: EntityType)
   }
 
   protected val delegate = Getter[AdapterView[BaseAdapter], ID](v => Option(v.getSelectedItemId)) + SetterUsingItems[ID] {
-    case (adapterView: AdapterView[BaseAdapter], UriField(Some(uri)) && CrudContextField(Some(crudContext))) => idOpt: Option[ID] =>
+    case (adapterView: AdapterView[BaseAdapter], UriField(Some(uri)) && CrudContextField(Some(crudContext @ CrudContext(crudActivity: BaseCrudActivity, _)))) => idOpt: Option[ID] =>
       if (idOpt.isDefined || adapterView.getAdapter == null) {
         crudContext.withEntityPersistence(entityType) { persistence =>
           object FindAllResult {
@@ -40,7 +40,7 @@ case class EntityView(entityType: EntityType)
           }
           //don't do it again if already done from a previous time
           if (adapterView.getAdapter == null) {
-            val adapter = new ArrayAdapter[AnyRef](adapterView.getContext, itemViewResourceId, FindAllResult.seq)
+            val adapter = new EntityAdapter(entityType, FindAllResult.seq, itemViewResourceId, crudActivity.contextItems, crudActivity.getLayoutInflater)
             adapterView.setAdapter(adapter)
           }
           if (idOpt.isDefined) {

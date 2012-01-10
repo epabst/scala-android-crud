@@ -1,12 +1,12 @@
 package com.github.scala.android.crud
 
 import action._
-import com.github.triangle.Logging
 import android.view.MenuItem
 import android.content.Intent
 import common.{UriPath, Common, Timing, PlatformTypes}
 import PlatformTypes._
 import com.github.scala.android.crud.view.AndroidConversions._
+import com.github.triangle.{PortableField, Logging}
 
 /** Support for the different Crud Activity's.
   * @author Eric Pabst (epabst@gmail.com)
@@ -40,6 +40,8 @@ trait BaseCrudActivity extends ActivityWithVars with OptionsMenuActivity with Lo
   def uriWithId(id: ID): UriPath = currentUriPath.specify(entityType.entityName, id.toString)
 
   val crudContext = new CrudContext(this, application)
+
+  def contextItems = List(currentUriPath, crudContext, PortableField.UseDefaults)
 
   protected lazy val logTag = Common.tryToEvaluate(entityType.entityName).getOrElse(Common.logTag)
 

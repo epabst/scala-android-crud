@@ -13,7 +13,7 @@ trait GeneratedPersistenceFactory[T <: AnyRef] extends PersistenceFactory {
   def createEntityPersistence(entityType: EntityType, crudContext: CrudContext): SeqCrudPersistence[T]
 
   def setListAdapter(crudType: CrudType, findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: CrudListActivity) {
-    activity.setListAdapter(new EntityAdapter(crudType.entityType, findAllResult, crudType.rowLayout, contextItems, activity))
+    activity.setListAdapter(new EntityAdapter(crudType.entityType, findAllResult, crudType.rowLayout, contextItems, activity.getLayoutInflater))
   }
 
   def refreshAfterDataChanged(listAdapter: ListAdapter) {}
