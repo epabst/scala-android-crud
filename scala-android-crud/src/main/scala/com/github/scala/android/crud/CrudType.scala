@@ -1,23 +1,27 @@
 package com.github.scala.android.crud
 
 import action._
-import android.widget.ListAdapter
 import common.{UriPath, Timing}
 import generate.EntityTypeViewInfo
 import Operation._
 import android.app.Activity
 import com.github.triangle._
 import common.PlatformTypes._
-import persistence.{EntityType, PersistenceListener}
+import persistence.{CursorStream, EntityType, PersistenceListener}
 import PortableField.toSome
 import view.AndroidResourceAnalyzer._
 import java.lang.IllegalStateException
+import view.{AdapterCaching, EntityAdapter}
+import android.view.View
+import android.content.Context
+import android.database.Cursor
+import android.widget._
 
 /** An entity configuration that provides all custom information needed to
   * implement CRUD on the entity.  This shouldn't depend on the platform (e.g. android).
   * @author Eric Pabst (epabst@gmail.com)
   */
-abstract class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFactory) extends Timing with Logging {
+abstract class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFactory) extends Timing with Logging { self =>
   protected def logTag = entityType.logTag
 
   trace("Instantiated CrudType: " + this)
@@ -48,7 +52,7 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
   lazy val viewInfo = EntityTypeViewInfo(entityType)
   def isUpdateable: Boolean = viewInfo.isUpdateable
 
-  private val persistenceVarForListAdapter = new ContextVar[CrudPersistence]
+  private[crud] val persistenceVarForListAdapter = new ContextVar[CrudPersistence]
 
   protected def getStringKey(stringName: String): SKey =
     findResourceIdWithName(rStringClassesVal, stringName).getOrElse {
@@ -75,7 +79,6 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
     * Those entities should have a ParentField (or foreignKey) in their fields list.
     */
   def childEntities(application: CrudApplication): List[CrudType] = {
-    val self = this
     trace("childEntities: allCrudTypes=" + application.allCrudTypes + " self=" + self)
     application.allCrudTypes.filter { entity =>
       val parentEntityTypes = entity.parentEntityTypes(application)
@@ -191,18 +194,28 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
   }
 
   final def setListAdapterUsingUri(crudContext: CrudContext, activity: CrudListActivity) {
+    val uriPath = activity.currentUriPath
     val persistence = openEntityPersistence(crudContext)
     persistenceVarForListAdapter.set(crudContext.vars, persistence)
-    setListAdapterUsingUri(persistence, activity)
+    val findAllResult = persistence.findAll(uriPath)
+    setListAdapter(findAllResult, activity.getListView, activity, self.rowLayout, crudContext, activity.contextItems)
   }
 
-  def setListAdapterUsingUri(persistence: CrudPersistence, activity: CrudListActivity) {
-    val findAllResult = persistence.findAll(activity.currentUriPath)
-    setListAdapter(findAllResult, activity.contextItems, activity)
-  }
+  def setListAdapter[A <: Adapter](findAllResult: scala.Seq[AnyRef], adapterView: AdapterView[A], activity: Activity, itemLayout: LayoutKey, crudContext: CrudContext, contextItems: scala.List[AnyRef]) {
+    val adapter: AdapterCaching = findAllResult match {
+      case CursorStream(cursor, _) =>
+        activity.startManagingCursor(cursor)
+        new ResourceCursorAdapter(activity, itemLayout, cursor) with AdapterCaching {
+          def entityType = self.entityType
 
-  def setListAdapter(findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: CrudListActivity) {
-    persistenceFactory.setListAdapter(this, findAllResult,  contextItems, activity)
+          def bindView(view: View, context: Context, cursor: Cursor) {
+            bindViewFromCacheOrItems(view, entityType.transform(Map[String, Any](), cursor), contextItems, cursor.getPosition, adapterView)
+          }
+        }
+      case _ => new EntityAdapter(entityType, findAllResult, itemLayout, contextItems, activity.getLayoutInflater)
+    }
+    addPersistenceListener(adapter.cacheClearingPersistenceListener(adapterView), crudContext.vars)
+    adapterView.setAdapter(adapter.asInstanceOf[A])
   }
 
   def refreshAfterDataChanged(listAdapter: ListAdapter) {

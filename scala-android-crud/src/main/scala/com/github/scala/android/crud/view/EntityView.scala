@@ -33,20 +33,20 @@ case class EntityView(entityType: EntityType)
   protected val delegate = Getter[AdapterView[BaseAdapter], ID](v => Option(v.getSelectedItemId)) + SetterUsingItems[ID] {
     case (adapterView: AdapterView[BaseAdapter], UriField(Some(uri)) && CrudContextField(Some(crudContext @ CrudContext(crudActivity: BaseCrudActivity, _)))) => idOpt: Option[ID] =>
       if (idOpt.isDefined || adapterView.getAdapter == null) {
-        crudContext.withEntityPersistence(entityType) { persistence =>
-          object FindAllResult {
-            // Only call findAll if actually needed, and only once if needed for multiple purposes
-            lazy val seq = persistence.findAll(uri)
-          }
-          //don't do it again if already done from a previous time
-          if (adapterView.getAdapter == null) {
-            val adapter = new EntityAdapter(entityType, FindAllResult.seq, itemViewResourceId, crudActivity.contextItems, crudActivity.getLayoutInflater)
-            adapterView.setAdapter(adapter)
-          }
-          if (idOpt.isDefined) {
-            val position = FindAllResult.seq.view.map(item => persistence.idPkField(item)).indexOf(idOpt.get)
-            adapterView.setSelection(position)
-          }
+        val crudType = crudContext.application.crudType(entityType)
+        val persistence = crudContext.openEntityPersistence(entityType)
+        crudType.persistenceVarForListAdapter.set(crudContext.vars, persistence)
+        object FindAllResult {
+          // Only call findAll if actually needed, and only once if needed for multiple purposes
+          lazy val seq = persistence.findAll(uri)
+        }
+        //don't do it again if already done from a previous time
+        if (adapterView.getAdapter == null) {
+          crudType.setListAdapter(FindAllResult.seq, adapterView, crudActivity, itemViewResourceId, crudContext, crudActivity.contextItems)
+        }
+        if (idOpt.isDefined) {
+          val position = FindAllResult.seq.view.map(item => persistence.idPkField(item)).indexOf(idOpt.get)
+          adapterView.setSelection(position)
         }
       }
     case (AndroidUIElement(uiElement), items @ UriField(Some(baseUri)) && CrudContextField(Some(crudContext))) => idOpt: Option[ID] =>

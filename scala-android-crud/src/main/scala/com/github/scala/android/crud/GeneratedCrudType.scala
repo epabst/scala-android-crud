@@ -5,16 +5,11 @@ import android.widget.ListAdapter
 import common.{CachedFunction, UriPath}
 import persistence.EntityType
 import com.github.triangle.Field
-import view.EntityAdapter
 
 trait GeneratedPersistenceFactory[T <: AnyRef] extends PersistenceFactory {
   def newWritable: T = throw new UnsupportedOperationException("not supported")
 
   def createEntityPersistence(entityType: EntityType, crudContext: CrudContext): SeqCrudPersistence[T]
-
-  def setListAdapter(crudType: CrudType, findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: CrudListActivity) {
-    activity.setListAdapter(new EntityAdapter(crudType.entityType, findAllResult, crudType.rowLayout, contextItems, activity.getLayoutInflater))
-  }
 
   def refreshAfterDataChanged(listAdapter: ListAdapter) {}
 }

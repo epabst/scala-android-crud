@@ -16,8 +16,6 @@ trait PersistenceFactory {
 
   def createEntityPersistence(entityType: EntityType, crudContext: CrudContext): CrudPersistence
 
-  def setListAdapter(crudType: CrudType, findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: CrudListActivity)
-
   def refreshAfterDataChanged(listAdapter: ListAdapter)
 
   /** Returns true if the URI is worth calling EntityPersistence.find to try to get an entity instance.

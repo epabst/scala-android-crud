@@ -30,8 +30,6 @@ class MyPersistenceFactory(persistence: CrudPersistence) extends PersistenceFact
 
   def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) = persistence
 
-  def setListAdapter(crudType: CrudType, findAllResult: Seq[AnyRef], contextItems: List[AnyRef], activity: CrudListActivity) {}
-
   def refreshAfterDataChanged(listAdapter: ListAdapter) {}
 }
 

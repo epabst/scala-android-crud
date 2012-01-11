@@ -63,17 +63,8 @@ class CrudListActivity(val crudType: CrudType, val application: CrudApplication)
     }
   }
 
-  override def setListAdapter(adapter: ListAdapter) {
-    super.setListAdapter(adapter)
-    adapter match {
-      case adapterCaching: AdapterCaching =>
-        crudType.addPersistenceListener(adapterCaching.cacheClearingPersistenceListener(this), this)
-      case _ =>
-    }
-  }
-
   override def onDestroy() {
-    crudType.destroyContextVars(crudContext.vars)
+    application.allCrudTypes.foreach(_.destroyContextVars(crudContext.vars))
     super.onDestroy()
   }
 

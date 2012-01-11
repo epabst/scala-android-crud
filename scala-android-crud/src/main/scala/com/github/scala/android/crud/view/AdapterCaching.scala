@@ -1,13 +1,12 @@
 package com.github.scala.android.crud.view
 
-import android.app.ListActivity
 import com.github.triangle.{PortableValue, Logging}
 import com.github.scala.android.crud.persistence.{PersistenceListener, EntityType}
 import com.github.scala.android.crud.common.PlatformTypes._
 import com.github.scala.android.crud.common.{UriPath, Timing}
 import com.github.triangle.JavaUtil.toRunnable
-import android.widget.BaseAdapter
 import android.view.{ViewGroup, View}
+import android.widget.BaseAdapter
 
 trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
   def entityType: EntityType
@@ -24,15 +23,15 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
     trace("Added value at position " + position + " to the " + listView + " cache for " + entityType)
   }
 
-  def cacheClearingPersistenceListener(activity: ListActivity) = new PersistenceListener {
+  def cacheClearingPersistenceListener(adapterView: View) = new PersistenceListener {
     def onSave(id: ID) {
-      trace("Clearing ListView cache in " + activity + " since DataSet was invalidated")
-      activity.runOnUiThread { activity.getListView.setTag(null) }
+      trace("Clearing ListView cache in " + adapterView + " of " + entityType + " since DataSet was invalidated")
+      adapterView.post { adapterView.setTag(null) }
     }
 
     def onDelete(uri: UriPath) {
-      trace("Clearing ListView cache in " + activity + " since DataSet was invalidated")
-      activity.runOnUiThread { activity.getListView.setTag(null) }
+      trace("Clearing ListView cache in " + adapterView + " of " + entityType + " since DataSet was invalidated")
+      adapterView.post { adapterView.setTag(null) }
     }
   }
 
