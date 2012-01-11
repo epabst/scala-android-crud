@@ -79,6 +79,11 @@ trait BaseCrudActivity extends ActivityWithVars with OptionsMenuActivity with Lo
     }
   }
 
+  override def onDestroy() {
+    crudContext.vars.onDestroyContext()
+    super.onDestroy()
+  }
+
   //available to be overridden for testing
   def openEntityPersistence(): CrudPersistence = crudType.openEntityPersistence(crudContext)
 

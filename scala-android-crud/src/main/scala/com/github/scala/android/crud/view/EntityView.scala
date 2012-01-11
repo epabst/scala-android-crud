@@ -10,7 +10,7 @@ import android.widget._
 import android.view.View
 import android.app.Activity
 import xml.NodeSeq
-import com.github.scala.android.crud.{BaseCrudActivity, CrudContext}
+import com.github.scala.android.crud.{DestroyContextListener, BaseCrudActivity, CrudContext}
 
 /** A ViewField that allows choosing a specific entity of a given EntityType or displaying its fields' values.
   * The layout for the EntityType that contains this EntityView may refer to fields of this view's EntityType
@@ -35,7 +35,11 @@ case class EntityView(entityType: EntityType)
       if (idOpt.isDefined || adapterView.getAdapter == null) {
         val crudType = crudContext.application.crudType(entityType)
         val persistence = crudContext.openEntityPersistence(entityType)
-        crudType.persistenceVarForListAdapter.set(crudContext.vars, persistence)
+        crudContext.vars.addListener(new DestroyContextListener {
+          def onDestroyContext() {
+            persistence.close()
+          }
+        })
         object FindAllResult {
           // Only call findAll if actually needed, and only once if needed for multiple purposes
           lazy val seq = persistence.findAll(uri)

@@ -18,7 +18,9 @@ class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
   @Test
   def shouldAllowAdding() {
     val application = mock[CrudApplication]
-    val crudType = MyCrudType
+    val persistence = mock[CrudPersistence]
+    val crudType = new MyCrudType(persistence)
+    when(persistence.findAll(any())).thenReturn(Seq(Map[String,Any]("name" -> "Bob", "age" -> 25)))
     val activity = new CrudListActivity(crudType, application)
     activity.setIntent(new Intent(Intent.ACTION_MAIN))
     activity.onCreate(null)
@@ -64,6 +66,7 @@ class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
     val persistenceFactory = mock[PersistenceFactory]
     val persistence = mock[CrudPersistence]
     stub(persistenceFactory.createEntityPersistence(anyObject(), anyObject())).toReturn(persistence)
+    when(persistence.findAll(any())).thenReturn(Seq(Map[String,Any]("name" -> "Bob", "age" -> 25)))
     val application = mock[CrudApplication]
     val crudType = new MyCrudType(persistenceFactory)
     class MyCrudListActivity extends CrudListActivity(crudType, application) {

@@ -1,7 +1,7 @@
 package com.github.scala.android.crud
 
 import action.Action
-import android.widget.{ListAdapter, ListView}
+import android.widget.ListView
 import _root_.android.app.ListActivity
 import android.os.Bundle
 import android.view.{ContextMenu, View, MenuItem}
@@ -12,7 +12,6 @@ import common.UriPath
 import JavaUtil.toRunnable
 import persistence.PersistenceListener
 import common.PlatformTypes._
-import view.AdapterCaching
 
 /** A generic ListActivity for CRUD operations
   * @author Eric Pabst (epabst@gmail.com)
@@ -61,11 +60,6 @@ class CrudListActivity(val crudType: CrudType, val application: CrudApplication)
     runOnUiThread {
       portableValues.foreach(_.copyTo(this, List(crudContext)))
     }
-  }
-
-  override def onDestroy() {
-    application.allCrudTypes.foreach(_.destroyContextVars(crudContext.vars))
-    super.onDestroy()
   }
 
   override def onResume() {

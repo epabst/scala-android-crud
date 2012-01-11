@@ -5,11 +5,17 @@ import java.util.concurrent.ConcurrentHashMap
 import android.content.Context
 import collection.JavaConversions._
 import android.app.Activity
+import com.github.scala.android.crud.DestroyContextListener
+import com.github.scala.android.crud.common.ListenerHolder
 
 /** A container for values of [[com.github.scala.android.crud.action.ContextVar]]'s */
-trait ContextVars {
+trait ContextVars extends ListenerHolder[DestroyContextListener] {
   //for some reason, making this lazy results in it being null during testing, even though lazy would be preferrable.
   private[crud] val variables: ConcurrentMap[ContextVar[_], Any] = new ConcurrentHashMap[ContextVar[_], Any]()
+
+  def onDestroyContext() {
+    listeners.foreach(_.onDestroyContext())
+  }
 }
 
 /** A variable stored in a [[com.github.scala.android.crud.action.ContextWithVars]].

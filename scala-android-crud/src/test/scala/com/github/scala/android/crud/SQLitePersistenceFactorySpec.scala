@@ -16,8 +16,8 @@ import org.mockito.{Mockito, Matchers}
 import Mockito._
 import android.app.Activity
 import android.database.{Cursor, DataSetObserver}
-import android.widget.{ListView, ListAdapter}
 import android.database.sqlite.SQLiteDatabase
+import android.widget.ListView
 
 /** A test for [[com.github.scala.android.crud.SQLitePersistenceFactorySpec]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -97,22 +97,14 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
 
   @Test
   def shouldRefreshCursorWhenDeletingAndSaving() {
-    val listView = mock[ListView]
     val activity = new CrudListActivity(TestCrudType, application) {
-      private var listAdapter: ListAdapter = _
-      override def setListAdapter(adapter: ListAdapter) {
-        super.setListAdapter(adapter)
-        this.listAdapter = adapter
-      }
-      override def getListAdapter = listAdapter
-
-      override def getListView = listView
+      override val getListView: ListView = new ListView(this)
     }
     val observer = mock[DataSetObserver]
 
     val crudContext = new CrudContext(activity, application)
     TestCrudType.setListAdapterUsingUri(crudContext, activity)
-    val listAdapter = activity.getListAdapter
+    val listAdapter = activity.getListView.getAdapter
     listAdapter.getCount must be (0)
 
     val writable = TestCrudType.newWritable

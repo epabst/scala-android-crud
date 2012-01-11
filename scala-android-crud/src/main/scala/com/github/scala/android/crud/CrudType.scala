@@ -52,8 +52,6 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
   lazy val viewInfo = EntityTypeViewInfo(entityType)
   def isUpdateable: Boolean = viewInfo.isUpdateable
 
-  private[crud] val persistenceVarForListAdapter = new ContextVar[CrudPersistence]
-
   protected def getStringKey(stringName: String): SKey =
     findResourceIdWithName(rStringClassesVal, stringName).getOrElse {
       rStringClassesVal.foreach(rStringClass => error("Contents of " + rStringClass + " are " + rStringClass.getFields.mkString(", ")))
@@ -196,7 +194,11 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
   final def setListAdapterUsingUri(crudContext: CrudContext, activity: CrudListActivity) {
     val uriPath = activity.currentUriPath
     val persistence = openEntityPersistence(crudContext)
-    persistenceVarForListAdapter.set(crudContext.vars, persistence)
+    crudContext.vars.addListener(new DestroyContextListener {
+      def onDestroyContext() {
+        persistence.close()
+      }
+    })
     val findAllResult = persistence.findAll(uriPath)
     setListAdapter(findAllResult, activity.getListView, activity, self.rowLayout, crudContext, activity.contextItems)
   }
@@ -220,12 +222,6 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
 
   def refreshAfterDataChanged(listAdapter: ListAdapter) {
     persistenceFactory.refreshAfterDataChanged(listAdapter)
-  }
-
-  def destroyContextVars(vars: ContextVars) {
-    persistenceVarForListAdapter.clear(vars).map { persistence =>
-      persistence.close()
-    }
   }
 
   private[crud] def undoableDelete(uri: UriPath)(persistence: CrudPersistence) {

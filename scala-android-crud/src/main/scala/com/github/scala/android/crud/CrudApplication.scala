@@ -36,6 +36,11 @@ trait CrudApplication extends Logging {
     allCrudTypes.find(_.entityType == entityType).getOrElse(throw new NoSuchElementException(entityType + " not found"))
 }
 
+/** A listener for when a CrudContext is being destroyed and resources should be released. */
+trait DestroyContextListener {
+  def onDestroyContext()
+}
+
 /** A context which can store data for the duration of a single Activity.
   * @author Eric Pabst (epabst@gmail.com)
   */
