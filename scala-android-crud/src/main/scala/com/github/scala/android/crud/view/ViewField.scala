@@ -88,7 +88,7 @@ object ViewField {
 
   implicit val dateView: ViewField[Date] =
     new ViewField[Date](calendarDateView.defaultLayout) {
-      val delegate = converted(dateToCalendar, calendarToDate, calendarDateView)
+      val delegate = converted(dateToCalendar, calendarDateView, calendarToDate)
       override def toString = "dateView"
     }
 

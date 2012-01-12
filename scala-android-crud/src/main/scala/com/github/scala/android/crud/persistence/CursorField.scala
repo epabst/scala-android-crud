@@ -24,14 +24,14 @@ object CursorField {
   }
 
   def persistedUri(name: String): PortableField[Uri] =
-    converted[Uri,String](anyToString, Converter(s => Some(Uri.parse(s))), persisted(name))
+    converted[Uri,String](anyToString, persisted(name), (s: String) => Some(Uri.parse(s)))
 
   def persistedEnum[E <: Enumeration#Value](name: String, enumeration: Enumeration)(implicit m: Manifest[E]): PortableField[E] =
     formatted[E](ValueFormat.enumFormat(enumeration), persisted(name))
 
-  def persistedDate(name: String) = converted(dateToLong, longToDate, persisted[Long](name))
+  def persistedDate(name: String) = converted(dateToLong, persisted[Long](name), longToDate)
 
-  def persistedCalendar(name: String) = converted(calendarToDate, dateToCalendar, persistedDate(name))
+  def persistedCalendar(name: String) = converted(calendarToDate, persistedDate(name), dateToCalendar)
 
   val idFieldName = BaseColumns._ID
 
