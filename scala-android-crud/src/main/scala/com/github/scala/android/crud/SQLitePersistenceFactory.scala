@@ -15,6 +15,7 @@ object SQLitePersistenceFactory extends PersistenceFactory {
   def refreshAfterDataChanged(listAdapter: ListAdapter) {
     listAdapter match {
       case cursorAdapter: CursorAdapter => cursorAdapter.getCursor.requery()
+      case _ =>
     }
   }
 
