@@ -30,8 +30,8 @@ class CrudListActivity(val crudType: CrudType, val application: CrudApplication)
     registerForContextMenu(getListView)
 
     crudType.addPersistenceListener(new PersistenceListener {
-      def onSave(id: ID) { crudType.refreshAfterDataChanged(getListAdapter) }
-      def onDelete(uri: UriPath) { crudType.refreshAfterDataChanged(getListAdapter) }
+      def onSave(id: ID) { crudType.refreshAfterDataChanged(getListView.getAdapter) }
+      def onDelete(uri: UriPath) { crudType.refreshAfterDataChanged(getListView.getAdapter) }
     }, crudContext.context)
 
     crudType.setListAdapterUsingUri(crudContext, this)
@@ -61,6 +61,9 @@ class CrudListActivity(val crudType: CrudType, val application: CrudApplication)
       portableValues.foreach(_.copyTo(this, List(crudContext)))
     }
   }
+
+  // getListAdapter is somehow different than getListView.getAdapter, so force using a consistent semantic
+  override def getListAdapter = getListView.getAdapter
 
   override def onResume() {
     trace("onResume")

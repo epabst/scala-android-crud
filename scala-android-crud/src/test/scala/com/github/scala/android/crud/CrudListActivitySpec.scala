@@ -34,6 +34,16 @@ class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
   }
 
   @Test
+  def resultOfGetListAdapterMustBeEqualToGetListViewAndThenGetAdapter() {
+    val application = mock[CrudApplication]
+    stub(application.allCrudTypes).toReturn(Nil)
+    val crudType = MyCrudType
+    val activity = new CrudListActivity(crudType, application)
+    activity.setContentView(crudType.listLayout)
+    activity.getListView.getAdapter must be (activity.getListAdapter)
+  }
+
+  @Test
   def shouldHaveCorrectContextMenu() {
     val application = mock[CrudApplication]
     val contextMenu = mock[ContextMenu]

@@ -128,7 +128,6 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
   @Test
   def refreshAfterDataChangedMustDoNothingIfNotCursorAdapter() {
     SQLitePersistenceFactory.refreshAfterDataChanged(null)
-    SQLitePersistenceFactory.refreshAfterDataChanged(mock[ListAdapter])
   }
 
   @Test
