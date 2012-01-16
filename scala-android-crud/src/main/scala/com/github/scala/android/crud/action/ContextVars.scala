@@ -56,6 +56,19 @@ class ContextVar[T] {
   }
 }
 
+/** Similar to ContextVar but allows specifying an initial value, evaluated when first accessed. */
+class InitializedContextVar[T](initialValue: => T) {
+  private val contextVar = new ContextVar[T]
+
+  /** Gets the value or None if not set.
+    * @param context the Context where the value is stored
+    * @return Some(value) if set, otherwise None
+    */
+  def get(context: ContextVars): T = {
+    contextVar.getOrSet(context, initialValue)
+  }
+}
+
 /** A ContextVars that has been mixed with a Context.
   * @author Eric Pabst (epabst@gmail.com)
   */

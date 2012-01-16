@@ -16,6 +16,9 @@ import android.view.View
 import android.content.Context
 import android.database.Cursor
 import android.widget._
+import java.util.concurrent.CopyOnWriteArraySet
+import scala.collection.JavaConversions._
+import collection.mutable
 
 /** An entity configuration that provides all custom information needed to
   * implement CRUD on the entity.  This shouldn't depend on the platform (e.g. android).
@@ -166,15 +169,15 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
     displayLayout.map(_ => displayAction).toList ::: childEntities(application).map(_.listAction)
 
   /** Listeners that will listen to any EntityPersistence that is opened. */
-  val persistenceListeners = new ContextVar[Seq[PersistenceListener]]
+  val persistenceListeners = new InitializedContextVar[mutable.Set[PersistenceListener]](new CopyOnWriteArraySet[PersistenceListener]())
 
   def addPersistenceListener(listener: PersistenceListener, context: ContextVars) {
-    persistenceListeners.set(context, listener +: persistenceListeners.get(context).getOrElse(Nil))
+    persistenceListeners.get(context) += listener
   }
 
   def openEntityPersistence(crudContext: CrudContext): CrudPersistence = {
     val persistence = createEntityPersistence(crudContext)
-    persistenceListeners.get(crudContext.vars).getOrElse(Nil).foreach(persistence.addListener(_))
+    persistenceListeners.get(crudContext.vars).foreach(persistence.addListener(_))
     persistence
   }
 
