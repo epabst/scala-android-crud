@@ -3,7 +3,6 @@ package com.github.scala.android.crud
 import common.UriPath
 import common.Common
 import persistence._
-import com.github.triangle.{Setter, Getter, FieldList}
 import common.PlatformTypes._
 
 /** An EntityPersistence for a CrudType.
@@ -18,18 +17,14 @@ trait CrudPersistence extends EntityPersistence {
 
   def toUri(id: ID) = entityType.toUri(id)
 
-  lazy val idPkField = entityType.IdField + Getter[IdPk,ID](_.id).withTransformer(e => e.id(_)) +
-    Setter((e: MutableIdPk) => e.id = _)
-  private lazy val fieldsIncludingIdPk = FieldList((idPkField +: entityType.fields): _*)
-
   def find[T <: AnyRef](uri: UriPath, instantiateItem: => T): Option[T] =
-    find(uri).map(fieldsIncludingIdPk.transform(instantiateItem, _))
+    find(uri).map(entityType.fieldsIncludingIdPk.transform(instantiateItem, _))
 
   /** Find an entity with a given ID using a baseUri. */
   def find(id: ID, baseUri: UriPath): Option[AnyRef] = find(baseUri.specify(entityType.entityName, id.toString))
 
   def findAll[T <: AnyRef](uri: UriPath, instantiateItem: => T): Seq[T] =
-    findAll(uri).map(fieldsIncludingIdPk.transform(instantiateItem, _))
+    findAll(uri).map(entityType.fieldsIncludingIdPk.transform(instantiateItem, _))
 
   /** Saves the entity.  This assumes that the entityType's fields support copying from the given modelEntity. */
   def save(modelEntity: IdPk): ID = {

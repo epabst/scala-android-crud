@@ -28,6 +28,11 @@ trait EntityType extends FieldList with Logging {
   /** The fields other than the primary key. */
   def valueFields: List[BaseField]
 
+  /** The idField along with accessors for IdPk instances. */
+  lazy val idPkField = IdField + Getter[IdPk,ID](_.id).withTransformer(e => e.id(_)) +
+    Setter((e: MutableIdPk) => e.id = _)
+  lazy val fieldsIncludingIdPk = FieldList((idPkField +: fields): _*)
+
   /** These are all of the entity's fields, which includes IdPk.idField and the valueFields. */
   final lazy val fields: List[BaseField] = IdField +: valueFields
 
