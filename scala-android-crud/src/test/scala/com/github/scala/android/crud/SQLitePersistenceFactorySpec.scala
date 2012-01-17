@@ -17,7 +17,7 @@ import Mockito._
 import android.app.Activity
 import android.database.{Cursor, DataSetObserver}
 import android.database.sqlite.SQLiteDatabase
-import android.widget.{ListAdapter, ListView}
+import android.widget.ListView
 
 /** A test for [[com.github.scala.android.crud.SQLitePersistenceFactorySpec]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -123,11 +123,6 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
     TestCrudType.withEntityPersistence(crudContext) { _.delete(TestEntityType.toUri(id)) }
     //it must have refreshed the listAdapter
     listAdapter.getCount must be (0)
-  }
-
-  @Test
-  def refreshAfterDataChangedMustDoNothingIfNotCursorAdapter() {
-    SQLitePersistenceFactory.refreshAfterDataChanged(null)
   }
 
   @Test

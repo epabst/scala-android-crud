@@ -210,6 +210,14 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
     val adapter: AdapterCaching = findAllResult match {
       case CursorStream(cursor, _) =>
         activity.startManagingCursor(cursor)
+        addPersistenceListener(new PersistenceListener {
+          def onSave(id: ID) {
+            cursor.requery()
+          }
+          def onDelete(uri: UriPath) {
+            cursor.requery()
+          }
+        }, crudContext.vars)
         new ResourceCursorAdapter(activity, itemLayout, cursor) with AdapterCaching {
           def entityType = self.entityType
 
@@ -221,10 +229,6 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
     }
     addPersistenceListener(adapter.cacheClearingPersistenceListener(adapterView), crudContext.vars)
     adapterView.setAdapter(adapter.asInstanceOf[A])
-  }
-
-  def refreshAfterDataChanged(listAdapter: ListAdapter) {
-    persistenceFactory.refreshAfterDataChanged(listAdapter)
   }
 
   private[crud] def undoableDelete(uri: UriPath)(persistence: CrudPersistence) {

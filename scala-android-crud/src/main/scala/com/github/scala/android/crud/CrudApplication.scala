@@ -1,10 +1,13 @@
 package com.github.scala.android.crud
 
-import action.{ContextVars, ContextWithVars}
+import action.{InitializedContextVar, ContextVars, ContextWithVars}
 import com.github.triangle.Logging
 import common.Common
-import persistence.EntityType
 import java.util.NoSuchElementException
+import collection.mutable
+import persistence.EntityType
+import java.util.concurrent.CopyOnWriteArraySet
+import collection.JavaConversions._
 
 /** An Application that works with [[com.github.scala.android.crud.CrudType]]s.
  * @author Eric Pabst (epabst@gmail.com)
@@ -53,4 +56,19 @@ case class CrudContext(context: ContextWithVars, application: CrudApplication) {
 
   def withEntityPersistence[T](entityType: EntityType)(f: CrudPersistence => T): T =
     application.crudType(entityType).withEntityPersistence(this)(f)
+
+  def addOnRefreshListener(listener: OnRefreshListener, context: ContextVars) {
+    OnRefreshListeners.get(context) += listener
+  }
+
+  def onRefresh(context: ContextVars) {
+    OnRefreshListeners.get(context).foreach(_.onRefresh())
+  }
+}
+
+/** Listeners that will listen to any EntityPersistence that is opened. */
+object OnRefreshListeners extends InitializedContextVar[mutable.Set[OnRefreshListener]](new CopyOnWriteArraySet[OnRefreshListener]())
+
+trait OnRefreshListener {
+  def onRefresh()
 }

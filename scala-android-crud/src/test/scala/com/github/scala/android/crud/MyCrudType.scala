@@ -2,7 +2,6 @@ package com.github.scala.android.crud
 
 import org.mockito.Mockito
 import persistence.EntityType
-import android.widget.ListAdapter
 
 /** A simple CrudType for testing.
   * @author Eric Pabst (epabst@gmail.com)
@@ -29,8 +28,6 @@ class MyPersistenceFactory(persistence: CrudPersistence) extends PersistenceFact
   override def newWritable = Map.empty[String,Any]
 
   def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) = persistence
-
-  def refreshAfterDataChanged(listAdapter: ListAdapter) {}
 }
 
 trait StubCrudType extends CrudType {

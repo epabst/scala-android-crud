@@ -29,11 +29,6 @@ class CrudListActivity(val crudType: CrudType, val application: CrudApplication)
 		view.addHeaderView(getLayoutInflater.inflate(crudType.headerLayout, null));
     registerForContextMenu(getListView)
 
-    crudType.addPersistenceListener(new PersistenceListener {
-      def onSave(id: ID) { crudType.refreshAfterDataChanged(getListView.getAdapter) }
-      def onDelete(uri: UriPath) { crudType.refreshAfterDataChanged(getListView.getAdapter) }
-    }, crudContext.context)
-
     crudType.setListAdapterUsingUri(crudContext, this)
     future {
       populateFromParentEntities()
@@ -67,7 +62,7 @@ class CrudListActivity(val crudType: CrudType, val application: CrudApplication)
 
   override def onResume() {
     trace("onResume")
-    crudType.refreshAfterDataChanged(getListAdapter)
+    crudContext.onRefresh(this)
     super.onResume()
   }
 

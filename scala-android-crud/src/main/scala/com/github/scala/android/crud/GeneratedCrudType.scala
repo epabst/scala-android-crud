@@ -10,8 +10,6 @@ trait GeneratedPersistenceFactory[T <: AnyRef] extends PersistenceFactory {
   def newWritable: T = throw new UnsupportedOperationException("not supported")
 
   def createEntityPersistence(entityType: EntityType, crudContext: CrudContext): SeqCrudPersistence[T]
-
-  def refreshAfterDataChanged(listAdapter: ListAdapter) {}
 }
 
 object GeneratedPersistenceFactory {
