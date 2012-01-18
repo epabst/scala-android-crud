@@ -28,19 +28,19 @@ class FieldLayoutSpec extends Spec with MustMatchers {
     }
   }
 
-  describe("displayOnly") {
+  describe("suppressEdit") {
     it("must make the editXml empty but preserve the displayXml") {
       val fieldLayout = FieldLayout.datePickerLayout
-      fieldLayout.displayOnly.editXml must be (NodeSeq.Empty)
-      fieldLayout.displayOnly.displayXml must be (fieldLayout.displayXml)
+      fieldLayout.suppressEdit.editXml must be (NodeSeq.Empty)
+      fieldLayout.suppressEdit.displayXml must be (fieldLayout.displayXml)
     }
   }
 
-  describe("editOnly") {
+  describe("suppressDisplay") {
     it("must make the displayXml empty but preserve the editXml") {
       val fieldLayout = FieldLayout.datePickerLayout
-      fieldLayout.editOnly.displayXml must be (NodeSeq.Empty)
-      fieldLayout.editOnly.editXml must be (fieldLayout.editXml)
+      fieldLayout.suppressDisplay.displayXml must be (NodeSeq.Empty)
+      fieldLayout.suppressDisplay.editXml must be (fieldLayout.editXml)
     }
   }
 }

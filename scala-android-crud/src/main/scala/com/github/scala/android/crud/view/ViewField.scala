@@ -34,8 +34,8 @@ object ViewExtractor extends Field(identityField[View])
   * @author Eric Pabst (epabst@gmail.com)
   */
 abstract class ViewField[T](val defaultLayout: FieldLayout) extends DelegatingPortableField[T] { self =>
-  lazy val displayOnly: ViewField[T] = ViewField[T](defaultLayout.displayOnly, this)
-  lazy val editOnly: ViewField[T] = ViewField[T](defaultLayout.editOnly, this)
+  lazy val suppressEdit: ViewField[T] = ViewField[T](defaultLayout.suppressEdit, this)
+  lazy val suppressDisplay: ViewField[T] = ViewField[T](defaultLayout.suppressDisplay, this)
 
   def withDefaultLayout(newDefaultLayout: FieldLayout): ViewField[T] = ViewField[T](newDefaultLayout, this)
 }

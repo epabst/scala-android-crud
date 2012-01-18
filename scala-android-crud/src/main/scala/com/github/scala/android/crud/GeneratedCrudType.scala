@@ -1,7 +1,6 @@
 package com.github.scala.android.crud
 
 import com.github.triangle.PortableField.identityField
-import android.widget.ListAdapter
 import common.{CachedFunction, UriPath}
 import persistence.EntityType
 import com.github.triangle.Field

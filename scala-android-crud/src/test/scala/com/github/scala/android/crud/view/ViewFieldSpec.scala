@@ -168,7 +168,7 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
   @Test
   def defaultLayoutEditXmlMustBeEliminatedByDisplayLayout() {
     val viewField = textView
-    viewField.displayOnly.defaultLayout.editXml must be (NodeSeq.Empty)
+    viewField.suppressEdit.defaultLayout.editXml must be (NodeSeq.Empty)
   }
 
   @Test

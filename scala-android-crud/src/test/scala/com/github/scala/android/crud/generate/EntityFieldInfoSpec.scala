@@ -72,7 +72,7 @@ class EntityFieldInfoSpec extends Spec with MustMatchers with MockitoSugar {
 
   describe("updateableViewIdFieldInfos") {
     it("must not include fields whose editXml is Empty") {
-      val info = EntityFieldInfo(viewId(R.id.foo, textView.displayOnly), Seq(classOf[id]))
+      val info = EntityFieldInfo(viewId(R.id.foo, textView.suppressEdit), Seq(classOf[id]))
       val fieldInfos = info.updateableViewIdFieldInfos
       fieldInfos must be ('empty)
     }
@@ -86,7 +86,7 @@ class EntityFieldInfoSpec extends Spec with MustMatchers with MockitoSugar {
 
   describe("displayableViewIdFieldInfos") {
     it("must not include fields whose displayXml is Empty") {
-      val info = EntityFieldInfo(viewId(R.id.foo, textView.editOnly), Seq(classOf[id]))
+      val info = EntityFieldInfo(viewId(R.id.foo, textView.suppressDisplay), Seq(classOf[id]))
       val fieldInfos = info.displayableViewIdFieldInfos
       fieldInfos must be ('empty)
     }
