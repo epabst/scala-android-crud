@@ -47,7 +47,7 @@ case class EntityView(entityType: EntityType)
         }
         if (idOpt.isDefined) {
           val adapter = adapterView.getAdapter
-          val position = (0 to adapter.getCount).view.map(adapter.getItemId(_)).indexOf(idOpt.get)
+          val position = (0 to (adapter.getCount - 1)).view.map(adapter.getItemId(_)).indexOf(idOpt.get)
           adapterView.setSelection(position)
         }
       }
