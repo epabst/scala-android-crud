@@ -46,11 +46,15 @@ class CrudListActivity(val crudType: CrudType, val application: CrudApplication)
     }
   }
 
-  private def populateFromParentEntities() {
+  private[crud] def populateFromParentEntities() {
     val uriPath = currentUriPath
     //copy each parent Entity's data to the Activity if identified in the currentUriPath
     val portableValues: List[PortableValue] = crudType.parentEntities(application).flatMap { parentType =>
-      crudType.copyFromPersistedEntity(uriPath, crudContext)
+      if (crudType.maySpecifyEntityInstance(uriPath)) {
+        crudType.copyFromPersistedEntity(uriPath, crudContext)
+      } else {
+        None
+      }
     }
     runOnUiThread {
       portableValues.foreach(_.copyTo(this, List(crudContext)))

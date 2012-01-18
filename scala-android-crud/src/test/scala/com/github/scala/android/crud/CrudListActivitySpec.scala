@@ -9,12 +9,28 @@ import org.scalatest.matchers.MustMatchers
 import android.view.{View, ContextMenu}
 import org.mockito.Mockito._
 import org.mockito.Matchers._
+import persistence.EntityType
 
 /** A test for [[com.github.scala.android.crud.CrudListActivity]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[RobolectricTestRunner])
 class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
+  @Test
+  def mustNotCopyFromParentEntityIfUriPathIsInsufficient() {
+    val crudType = mock[CrudType]
+    val parentCrudType = mock[CrudType]
+    val application = mock[CrudApplication]
+    val entityType = mock[EntityType]
+    stub(crudType.entityType).toReturn(entityType)
+    stub(crudType.parentEntities(application)).toReturn(List(parentCrudType))
+    stub(crudType.maySpecifyEntityInstance(any())).toReturn(false)
+
+    val activity = new CrudListActivity(crudType, application)
+    activity.populateFromParentEntities()
+    verify(crudType, never()).copyFromPersistedEntity(any(), any())
+  }
+
   @Test
   def shouldAllowAdding() {
     val application = mock[CrudApplication]
