@@ -33,8 +33,6 @@ class CrudActivity(val crudType: CrudType, val application: CrudApplication) ext
   }
 
   override def onPause() {
-    //intentionally don't include CrudContext presumably those are only used for calculated fields, which shouldn't be persisted.
-    val contextItems = List(currentUriPath, PortableField.UseDefaults)
     val writable = crudType.newWritable
     withPersistence { persistence =>
       val transformedWritable = entityType.transformWithItem(writable, this :: contextItems)
