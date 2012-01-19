@@ -8,6 +8,7 @@ import java.util.Date
 import com.github.scala.android.crud.ParentField._
 import view.ViewField._
 import view.{EntityView, EnumerationView}
+import com.github.scala.android.crud.validate.Validation._
 
 object BookEntityType extends EntityType {
   def entityName = "Book"
@@ -15,7 +16,7 @@ object BookEntityType extends EntityType {
   def valueFields = List(
     foreignKey(AuthorEntityType),
 
-    persisted[String]("name") + viewId(classOf[R], "name", textView),
+    persisted[String]("name") + viewId(classOf[R], "name", textView) + requiredString,
 
     persisted[Int]("edition") + viewId(classOf[R], "edition", intView),
 

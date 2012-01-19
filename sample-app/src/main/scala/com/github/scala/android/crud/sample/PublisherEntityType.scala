@@ -9,6 +9,7 @@ import crud.persistence.CursorField._
 import crud.persistence.EntityType
 import crud.view.ViewField._
 import com.github.triangle._
+import com.github.scala.android.crud.validate.Validation._
 import PortableField._
 import crud.GeneratedCrudType.{UriField, CrudContextField}
 
@@ -16,7 +17,7 @@ object PublisherEntityType extends EntityType {
   def entityName = "Publisher"
 
   def valueFields = List(
-    persisted[String]("name") + viewId(classOf[R], "publisher_name", textView),
+    persisted[String]("name") + viewId(classOf[R], "publisher_name", textView) + requiredString,
 
     viewId(classOf[R], "bookCount", intView) + mapField[Int]("bookCount") + GetterFromItem[Int] {
       case UriField(Some(uri)) && CrudContextField(Some(crudContext)) => {

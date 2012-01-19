@@ -7,12 +7,13 @@ import view.ViewField._
 import com.github.triangle._
 import PortableField._
 import com.github.scala.android.crud.GeneratedCrudType.{UriField, CrudContextField}
+import com.github.scala.android.crud.validate.Validation._
 
 object AuthorEntityType extends EntityType {
   def entityName = "Author"
 
   def valueFields = List(
-    persisted[String]("name") + viewId(classOf[R], "name", textView),
+    persisted[String]("name") + viewId(classOf[R], "name", textView) + requiredString,
 
     viewId(classOf[R], "bookCount", intView) +
             mapField[Int]("bookCount") +
