@@ -23,7 +23,7 @@ class SQLiteEntityPersistence(val entityType: EntityType, val crudContext: CrudC
   lazy val databaseSetup = new GeneratedDatabaseSetup(crudContext)
   lazy val database: SQLiteDatabase = databaseSetup.getWritableDatabase
   private lazy val backupManager = new BackupManager(crudContext.context)
-  private var cursors = new SynchronizedQueue[Cursor]
+  private val cursors = new SynchronizedQueue[Cursor]
 
   lazy val persistedFields: List[CursorField[_]] = CursorField.persistedFields(entityType)
   lazy val queryFieldNames: List[String] = persistedFields.map(_.columnName)

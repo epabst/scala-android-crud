@@ -4,6 +4,7 @@ import scala.collection.mutable
 import com.github.scala.android.crud.common.UriPath
 import com.github.triangle.{Setter, Getter, Field}
 import com.github.scala.android.crud.common.PlatformTypes._
+import java.util.concurrent.atomic.AtomicLong
 
 /** EntityPersistence for a simple generated Seq.
   * @author Eric Pabst (epabst@gmail.com)
@@ -28,7 +29,7 @@ abstract class ListBufferEntityPersistence[T <: AnyRef](newWritableFunction: => 
       Setter((e: MutableIdPk) => e.id = _) + CursorField.PersistedId)
   val buffer = mutable.ListBuffer[T]()
 
-  var nextId = 10000L
+  val nextId = new AtomicLong(10000L)
 
   //todo only return the one that matches the ID in the uri, if present
   //def findAll(uri: UriPath) = buffer.toList.filter(item => uri.segments.containsSlice(toUri(IdField(item)).segments))
@@ -38,8 +39,7 @@ abstract class ListBufferEntityPersistence[T <: AnyRef](newWritableFunction: => 
 
   def doSave(id: Option[ID], item: AnyRef) = {
     val newId = id.getOrElse {
-      nextId += 1
-      nextId
+      nextId.incrementAndGet()
     }
     buffer += IdField.transformer[T](item.asInstanceOf[T])(Some(newId));
     newId

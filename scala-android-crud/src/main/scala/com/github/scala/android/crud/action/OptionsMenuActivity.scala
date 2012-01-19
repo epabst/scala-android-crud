@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 trait OptionsMenuActivity extends ActivityWithVars {
   protected def initialOptionsMenuCommands: List[Command]
 
-  // Use a ContextVar instead of a var to make it thread-safe
+  // Use a ContextVar to make it thread-safe
   private object OptionsMenuCommandsVar extends ContextVar[List[Command]]
 
   final def optionsMenuCommands: List[Command] = OptionsMenuCommandsVar.get(this).getOrElse(initialOptionsMenuCommands)
