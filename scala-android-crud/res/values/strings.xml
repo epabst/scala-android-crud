@@ -5,4 +5,5 @@
   <string name="edit_test">Edit</string>
   <string name="delete_item">Delete</string>
   <string name="undo_delete">Undo Delete</string>
+  <string name="data_saved_notification">Saved</string>
 </resources>

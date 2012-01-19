@@ -7,6 +7,7 @@ import com.github.triangle.PortableField
 import android.content.Intent
 import android.app.Activity
 import com.github.scala.android.crud.view.AndroidConversions._
+import android.widget.Toast
 
 /** A generic Activity for CRUD operations
   * @author Eric Pabst (epabst@gmail.com)
@@ -45,6 +46,7 @@ class CrudActivity(val crudType: CrudType, val application: CrudApplication) ext
     try {
       val id = entityType.IdField.getter(currentUriPath)
       val newId = persistence.save(id, writable)
+      Toast.makeText(this, res.R.string.data_saved_notification, Toast.LENGTH_SHORT)
       if (id.isEmpty) setIntent(getIntent.setData(uriWithId(newId)))
     } catch { case e => error("onPause: Unable to store " + writable, e) }
   }
