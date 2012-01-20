@@ -54,7 +54,12 @@ case class CrudContext(context: ContextWithVars, application: CrudApplication) {
   def openEntityPersistence(entityType: EntityType): CrudPersistence =
     application.crudType(entityType).openEntityPersistence(this)
 
-  def withEntityPersistence[T](entityType: EntityType)(f: CrudPersistence => T): T =
+  /** This is final so that it will call the similar method even when mocking, making mocking easier when testing. */
+  final def withEntityPersistence[T](entityType: EntityType)(f: CrudPersistence => T): T =
+    withEntityPersistence_uncurried(entityType, f)
+
+  /** This is useful for unit testing because it is much easier to mock than its counterpart. */
+  def withEntityPersistence_uncurried[T](entityType: EntityType, f: CrudPersistence => T): T =
     application.crudType(entityType).withEntityPersistence(this)(f)
 
   def addOnRefreshListener(listener: OnRefreshListener, context: ContextVars) {
