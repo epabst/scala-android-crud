@@ -6,4 +6,5 @@
   <string name="delete_item">Delete</string>
   <string name="undo_delete">Undo Delete</string>
   <string name="data_saved_notification">Saved</string>
+  <string name="data_not_saved_since_invalid_notification">Not Saved</string>
 </resources>

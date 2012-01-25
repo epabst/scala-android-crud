@@ -4,6 +4,8 @@ import com.github.triangle.Transformer
 import scala.{PartialFunction, AnyRef}
 
 case class ValidationResult(numInvalid: Int) {
+  def isValid: Boolean = numInvalid == 0
+
   def +(isValid: Boolean): ValidationResult = if (isValid) this else ValidationResult(numInvalid + 1)
 }
 

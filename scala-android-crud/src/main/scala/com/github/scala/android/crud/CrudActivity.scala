@@ -8,6 +8,7 @@ import android.content.Intent
 import android.app.Activity
 import com.github.scala.android.crud.view.AndroidConversions._
 import android.widget.Toast
+import validate.ValidationResult
 
 /** A generic Activity for CRUD operations
   * @author Eric Pabst (epabst@gmail.com)
@@ -36,8 +37,14 @@ class CrudActivity(val crudType: CrudType, val application: CrudApplication) ext
   override def onPause() {
     val writable = crudType.newWritable
     withPersistence { persistence =>
-      val transformedWritable = entityType.transformWithItem(writable, this :: contextItems)
-      saveForOnPause(persistence, transformedWritable)
+      val copyableFields = entityType.copyableTo(writable, contextItems)
+      val portableValue = copyableFields.copyFromItem(this :: contextItems)
+      if (portableValue.transform(ValidationResult.Valid).isValid) {
+        val transformedWritable = portableValue.transform(writable)
+        saveForOnPause(persistence, transformedWritable)
+      } else {
+        Toast.makeText(this, res.R.string.data_not_saved_since_invalid_notification, Toast.LENGTH_SHORT).show()
+      }
     }
     super.onPause()
   }
