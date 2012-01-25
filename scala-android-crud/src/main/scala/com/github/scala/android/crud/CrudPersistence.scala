@@ -4,11 +4,12 @@ import common.UriPath
 import common.Common
 import persistence._
 import common.PlatformTypes._
+import com.github.triangle.Logging
 
 /** An EntityPersistence for a CrudType.
   * @author Eric Pabst (epabst@gmail.com)
   */
-trait CrudPersistence extends EntityPersistence {
+trait CrudPersistence extends EntityPersistence with Logging {
   protected def logTag: String = Common.tryToEvaluate(entityType.logTag).getOrElse(Common.logTag)
 
   def entityType: EntityType
@@ -22,6 +23,12 @@ trait CrudPersistence extends EntityPersistence {
 
   /** Find an entity with a given ID using a baseUri. */
   def find(id: ID, baseUri: UriPath): Option[AnyRef] = find(baseUri.specify(entityType.entityName, id.toString))
+
+  override def find(uri: UriPath): Option[AnyRef] = {
+    val result = super.find(uri)
+    info("find(" + uri + ") for " + entityType.entityName + " returned " + result)
+    result
+  }
 
   def findAll[T <: AnyRef](uri: UriPath, instantiateItem: => T): Seq[T] =
     findAll(uri).map(entityType.fieldsIncludingIdPk.transform(instantiateItem, _))
