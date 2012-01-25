@@ -31,7 +31,7 @@ object BookEntityType extends EntityType {
 /** A CRUD type for Book.
   * @author pabstec
   */
-class BookCrudType(persistenceFactory: PersistenceFactory) extends CrudType(BookEntityType, persistenceFactory) {
+class BookCrudType(persistenceFactory: PersistenceFactory) extends PersistedCrudType(BookEntityType, persistenceFactory) {
   def activityClass = classOf[BookActivity]
   def listActivityClass = classOf[BookListActivity]
 }
