@@ -5,7 +5,6 @@ import com.github.triangle._
 import PortableField._
 import java.util.{Calendar, Date, GregorianCalendar}
 import FieldLayout._
-import ValueFormat._
 import com.github.triangle.Converter._
 import android.widget._
 import com.github.scala.android.crud.view.AndroidResourceAnalyzer._
@@ -60,37 +59,42 @@ object ViewField {
     val delegate = Getter[TextView,String](v => toOption(v.getText.toString.trim)).withSetter(v => v.setText(_), _.setText(""))
     override def toString = "textView"
   }
+  def formattedTextView[T](toDisplayString: Converter[T,String], toEditString: Converter[T,String],
+                           fromString: Converter[String,T], defaultLayout: FieldLayout = nameLayout): ViewField[T] =
+    new ViewField[T](defaultLayout) {
+      val delegate = Getter[TextView,T](view => toOption(view.getText.toString.trim).flatMap(fromString.convert(_))) +
+        Setter[T] {
+          case view: EditText => value => view.setText(value.flatMap(toEditString.convert(_)).getOrElse(""))
+          case view: TextView => value => view.setText(value.flatMap(toDisplayString.convert(_)).getOrElse(""))
+        }
+
+      override def toString = "formattedTextView"
+    }
   def textViewWithInputType(inputType: String): ViewField[String] = textView.withDefaultLayout(textLayout(inputType))
   lazy val phoneView: ViewField[String] = textViewWithInputType("phone")
   lazy val doubleView: ViewField[Double] = ViewField[Double](doubleLayout, formatted(textView))
-  lazy val currencyView = ViewField[Double](currencyLayout, formatted(currencyValueFormat, textView))
+  lazy val currencyView = formattedTextView[Double](currencyToString, currencyToEditString, stringToCurrency, currencyLayout)
   lazy val intView: ViewField[Int] = ViewField[Int](intLayout, formatted[Int](textView))
   lazy val longView: ViewField[Long] = ViewField[Long](longLayout, formatted[Long](textView))
-  /** Specifically an EditText view in order to get different behavior compared to a plain TextView. */
-  val editTextView: ViewField[String] = new ViewField[String](nameLayout) {
-    val delegate = Getter[EditText,String](v => toOption(v.getText.toString.trim)).withSetter(v => v.setText(_), _.setText(""))
-    override def toString = "editTextView"
-  }
 
   private def toOption(string: String): Option[String] = if (string == "") None else Some(string)
 
-  val calendarDateView: ViewField[Calendar] = new ViewField[Calendar](datePickerLayout) {
-    val delegate = Setter[Calendar] {
-      case view: EditText => _.foreach(value => view.setText(calendarValueFormat.toString(value)))
-      case view: TextView => _.foreach(value => view.setText(calendarDisplayValueFormat.toString(value)))
-      case picker: DatePicker => valueOpt =>
-        val calendar = valueOpt.getOrElse(Calendar.getInstance())
-        picker.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
-    } + Getter(formatted(calendarValueFormat, textView).getter) +
-            Getter((p: DatePicker) => Some(new GregorianCalendar(p.getYear, p.getMonth, p.getDayOfMonth)))
-    override def toString = "calendarDateView"
+  private val calendarPickerField = Setter[Calendar] {
+    case picker: DatePicker => valueOpt =>
+      val calendar = valueOpt.getOrElse(Calendar.getInstance())
+      picker.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
+  } + Getter((p: DatePicker) => Some(new GregorianCalendar(p.getYear, p.getMonth, p.getDayOfMonth)))
+
+  implicit val dateView: ViewField[Date] = new ViewField[Date](datePickerLayout) {
+    val delegate = formattedTextView(dateToDisplayString, dateToString, stringToDate) +
+      converted(dateToCalendar, calendarPickerField, calendarToDate)
+    override def toString = "dateView"
   }
 
-  implicit val dateView: ViewField[Date] =
-    new ViewField[Date](calendarDateView.defaultLayout) {
-      val delegate = converted(dateToCalendar, calendarDateView, calendarToDate)
-      override def toString = "dateView"
-    }
+  val calendarDateView: ViewField[Calendar] = new ViewField[Calendar](datePickerLayout) {
+    val delegate = converted(calendarToDate, dateView, dateToCalendar)
+    override def toString = "calendarDateView"
+  }
 
   @Deprecated //use EnumerationView
   def enumerationView[E <: Enumeration#Value](enum: Enumeration): ViewField[E] = EnumerationView[E](enum)

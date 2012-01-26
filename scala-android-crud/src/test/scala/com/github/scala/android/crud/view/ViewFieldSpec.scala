@@ -15,6 +15,8 @@ import UriPath.uriIdField
 import android.widget._
 import java.util.{Locale, GregorianCalendar, Calendar}
 import com.github.triangle.Getter
+import com.github.triangle.Converter._
+import com.github.scala.android.crud.view.FieldLayout._
 import android.content.Context
 import xml.NodeSeq
 
@@ -150,18 +152,18 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
 
   @Test
   def itMustFormatDatesForEditInShortFormat() {
-    val field = calendarDateView
+    val field = dateView
     val view = new EditText(context)
-    field.setValue(view, Some(new GregorianCalendar(2020, Calendar.JANUARY, 20)))
+    field.setValue(view, Some(new GregorianCalendar(2020, Calendar.JANUARY, 20).getTime))
     view.getText.toString must not(include ("Jan"))
     view.getText.toString must include ("1")
   }
 
   @Test
   def itMustFormatDatesForDisplayInDefaultFormat() {
-    val field = calendarDateView
+    val field = dateView
     val view = new TextView(context)
-    field.setValue(view, Some(new GregorianCalendar(2020, Calendar.JANUARY, 20)))
+    field.setValue(view, Some(new GregorianCalendar(2020, Calendar.JANUARY, 20).getTime))
     view.getText.toString must include ("Jan")
   }
 
@@ -177,5 +179,32 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
     val newLayout = FieldLayout.textLayout("numberDecimal")
     val adjustedViewField = viewField.withDefaultLayout(newLayout)
     adjustedViewField.defaultLayout.editXml must be (newLayout.editXml)
+  }
+
+  @Test
+  def formattedTextViewMustUseToEditStringConverterForEditTextView() {
+    val viewField = formattedTextView((s: String) => Some(s + " on display"), (s: String) => Some(s + " to edit"),
+      (s: String) => Some(s), nameLayout)
+    val editView = mock[EditText]
+    viewField.setter.apply(editView)(Some("marbles"))
+    verify(editView).setText("marbles to edit")
+  }
+
+  @Test
+  def formattedTextViewMustUseToDisplayStringConverterForTextView() {
+    val viewField = formattedTextView((s: String) => Some(s + " on display"), (s: String) => Some(s + " to edit"),
+      (s: String) => Some(s), nameLayout)
+    val textView = mock[TextView]
+    viewField.setter.apply(textView)(Some("marbles"))
+    verify(textView).setText("marbles on display")
+  }
+
+  @Test
+  def formattedTextViewMustTrimAndUseFromStringConverterWhenGetting() {
+    val viewField = formattedTextView((s: String) => Some(s + " on display"), (s: String) => Some(s + " to edit"),
+      (s: String) => Some("parsed " + s), nameLayout)
+    val textView = mock[TextView]
+    stub(textView.getText).toReturn("  given text   ")
+    viewField.getter.apply(textView) must be (Some("parsed given text"))
   }
 }
