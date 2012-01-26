@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout 
+android:stretchColumns="1" android:layout_height="wrap_content" android:layout_width="fill_parent" xmlns:android="http://schemas.android.com/apk/res/android">
+  <TableRow>
+    <TextView android:text="Publisher Name:" android:textAppearance="?android:attr/textAppearanceLarge" android:gravity="right"/>
+    <EditText android:inputType="textCapWords" android:id="@+id/publisher_name"/>
+  </TableRow>
+</TableLayout>
