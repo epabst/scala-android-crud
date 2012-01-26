@@ -32,7 +32,7 @@ class SQLiteEntityPersistence(val entityType: EntityType, val crudContext: CrudC
 
   def findAll(criteria: SQLiteCriteria): CursorStream = {
     val query = criteria.selection.mkString(" AND ")
-    info("Finding each " + entityType.entityName + "'s " + queryFieldNames.mkString(", ") + " where " + query + criteria.orderBy.map(" order by " + _))
+    info("Finding each " + entityType.entityName + "'s " + queryFieldNames.mkString(", ") + " where " + query + criteria.orderBy.map(" order by " + _).getOrElse(""))
     val cursor = database.query(tableName, queryFieldNames.toArray,
       toOption(query).getOrElse(null), criteria.selectionArgs.toArray,
       criteria.groupBy.getOrElse(null), criteria.having.getOrElse(null), criteria.orderBy.getOrElse(null))
