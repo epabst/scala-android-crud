@@ -42,7 +42,8 @@ class SQLiteEntityPersistence(val entityType: EntityType, val crudContext: CrudC
 
   //UseDefaults is provided here in the item list for the sake of PortableField.adjustment[SQLiteCriteria] fields
   def findAll(uri: UriPath): CursorStream =
-    findAll(entityType.transformWithItem(new SQLiteCriteria, List(uri, PortableField.UseDefaults)))
+    // The default orderBy is Some("_id desc")
+    findAll(entityType.transformWithItem(new SQLiteCriteria(orderBy = Some(CursorField.idFieldName + " desc")), List(uri, PortableField.UseDefaults)))
 
   private def notifyDataChanged() {
     backupManager.dataChanged()
