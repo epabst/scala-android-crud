@@ -41,21 +41,21 @@ class CursorFieldSpec extends MustMatchers with EasyMockSugar {
   @Test
   def shouldGetCriteriaCorrectlyForANumber() {
     val field = sqliteCriteria[Int]("age") + default(19)
-    val criteria: SQLiteCriteria = field.transform(new SQLiteCriteria, PortableField.UseDefaults)
+    val criteria: SQLiteCriteria = field.copyAndTransform(PortableField.UseDefaults, new SQLiteCriteria)
     criteria.selection must be (List("age=19"))
   }
 
   @Test
   def shouldGetCriteriaCorrectlyForAString() {
     val field = sqliteCriteria[String]("name") + default("John Doe")
-    val criteria: SQLiteCriteria = field.transform(new SQLiteCriteria, PortableField.UseDefaults)
+    val criteria: SQLiteCriteria = field.copyAndTransform(PortableField.UseDefaults, new SQLiteCriteria)
     criteria.selection must be (List("name=\"John Doe\""))
   }
 
   @Test
   def shouldHandleMultipleSelectionCriteria() {
     val field = sqliteCriteria[Int]("age") + sqliteCriteria[Int]("alternateAge") + default(19)
-    val criteria: SQLiteCriteria = field.transform(new SQLiteCriteria, PortableField.UseDefaults)
+    val criteria: SQLiteCriteria = field.copyAndTransform(PortableField.UseDefaults, new SQLiteCriteria)
     criteria.selection.sorted must be (List("age=19", "alternateAge=19"))
   }
 }

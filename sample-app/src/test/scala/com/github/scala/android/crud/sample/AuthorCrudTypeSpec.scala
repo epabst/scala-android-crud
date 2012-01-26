@@ -32,7 +32,7 @@ class AuthorCrudTypeSpec extends Spec with MustMatchers with MockitoSugar {
     bookPersistence.buffer += Map.empty[String,Any] += Map.empty[String,Any]
 
     stub(application.crudType(BookEntityType)).toReturn(bookCrudType)
-    val authorData = AuthorEntityType.transformWithItem(Map.empty[String,Any], List(AuthorEntityType.toUri(100L), crudContext))
+    val authorData = AuthorEntityType.copyAndTransformWithItem(List(AuthorEntityType.toUri(100L), crudContext), Map.empty[String,Any])
     authorData must be (Map[String,Any](idFieldName -> 100L, "bookCount" -> 2))
   }
 }

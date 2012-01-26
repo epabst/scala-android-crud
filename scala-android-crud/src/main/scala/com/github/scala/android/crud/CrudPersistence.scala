@@ -19,7 +19,7 @@ trait CrudPersistence extends EntityPersistence with Logging {
   def toUri(id: ID) = entityType.toUri(id)
 
   def find[T <: AnyRef](uri: UriPath, instantiateItem: => T): Option[T] =
-    find(uri).map(entityType.fieldsIncludingIdPk.transform(instantiateItem, _))
+    find(uri).map(entityType.fieldsIncludingIdPk.copyAndTransform(_, instantiateItem))
 
   /** Find an entity with a given ID using a baseUri. */
   def find(id: ID, baseUri: UriPath): Option[AnyRef] = find(baseUri.specify(entityType.entityName, id.toString))
@@ -31,12 +31,12 @@ trait CrudPersistence extends EntityPersistence with Logging {
   }
 
   def findAll[T <: AnyRef](uri: UriPath, instantiateItem: => T): Seq[T] =
-    findAll(uri).map(entityType.fieldsIncludingIdPk.transform(instantiateItem, _))
+    findAll(uri).map(entityType.fieldsIncludingIdPk.copyAndTransform(_, instantiateItem))
 
   /** Saves the entity.  This assumes that the entityType's fields support copying from the given modelEntity. */
   def save(modelEntity: IdPk): ID = {
     val writable = newWritable
-    save(modelEntity.id, entityType.transform(writable, modelEntity))
+    save(modelEntity.id, entityType.copyAndTransform(modelEntity, writable))
   }
 }
 

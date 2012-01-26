@@ -222,7 +222,7 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
           def entityType = self.entityType
 
           def bindView(view: View, context: Context, cursor: Cursor) {
-            bindViewFromCacheOrItems(view, entityType.transform(Map[String, Any](), cursor), contextItems, cursor.getPosition, adapterView)
+            bindViewFromCacheOrItems(view, entityType.copyAndTransform(cursor, Map[String, Any]()), contextItems, cursor.getPosition, adapterView)
           }
         }
       case _ => new EntityAdapter(entityType, findAllResult, itemLayout, contextItems, activity.getLayoutInflater)
@@ -234,7 +234,7 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
   private[crud] def undoableDelete(uri: UriPath)(persistence: CrudPersistence) {
     persistence.find(uri).foreach { readable =>
       val id = entityType.IdField.getter(readable)
-      val writable = entityType.transform(newWritable, readable)
+      val writable = entityType.copyAndTransform(readable, newWritable)
       persistence.delete(uri)
       val undoDeleteOperation = new PersistenceOperation(this, persistence.crudContext.application) {
         def invoke(uri: UriPath, persistence: CrudPersistence) {

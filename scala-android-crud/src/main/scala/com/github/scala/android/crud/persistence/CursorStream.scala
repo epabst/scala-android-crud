@@ -9,7 +9,7 @@ import com.github.triangle.FieldList
 case class CursorStream(cursor: Cursor, persistedFields: List[CursorField[_]]) extends Stream[Map[String,Any]] {
   override lazy val headOption = {
     if (cursor.moveToNext) {
-      Some(FieldList(persistedFields: _*).transform(Map.empty[String,Any], cursor))
+      Some(FieldList(persistedFields: _*).copyAndTransform(cursor, Map.empty[String,Any]))
     } else {
       cursor.close()
       None

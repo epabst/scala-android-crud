@@ -72,7 +72,7 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
       override def future[T](body: => T) = new ReadyFuture[T](body)
     }
     activity.onCreate(null)
-    val viewData = crudType.entityType.transform(mutable.Map[String,Any](), activity)
+    val viewData = crudType.entityType.copyAndTransform(activity, mutable.Map[String,Any]())
     viewData.get("name") must be (Some("Bob"))
     viewData.get("age") must be (Some(25))
 

@@ -43,7 +43,7 @@ class SQLiteEntityPersistence(val entityType: EntityType, val crudContext: CrudC
   //UseDefaults is provided here in the item list for the sake of PortableField.adjustment[SQLiteCriteria] fields
   def findAll(uri: UriPath): CursorStream =
     // The default orderBy is Some("_id desc")
-    findAll(entityType.transformWithItem(new SQLiteCriteria(orderBy = Some(CursorField.idFieldName + " desc")), List(uri, PortableField.UseDefaults)))
+    findAll(entityType.copyAndTransformWithItem(List(uri, PortableField.UseDefaults), new SQLiteCriteria(orderBy = Some(CursorField.idFieldName + " desc"))))
 
   private def notifyDataChanged() {
     backupManager.dataChanged()
@@ -75,7 +75,7 @@ class SQLiteEntityPersistence(val entityType: EntityType, val crudContext: CrudC
       }
     }
     notifyDataChanged()
-    val map = entityType.transform(Map[String,Any](), contentValues)
+    val map = entityType.copyAndTransform(contentValues, Map[String,Any]())
     val bytes = CrudBackupAgent.marshall(map)
     debug("Scheduled backup which will include " + entityType.entityName + "#" + id + ": size " + bytes.size + " bytes")
     id
