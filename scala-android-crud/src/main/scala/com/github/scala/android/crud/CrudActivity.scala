@@ -37,8 +37,8 @@ class CrudActivity(val crudType: CrudType, val application: CrudApplication) ext
   override def onPause() {
     val writable = crudType.newWritable
     withPersistence { persistence =>
-      val copyableFields = entityType.copyableTo(writable, contextItems)
-      val portableValue = copyableFields.copyFromItem(this :: contextItems)
+      val copyableFields = entityType.copyableTo(writable, contextItemsWithoutUseDefaults)
+      val portableValue = copyableFields.copyFromItem(this :: contextItemsWithoutUseDefaults)
       if (portableValue.transform(ValidationResult.Valid).isValid) {
         val transformedWritable = portableValue.transform(writable)
         saveForOnPause(persistence, transformedWritable)

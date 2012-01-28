@@ -43,6 +43,8 @@ trait BaseCrudActivity extends ActivityWithVars with OptionsMenuActivity with Lo
 
   def contextItems = List(currentUriPath, crudContext, PortableField.UseDefaults)
 
+  def contextItemsWithoutUseDefaults = List(currentUriPath, crudContext)
+
   protected lazy val logTag = Common.tryToEvaluate(entityType.entityName).getOrElse(Common.logTag)
 
   protected def normalActions: List[Action]
