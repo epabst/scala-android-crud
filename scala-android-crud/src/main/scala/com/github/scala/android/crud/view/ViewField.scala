@@ -73,6 +73,7 @@ object ViewField {
   def textViewWithInputType(inputType: String): ViewField[String] = textView.withDefaultLayout(textLayout(inputType))
   lazy val phoneView: ViewField[String] = textViewWithInputType("phone")
   lazy val doubleView: ViewField[Double] = ViewField[Double](doubleLayout, formatted(textView))
+  lazy val percentageView: ViewField[Float] = formattedTextView[Float](percentageToString, percentageToEditString, stringToPercentage, doubleLayout)
   lazy val currencyView = formattedTextView[Double](currencyToString, currencyToEditString, stringToCurrency, currencyLayout)
   lazy val intView: ViewField[Int] = ViewField[Int](intLayout, formatted[Int](textView))
   lazy val longView: ViewField[Long] = ViewField[Long](longLayout, formatted[Long](textView))
