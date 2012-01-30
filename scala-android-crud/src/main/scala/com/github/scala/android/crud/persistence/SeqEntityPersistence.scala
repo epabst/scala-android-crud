@@ -41,7 +41,8 @@ abstract class ListBufferEntityPersistence[T <: AnyRef](newWritableFunction: => 
     val newId = id.getOrElse {
       nextId.incrementAndGet()
     }
-    buffer += IdField.transformer[T](item.asInstanceOf[T])(Some(newId));
+    // Prepend so that the newest ones come out first in results
+    buffer.prepend(IdField.transformer[T](item.asInstanceOf[T])(Some(newId)))
     newId
   }
 
