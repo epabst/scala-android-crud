@@ -1,6 +1,7 @@
 package com.github.scala.android.crud
 
 import action.ContextVars
+import common.UriPath
 import org.junit.runner.RunWith
 import persistence.EntityType
 import org.scalatest.matchers.MustMatchers
@@ -42,7 +43,11 @@ class GeneratedCrudTypeSpec extends MustMatchers with CrudMockitoSugar {
     val generatedCrudType = new GeneratedCrudType[Map[String, Any]](entityType, factory) with StubCrudType
     stub(crudContext.vars).toReturn(new ContextVars {})
     when(adapterView.setAdapter(anyObject())).thenAnswer(listAdapterCapture)
-    generatedCrudType.setListAdapter(List(Map("longId" -> 456L)), adapterView, activity, 123, crudContext, Nil)
+    val persistence = mock[CrudPersistence]
+    when(crudContext.openEntityPersistence(entityType)).thenReturn(persistence)
+    val uri = UriPath.EMPTY
+    when(persistence.findAll(uri)).thenReturn(List(Map("longId" -> 456L)))
+    generatedCrudType.setListAdapter(adapterView, entityType, uri, crudContext, Nil, activity, 123)
     verify(adapterView).setAdapter(anyObject())
     val listAdapter = listAdapterCapture.params(0).asInstanceOf[ListAdapter]
     listAdapter.getItemId(0) must be (456L)

@@ -10,7 +10,7 @@ import android.widget._
 import android.view.View
 import android.app.Activity
 import xml.NodeSeq
-import com.github.scala.android.crud.{DestroyContextListener, BaseCrudActivity, CrudContext}
+import com.github.scala.android.crud.{BaseCrudActivity, CrudContext}
 
 /** A ViewField that allows choosing a specific entity of a given EntityType or displaying its fields' values.
   * The layout for the EntityType that contains this EntityView may refer to fields of this view's EntityType
@@ -36,14 +36,7 @@ case class EntityView(entityType: EntityType)
         val crudType = crudContext.application.crudType(entityType)
         //don't do it again if already done from a previous time
         if (adapterView.getAdapter == null) {
-          val persistence = crudContext.openEntityPersistence(entityType)
-          crudContext.vars.addListener(new DestroyContextListener {
-            def onDestroyContext() {
-              persistence.close()
-            }
-          })
-          val seq = persistence.findAll(uri)
-          crudType.setListAdapter(seq, adapterView, crudActivity, itemViewResourceId, crudContext, crudActivity.contextItems)
+          crudType.setListAdapter(adapterView, entityType, uri, crudContext, crudActivity.contextItems, crudActivity, itemViewResourceId)
         }
         if (idOpt.isDefined) {
           val adapter = adapterView.getAdapter

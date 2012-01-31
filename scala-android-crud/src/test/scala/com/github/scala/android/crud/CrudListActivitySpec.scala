@@ -35,7 +35,9 @@ class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
   def shouldAllowAdding() {
     val application = mock[CrudApplication]
     val persistence = mock[CrudPersistence]
-    val crudType = new MyCrudType(persistence)
+    val entityType = new MyEntityType
+    val crudType = new MyCrudType(entityType, persistence)
+    stub(application.crudType(entityType)).toReturn(crudType)
     when(persistence.findAll(any())).thenReturn(Seq(Map[String,Any]("name" -> "Bob", "age" -> 25)))
     val activity = new CrudListActivity(crudType, application)
     activity.setIntent(new Intent(Intent.ACTION_MAIN))
@@ -94,7 +96,9 @@ class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
     stub(persistenceFactory.createEntityPersistence(anyObject(), anyObject())).toReturn(persistence)
     when(persistence.findAll(any())).thenReturn(Seq(Map[String,Any]("name" -> "Bob", "age" -> 25)))
     val application = mock[CrudApplication]
-    val crudType = new MyCrudType(persistenceFactory)
+    val entityType = new MyEntityType
+    val crudType = new MyCrudType(entityType, persistenceFactory)
+    stub(application.crudType(entityType)).toReturn(crudType)
     class MyCrudListActivity extends CrudListActivity(crudType, application) {
       //make it public for testing
       override def onPause() {

@@ -1,7 +1,7 @@
 package com.github.scala.android.crud
 
 import action._
-import common.{UriPath, Timing}
+import common.{PlatformTypes, UriPath, Timing}
 import generate.EntityTypeViewInfo
 import Operation._
 import android.app.Activity
@@ -195,18 +195,11 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
   }
 
   final def setListAdapterUsingUri(crudContext: CrudContext, activity: CrudListActivity) {
-    val uriPath = activity.currentUriPath
-    val persistence = openEntityPersistence(crudContext)
-    crudContext.vars.addListener(new DestroyContextListener {
-      def onDestroyContext() {
-        persistence.close()
-      }
-    })
-    val findAllResult = persistence.findAll(uriPath)
-    setListAdapter(findAllResult, activity.getListView, activity, self.rowLayout, crudContext, activity.contextItems)
+    setListAdapter(activity.getListView, entityType, activity.currentUriPath, crudContext, activity.contextItems, activity, self.rowLayout)
   }
 
-  def setListAdapter[A <: Adapter](findAllResult: scala.Seq[AnyRef], adapterView: AdapterView[A], activity: Activity, itemLayout: LayoutKey, crudContext: CrudContext, contextItems: scala.List[AnyRef]) {
+  private def setListAdapter[A <: Adapter](adapterView: AdapterView[A], persistence: CrudPersistence, uriPath: UriPath, entityType: EntityType, crudContext: CrudContext, contextItems: scala.List[AnyRef], activity: Activity, itemLayout: PlatformTypes.LayoutKey) {
+    val findAllResult = persistence.findAll(uriPath)
     val adapter: AdapterCaching = findAllResult match {
       case CursorStream(cursor, _) =>
         activity.startManagingCursor(cursor)
@@ -218,11 +211,6 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
             cursor.requery()
           }
         }, crudContext.vars)
-        crudContext.addOnRefreshListener(new OnRefreshListener {
-          def onRefresh() {
-            cursor.requery()
-          }
-        })
         new ResourceCursorAdapter(activity, itemLayout, cursor) with AdapterCaching {
           def entityType = self.entityType
 
@@ -232,13 +220,34 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
         }
       case _ => new EntityAdapter(entityType, findAllResult, itemLayout, contextItems, activity.getLayoutInflater)
     }
-    addPersistenceListener(adapter.cacheClearingPersistenceListener(adapterView), crudContext.vars)
-    crudContext.addOnRefreshListener(new OnRefreshListener {
-      def onRefresh() {
-        adapter.clearCache(adapterView)
+    addPersistenceListener(new PersistenceListener {
+      def onSave(id: ID) {
+        trace("Clearing ListView cache in " + adapterView + " of " + entityType + " since DataSet was invalidated")
+        AdapterCaching.clearCache(adapterView)
+      }
+
+      def onDelete(uri: UriPath) {
+        trace("Clearing ListView cache in " + adapterView + " of " + entityType + " since DataSet was invalidated")
+        AdapterCaching.clearCache(adapterView)
+      }
+    }, crudContext.vars)
+    adapterView.setAdapter(adapter.asInstanceOf[A])
+  }
+
+  def setListAdapter[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, uriPath: UriPath, crudContext: CrudContext, contextItems: scala.List[AnyRef], activity: Activity, itemLayout: LayoutKey) {
+    val persistence = crudContext.openEntityPersistence(entityType)
+    crudContext.vars.addListener(new DestroyContextListener {
+      def onDestroyContext() {
+        persistence.close()
       }
     })
-    adapterView.setAdapter(adapter.asInstanceOf[A])
+    setListAdapter(adapterView, persistence, uriPath, entityType, crudContext, contextItems, activity, itemLayout)
+    crudContext.addOnRefreshListener(new OnRefreshListener {
+      def onRefresh() {
+        AdapterCaching.clearCache(adapterView)
+        setListAdapter(adapterView, persistence, uriPath, entityType, crudContext, contextItems, activity, itemLayout)
+      }
+    })
   }
 
   private[crud] def undoableDelete(uri: UriPath)(persistence: CrudPersistence) {

@@ -1,9 +1,8 @@
 package com.github.scala.android.crud.view
 
 import com.github.triangle.{PortableValue, Logging}
-import com.github.scala.android.crud.persistence.{PersistenceListener, EntityType}
-import com.github.scala.android.crud.common.PlatformTypes._
-import com.github.scala.android.crud.common.{UriPath, Timing}
+import com.github.scala.android.crud.persistence.EntityType
+import com.github.scala.android.crud.common.Timing
 import com.github.triangle.JavaUtil.toRunnable
 import android.view.{ViewGroup, View}
 import android.widget.BaseAdapter
@@ -21,22 +20,6 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
       (position -> portableValue)
     listView.setTag(map)
     trace("Added value at position " + position + " to the " + listView + " cache for " + entityType)
-  }
-
-  def clearCache(adapterView: View) {
-    adapterView.post { adapterView.setTag(null) }
-  }
-
-  def cacheClearingPersistenceListener(adapterView: View) = new PersistenceListener {
-    def onSave(id: ID) {
-      trace("Clearing ListView cache in " + adapterView + " of " + entityType + " since DataSet was invalidated")
-      clearCache(adapterView)
-    }
-
-    def onDelete(uri: UriPath) {
-      trace("Clearing ListView cache in " + adapterView + " of " + entityType + " since DataSet was invalidated")
-      clearCache(adapterView)
-    }
   }
 
   protected[crud] def bindViewFromCacheOrItems(view: View, entity: => AnyRef, contextItems: List[AnyRef], position: Long, listView: ViewGroup) {
@@ -62,5 +45,11 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
         }
       }
     }
+  }
+}
+
+object AdapterCaching {
+  def clearCache(adapterView: View) {
+    adapterView.post { adapterView.setTag(null) }
   }
 }
