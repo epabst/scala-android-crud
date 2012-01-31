@@ -50,6 +50,9 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
 
 object AdapterCaching {
   def clearCache(adapterView: View) {
-    adapterView.post { adapterView.setTag(null) }
+    adapterView.post(toRunnable {
+      adapterView.setTag(null)
+      adapterView.invalidate()
+    })
   }
 }
