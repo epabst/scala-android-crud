@@ -62,7 +62,7 @@ case class CrudContext(context: ContextWithVars, application: CrudApplication) {
   def withEntityPersistence_uncurried[T](entityType: EntityType, f: CrudPersistence => T): T =
     application.crudType(entityType).withEntityPersistence(this)(f)
 
-  def addOnRefreshListener(listener: OnRefreshListener, context: ContextVars) {
+  def addOnRefreshListener(listener: OnRefreshListener) {
     OnRefreshListeners.get(context) += listener
   }
 

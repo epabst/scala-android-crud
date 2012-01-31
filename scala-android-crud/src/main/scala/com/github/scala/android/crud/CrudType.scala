@@ -218,6 +218,11 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
             cursor.requery()
           }
         }, crudContext.vars)
+        crudContext.addOnRefreshListener(new OnRefreshListener {
+          def onRefresh() {
+            cursor.requery()
+          }
+        })
         new ResourceCursorAdapter(activity, itemLayout, cursor) with AdapterCaching {
           def entityType = self.entityType
 
@@ -228,6 +233,11 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
       case _ => new EntityAdapter(entityType, findAllResult, itemLayout, contextItems, activity.getLayoutInflater)
     }
     addPersistenceListener(adapter.cacheClearingPersistenceListener(adapterView), crudContext.vars)
+    crudContext.addOnRefreshListener(new OnRefreshListener {
+      def onRefresh() {
+        adapter.clearCache(adapterView)
+      }
+    })
     adapterView.setAdapter(adapter.asInstanceOf[A])
   }
 

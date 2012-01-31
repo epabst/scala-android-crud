@@ -23,15 +23,19 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
     trace("Added value at position " + position + " to the " + listView + " cache for " + entityType)
   }
 
+  def clearCache(adapterView: View) {
+    adapterView.post { adapterView.setTag(null) }
+  }
+
   def cacheClearingPersistenceListener(adapterView: View) = new PersistenceListener {
     def onSave(id: ID) {
       trace("Clearing ListView cache in " + adapterView + " of " + entityType + " since DataSet was invalidated")
-      adapterView.post { adapterView.setTag(null) }
+      clearCache(adapterView)
     }
 
     def onDelete(uri: UriPath) {
       trace("Clearing ListView cache in " + adapterView + " of " + entityType + " since DataSet was invalidated")
-      adapterView.post { adapterView.setTag(null) }
+      clearCache(adapterView)
     }
   }
 
