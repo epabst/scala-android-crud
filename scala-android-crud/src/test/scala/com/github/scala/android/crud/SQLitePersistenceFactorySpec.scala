@@ -63,8 +63,8 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
     stub(crudContext.application).toReturn(application)
 
     val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext)
-    persistence.queryFieldNames must contain(BaseColumns._ID)
-    persistence.queryFieldNames must contain("age")
+    persistence.entityTypePersistedInfo.queryFieldNames must contain(BaseColumns._ID)
+    persistence.entityTypePersistedInfo.queryFieldNames must contain("age")
   }
 
   @Test

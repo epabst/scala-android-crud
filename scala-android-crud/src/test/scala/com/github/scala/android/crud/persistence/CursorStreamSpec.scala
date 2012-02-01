@@ -17,7 +17,7 @@ class CursorStreamSpec extends Spec with MustMatchers with MockitoSugar {
     val field = CursorField.persisted[String]("name")
     val cursor = mock[Cursor]
     stub(cursor.moveToNext()).toReturn(false)
-    val stream = CursorStream(cursor, List(field))
+    val stream = CursorStream(cursor, EntityTypePersistedInfo(List(field)))
     stream.isEmpty must be (true)
     stream.size must be (0)
     stream.headOption must be (None)
@@ -31,7 +31,7 @@ class CursorStreamSpec extends Spec with MustMatchers with MockitoSugar {
     stub(cursor.getColumnIndex("name")).toReturn(1)
     stub(cursor.getString(1)).toReturn("Bryce")
 
-    val stream = CursorStream(cursor, List(field))
+    val stream = CursorStream(cursor, EntityTypePersistedInfo(List(field)))
     val second = stream.tail.head
     field(second) must be ("Bryce")
   }
@@ -44,7 +44,7 @@ class CursorStreamSpec extends Spec with MustMatchers with MockitoSugar {
     stub(cursor.getColumnIndex("name")).toReturn(1)
     stub(cursor.getString(1)).toReturn("Allen")
 
-    val stream = CursorStream(cursor, List(field))
+    val stream = CursorStream(cursor, EntityTypePersistedInfo(List(field)))
     stream.toList.size must be (2)
   }
 
@@ -52,7 +52,7 @@ class CursorStreamSpec extends Spec with MustMatchers with MockitoSugar {
     val cursor = mock[Cursor]
     stub(cursor.getCount).toReturn(500)
 
-    val stream = CursorStream(cursor, List(CursorField.persisted[String]("name")))
+    val stream = CursorStream(cursor, EntityTypePersistedInfo(List(CursorField.persisted[String]("name"))))
     stream.size must be (500)
     stream.length must be (500)
   }
@@ -65,7 +65,7 @@ class CursorStreamSpec extends Spec with MustMatchers with MockitoSugar {
     stub(cursor.getColumnIndex("name")).toReturn(1)
     when(cursor.getString(1)).thenReturn("Allen").thenReturn("Bryce")
 
-    val stream = CursorStream(cursor, List(field))
+    val stream = CursorStream(cursor, EntityTypePersistedInfo(List(field)))
     val second = stream.tail.head
     val first = stream.head
     field(second) must be ("Bryce")

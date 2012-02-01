@@ -22,22 +22,20 @@ class SQLiteEntityPersistence(val entityType: EntityType, val crudContext: CrudC
   lazy val tableName = SQLitePersistenceFactory.toTableName(entityType.entityName)
   lazy val databaseSetup = new GeneratedDatabaseSetup(crudContext)
   lazy val database: SQLiteDatabase = databaseSetup.getWritableDatabase
+  lazy val entityTypePersistedInfo = EntityTypePersistedInfo(entityType)
   private lazy val backupManager = new BackupManager(crudContext.context)
   private val cursors = new SynchronizedQueue[Cursor]
-
-  lazy val persistedFields: List[CursorField[_]] = CursorField.persistedFields(entityType)
-  lazy val queryFieldNames: List[String] = persistedFields.map(_.columnName)
-
   private def toOption(string: String): Option[String] = if (string == "") None else Some(string)
 
   def findAll(criteria: SQLiteCriteria): CursorStream = {
+    import entityTypePersistedInfo._
     val query = criteria.selection.mkString(" AND ")
-    info("Finding each " + entityType.entityName + "'s " + queryFieldNames.mkString(", ") + " where " + query + criteria.orderBy.map(" order by " + _).getOrElse(""))
+    info("Finding each " + this.entityType.entityName + "'s " + queryFieldNames.mkString(", ") + " where " + query + criteria.orderBy.map(" order by " + _).getOrElse(""))
     val cursor = database.query(tableName, queryFieldNames.toArray,
       toOption(query).getOrElse(null), criteria.selectionArgs.toArray,
       criteria.groupBy.getOrElse(null), criteria.having.getOrElse(null), criteria.orderBy.getOrElse(null))
     cursors += cursor
-    CursorStream(cursor, persistedFields)
+    CursorStream(cursor, entityTypePersistedInfo)
   }
 
   //UseDefaults is provided here in the item list for the sake of PortableField.adjustment[SQLiteCriteria] fields
@@ -114,7 +112,7 @@ class GeneratedDatabaseSetup(crudContext: CrudContext)
       val buffer = new StringBuffer
       buffer.append("CREATE TABLE IF NOT EXISTS ").append(SQLitePersistenceFactory.toTableName(entityType.entityName)).append(" (").
         append(BaseColumns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT")
-      CursorField.persistedFields(entityType).filter(_.columnName != BaseColumns._ID).foreach { persisted =>
+      EntityTypePersistedInfo(entityType).persistedFields.filter(_.columnName != BaseColumns._ID).foreach { persisted =>
         buffer.append(", ").append(persisted.columnName).append(" ").append(persisted.persistedType.sqliteType)
       }
       buffer.append(")")

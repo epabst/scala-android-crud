@@ -7,7 +7,7 @@ import Operation._
 import android.app.Activity
 import com.github.triangle._
 import common.PlatformTypes._
-import persistence.{CursorStream, EntityType, PersistenceListener}
+import persistence.{EntityTypePersistedInfo, CursorStream, EntityType, PersistenceListener}
 import PortableField.toSome
 import view.AndroidResourceAnalyzer._
 import java.lang.IllegalStateException
@@ -54,6 +54,8 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
   final def hasDisplayPage = displayLayout.isDefined
   lazy val viewInfo = EntityTypeViewInfo(entityType)
   def isUpdateable: Boolean = viewInfo.isUpdateable
+
+  lazy val entityTypePersistedInfo = EntityTypePersistedInfo(entityType)
 
   protected def getStringKey(stringName: String): SKey =
     findResourceIdWithName(rStringClassesVal, stringName).getOrElse {
@@ -215,7 +217,8 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
           def entityType = self.entityType
 
           def bindView(view: View, context: Context, cursor: Cursor) {
-            bindViewFromCacheOrItems(view, entityType.copyAndTransform(cursor, Map[String, Any]()), contextItems, cursor.getPosition, adapterView)
+            val row = entityTypePersistedInfo.copyRowToMap(cursor)
+            bindViewFromCacheOrItems(view, row, contextItems, cursor.getPosition, adapterView)
           }
         }
       case _ => new EntityAdapter(entityType, findAllResult, itemLayout, contextItems, activity.getLayoutInflater)

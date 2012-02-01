@@ -24,7 +24,7 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
     f(valueOpt)
   }
 
-  private def fillViewWithValue(view: View, cachedValue: Option[PortableValue], position: Long, entity: => AnyRef, contextItems: scala.List[AnyRef], listView: ViewGroup) {
+  private def fillViewWithValue(view: View, cachedValue: Option[PortableValue], position: Long, entityData: AnyRef, contextItems: scala.List[AnyRef], listView: ViewGroup) {
     //set the cached or default values immediately instead of showing the column header names
     cachedValue match {
       case Some(portableValue) =>
@@ -36,7 +36,7 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
     }
     if (cachedValue.isEmpty) {
       //copy immediately since in the case of a Cursor, it will be advanced to the next row quickly.
-      val positionItems: List[AnyRef] = entity +: contextItems
+      val positionItems: List[AnyRef] = entityData +: contextItems
       cachePortableValue(listView, position, entityType.defaultPortableValue)
       future {
         val portableValue = entityType.copyFromItem(positionItems)
@@ -48,8 +48,8 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
     }
   }
 
-  protected[crud] def bindViewFromCacheOrItems(view: View, entity: => AnyRef, contextItems: List[AnyRef], position: Long, listView: ViewGroup) {
-    usePortableValueFromCache(listView, position, fillViewWithValue(view, _, position, entity, contextItems, listView))
+  protected[crud] def bindViewFromCacheOrItems(view: View, entityData: AnyRef, contextItems: List[AnyRef], position: Long, listView: ViewGroup) {
+    usePortableValueFromCache(listView, position, fillViewWithValue(view, _, position, entityData, contextItems, listView))
   }
 }
 
