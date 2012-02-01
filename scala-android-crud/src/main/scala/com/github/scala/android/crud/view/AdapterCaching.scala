@@ -12,9 +12,6 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
 
   protected def logTag = entityType.logTag
 
-  private def findCachedPortableValue(listView: ViewGroup, position: Long): Option[PortableValue] =
-    Option(listView.getTag.asInstanceOf[Map[Long, PortableValue]]).flatMap(_.get(position))
-
   private def cachePortableValue(listView: ViewGroup, position: Long, portableValue: PortableValue) {
     val map = Option(listView.getTag.asInstanceOf[Map[Long, PortableValue]]).getOrElse(Map.empty[Long, PortableValue]) +
       (position -> portableValue)
@@ -22,8 +19,12 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
     trace("Added value at position " + position + " to the " + listView + " cache for " + entityType)
   }
 
-  protected[crud] def bindViewFromCacheOrItems(view: View, entity: => AnyRef, contextItems: List[AnyRef], position: Long, listView: ViewGroup) {
-    val cachedValue: Option[PortableValue] = findCachedPortableValue(listView, position)
+  private def usePortableValueFromCache(listView: ViewGroup, position: Long, f: Option[PortableValue] => Unit) {
+    val valueOpt = Option(listView.getTag.asInstanceOf[Map[Long, PortableValue]]).flatMap(_.get(position))
+    f(valueOpt)
+  }
+
+  private def fillViewWithValue(view: View, cachedValue: Option[PortableValue], position: Long, entity: => AnyRef, contextItems: scala.List[AnyRef], listView: ViewGroup) {
     //set the cached or default values immediately instead of showing the column header names
     cachedValue match {
       case Some(portableValue) =>
@@ -45,6 +46,10 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
         }
       }
     }
+  }
+
+  protected[crud] def bindViewFromCacheOrItems(view: View, entity: => AnyRef, contextItems: List[AnyRef], position: Long, listView: ViewGroup) {
+    usePortableValueFromCache(listView, position, fillViewWithValue(view, _, position, entity, contextItems, listView))
   }
 }
 
