@@ -225,13 +225,12 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
     }
     addPersistenceListener(new PersistenceListener {
       def onSave(id: ID) {
-        trace("Clearing ListView cache in " + adapterView + " of " + entityType + " since DataSet was invalidated")
-        AdapterCaching.clearCache(adapterView)
+        AdapterCaching.clearCache(adapterView, "save")
       }
 
       def onDelete(uri: UriPath) {
-        trace("Clearing ListView cache in " + adapterView + " of " + entityType + " since DataSet was invalidated")
-        AdapterCaching.clearCache(adapterView)
+        trace("Clearing cache in " + adapterView + " of " + entityType + " due to delete")
+        AdapterCaching.clearCache(adapterView, "delete")
       }
     }, crudContext.vars)
     adapterView.setAdapter(adapter.asInstanceOf[A])
@@ -247,7 +246,7 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
     setListAdapter(adapterView, persistence, uriPath, entityType, crudContext, contextItems, activity, itemLayout)
     crudContext.addOnRefreshListener(new OnRefreshListener {
       def onRefresh() {
-        AdapterCaching.clearCache(adapterView)
+        AdapterCaching.clearCache(adapterView, "refresh")
         setListAdapter(adapterView, persistence, uriPath, entityType, crudContext, contextItems, activity, itemLayout)
       }
     })
