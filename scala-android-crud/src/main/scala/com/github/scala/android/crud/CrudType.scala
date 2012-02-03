@@ -1,7 +1,7 @@
 package com.github.scala.android.crud
 
 import action._
-import common.{PlatformTypes, UriPath, Timing}
+import common.{UriPath, Timing}
 import generate.EntityTypeViewInfo
 import Operation._
 import android.app.Activity
@@ -11,7 +11,6 @@ import persistence.{EntityTypePersistedInfo, CursorStream, EntityType, Persisten
 import PortableField.toSome
 import view.AndroidResourceAnalyzer._
 import java.lang.IllegalStateException
-import view.{AdapterCaching, EntityAdapter}
 import android.view.View
 import android.content.Context
 import android.database.Cursor
@@ -19,6 +18,7 @@ import android.widget._
 import java.util.concurrent.CopyOnWriteArraySet
 import scala.collection.JavaConversions._
 import collection.mutable
+import view.{AdapterCachingStateListener, AdapterCaching, EntityAdapter}
 
 /** An entity configuration that provides all custom information needed to
   * implement CRUD on the entity.  This shouldn't depend on the platform (e.g. android).
@@ -200,9 +200,9 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
     setListAdapter(activity.getListView, entityType, activity.currentUriPath, crudContext, activity.contextItems, activity, self.rowLayout)
   }
 
-  private def setListAdapter[A <: Adapter](adapterView: AdapterView[A], persistence: CrudPersistence, uriPath: UriPath, entityType: EntityType, crudContext: CrudContext, contextItems: scala.List[AnyRef], activity: Activity, itemLayout: PlatformTypes.LayoutKey) {
+  private def createAdapter[A <: Adapter](persistence: CrudPersistence, uriPath: UriPath, entityType: EntityType, crudContext: CrudContext, contextItems: scala.List[AnyRef], activity: Activity, itemLayout: LayoutKey, adapterView: AdapterView[A]): AdapterCaching = {
     val findAllResult = persistence.findAll(uriPath)
-    val adapter: AdapterCaching = findAllResult match {
+    findAllResult match {
       case CursorStream(cursor, _) =>
         activity.startManagingCursor(cursor)
         addPersistenceListener(new PersistenceListener {
@@ -223,6 +223,9 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
         }
       case _ => new EntityAdapter(entityType, findAllResult, itemLayout, contextItems, activity.getLayoutInflater)
     }
+  }
+
+  private def setListAdapter[A <: Adapter](adapterView: AdapterView[A], persistence: CrudPersistence, uriPath: UriPath, entityType: EntityType, crudContext: CrudContext, contextItems: scala.List[AnyRef], activity: Activity, itemLayout: LayoutKey) {
     addPersistenceListener(new PersistenceListener {
       def onSave(id: ID) {
         AdapterCaching.clearCache(adapterView, "save")
@@ -233,7 +236,12 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
         AdapterCaching.clearCache(adapterView, "delete")
       }
     }, crudContext.vars)
-    adapterView.setAdapter(adapter.asInstanceOf[A])
+    def callCreateAdapter(): A = {
+      createAdapter(persistence, uriPath, entityType, crudContext, contextItems, activity, itemLayout, adapterView).asInstanceOf[A]
+    }
+    val adapter = callCreateAdapter()
+    adapterView.setAdapter(adapter)
+    crudContext.addCachedStateListener(new AdapterCachingStateListener(adapterView, entityType, adapterFactory = callCreateAdapter()))
   }
 
   def setListAdapter[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, uriPath: UriPath, crudContext: CrudContext, contextItems: scala.List[AnyRef], activity: Activity, itemLayout: LayoutKey) {
@@ -244,12 +252,6 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
       }
     })
     setListAdapter(adapterView, persistence, uriPath, entityType, crudContext, contextItems, activity, itemLayout)
-    crudContext.addOnRefreshListener(new OnRefreshListener {
-      def onRefresh() {
-        AdapterCaching.clearCache(adapterView, "refresh")
-        setListAdapter(adapterView, persistence, uriPath, entityType, crudContext, contextItems, activity, itemLayout)
-      }
-    })
   }
 
   private[crud] def undoableDelete(uri: UriPath)(persistence: CrudPersistence) {

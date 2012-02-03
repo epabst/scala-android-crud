@@ -8,6 +8,7 @@ import collection.mutable
 import persistence.EntityType
 import java.util.concurrent.CopyOnWriteArraySet
 import collection.JavaConversions._
+import android.os.Bundle
 
 /** An Application that works with [[com.github.scala.android.crud.CrudType]]s.
  * @author Eric Pabst (epabst@gmail.com)
@@ -62,18 +63,33 @@ case class CrudContext(context: ContextWithVars, application: CrudApplication) {
   def withEntityPersistence_uncurried[T](entityType: EntityType, f: CrudPersistence => T): T =
     application.crudType(entityType).withEntityPersistence(this)(f)
 
-  def addOnRefreshListener(listener: OnRefreshListener) {
-    OnRefreshListeners.get(context) += listener
+  def addCachedStateListener(listener: CachedStateListener) {
+    CachedStateListeners.get(context) += listener
   }
 
-  def onRefresh(context: ContextVars) {
-    OnRefreshListeners.get(context).foreach(_.onRefresh())
+  def onSaveState(context: ContextVars, outState: Bundle) {
+    CachedStateListeners.get(context).foreach(_.onSaveState(outState))
+  }
+
+  def onRestoreState(context: ContextVars, savedState: Bundle) {
+    CachedStateListeners.get(context).foreach(_.onRestoreState(savedState))
+  }
+
+  def onClearState(context: ContextVars, stayActive: Boolean) {
+    CachedStateListeners.get(context).foreach(_.onClearState(stayActive))
   }
 }
 
-/** Listeners that will listen to any EntityPersistence that is opened. */
-object OnRefreshListeners extends InitializedContextVar[mutable.Set[OnRefreshListener]](new CopyOnWriteArraySet[OnRefreshListener]())
+/** Listeners that represent state and will listen to a various events. */
+object CachedStateListeners extends InitializedContextVar[mutable.Set[CachedStateListener]](new CopyOnWriteArraySet[CachedStateListener]())
 
-trait OnRefreshListener {
-  def onRefresh()
+trait CachedStateListener {
+  /** Save any cached state into the given bundle before switching context. */
+  def onSaveState(outState: Bundle)
+
+  /** Restore cached state from the given bundle before switching back context. */
+  def onRestoreState(savedInstanceState: Bundle)
+
+  /** Drop cached state.  If stayActive is true, then the state needs to be functional. */
+  def onClearState(stayActive: Boolean)
 }

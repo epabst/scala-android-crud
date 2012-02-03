@@ -5,9 +5,11 @@ import com.github.scala.android.crud.persistence.EntityType
 import com.github.scala.android.crud.common.Timing
 import com.github.triangle.JavaUtil.toRunnable
 import android.view.{ViewGroup, View}
-import android.widget.BaseAdapter
 import actors.Actor
 import actors.Futures.future
+import com.github.scala.android.crud.CachedStateListener
+import android.os.Bundle
+import android.widget.{Adapter, AdapterView, BaseAdapter}
 
 case class CacheValue(position: Long, portableValue: PortableValue)
 case class DisplayValueAtPosition(view: View, position: Long, entityData: AnyRef, contextItems: scala.List[AnyRef])
@@ -92,5 +94,20 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
 
   protected[crud] def bindViewFromCacheOrItems(view: View, entityData: AnyRef, contextItems: List[AnyRef], position: Long, adapterView: ViewGroup) {
     sendMessageToCacheActor(adapterView, DisplayValueAtPosition(view, position, entityData, contextItems))
+  }
+}
+
+class AdapterCachingStateListener[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, adapterFactory: => A) extends CachedStateListener {
+  def onSaveState(outState: Bundle) {
+  }
+
+  def onRestoreState(savedInstanceState: Bundle) {
+  }
+
+  def onClearState(stayActive: Boolean) {
+    AdapterCaching.clearCache(adapterView, if (stayActive) "refresh" else "stop")
+    if (stayActive) {
+      adapterView.setAdapter(adapterFactory)
+    }
   }
 }

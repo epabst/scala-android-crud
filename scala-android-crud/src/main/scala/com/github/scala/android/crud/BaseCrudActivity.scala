@@ -7,6 +7,7 @@ import common.{UriPath, Common, Timing, PlatformTypes}
 import PlatformTypes._
 import com.github.scala.android.crud.view.AndroidConversions._
 import com.github.triangle.{PortableField, Logging}
+import android.os.Bundle
 
 /** Support for the different Crud Activity's.
   * @author Eric Pabst (epabst@gmail.com)
@@ -79,6 +80,16 @@ trait BaseCrudActivity extends ActivityWithVars with OptionsMenuActivity with Lo
         true
       case None => super.onOptionsItemSelected(item)
     }
+  }
+
+  override def onSaveInstanceState(outState: Bundle) {
+    super.onSaveInstanceState(outState)
+    crudContext.onSaveState(this, outState)
+  }
+
+  override def onRestoreInstanceState(savedInstanceState: Bundle) {
+    crudContext.onRestoreState(this, savedInstanceState)
+    super.onRestoreInstanceState(savedInstanceState)
   }
 
   override def onDestroy() {

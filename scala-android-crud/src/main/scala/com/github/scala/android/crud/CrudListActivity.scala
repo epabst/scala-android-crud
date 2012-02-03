@@ -63,7 +63,7 @@ class CrudListActivity(val crudType: CrudType, val application: CrudApplication)
 
   override def onResume() {
     trace("onResume")
-    crudContext.onRefresh(this)
+    crudContext.onClearState(this, stayActive = true)
     super.onResume()
   }
 
