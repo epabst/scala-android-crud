@@ -61,9 +61,6 @@ class CrudListActivity(val crudType: CrudType, val application: CrudApplication)
     }
   }
 
-  // getListAdapter is somehow different than getListView.getAdapter, so force using a consistent semantic
-  override def getListAdapter = getListView.getAdapter
-
   override def onResume() {
     trace("onResume")
     crudContext.onRefresh(this)
