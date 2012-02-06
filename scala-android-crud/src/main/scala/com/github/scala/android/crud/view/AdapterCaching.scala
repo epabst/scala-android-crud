@@ -5,17 +5,21 @@ import com.github.scala.android.crud.persistence.EntityType
 import com.github.scala.android.crud.common.Timing
 import com.github.triangle.JavaUtil.toRunnable
 import android.view.{ViewGroup, View}
-import actors.Actor
 import actors.Futures.future
 import com.github.scala.android.crud.CachedStateListener
 import android.os.Bundle
 import android.widget.{Adapter, AdapterView, BaseAdapter}
+import actors.Actor
+import android.util.SparseArray
+import collection.mutable
 
 case class CacheValue(position: Long, portableValue: PortableValue)
 case class DisplayValueAtPosition(view: View, position: Long, entityData: AnyRef, contextItems: scala.List[AnyRef])
 case class ClearCache(reason: String)
+object RetrieveCachedState
+case class CachedState(bundles: Map[Long,Bundle])
 
-class CacheActor(adapterView: ViewGroup, adapter: BaseAdapter, entityType: EntityType) extends Actor with Logging {
+class CacheActor(adapterView: ViewGroup, adapter: BaseAdapter, entityType: EntityType) extends Actor with Logging { self =>
   protected def logTag = entityType.logTag
   private var cache: Map[Long, PortableValue] = Map.empty
 
@@ -49,6 +53,24 @@ class CacheActor(adapterView: ViewGroup, adapter: BaseAdapter, entityType: Entit
             // This will result in a DisplayValueAtPosition request if the View is still visible
             adapter.notifyDataSetChanged()
           }
+          self.reply(Unit)
+        case RetrieveCachedState =>
+          val state: Map[Long,Bundle] = for ((position, portableValue) <- cache) yield {
+            // If entityType doesn't support setting every field (including generated ones) into a Bundle, then the data will be incomplete.
+            (position, portableValue.transform[Bundle](new Bundle()))
+          }
+          self.reply(CachedState(state))
+        case CachedState(state) =>
+          val portableValues: Map[Long,PortableValue] = for ((position, bundle) <- state) yield {
+            // If entityType doesn't support getting every field (including generated ones) from a Bundle, then the data will be incomplete.
+            (position, entityType.copyFrom(bundle))
+          }
+          // Anything in the cache should take precedence over the CachedState
+          cache = portableValues ++ cache
+          adapterView.post {
+            // This will result in a DisplayValueAtPosition request for all visible Views
+            adapterView.postInvalidate()
+          }
         case ClearCache(reason) =>
           cache = Map.empty
           trace("Clearing cache in " + adapterView + " of " + entityType + " due to " + reason)
@@ -61,7 +83,7 @@ class CacheActor(adapterView: ViewGroup, adapter: BaseAdapter, entityType: Entit
 
 object AdapterCaching {
   /** This should be run in the UI Thread. */
-  private def findCacheActor(adapterView: ViewGroup): Option[CacheActor] =
+  private[crud] def findCacheActor(adapterView: ViewGroup): Option[CacheActor] =
     Option(adapterView.getTag.asInstanceOf[CacheActor])
 
   def clearCache(adapterView: ViewGroup, reason: String) {
@@ -97,11 +119,40 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
   }
 }
 
-class AdapterCachingStateListener[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, adapterFactory: => A) extends CachedStateListener {
+class AdapterCachingStateListener[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, adapterFactory: => A) extends CachedStateListener with Logging {
+  protected def logTag = entityType.logTag
+
   def onSaveState(outState: Bundle) {
+    AdapterCaching.findCacheActor(adapterView).foreach { actor =>
+      actor !? RetrieveCachedState match {
+        case CachedState(state: Map[Long,Bundle]) =>
+          //val sparseArray = new SparseArray[Bundle](state.size)
+          val sparseArray = new SparseArray[Bundle]()
+          for (position <- state.keys) {
+            val intPosition = position.asInstanceOf[Int]
+            if (intPosition == position) {
+              val bundle = state(position)
+              sparseArray.put(intPosition, bundle)
+            } else {
+              logError("position is too high for saving state, not putting into saved state.")
+            }
+          }
+          outState.putSparseParcelableArray(entityType.entityName, sparseArray)
+          debug("saved state")
+      }
+    }
   }
 
   def onRestoreState(savedInstanceState: Bundle) {
+    AdapterCaching.findCacheActor(adapterView).foreach { actor =>
+      val sparseArray = savedInstanceState.getSparseParcelableArray[Bundle](entityType.entityName)
+      val mapBuffer = mutable.Map.empty[Long,Bundle]
+      for (i <- 0 to sparseArray.size() - 1) {
+        val position = sparseArray.keyAt(i)
+        mapBuffer += ((position.toLong, sparseArray.valueAt(i)))
+      }
+      actor ! CachedState(mapBuffer.toMap)
+    }
   }
 
   def onClearState(stayActive: Boolean) {

@@ -5,7 +5,6 @@ import persistence.CursorField._
 import persistence.EntityType
 import view.ViewField._
 import com.github.triangle._
-import PortableField._
 import com.github.scala.android.crud.GeneratedCrudType.{UriField, CrudContextField}
 import com.github.scala.android.crud.validate.Validation._
 
@@ -16,7 +15,7 @@ object AuthorEntityType extends EntityType {
     persisted[String]("name") + viewId(classOf[R], "name", textView) + requiredString,
 
     viewId(classOf[R], "bookCount", intView) +
-            mapField[Int]("bookCount") +
+            bundleField[Int]("bookCount") +
             GetterFromItem[Int] {
               case UriField(Some(uri)) && CrudContextField(Some(crudContext)) => {
                 println("calculating bookCount for " + uri + " and " + crudContext)
