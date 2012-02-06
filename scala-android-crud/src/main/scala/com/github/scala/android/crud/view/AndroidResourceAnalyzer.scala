@@ -47,7 +47,7 @@ object AndroidResourceAnalyzer extends Logging {
 
   def resourceFieldWithIntValue(classes: Seq[Class[_]], value: Int): Field =
     findResourceFieldWithIntValue(classes, value).getOrElse {
-      classes.foreach(rStringClass => error("Contents of " + rStringClass + " are " + rStringClass.getFields.mkString(", ")))
+      classes.foreach(rStringClass => logError("Contents of " + rStringClass + " are " + rStringClass.getFields.mkString(", ")))
       throw new IllegalStateException("Unable to find R.id with value " + value + " not found.  You may want to run the CrudUIGenerator.generateLayouts." +
               classes.mkString("(string classes: ", ",", ")"))
     }
@@ -60,7 +60,7 @@ object AndroidResourceAnalyzer extends Logging {
 
   def resourceIdWithName(classes: Seq[Class[_]], name: String): Int =
     findResourceIdWithName(classes, name).getOrElse {
-      classes.foreach(rStringClass => error("Contents of " + rStringClass + " are " + rStringClass.getFields.mkString(", ")))
+      classes.foreach(rStringClass => logError("Contents of " + rStringClass + " are " + rStringClass.getFields.mkString(", ")))
       throw new IllegalStateException("R.string." + name + " not found.  You may want to run the CrudUIGenerator.generateLayouts." +
               classes.mkString("(string classes: ", ",", ")"))
     }

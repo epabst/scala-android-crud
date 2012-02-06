@@ -39,7 +39,7 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
 
   protected def getLayoutKey(layoutName: String): LayoutKey =
     findResourceIdWithName(rLayoutClassesVal, layoutName).getOrElse {
-      rLayoutClassesVal.foreach(layoutClass => error("Contents of " + layoutClass + " are " + layoutClass.getFields.mkString(", ")))
+      rLayoutClassesVal.foreach(layoutClass => logError("Contents of " + layoutClass + " are " + layoutClass.getFields.mkString(", ")))
       throw new IllegalStateException("R.layout." + layoutName + " not found.  You may want to run the CrudUIGenerator.generateLayouts." +
               rLayoutClassesVal.mkString("(layout classes: ", ",", ")"))
     }
@@ -59,7 +59,7 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
 
   protected def getStringKey(stringName: String): SKey =
     findResourceIdWithName(rStringClassesVal, stringName).getOrElse {
-      rStringClassesVal.foreach(rStringClass => error("Contents of " + rStringClass + " are " + rStringClass.getFields.mkString(", ")))
+      rStringClassesVal.foreach(rStringClass => logError("Contents of " + rStringClass + " are " + rStringClass.getFields.mkString(", ")))
       throw new IllegalStateException("R.string." + stringName + " not found.  You may want to run the CrudUIGenerator.generateLayouts." +
               rStringClassesVal.mkString("(string classes: ", ",", ")"))
     }

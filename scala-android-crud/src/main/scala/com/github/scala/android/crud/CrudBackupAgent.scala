@@ -100,7 +100,7 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Con
             Some(RestoreItem(key, map))
           } catch {
             case e: Exception =>
-              error("Unable to restore " + key, e)
+              logError("Unable to restore " + key, e)
               //skip this one and do the next
               calculateNextValue()
           }
