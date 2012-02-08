@@ -61,12 +61,6 @@ class CrudListActivity(val crudType: CrudType, val application: CrudApplication)
     }
   }
 
-  override def onResume() {
-    trace("onResume")
-    crudContext.onClearState(this, stayActive = true)
-    super.onResume()
-  }
-
   protected def contextMenuActions: List[Action] = crudType.getEntityActions(application) match {
     case _ :: tail => tail.filter(_.command.title.isDefined)
     case Nil => Nil

@@ -103,12 +103,12 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
   }
 
   @Test
-  def onPauseShouldHandleAnyExceptionWhenSaving() {
+  def shouldHandleAnyExceptionWhenSaving() {
     stub(persistence.save(None, "unsaveable data")).toThrow(new IllegalStateException("intentional"))
     val crudType = new MyCrudType(persistence)
     val activity = new CrudActivity(crudType, application)
     //should not throw an exception
-    activity.saveForOnPause(persistence, "unsaveable data")
+    activity.saveBasedOnUserAction(persistence, "unsaveable data")
   }
 
   @Test

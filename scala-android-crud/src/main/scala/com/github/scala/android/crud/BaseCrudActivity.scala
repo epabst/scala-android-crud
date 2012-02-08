@@ -84,12 +84,20 @@ trait BaseCrudActivity extends ActivityWithVars with OptionsMenuActivity with Lo
 
   override def onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
+    // This is after the super call so that outState can be overridden if needed.
     crudContext.onSaveState(this, outState)
   }
 
   override def onRestoreInstanceState(savedInstanceState: Bundle) {
+    // This is before the super call to be the opposite order as onSaveInstanceState.
     crudContext.onRestoreState(this, savedInstanceState)
     super.onRestoreInstanceState(savedInstanceState)
+  }
+
+  override def onResume() {
+    trace("onResume")
+    crudContext.onClearState(this, stayActive = true)
+    super.onResume()
   }
 
   override def onDestroy() {
