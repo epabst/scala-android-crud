@@ -8,12 +8,23 @@ import android.content.Intent
 import android.app.Activity
 import com.github.scala.android.crud.view.AndroidConversions._
 import android.widget.Toast
+import common.UriPath
 import validate.ValidationResult
 
 /** A generic Activity for CRUD operations
   * @author Eric Pabst (epabst@gmail.com)
   */
 class CrudActivity(val crudType: CrudType, val application: CrudApplication) extends BaseCrudActivity {
+
+  private def populateFromUri(uri: UriPath) {
+    future {
+      withPersistence { persistence =>
+        val readableOrUnit: AnyRef = persistence.find(uri).getOrElse(PortableField.UseDefaults)
+        val portableValue = entityType.copyFromItem(readableOrUnit :: contextItems)
+        runOnUiThread { portableValue.copyTo(this, contextItems) }
+      }
+    }
+  }
 
   override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)
@@ -22,34 +33,45 @@ class CrudActivity(val crudType: CrudType, val application: CrudApplication) ext
     val currentPath = currentUriPath
     val contextItems = List(currentPath, crudContext, PortableField.UseDefaults)
     if (crudType.maySpecifyEntityInstance(currentPath)) {
-      future {
-        withPersistence { persistence =>
-          val readableOrUnit: AnyRef = persistence.find(currentPath).getOrElse(PortableField.UseDefaults)
-          val portableValue = entityType.copyFromItem(readableOrUnit :: contextItems)
+      populateFromUri(currentPath)
+      crudContext.addCachedStateListener(new CachedStateListener {
+        def onClearState(stayActive: Boolean) {
+          if (stayActive) {
+            populateFromUri(currentUriPath)
+          }
+        }
+
+        def onSaveState(outState: Bundle) {
+          entityType.copy(this, outState)
+        }
+
+        def onRestoreState(savedInstanceState: Bundle) {
+          val portableValue = entityType.copyFrom(savedInstanceState)
           runOnUiThread { portableValue.copyTo(this, contextItems) }
         }
-      }
+      })
     } else {
       entityType.copyFromItem(PortableField.UseDefaults :: contextItems, this)
     }
   }
 
-  override def onPause() {
+  override def onBackPressed() {
+    // Save before going back so that the Activity being activated will read the correct data from persistence.
     val writable = crudType.newWritable
     withPersistence { persistence =>
       val copyableFields = entityType.copyableTo(writable, contextItemsWithoutUseDefaults)
       val portableValue = copyableFields.copyFromItem(this :: contextItemsWithoutUseDefaults)
       if (portableValue.transform(ValidationResult.Valid).isValid) {
         val transformedWritable = portableValue.transform(writable)
-        saveForOnPause(persistence, transformedWritable)
+        saveBasedOnUserAction(persistence, transformedWritable)
       } else {
         Toast.makeText(this, res.R.string.data_not_saved_since_invalid_notification, Toast.LENGTH_SHORT).show()
       }
     }
-    super.onPause()
+    super.onBackPressed()
   }
 
-  private[crud] def saveForOnPause(persistence: CrudPersistence, writable: AnyRef) {
+  private[crud] def saveBasedOnUserAction(persistence: CrudPersistence, writable: AnyRef) {
     try {
       val id = entityType.IdField.getter(currentUriPath)
       val newId = persistence.save(id, writable)

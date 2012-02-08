@@ -38,7 +38,7 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
     }
     activity.onCreate(null)
     crudType.entityType.copy(entity, activity)
-    activity.onPause()
+    activity.onBackPressed()
     verify(persistence).save(None, Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))
     verify(persistence, never()).find(uri)
   }
@@ -56,7 +56,7 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
     when(persistence.find(uri)).thenReturn(None)
     activity.onCreate(null)
     crudType.entityType.copy(entity, activity)
-    activity.onPause()
+    activity.onBackPressed()
     verify(persistence).save(None, mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))
   }
 
@@ -76,7 +76,7 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
     viewData.get("name") must be (Some("Bob"))
     viewData.get("age") must be (Some(25))
 
-    activity.onPause()
+    activity.onBackPressed()
     verify(persistence).save(Some(101),
       mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString, CursorField.idFieldName -> 101))
   }
@@ -125,8 +125,8 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
     activity.onCreate(null)
     //simulate a user entering data
     crudType.entityType.copy(entity, activity)
-    activity.onPause()
-    activity.onPause()
+    activity.onBackPressed()
+    activity.onBackPressed()
     verify(persistence, times(1)).save(None, mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))
     //all but the first time should provide an id
     verify(persistence).save(Some(101), mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> (uri / 101).toString,
