@@ -23,9 +23,16 @@ class CacheActor(adapterView: ViewGroup, adapter: BaseAdapter, entityType: Entit
   protected def logTag = entityType.logTag
   private var cache: Map[Long, PortableValue] = Map.empty
 
+  /** Logs every message as it is about to be handled. */
+  def logMessage(f: PartialFunction[Any,Unit]): PartialFunction[Any,Unit] = {
+    case message if f.isDefinedAt(message) =>
+      debug("CacheActor handling message: " + message.toString)
+      f(message)
+  }
+
   def act() {
     loop {
-      react {
+      react(logMessage {
         // This is requested by an AdapterCaching when a View for a position is requested
         case request @ DisplayValueAtPosition(view, position, entityData, contextItems) =>
           val cachedValueOpt = cache.get(position)
@@ -76,7 +83,7 @@ class CacheActor(adapterView: ViewGroup, adapter: BaseAdapter, entityType: Entit
           trace("Clearing cache in " + adapterView + " of " + entityType + " due to " + reason)
           // This will result in a DisplayValueAtPosition request for all visible Views
           adapterView.postInvalidate()
-      }
+      })
     }
   }
 }
