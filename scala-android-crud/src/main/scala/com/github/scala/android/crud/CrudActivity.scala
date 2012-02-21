@@ -2,7 +2,6 @@ package com.github.scala.android.crud
 
 import action.{OperationResponse, EntityOperation}
 import android.os.Bundle
-import com.github.triangle.JavaUtil.toRunnable
 import com.github.triangle.PortableField
 import android.content.Intent
 import android.app.Activity
@@ -14,14 +13,14 @@ import validate.ValidationResult
 /** A generic Activity for CRUD operations
   * @author Eric Pabst (epabst@gmail.com)
   */
-class CrudActivity(val crudType: CrudType, val application: CrudApplication) extends BaseCrudActivity {
+class CrudActivity(val crudType: CrudType, val application: CrudApplication) extends BaseCrudActivity { self =>
 
   private def populateFromUri(uri: UriPath) {
     future {
       withPersistence { persistence =>
         val readableOrUnit: AnyRef = persistence.find(uri).getOrElse(PortableField.UseDefaults)
         val portableValue = entityType.copyFromItem(readableOrUnit :: contextItems)
-        runOnUiThread { portableValue.copyTo(this, contextItems) }
+        runOnUiThread(this) { portableValue.copyTo(this, contextItems) }
       }
     }
   }
@@ -47,7 +46,7 @@ class CrudActivity(val crudType: CrudType, val application: CrudApplication) ext
 
         def onRestoreState(savedInstanceState: Bundle) {
           val portableValue = entityType.copyFrom(savedInstanceState)
-          runOnUiThread { portableValue.copyTo(this, contextItems) }
+          runOnUiThread(self) { portableValue.copyTo(this, contextItems) }
         }
       })
     } else {

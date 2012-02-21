@@ -3,9 +3,7 @@ package com.github.scala.android.crud.view
 import com.github.triangle.{PortableValue, Logging}
 import com.github.scala.android.crud.persistence.EntityType
 import com.github.scala.android.crud.common.Timing
-import com.github.triangle.JavaUtil.toRunnable
 import android.view.{ViewGroup, View}
-import actors.Futures.future
 import com.github.scala.android.crud.CachedStateListener
 import android.os.Bundle
 import android.widget.{Adapter, AdapterView, BaseAdapter}
@@ -19,7 +17,7 @@ case class ClearCache(reason: String)
 object RetrieveCachedState
 case class CachedState(bundles: Map[Long,Bundle])
 
-class CacheActor(adapterView: ViewGroup, adapter: BaseAdapter, entityType: EntityType) extends Actor with Logging { self =>
+class CacheActor(adapterView: ViewGroup, adapter: BaseAdapter, entityType: EntityType) extends Actor with Logging with Timing { self =>
   protected def logTag = entityType.logTag
   private var cache: Map[Long, PortableValue] = Map.empty
 
@@ -55,10 +53,10 @@ class CacheActor(adapterView: ViewGroup, adapter: BaseAdapter, entityType: Entit
               trace("cache hit for " + adapterView + " of " + entityType + " at position " + position + ": " + cachedValue)
               cachedValue
           }
-          view.post(toRunnable {
+          runOnUiThread(view) {
             //set the cached or default values immediately.  Default values is better than leaving as-is because the view might have other unrelated data.
             portableValue.copyTo(view, contextItems)
-          })
+          }
         case CacheValue(position, portableValue, onFinish) =>
           trace("Added value at position " + position + " to the " + adapterView + " cache for " + entityType)
           cache += position -> portableValue
@@ -76,7 +74,7 @@ class CacheActor(adapterView: ViewGroup, adapter: BaseAdapter, entityType: Entit
           }
           // Anything in the cache should take precedence over the CachedState
           cache = portableValues ++ cache
-          adapterView.post {
+          runOnUiThread(adapterView) {
             // This will result in a DisplayValueAtPosition request for all visible Views
             adapterView.postInvalidate()
           }
@@ -90,17 +88,17 @@ class CacheActor(adapterView: ViewGroup, adapter: BaseAdapter, entityType: Entit
   }
 }
 
-object AdapterCaching {
+object AdapterCaching extends Timing {
   /** This should be run in the UI Thread. */
   private[crud] def findCacheActor(adapterView: ViewGroup): Option[CacheActor] =
     Option(adapterView.getTag.asInstanceOf[CacheActor])
 
   def clearCache(adapterView: ViewGroup, reason: String) {
-    adapterView.post(toRunnable {
+    runOnUiThread(adapterView) {
       findCacheActor(adapterView).foreach { cacheActor =>
         cacheActor ! ClearCache(reason)
       }
-    })
+    }
   }
 }
 
@@ -112,7 +110,7 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
   protected def logTag = entityType.logTag
 
   private def sendMessageToCacheActor(adapterView: ViewGroup, message: Any) {
-    adapterView.post(toRunnable {
+    runOnUiThread(adapterView) {
       val actor = findCacheActor(adapterView).getOrElse {
         val actor = new CacheActor(adapterView, this, entityType)
         adapterView.setTag(actor)
@@ -120,7 +118,7 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
         actor
       }
       actor ! message
-    })
+    }
   }
 
   protected[crud] def bindViewFromCacheOrItems(view: View, entityData: AnyRef, contextItems: List[AnyRef], position: Long, adapterView: ViewGroup) {

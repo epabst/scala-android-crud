@@ -7,9 +7,8 @@ import android.os.Bundle
 import android.view.{ContextMenu, View, MenuItem}
 import android.view.ContextMenu.ContextMenuInfo
 import android.widget.AdapterView.AdapterContextMenuInfo
-import com.github.triangle.{JavaUtil, PortableValue}
+import com.github.triangle.PortableValue
 import common.UriPath
-import JavaUtil.toRunnable
 import persistence.PersistenceListener
 import common.PlatformTypes._
 
@@ -56,7 +55,7 @@ class CrudListActivity(val crudType: CrudType, val application: CrudApplication)
         None
       }
     }
-    runOnUiThread {
+    runOnUiThread(this) {
       portableValues.foreach(_.copyTo(this, List(crudContext)))
     }
   }
