@@ -16,6 +16,7 @@ import res.R
 import android.widget.TextView
 import android.util.SparseArray
 import view.{CacheValue, AdapterCaching}
+import java.util.concurrent.CountDownLatch
 
 /** A test for [[com.github.scala.android.crud.CrudListActivity]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -89,7 +90,7 @@ class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
     val array = new SparseArray[String]()
     array.put(0, "hello")
     val working = array.get(0) == "hello"
-    if (!working) println("Warning: SparseArray not working!  Upgrade to robolectric version (if available) that supports SparseArray.")
+    if (working) error("SparseArray is now working!  You must have upgraded to a robolectric version that supports it.  Delete this code.")
     working
   }
 
@@ -114,7 +115,9 @@ class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
     activity.setIntent(new Intent(Intent.ACTION_MAIN))
     activity.onCreate(null)
     val Some(actor) = AdapterCaching.findCacheActor(activity.getListView)
-    actor !? CacheValue(0, entityType.copyFrom(map))
+    val latch = new CountDownLatch(1)
+    actor ! CacheValue(0, entityType.copyFrom(map), () => latch.countDown())
+    latch.await()
     val state = new Bundle()
     activity.onSaveInstanceState(state)
     val bundleList = state.getSparseParcelableArray[Bundle](entityType.entityName)

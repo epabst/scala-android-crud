@@ -38,7 +38,7 @@ trait EntityType extends FieldList with Logging {
 
   def toUri(id: ID) = UriPath(entityName, id.toString)
 
-  lazy val defaultPortableValue = copyFrom(PortableField.UseDefaults)
+  lazy val DefaultPortableValue = copyFrom(PortableField.UseDefaults)
 
   override def toString() = entityName
 }
