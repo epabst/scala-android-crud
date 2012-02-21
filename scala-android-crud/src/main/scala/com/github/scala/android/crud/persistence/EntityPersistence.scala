@@ -1,8 +1,7 @@
 package com.github.scala.android.crud.persistence
 
-import com.github.scala.android.crud.common.{ListenerHolder, Timing}
 import com.github.scala.android.crud.common.PlatformTypes._
-import com.github.scala.android.crud.common.UriPath
+import com.github.scala.android.crud.common.{Common, ListenerHolder, Timing, UriPath}
 
 trait PersistenceListener {
   def onSave(id: ID)
@@ -15,6 +14,8 @@ trait PersistenceListener {
   */
 
 trait EntityPersistence extends Timing with ListenerHolder[PersistenceListener] {
+  protected def logTag: String = Common.logTag
+
   def toUri(id: ID): UriPath
 
   /** Finds one result for a given uri.  The UriPath should uniquely identify an entity.

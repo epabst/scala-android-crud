@@ -10,7 +10,7 @@ import com.github.triangle.Logging
   * @author Eric Pabst (epabst@gmail.com)
   */
 trait CrudPersistence extends EntityPersistence with Logging {
-  protected def logTag: String = Common.tryToEvaluate(entityType.logTag).getOrElse(Common.logTag)
+  override protected def logTag: String = Common.tryToEvaluate(entityType.logTag).getOrElse(Common.logTag)
 
   def entityType: EntityType
 

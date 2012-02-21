@@ -2,7 +2,6 @@ package com.github.scala.android.crud.view
 
 import com.github.triangle.{PortableValue, Logging}
 import com.github.scala.android.crud.persistence.EntityType
-import com.github.scala.android.crud.common.Timing
 import android.view.{ViewGroup, View}
 import com.github.scala.android.crud.CachedStateListener
 import android.os.Bundle
@@ -10,6 +9,7 @@ import android.widget.{Adapter, AdapterView, BaseAdapter}
 import actors.Actor
 import android.util.SparseArray
 import collection.mutable
+import com.github.scala.android.crud.common.{Common, Timing}
 
 case class CacheValue(position: Long, portableValue: PortableValue, onFinish: () => Unit)
 case class DisplayValueAtPosition(view: View, position: Long, entityData: AnyRef, contextItems: scala.List[AnyRef])
@@ -89,6 +89,8 @@ class CacheActor(adapterView: ViewGroup, adapter: BaseAdapter, entityType: Entit
 }
 
 object AdapterCaching extends Timing {
+  protected def logTag = Common.logTag
+
   /** This should be run in the UI Thread. */
   private[crud] def findCacheActor(adapterView: ViewGroup): Option[CacheActor] =
     Option(adapterView.getTag.asInstanceOf[CacheActor])
