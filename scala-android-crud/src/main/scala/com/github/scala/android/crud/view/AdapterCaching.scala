@@ -140,7 +140,8 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
   }
 
   protected[crud] def bindViewFromCacheOrItems(view: View, entityData: AnyRef, contextItems: List[AnyRef], position: Long, adapterView: ViewGroup) {
-    sendMessageToCacheActor(adapterView, DisplayValueAtPosition(view, position, entityData, contextItems))
+    //todo sendMessageToCacheActor(adapterView, DisplayValueAtPosition(view, position, entityData, contextItems))
+    entityType.copyFromItem(entityData +: contextItems, view)
   }
 }
 
