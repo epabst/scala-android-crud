@@ -49,8 +49,8 @@ class CrudListActivity(val crudType: CrudType, val application: CrudApplication)
     val uriPath = currentUriPath
     //copy each parent Entity's data to the Activity if identified in the currentUriPath
     val portableValues: List[PortableValue] = crudType.parentEntities(application).flatMap { parentType =>
-      if (crudType.maySpecifyEntityInstance(uriPath)) {
-        crudType.copyFromPersistedEntity(uriPath, crudContext)
+      if (parentType.maySpecifyEntityInstance(uriPath)) {
+        parentType.copyFromPersistedEntity(uriPath, crudContext)
       } else {
         None
       }
