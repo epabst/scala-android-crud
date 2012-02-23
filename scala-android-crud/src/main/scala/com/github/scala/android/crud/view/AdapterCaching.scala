@@ -9,10 +9,10 @@ import android.widget.{Adapter, AdapterView, BaseAdapter}
 import android.util.SparseArray
 import collection.mutable
 import com.github.scala.android.crud.common.{Common, Timing}
-import actors.{TIMEOUT, Actor}
+import actors.Actor
 
+case class GetValueAtPosition(position: Long, entityData: AnyRef, contextItems: scala.List[AnyRef], onCached: () => Unit)
 case class CacheValue(position: Long, portableValue: PortableValue, onFinish: () => Unit)
-case class DisplayValueAtPosition(view: View, position: Long, entityData: AnyRef, contextItems: scala.List[AnyRef])
 case class ClearCache(reason: String)
 object RetrieveCachedState
 case class CachedState(bundles: Map[Long,Bundle])
@@ -28,53 +28,32 @@ class CacheActor(adapterView: ViewGroup, adapter: BaseAdapter, entityType: Entit
       f(message)
   }
 
-  def withLastSimilarDisplayValueAtPositionMessage(request: DisplayValueAtPosition)(f: DisplayValueAtPosition => Unit) {
-    // Timeout of 0 means don't wait at all.
-    reactWithin(0) {
-      case similarRequest @ DisplayValueAtPosition(request.view, _, _, _) =>
-        debug("CacheActor skipping obsolete request: " + request)
-        withLastSimilarDisplayValueAtPositionMessage(similarRequest)(f)
-      case TIMEOUT =>
-        debug("CacheActor using last similar request: " + request)
-        f(request)
-    }
-  }
-
   def act() {
     loop {
       react(withMessageLogging {
         // This is requested by an AdapterCaching when a View for a position is requested
-        case request0: DisplayValueAtPosition =>
-          withLastSimilarDisplayValueAtPositionMessage(request0) { request =>
-            val DisplayValueAtPosition(view, position, entityData, contextItems) = request
-            val cachedValueOpt = cache.get(position)
-            val portableValue = cachedValueOpt match {
-              case None =>
-                trace("first cache miss for " + adapterView + " of " + entityType + " at position " + position)
-                // This prevents duplication of calculating the value in the background.
-                cache += position -> entityType.DefaultPortableValue
-                future {
-                  val positionItems: List[AnyRef] = entityData +: contextItems
-                  val portableValue = entityType.copyFromItem(positionItems)
-                  // postInvalidate() should cause DisplayValueAtPosition to be requested again
-                  this ! CacheValue(position, portableValue, () => adapterView.postInvalidate())
-                }
-                entityType.DefaultPortableValue
-              case Some(entityType.DefaultPortableValue) =>
-                trace("another cache miss for " + adapterView + " of " + entityType + " at position " + position)
-                entityType.DefaultPortableValue
-              case Some(cachedValue) =>
-                trace("cache hit for " + adapterView + " of " + entityType + " at position " + position + ": " + cachedValue)
-                cachedValue
-            }
-            runOnUiThread(adapterView) {
-              //set the cached or default values immediately.  Default values is better than leaving as-is because the view might have other unrelated data.
-              if (portableValue != entityType.DefaultPortableValue) {
-                debug("Copying using cache hit for " + adapterView + " of " + entityType + " at position " + position + ": " + portableValue)
+        case GetValueAtPosition(position, entityData, contextItems, onCached) =>
+          val cachedValueOpt = cache.get(position)
+          val portableValue = cachedValueOpt match {
+            case None =>
+              trace("first cache miss for " + adapterView + " of " + entityType + " at position " + position)
+              // This prevents duplication of calculating the value in the background.
+              cache += position -> entityType.DefaultPortableValue
+              future {
+                val positionItems: List[AnyRef] = entityData +: contextItems
+                val portableValue = entityType.copyFromItem(positionItems)
+                // postInvalidate() should cause bindViewFromCacheOrItems to be requested again
+                this ! CacheValue(position, portableValue, onCached)
               }
-              portableValue.copyTo(view, contextItems)
-            }
+              entityType.DefaultPortableValue
+            case Some(entityType.DefaultPortableValue) =>
+              trace("another cache miss for " + adapterView + " of " + entityType + " at position " + position)
+              entityType.DefaultPortableValue
+            case Some(cachedValue) =>
+              trace("cache hit for " + adapterView + " of " + entityType + " at position " + position + ": " + cachedValue)
+              cachedValue
           }
+          self.reply(portableValue)
         case CacheValue(position, portableValue, onFinish) =>
           trace("Added value at position " + position + " to the " + adapterView + " cache for " + entityType)
           cache += position -> portableValue
@@ -92,12 +71,12 @@ class CacheActor(adapterView: ViewGroup, adapter: BaseAdapter, entityType: Entit
           }
           // Anything in the cache should take precedence over the CachedState
           cache = portableValues ++ cache
-          // This will result in a DisplayValueAtPosition request for all visible Views
+          // This will result in a bindViewFromCacheOrItems request for all visible Views
           adapterView.postInvalidate()
         case ClearCache(reason) =>
           cache = Map.empty
           trace("Clearing cache in " + adapterView + " of " + entityType + " due to " + reason)
-          // This will result in a DisplayValueAtPosition request for all visible Views
+          // This will result in a bindViewFromCacheOrItems request for all visible Views
           adapterView.postInvalidate()
       })
     }
@@ -127,21 +106,24 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
 
   protected def logTag = entityType.logTag
 
-  private def sendMessageToCacheActor(adapterView: ViewGroup, message: Any) {
-    runOnUiThread(adapterView) {
-      val actor = findCacheActor(adapterView).getOrElse {
-        val actor = new CacheActor(adapterView, this, entityType)
-        adapterView.setTag(actor)
-        actor.start()
-        actor
-      }
-      actor ! message
+  private def cacheActor(adapterView: ViewGroup): CacheActor = {
+    findCacheActor(adapterView).getOrElse {
+      val actor = new CacheActor(adapterView, this, entityType)
+      adapterView.setTag(actor)
+      actor.start()
+      actor
     }
   }
 
   protected[crud] def bindViewFromCacheOrItems(view: View, entityData: AnyRef, contextItems: List[AnyRef], position: Long, adapterView: ViewGroup) {
-    //todo sendMessageToCacheActor(adapterView, DisplayValueAtPosition(view, position, entityData, contextItems))
-    entityType.copyFromItem(entityData +: contextItems, view)
+    (cacheActor(adapterView) !? GetValueAtPosition(position, entityData, contextItems, () => view.postInvalidate())) match {
+      case portableValue: PortableValue =>
+        //set the cached or default values immediately.  Default values is better than leaving as-is because the view might have other unrelated data.
+        if (portableValue != entityType.DefaultPortableValue) {
+          debug("Copying using cache hit for " + adapterView + " of " + entityType + " at position " + position + ": " + portableValue)
+        }
+        portableValue.copyTo(view, contextItems)
+    }
   }
 }
 
