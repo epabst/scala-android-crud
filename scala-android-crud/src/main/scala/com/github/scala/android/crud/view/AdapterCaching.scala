@@ -42,8 +42,8 @@ class CacheActor(adapterView: ViewGroup, adapter: BaseAdapter, entityType: Entit
               future {
                 val positionItems: List[AnyRef] = entityData +: contextItems
                 val portableValue = entityType.copyFromItem(positionItems)
-                // view.postInvalidate() should cause DisplayValueAtPosition to be requested again
-                this ! CacheValue(position, portableValue, () => view.postInvalidate())
+                // postInvalidate() should cause DisplayValueAtPosition to be requested again
+                this ! CacheValue(position, portableValue, () => adapterView.postInvalidate())
               }
               entityType.DefaultPortableValue
             case Some(entityType.DefaultPortableValue) =>
@@ -77,10 +77,8 @@ class CacheActor(adapterView: ViewGroup, adapter: BaseAdapter, entityType: Entit
           }
           // Anything in the cache should take precedence over the CachedState
           cache = portableValues ++ cache
-          runOnUiThread(adapterView) {
-            // This will result in a DisplayValueAtPosition request for all visible Views
-            adapterView.postInvalidate()
-          }
+          // This will result in a DisplayValueAtPosition request for all visible Views
+          adapterView.postInvalidate()
         case ClearCache(reason) =>
           cache = Map.empty
           trace("Clearing cache in " + adapterView + " of " + entityType + " due to " + reason)
@@ -94,7 +92,7 @@ class CacheActor(adapterView: ViewGroup, adapter: BaseAdapter, entityType: Entit
 object AdapterCaching extends Timing {
   protected def logTag = Common.logTag
 
-  /** This should be run in the UI Thread. */
+  /** This should be run on the UI Thread. */
   private[crud] def findCacheActor(adapterView: ViewGroup): Option[CacheActor] =
     Option(adapterView.getTag.asInstanceOf[CacheActor])
 
