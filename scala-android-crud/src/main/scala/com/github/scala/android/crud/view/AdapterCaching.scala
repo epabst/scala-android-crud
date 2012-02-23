@@ -42,7 +42,7 @@ class CacheActor(adapterView: ViewGroup, adapter: BaseAdapter, entityType: Entit
               future {
                 val positionItems: List[AnyRef] = entityData +: contextItems
                 val portableValue = entityType.copyFromItem(positionItems)
-                // postInvalidate() should cause bindViewFromCacheOrItems to be requested again
+                // onCached should cause bindViewFromCacheOrItems to be requested again
                 this ! CacheValue(position, portableValue, onCached)
               }
               entityType.DefaultPortableValue
@@ -116,7 +116,8 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
   }
 
   protected[crud] def bindViewFromCacheOrItems(view: View, entityData: AnyRef, contextItems: List[AnyRef], position: Long, adapterView: ViewGroup) {
-    (cacheActor(adapterView) !? GetValueAtPosition(position, entityData, contextItems, () => view.postInvalidate())) match {
+    // postInvalidate() should cause bindViewFromCacheOrItems to be requested again once the real value is cached
+    (cacheActor(adapterView) !? GetValueAtPosition(position, entityData, contextItems, () => adapterView.postInvalidate())) match {
       case portableValue: PortableValue =>
         //set the cached or default values immediately.  Default values is better than leaving as-is because the view might have other unrelated data.
         if (portableValue != entityType.DefaultPortableValue) {
