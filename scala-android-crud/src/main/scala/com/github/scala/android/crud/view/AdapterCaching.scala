@@ -153,6 +153,7 @@ class AdapterCachingStateListener[A <: Adapter](adapterView: AdapterView[A], ent
   }
 
   def onRestoreState(savedInstanceState: Bundle) {
+    //todo create CacheActor if it doesn't exist
     AdapterCaching.findCacheActor(adapterView).foreach { actor =>
       val sparseArray = savedInstanceState.getSparseParcelableArray[Bundle](entityType.entityName)
       val mapBuffer = mutable.Map.empty[Long,Bundle]
