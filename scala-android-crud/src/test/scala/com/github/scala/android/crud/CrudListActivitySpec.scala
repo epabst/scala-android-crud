@@ -116,7 +116,7 @@ class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
     activity.onCreate(null)
     val Some(actor) = AdapterCaching.findCacheActor(activity.getListView)
     val latch = new CountDownLatch(1)
-    actor ! CacheValue(0, entityType.copyFrom(map), () => latch.countDown())
+    actor ! CacheValue(0, entityType.copyFrom(map), _ => latch.countDown())
     latch.await()
     val state = new Bundle()
     activity.onSaveInstanceState(state)

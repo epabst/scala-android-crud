@@ -11,8 +11,8 @@ import collection.mutable
 import com.github.scala.android.crud.common.{Common, Timing}
 import actors.Actor
 
-case class GetValueAtPosition(position: Long, entityData: AnyRef, contextItems: scala.List[AnyRef], onCached: () => Unit)
-case class CacheValue(position: Long, portableValue: PortableValue, onFinish: () => Unit)
+case class GetValueAtPosition(position: Long, entityData: AnyRef, contextItems: scala.List[AnyRef], onCached: PortableValue => Unit)
+case class CacheValue(position: Long, portableValue: PortableValue, onCached: PortableValue => Unit)
 case class ClearCache(reason: String)
 object RetrieveCachedState
 case class CachedState(bundles: Map[Long,Bundle])
@@ -54,10 +54,10 @@ class CacheActor(adapterView: ViewGroup, adapter: BaseAdapter, entityType: Entit
               cachedValue
           }
           self.reply(portableValue)
-        case CacheValue(position, portableValue, onFinish) =>
+        case CacheValue(position, portableValue, onCached) =>
           trace("Added value at position " + position + " to the " + adapterView + " cache for " + entityType)
           cache += position -> portableValue
-          onFinish()
+          onCached(portableValue)
         case RetrieveCachedState =>
           val state: Map[Long,Bundle] = for ((position, portableValue) <- cache) yield {
             // If entityType doesn't support setting every field (including generated ones) into a Bundle, then the data will be incomplete.
@@ -116,13 +116,18 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
   }
 
   protected[crud] def bindViewFromCacheOrItems(view: View, entityData: AnyRef, contextItems: List[AnyRef], position: Long, adapterView: ViewGroup) {
+    view.setTag(position)
     // postInvalidate() should cause bindViewFromCacheOrItems to be requested again once the real value is cached
-    (cacheActor(adapterView) !? GetValueAtPosition(position, entityData, contextItems, () => adapterView.postInvalidate())) match {
+    (cacheActor(adapterView) !? GetValueAtPosition(position, entityData, contextItems, portableValue => {
+      runOnUiThread(adapterView) {
+        // Don't copy if the View has been re-used for a different position.
+        if (view.getTag == position) {
+          portableValue.copyTo(view, contextItems)
+        }
+      }
+    })) match {
       case portableValue: PortableValue =>
         //set the cached or default values immediately.  Default values is better than leaving as-is because the view might have other unrelated data.
-        if (portableValue != entityType.DefaultPortableValue) {
-          debug("Copying using cache hit for " + adapterView + " of " + entityType + " at position " + position + ": " + portableValue)
-        }
         portableValue.copyTo(view, contextItems)
     }
   }
