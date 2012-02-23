@@ -53,8 +53,11 @@ class CacheActor(adapterView: ViewGroup, adapter: BaseAdapter, entityType: Entit
               trace("cache hit for " + adapterView + " of " + entityType + " at position " + position + ": " + cachedValue)
               cachedValue
           }
-          runOnUiThread(view) {
+          runOnUiThread(adapterView) {
             //set the cached or default values immediately.  Default values is better than leaving as-is because the view might have other unrelated data.
+            if (portableValue != entityType.DefaultPortableValue) {
+              debug("Copying using cache hit for " + adapterView + " of " + entityType + " at position " + position + ": " + portableValue)
+            }
             portableValue.copyTo(view, contextItems)
           }
         case CacheValue(position, portableValue, onFinish) =>
