@@ -38,6 +38,7 @@ object FieldLayout {
     def editXml = <EditText android:inputType={inputType}/>
   }
 
+  lazy val noLayout = FieldLayout(NodeSeq.Empty, NodeSeq.Empty)
   lazy val nameLayout = textLayout("textCapWords")
   lazy val intLayout = textLayout("number|numberSigned")
   lazy val longLayout = textLayout("number|numberSigned")

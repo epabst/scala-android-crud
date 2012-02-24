@@ -52,8 +52,7 @@ case class ViewIdFieldInfo(id: String, displayName: String, field: PortableField
     case matchingField: ViewField[_] => matchingField
   }
 
-  def firstViewField = viewFields.headOption.getOrElse(Predef.error("No ViewField in " + this))
-  def layout = firstViewField.defaultLayout
+  def layout: FieldLayout = viewFields.headOption.map(_.defaultLayout).getOrElse(FieldLayout.noLayout)
 }
 
 object ViewIdFieldInfo {

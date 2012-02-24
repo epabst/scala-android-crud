@@ -82,6 +82,12 @@ class EntityFieldInfoSpec extends Spec with MustMatchers with MockitoSugar {
       fieldInfos.map(_.id) must be (List("foo"))
       fieldInfos.map(_.layout).head.editXml.head.label must be ("Spinner")
     }
+
+    it("must not include fields whose childView field isn't a ViewField") {
+      val info = EntityFieldInfo(viewId(R.id.foo, mapField[String]("foo")), Seq(classOf[id]))
+      val fieldInfos = info.updateableViewIdFieldInfos
+      fieldInfos must be ('empty)
+    }
   }
 
   describe("displayableViewIdFieldInfos") {
@@ -94,6 +100,12 @@ class EntityFieldInfoSpec extends Spec with MustMatchers with MockitoSugar {
     it("must provide each displayable field in the referenced EntityType for an EntityView field") {
       val fieldInfos = entityFieldInfo.displayableViewIdFieldInfos
       fieldInfos must be (EntityTypeViewInfo(MyEntityType).displayableViewIdFieldInfos)
+    }
+
+    it("must not include fields whose childView field isn't a ViewField") {
+      val info = EntityFieldInfo(viewId(R.id.foo, mapField[String]("foo")), Seq(classOf[id]))
+      val fieldInfos = info.displayableViewIdFieldInfos
+      fieldInfos must be ('empty)
     }
   }
 }
