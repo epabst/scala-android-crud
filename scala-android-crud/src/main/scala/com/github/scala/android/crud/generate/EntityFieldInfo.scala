@@ -5,6 +5,7 @@ import com.github.triangle.{PortableField, FieldList, BaseField}
 import com.github.scala.android.crud.persistence.{EntityType, CursorField}
 import com.github.scala.android.crud.view._
 import xml.NodeSeq
+import com.github.scala.android.crud.NamingConventions
 
 case class EntityFieldInfo(field: BaseField, rIdClasses: Seq[Class[_]]) {
   private lazy val updateablePersistedFields = CursorField.updateablePersistedFields(field, rIdClasses)
@@ -61,6 +62,7 @@ object ViewIdFieldInfo {
 }
 
 case class EntityTypeViewInfo(entityType: EntityType) {
+  lazy val layoutPrefix = NamingConventions.toLayoutPrefix(entityType.entityName)
   lazy val rIdClasses: Seq[Class[_]] = detectRIdClasses(entityType.getClass)
   lazy val entityFieldInfos: List[EntityFieldInfo] = entityType.fields.map(EntityFieldInfo(_, rIdClasses))
   lazy val displayableViewIdFieldInfos: List[ViewIdFieldInfo] = entityFieldInfos.flatMap(_.displayableViewIdFieldInfos)
