@@ -28,11 +28,16 @@ class CrudActivity(val crudType: CrudType, val application: CrudApplication) ext
   override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)
 
-    setContentView(crudType.entryLayout)
-    val currentPath = currentUriPath
-    val contextItems = List(currentPath, crudContext, PortableField.UseDefaults)
-    if (crudType.maySpecifyEntityInstance(currentPath)) {
-      populateFromUri(currentPath)
+    if (savedInstanceState == null) {
+      setContentView(crudType.entryLayout)
+      val currentPath = currentUriPath
+      if (crudType.maySpecifyEntityInstance(currentPath)) {
+        populateFromUri(currentPath)
+      } else {
+        entityType.copyFromItem(PortableField.UseDefaults :: contextItems, this)
+      }
+    }
+    if (crudType.maySpecifyEntityInstance(currentUriPath)) {
       crudContext.addCachedStateListener(new CachedStateListener {
         def onClearState(stayActive: Boolean) {
           if (stayActive) {
@@ -49,8 +54,6 @@ class CrudActivity(val crudType: CrudType, val application: CrudApplication) ext
           runOnUiThread(self) { portableValue.copyTo(this, contextItems) }
         }
       })
-    } else {
-      entityType.copyFromItem(PortableField.UseDefaults :: contextItems, this)
     }
   }
 
