@@ -72,12 +72,12 @@ class CacheActor(adapterView: ViewGroup, adapter: BaseAdapter, entityType: Entit
           // Anything in the cache should take precedence over the CachedState
           cache = portableValues ++ cache
           // This will result in a bindViewFromCacheOrItems request for all visible Views
-          adapter.notifyDataSetChanged()
+          adapterView.postInvalidate()
         case ClearCache(reason) =>
           cache = Map.empty
           trace("Clearing cache in " + adapterView + " of " + entityType + " due to " + reason)
           // This will result in a bindViewFromCacheOrItems request for all visible Views
-          adapter.notifyDataSetChanged()
+          adapterView.postInvalidate()
       })
     }
   }
@@ -116,8 +116,18 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
   }
 
   protected[crud] def bindViewFromCacheOrItems(view: View, entityData: AnyRef, contextItems: List[AnyRef], position: Long, adapterView: ViewGroup) {
+    view.setTag(position)
     // notifyDataSetChanged() should cause bindViewFromCacheOrItems to be requested again once the real value is cached
-    (cacheActor(adapterView) !? GetValueAtPosition(position, entityData, contextItems, _ => notifyDataSetChanged())) match {
+    (cacheActor(adapterView) !? GetValueAtPosition(position, entityData, contextItems, portableValue => {
+      runOnUiThread(adapterView) {
+        // Don't copy if the View has been re-used for a different position.
+        if (view.getTag == position) {
+          portableValue.copyTo(view, contextItems)
+        } else {
+          notifyDataSetChanged()
+        }
+      }
+    })) match {
       case portableValue: PortableValue =>
         //set the cached or default values immediately.  Default values is better than leaving as-is because the view might have other unrelated data.
         portableValue.copyTo(view, contextItems)
