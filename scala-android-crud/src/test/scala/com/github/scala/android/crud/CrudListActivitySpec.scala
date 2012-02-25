@@ -16,7 +16,7 @@ import res.R
 import android.widget.TextView
 import android.util.SparseArray
 import view.{CacheValue, AdapterCaching}
-import java.util.concurrent.CountDownLatch
+import java.util.concurrent.{TimeUnit, CountDownLatch}
 
 /** A test for [[com.github.scala.android.crud.CrudListActivity]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -117,7 +117,7 @@ class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
     val Some(actor) = AdapterCaching.findCacheActor(activity.getListView)
     val latch = new CountDownLatch(1)
     actor ! CacheValue(0, entityType.copyFrom(map), _ => latch.countDown())
-    latch.await()
+    latch.await(10, TimeUnit.SECONDS)
     val state = new Bundle()
     activity.onSaveInstanceState(state)
     val bundleList = state.getSparseParcelableArray[Bundle](entityType.entityName)
