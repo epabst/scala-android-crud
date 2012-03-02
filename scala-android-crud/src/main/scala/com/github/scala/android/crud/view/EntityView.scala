@@ -4,13 +4,12 @@ import com.github.scala.android.crud.persistence.EntityType
 import com.github.scala.android.crud.common.PlatformTypes.ID
 import com.github.triangle.PortableField._
 import com.github.triangle.{SetterUsingItems, Getter}
-import com.github.scala.android.crud.GeneratedCrudType.{UriField, CrudContextField}
 import com.github.triangle.&&
 import android.widget._
 import android.view.View
 import android.app.Activity
 import xml.NodeSeq
-import com.github.scala.android.crud.{BaseCrudActivity, CrudContext}
+import com.github.scala.android.crud.{CrudContextField, UriField, BaseCrudActivity, CrudContext}
 
 /** A ViewField that allows choosing a specific entity of a given EntityType or displaying its fields' values.
   * The layout for the EntityType that contains this EntityView may refer to fields of this view's EntityType

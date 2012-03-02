@@ -52,8 +52,7 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
 
   final def hasDisplayPage = displayLayout.isDefined
 
-  /** This uses canDelete because it assumes that if it can be deleted, it can be added as well.
-    * There are situations where they can be saved but not deleted such as where there's up to one active entity at a time.
+  /** This uses isDeletable because it assumes that if it can be deleted, it can be added as well.
     * @see [[com.github.scala.android.crud.CrudType.isDeletable]].
     */
   lazy val isAddable: Boolean = isDeletable
@@ -104,6 +103,7 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
   /** Gets the action to display a UI for a user to fill in data for creating an entity.
     * The target Activity should copy Unit into the UI using entityType.copy to populate defaults.
     */
+  @deprecated("use CrudApplication.actionToCreate")
   lazy val createAction: Option[Action] =
     if (isAddable)
       Some(Action(Command(android.R.drawable.ic_menu_add, addItemString),
@@ -112,19 +112,23 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
       None
 
   /** Gets the action to display the list that matches the criteria copied from criteriaSource using entityType.copy. */
+  @deprecated("use CrudApplication.actionToList.get")
   lazy val listAction = Action(Command(None, listItemsString), new StartEntityActivityOperation(entityType.entityName, ListActionName, listActivityClass))
 
   protected def entityOperation(action: String, activityClass: Class[_ <: Activity]) =
     new StartEntityIdActivityOperation(entityType.entityName, action, activityClass)
 
   /** Gets the action to display the entity given the id in the UriPath. */
+  @deprecated("use CrudApplication.actionToDisplay.get")
   lazy val displayAction = Action(Command(None, None), entityOperation(DisplayActionName, activityClass))
 
   /** Gets the action to display a UI for a user to edit data for an entity given its id in the UriPath. */
+  @deprecated("use CrudApplication.actionToUpdate")
   lazy val updateAction: Option[Action] =
     if (isUpdateable) Some(Action(Command(android.R.drawable.ic_menu_edit, editItemString), entityOperation(UpdateActionName, activityClass)))
     else None
 
+  @deprecated("use CrudApplication.actionToDelete")
   lazy val deleteAction: Option[Action] =
     if (isDeletable) {
       Some(Action(Command(android.R.drawable.ic_menu_delete, deleteItemString), new Operation {
@@ -154,6 +158,7 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
   /** Gets the actions that a user can perform from a list of the entities.
     * May be overridden to modify the list of actions.
     */
+  @deprecated("use CrudApplication.actionsForList")
   def getListActions(application: CrudApplication): List[Action] =
     getReadOnlyListActions(application) ::: createAction.toList
 
@@ -175,6 +180,7 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
     * The first one is the one that will be used when the item is clicked on.
     * May be overridden to modify the list of actions.
     */
+  @deprecated("use CrudApplication.actionsForEntity")
   def getEntityActions(application: CrudApplication): List[Action] =
     getReadOnlyEntityActions(application) ::: updateAction.toList ::: deleteAction.toList
 
@@ -270,7 +276,7 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
       val id = entityType.IdField.getter(readable)
       val writable = entityType.copyAndTransform(readable, newWritable)
       persistence.delete(uri)
-      val undoDeleteOperation = new PersistenceOperation(this, persistence.crudContext.application) {
+      val undoDeleteOperation = new PersistenceOperation(entityType, persistence.crudContext.application) {
         def invoke(uri: UriPath, persistence: CrudPersistence) {
           persistence.save(id, writable)
         }
@@ -290,8 +296,6 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
     withEntityPersistence(activity.crudContext)(undoableDelete(uri))
   }
 }
-
-abstract class PersistedCrudType(entityType: EntityType, persistenceFactory: PersistenceFactory) extends CrudType(entityType, persistenceFactory)
 
 /** A trait for stubbing out the UI methods of CrudType for use when the entity will never be used with the UI. */
 trait HiddenCrudType extends CrudType {

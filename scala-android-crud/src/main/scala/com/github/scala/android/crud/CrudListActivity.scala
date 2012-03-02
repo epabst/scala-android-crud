@@ -60,7 +60,7 @@ class CrudListActivity(val crudType: CrudType, val application: CrudApplication)
     }
   }
 
-  protected def contextMenuActions: List[Action] = crudType.getEntityActions(application) match {
+  protected def contextMenuActions: Seq[Action] = application.actionsForEntity(entityType) match {
     case _ :: tail => tail.filter(_.command.title.isDefined)
     case Nil => Nil
   }
@@ -81,11 +81,11 @@ class CrudListActivity(val crudType: CrudType, val application: CrudApplication)
     }
   }
 
-  protected def normalActions = crudType.getListActions(application)
+  protected def normalActions = application.actionsForList(entityType)
 
   override def onListItemClick(l: ListView, v: View, position: Int, id: ID) {
     if (id >= 0) {
-      crudType.getEntityActions(application).headOption.map(_.invoke(uriWithId(id), this)).getOrElse {
+      application.actionsForEntity(entityType).headOption.map(_.invoke(uriWithId(id), this)).getOrElse {
         warn("There are no entity actions defined for " + entityType)
       }
     } else {

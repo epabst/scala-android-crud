@@ -8,12 +8,12 @@ import java.io.File
 import android.os.Environment
 import android.provider.MediaStore
 import com.github.triangle._
-import com.github.scala.android.crud.GeneratedCrudType.CrudContextField
 import com.github.scala.android.crud.common.CachedFunction
 import com.github.scala.android.crud.common.Common.withCloseable
 import android.graphics.BitmapFactory
 import android.graphics.drawable.{BitmapDrawable, Drawable}
 import com.github.scala.android.crud.action._
+import com.github.scala.android.crud.CrudContextField
 
 /** A ViewField for an image that can be captured using the camera.
   * It currently puts the image into external storage, which requires the following in the AndroidManifest.xml:

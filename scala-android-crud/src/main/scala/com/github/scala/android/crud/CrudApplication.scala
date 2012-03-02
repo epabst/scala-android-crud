@@ -1,14 +1,15 @@
 package com.github.scala.android.crud
 
-import action.{InitializedContextVar, ContextVars, ContextWithVars}
-import com.github.triangle.Logging
-import common.Common
+import action._
+import common.{UriPath, Common}
 import java.util.NoSuchElementException
 import collection.mutable
 import persistence.EntityType
 import java.util.concurrent.CopyOnWriteArraySet
 import collection.JavaConversions._
 import android.os.Bundle
+import com.github.triangle.{Field, Logging}
+import com.github.triangle.PortableField._
 
 /** An Application that works with [[com.github.scala.android.crud.CrudType]]s.
  * @author Eric Pabst (epabst@gmail.com)
@@ -38,6 +39,10 @@ trait CrudApplication extends Logging {
 
   def childEntityTypes(entityType: EntityType): List[EntityType] = crudType(entityType).childEntityTypes(this)
 
+  final def withEntityPersistence[T](entityType: EntityType, activity: ActivityWithVars)(f: CrudPersistence => T): T = {
+    crudType(entityType).withEntityPersistence(new CrudContext(activity, this))(f)
+  }
+
   def crudType(entityType: EntityType): CrudType =
     allCrudTypes.find(_.entityType == entityType).getOrElse(throw new NoSuchElementException(entityType + " not found"))
 
@@ -46,7 +51,24 @@ trait CrudApplication extends Logging {
   def isAddable(entityType: EntityType): Boolean = isDeletable(entityType)
 
   def isDeletable(entityType: EntityType): Boolean = crudType(entityType).persistenceFactory.canDelete
+
+  def actionsForEntity(entityType: EntityType): Seq[Action] = crudType(entityType).getEntityActions(this)
+
+  def actionsForList(entityType: EntityType): Seq[Action] = crudType(entityType).getListActions(this)
+
+  def actionToCreate(entityType: EntityType): Option[Action] = crudType(entityType).createAction
+
+  def actionToUpdate(entityType: EntityType): Option[Action] = crudType(entityType).updateAction
+
+  def actionToDelete(entityType: EntityType): Option[Action] = crudType(entityType).deleteAction
+
+  def actionToList(entityType: EntityType): Option[Action] = Some(crudType(entityType).listAction)
+
+  def actionToDisplay(entityType: EntityType): Option[Action] = Some(crudType(entityType).displayAction)
 }
+
+object CrudContextField extends Field(identityField[CrudContext])
+object UriField extends Field(identityField[UriPath])
 
 /** A listener for when a CrudContext is being destroyed and resources should be released. */
 trait DestroyContextListener {

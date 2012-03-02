@@ -107,7 +107,7 @@ class GeneratedDatabaseSetup(crudContext: CrudContext)
   private def createMissingTables(db: SQLiteDatabase) {
     val application = crudContext.application
     for (entityType <- application.allCrudTypes.collect {
-      case c: PersistedCrudType => c
+      case c if c.persistenceFactory.canSave => c
     }.map(_.entityType)) {
       val buffer = new StringBuffer
       buffer.append("CREATE TABLE IF NOT EXISTS ").append(SQLitePersistenceFactory.toTableName(entityType.entityName)).append(" (").

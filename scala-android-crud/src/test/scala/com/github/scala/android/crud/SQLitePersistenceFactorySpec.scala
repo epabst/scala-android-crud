@@ -43,7 +43,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
     val valueFields = List(persisted[Int]("age") + default(21))
   }
 
-  object TestCrudType extends PersistedCrudType(TestEntityType, SQLitePersistenceFactory) {
+  object TestCrudType extends CrudType(TestEntityType, SQLitePersistenceFactory) {
     def activityClass = classOf[CrudActivity]
     def listActivityClass = classOf[CrudListActivity]
   }

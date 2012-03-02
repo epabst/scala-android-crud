@@ -1,12 +1,11 @@
 package com.github.scala.android.crud.view
 
 import android.view.View
-import com.github.scala.android.crud.CrudContext
 import com.github.scala.android.crud.action.{ActivityWithVars, Operation}
 import com.github.scala.android.crud.common.UriPath
 import com.github.triangle.SetterUsingItems
-import com.github.scala.android.crud.GeneratedCrudType.CrudContextField
 import com.github.scala.android.crud.view.AndroidConversions._
+import com.github.scala.android.crud.{CrudContextField, CrudContext}
 
 /** A Setter that invokes an Operation when the View is clicked.
   * @author Eric Pabst (epabst@gmail.com)

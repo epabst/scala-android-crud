@@ -144,6 +144,7 @@ class CrudTypeSpec extends Spec with MustMatchers with CrudMockitoSugar {
     val vars = new ContextVars {}
     stub(crudContext.vars).toReturn(vars)
     stub(crudContext.context).toReturn(activity)
+    stub(crudContext.application).toReturn(MyCrudApplication(entity))
     stub(activity.variables).toReturn(vars.variables)
     stub(persistence.crudContext).toReturn(crudContext)
     stub(persistence.find(uri)).toReturn(Some(readable))

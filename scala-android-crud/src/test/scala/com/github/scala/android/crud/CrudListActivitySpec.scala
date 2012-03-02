@@ -40,11 +40,10 @@ class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
 
   @Test
   def shouldAllowAdding() {
-    val application = mock[CrudApplication]
     val persistence = mock[CrudPersistence]
     val entityType = new MyEntityType
     val crudType = new MyCrudType(entityType, persistence)
-    stub(application.crudType(entityType)).toReturn(crudType)
+    val application = MyCrudApplication(crudType)
     when(persistence.findAll(any())).thenReturn(Seq(Map[String,Any]("name" -> "Bob", "age" -> 25)))
     val activity = new CrudListActivity(crudType, application)
     activity.setIntent(new Intent(Intent.ACTION_MAIN))
@@ -60,12 +59,11 @@ class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
 
   @Test
   def shouldHaveCorrectContextMenu() {
-    val application = mock[CrudApplication]
     val contextMenu = mock[ContextMenu]
     val ignoredView: View = null
     val ignoredMenuInfo: ContextMenu.ContextMenuInfo = null
-    stub(application.allCrudTypes).toReturn(Nil)
     val crudType = MyCrudType
+    val application = MyCrudApplication(crudType)
     val activity = new CrudListActivity(crudType, application)
     activity.onCreateContextMenu(contextMenu, ignoredView, ignoredMenuInfo)
     verify(contextMenu).add(0, res.R.string.delete_item, 0, res.R.string.delete_item)
@@ -73,7 +71,6 @@ class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
 
   @Test
   def shouldHandleNoEntityOptions() {
-    val application = mock[CrudApplication]
     val contextMenu = mock[ContextMenu]
     val ignoredView: View = null
     val ignoredMenuInfo: ContextMenu.ContextMenuInfo = null
@@ -81,6 +78,7 @@ class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
     val crudType = new MyCrudType(new MyEntityType) {
       override def getEntityActions(application: CrudApplication) = Nil
     }
+    val application = MyCrudApplication(crudType)
     val activity = new CrudListActivity(crudType, application)
     //shouldn't do anything
     activity.onCreateContextMenu(contextMenu, ignoredView, ignoredMenuInfo)

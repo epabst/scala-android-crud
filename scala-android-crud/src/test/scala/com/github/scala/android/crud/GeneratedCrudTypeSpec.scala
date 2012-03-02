@@ -40,7 +40,7 @@ class GeneratedCrudTypeSpec extends MustMatchers with CrudMockitoSugar {
       def valueFields = Nil
     }
     stub(activity.getLayoutInflater).toReturn(layoutInflater)
-    val generatedCrudType = new GeneratedCrudType[Map[String, Any]](entityType, factory) with StubCrudType
+    val generatedCrudType = new CrudType(entityType, factory) with StubCrudType
     stub(crudContext.vars).toReturn(new ContextVars {})
     when(adapterView.setAdapter(anyObject())).thenAnswer(listAdapterCapture)
     val persistence = mock[CrudPersistence]

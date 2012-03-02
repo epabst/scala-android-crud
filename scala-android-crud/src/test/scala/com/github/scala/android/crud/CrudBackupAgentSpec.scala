@@ -121,7 +121,7 @@ class CrudBackupAgentSpec extends MustMatchers with CrudEasyMockSugar {
     val persistenceFactory = mock[GeneratedPersistenceFactory[Map[String, Any]]]
     val persistence = new MyEntityPersistence
     val entityType = new MyCrudType(persistence)
-    val generatedType = new GeneratedCrudType(new EntityType {
+    val generatedType = new CrudType(new EntityType {
       def entityName = "Generated"
       def valueFields = List[BaseField](ParentField(MyEntityType), default[Int](100))
     }, persistenceFactory) with StubCrudType

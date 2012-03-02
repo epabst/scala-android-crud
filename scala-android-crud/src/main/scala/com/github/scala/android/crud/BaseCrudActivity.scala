@@ -48,7 +48,7 @@ trait BaseCrudActivity extends ActivityWithVars with OptionsMenuActivity with Lo
 
   protected lazy val logTag = Common.tryToEvaluate(entityType.entityName).getOrElse(Common.logTag)
 
-  protected def normalActions: List[Action]
+  protected def normalActions: Seq[Action]
 
   /** A ContextVar that holds an undoable Action if present. */
   private object LastUndoable extends ContextVar[Undoable]

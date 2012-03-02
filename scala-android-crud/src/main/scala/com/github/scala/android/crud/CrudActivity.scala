@@ -82,7 +82,7 @@ class CrudActivity(val crudType: CrudType, val application: CrudApplication) ext
     } catch { case e => logError("onPause: Unable to store " + writable, e) }
   }
 
-  protected def normalActions = crudType.getEntityActions(application).filter {
+  protected def normalActions = application.actionsForEntity(entityType).filter {
     case action: EntityOperation => action.entityName != entityType.entityName || action.action != currentAction
     case _ => true
   }

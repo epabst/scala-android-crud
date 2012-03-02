@@ -27,7 +27,7 @@ class AuthorCrudTypeSpec extends Spec with MustMatchers with MockitoSugar {
       override def vars = contextVars
     }
     val factory = GeneratedPersistenceFactory(new ListBufferCrudPersistence(Map.empty[String, Any], _, crudContext))
-    val bookCrudType = new GeneratedCrudType[Map[String,Any]](BookEntityType, factory) with HiddenCrudType
+    val bookCrudType = new CrudType(BookEntityType, factory) with HiddenCrudType
     val bookPersistence = bookCrudType.openEntityPersistence(crudContext).asInstanceOf[ListBufferCrudPersistence[Map[String,Any]]]
     bookPersistence.buffer += Map.empty[String,Any] += Map.empty[String,Any]
 

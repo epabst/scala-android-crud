@@ -68,8 +68,8 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Con
     DeletedEntityIdCrudType.writeEntityRemovals(data, this)
     val crudContext = new CrudContext(this, application)
     application.allCrudTypes.foreach(_ match {
-      case _: GeneratedCrudType[_] => //skip
-      case crudType: PersistedCrudType => onBackup(crudType, data, crudContext)
+      case crudType if crudType.persistenceFactory.canSave => onBackup(crudType, data, crudContext)
+      case _ => //skip
     })
   }
 
@@ -153,7 +153,7 @@ object DeletedEntityIdEntityType extends EntityType {
   * This entity is in its own CrudApplication by itself, separate from any other CrudApplication.
   * It is intended to be in a separate database owned by the scala-android-crud framework.
   */
-object DeletedEntityIdCrudType extends PersistedCrudType(DeletedEntityIdEntityType, SQLitePersistenceFactory) with HiddenCrudType {
+object DeletedEntityIdCrudType extends CrudType(DeletedEntityIdEntityType, SQLitePersistenceFactory) with HiddenCrudType {
   private val application = new CrudApplication {
     def name = "scala.android.crud_deleted"
 

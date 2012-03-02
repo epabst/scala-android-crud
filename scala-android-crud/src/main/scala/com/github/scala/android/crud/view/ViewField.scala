@@ -97,6 +97,6 @@ object ViewField {
     override def toString = "calendarDateView"
   }
 
-  @Deprecated //use EnumerationView
+  @deprecated("use EnumerationView")
   def enumerationView[E <: Enumeration#Value](enum: Enumeration): ViewField[E] = EnumerationView[E](enum)
 }

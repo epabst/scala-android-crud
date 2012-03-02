@@ -1,17 +1,12 @@
 package com.github.scala.android.crud.sample
 
 import com.github.scala.android.crud
-import crud.CrudActivity
-import crud.CrudListActivity
-import crud.PersistedCrudType
-import crud.PersistenceFactory
+import crud._
 import crud.persistence.CursorField._
 import crud.persistence.EntityType
 import crud.view.ViewField._
 import com.github.triangle._
 import com.github.scala.android.crud.validate.Validation._
-import PortableField._
-import crud.GeneratedCrudType.{UriField, CrudContextField}
 
 object PublisherEntityType extends EntityType {
   def entityName = "Publisher"
@@ -34,7 +29,7 @@ object PublisherEntityType extends EntityType {
 /** A CRUD type for Publisher.
   * @author pabstec
   */
-class PublisherCrudType(persistenceFactory: PersistenceFactory) extends PersistedCrudType(PublisherEntityType, persistenceFactory) {
+class PublisherCrudType(persistenceFactory: PersistenceFactory) extends CrudType(PublisherEntityType, persistenceFactory) {
   def activityClass = classOf[PublisherActivity]
   def listActivityClass = classOf[PublisherListActivity]
 }

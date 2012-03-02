@@ -5,7 +5,6 @@ import persistence.CursorField._
 import persistence.EntityType
 import view.ViewField._
 import com.github.triangle._
-import com.github.scala.android.crud.GeneratedCrudType.{UriField, CrudContextField}
 import com.github.scala.android.crud.validate.Validation._
 
 object AuthorEntityType extends EntityType {
@@ -31,7 +30,7 @@ object AuthorEntityType extends EntityType {
 /** A CRUD type for Author.
   * @author pabstec
   */
-class AuthorCrudType(persistenceFactory: PersistenceFactory) extends PersistedCrudType(AuthorEntityType, persistenceFactory) {
+class AuthorCrudType(persistenceFactory: PersistenceFactory) extends CrudType(AuthorEntityType, persistenceFactory) {
   def activityClass = classOf[AuthorActivity]
   def listActivityClass = classOf[AuthorListActivity]
 }

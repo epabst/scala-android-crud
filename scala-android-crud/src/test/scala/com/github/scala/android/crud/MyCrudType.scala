@@ -7,7 +7,7 @@ import persistence.EntityType
   * @author Eric Pabst (epabst@gmail.com)
   */
 case class MyCrudType(override val entityType: EntityType, override val persistenceFactory: PersistenceFactory)
-  extends PersistedCrudType(entityType, persistenceFactory) with StubCrudType {
+  extends CrudType(entityType, persistenceFactory) with StubCrudType {
 
   def this(entityType: EntityType, persistence: CrudPersistence = Mockito.mock(classOf[CrudPersistence])) {
     this(entityType, new MyPersistenceFactory(persistence))
@@ -37,4 +37,14 @@ trait StubCrudType extends CrudType {
 
   def listActivityClass = classOf[CrudListActivity]
   def activityClass = classOf[CrudActivity]
+}
+
+object MyCrudApplication {
+  def apply(crudTypes: CrudType*): CrudApplication = new CrudApplication {
+    def name = "test app"
+
+    def allCrudTypes = crudTypes.toList
+
+    def dataVersion = 1
+  }
 }
