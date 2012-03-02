@@ -8,6 +8,12 @@ import persistence.EntityType
   */
 
 trait PersistenceFactory {
+  /** Indicates if an entity can be saved. */
+  def canSave: Boolean
+
+  /** Indicates if an entity can be deleted. */
+  def canDelete: Boolean = canSave
+
   /** Instantiates a data buffer which can be saved by EntityPersistence.
     * The EntityType must support copying into this object.
     */

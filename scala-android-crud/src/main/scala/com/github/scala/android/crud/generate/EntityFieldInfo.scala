@@ -62,6 +62,7 @@ object ViewIdFieldInfo {
 }
 
 case class EntityTypeViewInfo(entityType: EntityType) {
+  def entityName = entityType.entityName
   lazy val layoutPrefix = NamingConventions.toLayoutPrefix(entityType.entityName)
   lazy val rIdClasses: Seq[Class[_]] = detectRIdClasses(entityType.getClass)
   lazy val entityFieldInfos: List[EntityFieldInfo] = entityType.fields.map(EntityFieldInfo(_, rIdClasses))

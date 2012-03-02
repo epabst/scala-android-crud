@@ -36,8 +36,16 @@ trait CrudApplication extends Logging {
   def allCrudTypes: List[CrudType]
   def allEntityTypes: List[EntityType] = allCrudTypes.map(_.entityType)
 
+  def childEntityTypes(entityType: EntityType): List[EntityType] = crudType(entityType).childEntityTypes(this)
+
   def crudType(entityType: EntityType): CrudType =
     allCrudTypes.find(_.entityType == entityType).getOrElse(throw new NoSuchElementException(entityType + " not found"))
+
+  def isSavable(entityType: EntityType): Boolean = crudType(entityType).persistenceFactory.canSave
+
+  def isAddable(entityType: EntityType): Boolean = isDeletable(entityType)
+
+  def isDeletable(entityType: EntityType): Boolean = crudType(entityType).persistenceFactory.canDelete
 }
 
 /** A listener for when a CrudContext is being destroyed and resources should be released. */

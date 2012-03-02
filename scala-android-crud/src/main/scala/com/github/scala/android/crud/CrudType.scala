@@ -2,7 +2,6 @@ package com.github.scala.android.crud
 
 import action._
 import common.{UriPath, Timing}
-import generate.EntityTypeViewInfo
 import Operation._
 import android.app.Activity
 import com.github.triangle._
@@ -52,8 +51,18 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
   lazy val entryLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_entry")
 
   final def hasDisplayPage = displayLayout.isDefined
-  lazy val viewInfo = EntityTypeViewInfo(entityType)
-  def isUpdateable: Boolean = viewInfo.isUpdateable
+
+  /** This uses canDelete because it assumes that if it can be deleted, it can be added as well.
+    * There are situations where they can be saved but not deleted such as where there's up to one active entity at a time.
+    * @see [[com.github.scala.android.crud.CrudType.isDeletable]].
+    */
+  lazy val isAddable: Boolean = isDeletable
+
+  /** @see [[com.github.scala.android.crud.PersistenceFactory.canDelete]]. */
+  final lazy val isDeletable: Boolean = persistenceFactory.canDelete
+
+  /** @see [[com.github.scala.android.crud.PersistenceFactory.canSave]]. */
+  final lazy val isUpdateable: Boolean = persistenceFactory.canSave
 
   lazy val entityTypePersistedInfo = EntityTypePersistedInfo(entityType)
 
@@ -78,6 +87,8 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
 
   def parentEntities(application: CrudApplication): List[CrudType] = parentFields.map(_.entityType).map(application.crudType(_))
 
+  def childEntityTypes(application: CrudApplication): List[EntityType] = childEntities(application).map(_.entityType)
+
   /** The list of entities that refer to this one.
     * Those entities should have a ParentField (or foreignKey) in their fields list.
     */
@@ -94,7 +105,7 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
     * The target Activity should copy Unit into the UI using entityType.copy to populate defaults.
     */
   lazy val createAction: Option[Action] =
-    if (isUpdateable)
+    if (isAddable)
       Some(Action(Command(android.R.drawable.ic_menu_add, addItemString),
         new StartEntityActivityOperation(entityType.entityName, CreateActionName, activityClass)))
     else
@@ -115,7 +126,7 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
     else None
 
   lazy val deleteAction: Option[Action] =
-    if (isUpdateable) {
+    if (isDeletable) {
       Some(Action(Command(android.R.drawable.ic_menu_delete, deleteItemString), new Operation {
         def invoke(uri: UriPath, activity: ActivityWithVars) {
           activity match {

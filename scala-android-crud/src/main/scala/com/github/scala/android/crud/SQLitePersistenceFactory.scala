@@ -7,6 +7,8 @@ import persistence.{SQLiteUtil, EntityType}
   * @author Eric Pabst (epabst@gmail.com)
   */
 object SQLitePersistenceFactory extends PersistenceFactory {
+  def canSave = true
+
   def newWritable = new ContentValues
 
   def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) = new SQLiteEntityPersistence(entityType, crudContext)

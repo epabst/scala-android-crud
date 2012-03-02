@@ -7,6 +7,8 @@ import org.scalatest.junit.JUnitRunner
 import com.github.scala.android.crud.persistence.CursorField._
 import com.github.scala.android.crud._
 import org.scalatest.mock.MockitoSugar
+import persistence.EntityType
+import testres.R
 import view.ViewField
 import ViewField._
 
@@ -58,17 +60,48 @@ class CrudUIGeneratorSpec extends Spec with MustMatchers with MockitoSugar {
 
   describe("generateValueStrings") {
     it("must include 'list', 'add' and 'edit' strings for modifiable entities") {
-      val valueStrings = CrudUIGenerator.generateValueStrings(new MyCrudType(new MyEntityType {
-        override def valueFields = List(persisted[String]("model") + viewId(classOf[testres.R], "model", textView))
-      }))
+      val entityType = new MyEntityType {
+        override def valueFields = List(persisted[String]("model") + viewId(classOf[R], "model", textView))
+      }
+      val application = new CrudApplication {
+        def allCrudTypes = List(new MyCrudType(entityType))
+        def dataVersion = 1
+        def name = "Test App"
+      }
+      val valueStrings = CrudUIGenerator.generateValueStrings(EntityTypeViewInfo(entityType), application)
       valueStrings.foreach(println(_))
       (valueStrings \\ "string").length must be (3)
     }
 
-    it("must not include 'add' and 'edit' strings for unmodifiable entities") {
-      (CrudUIGenerator.generateValueStrings(new MyCrudType(new MyEntityType {
+    it("must not include an 'add' string for unaddable entities") {
+      val entityType = new MyEntityType {
         override def valueFields = List(bundleField[String]("model"))
-      })) \\ "string").length must be (1)
+      }
+      val application = new CrudApplication {
+        def allCrudTypes = List(new MyCrudType(entityType))
+        def dataVersion = 1
+        def name = "Test App"
+        override def isAddable(entityType: EntityType) = false
+      }
+      val valueStrings = CrudUIGenerator.generateValueStrings(EntityTypeViewInfo(entityType), application)
+      valueStrings.foreach(println(_))
+      (valueStrings \\ "string").length must be (2)
+    }
+
+    it("must not include 'add' and 'edit' strings for unmodifiable entities") {
+      val entityType = new MyEntityType {
+        override def valueFields = List(bundleField[String]("model"))
+      }
+      val application = new CrudApplication {
+        def allCrudTypes = List(new MyCrudType(entityType))
+        def dataVersion = 1
+        def name = "Test App"
+        override def isAddable(entityType: EntityType) = false
+        override def isSavable(entityType: EntityType) = false
+      }
+      val valueStrings = CrudUIGenerator.generateValueStrings(EntityTypeViewInfo(entityType), application)
+      valueStrings.foreach(println(_))
+      (valueStrings \\ "string").length must be (1)
     }
   }
 }

@@ -25,6 +25,8 @@ case class MyCrudType(override val entityType: EntityType, override val persiste
 object MyCrudType extends MyCrudType(Mockito.mock(classOf[CrudPersistence]))
 
 class MyPersistenceFactory(persistence: CrudPersistence) extends PersistenceFactory {
+  def canSave = true
+
   override def newWritable = Map.empty[String,Any]
 
   def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) = persistence
