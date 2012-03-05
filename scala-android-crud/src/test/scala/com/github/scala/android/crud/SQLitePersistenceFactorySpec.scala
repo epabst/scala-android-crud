@@ -43,10 +43,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
     val valueFields = List(persisted[Int]("age") + default(21))
   }
 
-  object TestCrudType extends CrudType(TestEntityType, SQLitePersistenceFactory) {
-    def activityClass = classOf[CrudActivity]
-    def listActivityClass = classOf[CrudListActivity]
-  }
+  object TestCrudType extends CrudType(TestEntityType, SQLitePersistenceFactory)
 
   object TestApplication extends CrudApplication {
     val name = "Test Application"
@@ -97,7 +94,8 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
 
   @Test
   def shouldRefreshCursorWhenDeletingAndSaving() {
-    val activity = new CrudListActivity(TestCrudType, application) {
+    val activity = new CrudListActivity {
+      override def crudApplication = application
       override val getListView: ListView = new ListView(this)
     }
     val observer = mock[DataSetObserver]

@@ -23,7 +23,7 @@ import view.{AdapterCachingStateListener, AdapterCaching, EntityAdapter}
   * implement CRUD on the entity.  This shouldn't depend on the platform (e.g. android).
   * @author Eric Pabst (epabst@gmail.com)
   */
-abstract class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFactory) extends Timing with Logging { self =>
+class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFactory) extends Timing with Logging { self =>
   protected def logTag = entityType.logTag
 
   trace("Instantiated CrudType: " + this)
@@ -141,8 +141,8 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
     } else None
 
 
-  def listActivityClass: Class[_ <: CrudListActivity]
-  def activityClass: Class[_ <: CrudActivity]
+  def listActivityClass: Class[_ <: CrudListActivity] = classOf[CrudListActivity]
+  def activityClass: Class[_ <: CrudActivity] = classOf[CrudActivity]
 
   def copyFromPersistedEntity(uriPathWithId: UriPath, crudContext: CrudContext): Option[PortableValue] = {
     val contextItems = List(uriPathWithId, crudContext, PortableField.UseDefaults)
@@ -295,12 +295,6 @@ abstract class CrudType(val entityType: EntityType, val persistenceFactory: Pers
   def startDelete(uri: UriPath, activity: BaseCrudActivity) {
     withEntityPersistence(activity.crudContext)(undoableDelete(uri))
   }
-}
-
-/** A trait for stubbing out the UI methods of CrudType for use when the entity will never be used with the UI. */
-trait HiddenCrudType extends CrudType {
-  def activityClass: Class[_ <: CrudActivity] = throw new UnsupportedOperationException
-  def listActivityClass: Class[_ <: CrudListActivity] = throw new UnsupportedOperationException
 }
 
 /** An undo of an operation.  The operation should have already completed, but it can be undone or accepted.

@@ -23,6 +23,21 @@ class UriPathSpec extends Spec with MustMatchers {
     }
   }
 
+  describe("lastEntityNameOption") {
+    it("must handle an empty UriPath") {
+      UriPath.EMPTY.lastEntityNameOption must be (None)
+    }
+
+    it("must get the last entityName") {
+      UriPath("a", "b", "c").lastEntityNameOption must be (Some("c"))
+    }
+
+    it("must get the last entityName even if followed by an ID") {
+      UriPath("a", "1").lastEntityNameOption must be (Some("a"))
+      UriPath("a", "1", "b", "c", "3").lastEntityNameOption must be (Some("c"))
+    }
+  }
+
   describe("upToIdOf") {
     it("must strip of whatever is after the ID") {
       val uri = UriPath("abc", "123", entityName, "456", "def")

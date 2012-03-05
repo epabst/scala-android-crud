@@ -14,13 +14,13 @@ import android.os.Bundle
   */
 
 trait BaseCrudActivity extends ActivityWithVars with OptionsMenuActivity with Logging with Timing {
-  def crudType: CrudType
+  def crudApplication: CrudApplication = super.getApplication.asInstanceOf[CrudAndroidApplication].application
+
+  lazy val crudType: CrudType = crudApplication.allCrudTypes.find(crudType => Some(crudType.entityName) == currentUriPath.lastEntityNameOption).getOrElse {
+    throw new IllegalStateException("No valid entityName in " + currentUriPath)
+  }
+
   final def entityType = crudType.entityType
-
-  def application: CrudApplication
-
-  lazy val contentProviderAuthority = Option(application.packageName).getOrElse(getClass.getPackage.getName)
-  lazy val defaultContentUri = UriPath("content://" + contentProviderAuthority) / entityType.entityName
 
   override def setIntent(newIntent: Intent) {
     info("Current Intent: " + newIntent)
@@ -28,6 +28,7 @@ trait BaseCrudActivity extends ActivityWithVars with OptionsMenuActivity with Lo
   }
 
   def currentUriPath: UriPath = {
+    val defaultContentUri = crudApplication.defaultContentUri
     Option(getIntent).map(intent => Option(intent.getData).map(toUriPath(_)).getOrElse {
       // If no data was given in the intent (because we were started
       // as a MAIN activity), then use our default content provider.
@@ -40,7 +41,7 @@ trait BaseCrudActivity extends ActivityWithVars with OptionsMenuActivity with Lo
 
   def uriWithId(id: ID): UriPath = currentUriPath.specify(entityType.entityName, id.toString)
 
-  val crudContext = new CrudContext(this, application)
+  lazy val crudContext = new CrudContext(this, crudApplication)
 
   def contextItems = List(currentUriPath, crudContext, PortableField.UseDefaults)
 

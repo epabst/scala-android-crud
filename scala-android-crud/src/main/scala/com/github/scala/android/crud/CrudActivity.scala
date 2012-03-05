@@ -13,7 +13,7 @@ import validate.ValidationResult
 /** A generic Activity for CRUD operations
   * @author Eric Pabst (epabst@gmail.com)
   */
-class CrudActivity(val crudType: CrudType, val application: CrudApplication) extends BaseCrudActivity { self =>
+class CrudActivity extends BaseCrudActivity { self =>
 
   private def populateFromUri(uri: UriPath) {
     future {
@@ -82,7 +82,7 @@ class CrudActivity(val crudType: CrudType, val application: CrudApplication) ext
     } catch { case e => logError("onPause: Unable to store " + writable, e) }
   }
 
-  protected def normalActions = application.actionsForEntity(entityType).filter {
+  protected def normalActions = crudApplication.actionsForEntity(entityType).filter {
     case action: EntityOperation => action.entityName != entityType.entityName || action.action != currentAction
     case _ => true
   }

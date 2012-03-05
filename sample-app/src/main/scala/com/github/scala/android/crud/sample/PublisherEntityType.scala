@@ -25,14 +25,3 @@ object PublisherEntityType extends EntityType {
     }
   )
 }
-
-/** A CRUD type for Publisher.
-  * @author pabstec
-  */
-class PublisherCrudType(persistenceFactory: PersistenceFactory) extends CrudType(PublisherEntityType, persistenceFactory) {
-  def activityClass = classOf[PublisherActivity]
-  def listActivityClass = classOf[PublisherListActivity]
-}
-
-class PublisherListActivity extends CrudListActivity(SampleApplication.PublisherCrudType, SampleApplication)
-class PublisherActivity extends CrudActivity(SampleApplication.PublisherCrudType, SampleApplication)

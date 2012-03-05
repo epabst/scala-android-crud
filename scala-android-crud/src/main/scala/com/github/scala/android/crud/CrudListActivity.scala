@@ -15,8 +15,7 @@ import common.PlatformTypes._
 /** A generic ListActivity for CRUD operations
   * @author Eric Pabst (epabst@gmail.com)
   */
-class CrudListActivity(val crudType: CrudType, val application: CrudApplication)
-  extends ListActivity with BaseCrudActivity {
+class CrudListActivity extends ListActivity with BaseCrudActivity {
 
   override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)
@@ -48,7 +47,7 @@ class CrudListActivity(val crudType: CrudType, val application: CrudApplication)
   private[crud] def populateFromParentEntities() {
     val uriPath = currentUriPath
     //copy each parent Entity's data to the Activity if identified in the currentUriPath
-    val portableValues: List[PortableValue] = crudType.parentEntities(application).flatMap { parentType =>
+    val portableValues: List[PortableValue] = crudType.parentEntities(crudApplication).flatMap { parentType =>
       if (parentType.maySpecifyEntityInstance(uriPath)) {
         parentType.copyFromPersistedEntity(uriPath, crudContext)
       } else {
@@ -60,7 +59,7 @@ class CrudListActivity(val crudType: CrudType, val application: CrudApplication)
     }
   }
 
-  protected def contextMenuActions: Seq[Action] = application.actionsForEntity(entityType) match {
+  protected def contextMenuActions: Seq[Action] = crudApplication.actionsForEntity(entityType) match {
     case _ :: tail => tail.filter(_.command.title.isDefined)
     case Nil => Nil
   }
@@ -81,11 +80,11 @@ class CrudListActivity(val crudType: CrudType, val application: CrudApplication)
     }
   }
 
-  protected def normalActions = application.actionsForList(entityType)
+  protected def normalActions = crudApplication.actionsForList(entityType)
 
   override def onListItemClick(l: ListView, v: View, position: Int, id: ID) {
     if (id >= 0) {
-      application.actionsForEntity(entityType).headOption.map(_.invoke(uriWithId(id), this)).getOrElse {
+      crudApplication.actionsForEntity(entityType).headOption.map(_.invoke(uriWithId(id), this)).getOrElse {
         warn("There are no entity actions defined for " + entityType)
       }
     } else {

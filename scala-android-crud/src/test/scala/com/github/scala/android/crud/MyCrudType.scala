@@ -34,14 +34,13 @@ class MyPersistenceFactory(persistence: CrudPersistence) extends PersistenceFact
 
 trait StubCrudType extends CrudType {
   override lazy val entityNameLayoutPrefix = "test"
-
-  def listActivityClass = classOf[CrudListActivity]
-  def activityClass = classOf[CrudActivity]
 }
 
 object MyCrudApplication {
   def apply(crudTypes: CrudType*): CrudApplication = new CrudApplication {
     def name = "test app"
+
+    override def primaryEntityType = crudTypes.head.entityType
 
     def allCrudTypes = crudTypes.toList
 

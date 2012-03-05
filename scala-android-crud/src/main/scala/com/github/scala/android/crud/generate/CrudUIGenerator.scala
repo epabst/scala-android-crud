@@ -3,9 +3,9 @@ package com.github.scala.android.crud.generate
 import com.github.triangle._
 import scala.tools.nsc.io.Path
 import xml._
-import com.github.scala.android.crud.CrudApplication
 import com.github.scala.android.crud.common.Common
 import collection.immutable.List
+import com.github.scala.android.crud.{CrudAndroidApplication, CrudApplication}
 
 /** A UI Generator for a CrudTypes.
   * @author Eric Pabst (epabst@gmail.com)
@@ -31,27 +31,31 @@ object CrudUIGenerator extends Logging {
     println("Wrote " + file)
   }
 
-  def generateAndroidManifest(application: CrudApplication): Node = {
-    val activityNames = application.allCrudTypes.flatMap { entity =>
-      List(entity.listActivityClass.getSimpleName, entity.activityClass.getSimpleName)
+  def generateAndroidManifest(application: CrudApplication, androidApplicationClass: Class[_]): Node = {
+    if (!classOf[CrudAndroidApplication].isAssignableFrom(androidApplicationClass)) {
+      throw new IllegalArgumentException(androidApplicationClass + " does not extend CrudAndroidApplication")
     }
+    val activityNames = application.allCrudTypes.flatMap { crudType =>
+      List(crudType.listActivityClass.getName, crudType.activityClass.getName)
+    }.distinct
     <manifest xmlns:android="http://schemas.android.com/apk/res/android"
               package={application.packageName}
               android:versionName="${project.version}"
               android:versionCode="${versionCode}">
       <application android:label="@string/app_name" android:icon="@drawable/icon"
+                   android:name={androidApplicationClass.getName}
                    android:theme="@android:style/Theme.NoTitleBar"
                    android:debuggable="true"
                    android:backupAgent={application.classNamePrefix + "BackupAgent"} android:restoreAnyVersion="true">
         <meta-data android:name="com.google.android.backup.api_key"
                    android:value="TODO: get a backup key from http://code.google.com/android/backup/signup.html and put it here."/>
-        <activity android:name={"." + activityNames.head} android:label="@string/app_name">
+        <activity android:name={activityNames.head} android:label="@string/app_name">
           <intent-filter>
             <action android:name="android.intent.action.MAIN"/>
             <category android:name="android.intent.category.LAUNCHER"/>
           </intent-filter>
         </activity>
-        {activityNames.tail.map { name => <activity android:name={"." + name} android:label="@string/app_name"/>}}
+        {activityNames.tail.map { name => <activity android:name={name} android:label="@string/app_name"/>}}
       </application>
       <uses-sdk android:minSdkVersion="8"/>
     </manifest>
@@ -78,13 +82,13 @@ object CrudUIGenerator extends Logging {
     </resources>
   }
 
-  def generateLayouts(application: CrudApplication) {
+  def generateLayouts(application: CrudApplication, androidApplicationClass: Class[_]) {
     val entityTypeInfos = application.allEntityTypes.map(EntityTypeViewInfo(_))
     entityTypeInfos.foreach(entityInfo => {
       val childViewInfos = application.childEntityTypes(entityInfo.entityType).map(EntityTypeViewInfo(_))
       generateLayouts(entityInfo, childViewInfos, application)
     })
-    writeXmlToFile(Path("AndroidManifest.xml"), generateAndroidManifest(application))
+    writeXmlToFile(Path("AndroidManifest.xml"), generateAndroidManifest(application, androidApplicationClass))
     writeXmlToFile(Path("res") / "values" / "strings.xml", generateValueStrings(application))
   }
 

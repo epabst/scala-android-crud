@@ -18,6 +18,8 @@ case class UriPath(segments: String*) {
   def specify(finalSegments: String*): UriPath =
     UriPath.replacePathSegments(this, _.takeWhile(_ != finalSegments.head) ++ finalSegments.toList)
 
+  def lastEntityNameOption: Option[String] = segments.reverse.find(idFormat.toValue(_).isEmpty)
+
   def findId(entityName: String): Option[ID] =
     segments.dropWhile(_ != entityName).toList match {
       case _ :: idString :: tail => idFormat.toValue(idString)

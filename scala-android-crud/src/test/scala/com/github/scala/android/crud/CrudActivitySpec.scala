@@ -28,16 +28,19 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
 
   @Test
   def shouldSupportAddingWithoutEverFinding() {
-    val crudType = new MyCrudType(persistence)
+    val _crudType = new MyCrudType(persistence)
     val entity = Map[String,Any]("name" -> "Bob", "age" -> 25)
-    val uri = UriPath(crudType.entityName)
-    val activity = new CrudActivity(crudType, application) {
+    val uri = UriPath(_crudType.entityName)
+    val activity = new CrudActivity {
+      override lazy val crudType = _crudType
+      override def crudApplication = application
+
       override lazy val currentAction = UpdateActionName
       override def currentUriPath = uri
       override def future[T](body: => T) = new ReadyFuture[T](body)
     }
     activity.onCreate(null)
-    crudType.entityType.copy(entity, activity)
+    _crudType.entityType.copy(entity, activity)
     activity.onBackPressed()
     verify(persistence).save(None, Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))
     verify(persistence, never()).find(uri)
@@ -45,34 +48,40 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
 
   @Test
   def shouldAddIfIdNotFound() {
-    val crudType = new MyCrudType(persistence)
+    val _crudType = new MyCrudType(persistence)
     val entity = mutable.Map[String,Any]("name" -> "Bob", "age" -> 25)
-    val uri = UriPath(crudType.entityName)
-    val activity = new CrudActivity(crudType, application) {
+    val uri = UriPath(_crudType.entityName)
+    val activity = new CrudActivity {
+      override lazy val crudType = _crudType
+      override def crudApplication = application
+
       override lazy val currentAction = UpdateActionName
       override def currentUriPath = uri
       override def future[T](body: => T) = new ReadyFuture[T](body)
     }
     when(persistence.find(uri)).thenReturn(None)
     activity.onCreate(null)
-    crudType.entityType.copy(entity, activity)
+    _crudType.entityType.copy(entity, activity)
     activity.onBackPressed()
     verify(persistence).save(None, mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))
   }
 
   @Test
   def shouldAllowUpdating() {
-    val crudType = new MyCrudType(persistence)
+    val _crudType = new MyCrudType(persistence)
     val entity = mutable.Map[String,Any]("name" -> "Bob", "age" -> 25)
-    val uri = UriPath(crudType.entityName, "101")
+    val uri = UriPath(_crudType.entityName, "101")
     stub(persistence.find(uri)).toReturn(Some(entity))
-    val activity = new CrudActivity(crudType, application) {
+    val activity = new CrudActivity {
+      override lazy val crudType = _crudType
+      override def crudApplication = application
+
       override lazy val currentAction = UpdateActionName
       override lazy val currentUriPath = uri
       override def future[T](body: => T) = new ReadyFuture[T](body)
     }
     activity.onCreate(null)
-    val viewData = crudType.entityType.copyAndTransform(activity, mutable.Map[String,Any]())
+    val viewData = _crudType.entityType.copyAndTransform(activity, mutable.Map[String,Any]())
     viewData.get("name") must be (Some("Bob"))
     viewData.get("age") must be (Some(25))
 
@@ -83,16 +92,22 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
 
   @Test
   def withPersistenceShouldClosePersistence() {
-    val crudType = new MyCrudType(persistence)
-    val activity = new CrudActivity(crudType, application)
+    val _crudType = new MyCrudType(persistence)
+    val activity = new CrudActivity {
+      override lazy val crudType = _crudType
+      override def crudApplication = application
+    }
     activity.withPersistence(p => p.findAll(UriPath.EMPTY))
     verify(persistence).close()
   }
 
   @Test
   def withPersistenceShouldClosePersistenceWithFailure() {
-    val crudType = new MyCrudType(persistence)
-    val activity = new CrudActivity(crudType, application)
+    val _crudType = new MyCrudType(persistence)
+    val activity = new CrudActivity {
+      override lazy val crudType = _crudType
+      override def crudApplication = application
+    }
     try {
       activity.withPersistence(p => throw new IllegalArgumentException("intentional"))
       fail("should have propogated exception")
@@ -105,26 +120,32 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
   @Test
   def shouldHandleAnyExceptionWhenSaving() {
     stub(persistence.save(None, "unsaveable data")).toThrow(new IllegalStateException("intentional"))
-    val crudType = new MyCrudType(persistence)
-    val activity = new CrudActivity(crudType, application)
+    val _crudType = new MyCrudType(persistence)
+    val activity = new CrudActivity {
+      override lazy val crudType = _crudType
+      override def crudApplication = application
+    }
     //should not throw an exception
     activity.saveBasedOnUserAction(persistence, "unsaveable data")
   }
 
   @Test
   def onPauseShouldNotCreateANewIdEveryTime() {
-    val crudType = new MyCrudType(persistence)
+    val _crudType = new MyCrudType(persistence)
     val entity = mutable.Map[String,Any]("name" -> "Bob", "age" -> 25)
-    val uri = UriPath(crudType.entityName)
+    val uri = UriPath(_crudType.entityName)
     when(persistence.find(uri)).thenReturn(None)
     stub(persistence.save(None, mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))).toReturn(101)
-    val activity = new CrudActivity(crudType, application) {
+    val activity = new CrudActivity {
+      override lazy val crudType = _crudType
+      override def crudApplication = application
+
       override def future[T](body: => T): Future[T] = new ReadyFuture[T](body)
     }
     activity.setIntent(constructIntent(Operation.CreateActionName, uri, activity, null))
     activity.onCreate(null)
     //simulate a user entering data
-    crudType.entityType.copy(entity, activity)
+    _crudType.entityType.copy(entity, activity)
     activity.onBackPressed()
     activity.onBackPressed()
     verify(persistence, times(1)).save(None, mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))

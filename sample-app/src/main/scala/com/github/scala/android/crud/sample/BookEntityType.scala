@@ -27,14 +27,3 @@ object BookEntityType extends EntityType {
     persistedDate("publishDate") + viewId[Date](classOf[R], "publishDate", dateView)
   )
 }
-
-/** A CRUD type for Book.
-  * @author pabstec
-  */
-class BookCrudType(persistenceFactory: PersistenceFactory) extends CrudType(BookEntityType, persistenceFactory) {
-  def activityClass = classOf[BookActivity]
-  def listActivityClass = classOf[BookListActivity]
-}
-
-class BookListActivity extends CrudListActivity(SampleApplication.BookCrudType, SampleApplication)
-class BookActivity extends CrudActivity(SampleApplication.BookCrudType, SampleApplication)

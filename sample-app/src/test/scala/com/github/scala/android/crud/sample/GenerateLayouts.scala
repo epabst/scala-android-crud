@@ -8,6 +8,6 @@ import com.github.scala.android.crud.generate.CrudUIGenerator
 
 object GenerateLayouts {
   def main(args: Array[String]) {
-    CrudUIGenerator.generateLayouts(SampleApplication)
+    CrudUIGenerator.generateLayouts(new SampleApplication, classOf[SampleAndroidApplication])
   }
 }
