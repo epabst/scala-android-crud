@@ -14,6 +14,9 @@ trait PersistenceFactory {
   /** Indicates if an entity can be deleted. */
   def canDelete: Boolean = canSave
 
+  /** Indicates if an entity can be listed. */
+  def canList: Boolean = true
+
   /** Instantiates a data buffer which can be saved by EntityPersistence.
     * The EntityType must support copying into this object.
     */

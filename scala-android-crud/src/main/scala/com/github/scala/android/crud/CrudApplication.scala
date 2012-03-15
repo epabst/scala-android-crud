@@ -53,6 +53,8 @@ trait CrudApplication extends Logging {
   def crudType(entityType: EntityType): CrudType =
     allCrudTypes.find(_.entityType == entityType).getOrElse(throw new NoSuchElementException(entityType + " not found"))
 
+  def isListable(entityType: EntityType): Boolean = crudType(entityType).persistenceFactory.canList
+
   def isSavable(entityType: EntityType): Boolean = crudType(entityType).persistenceFactory.canSave
 
   def isAddable(entityType: EntityType): Boolean = isDeletable(entityType)

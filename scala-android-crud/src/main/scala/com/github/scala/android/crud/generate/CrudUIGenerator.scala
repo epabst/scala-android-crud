@@ -65,7 +65,8 @@ object CrudUIGenerator extends Logging {
     import entityInfo._
     val addSeq = if (application.isAddable(entityType)) <string name={"add_" + layoutPrefix}>Add {entityName}</string> else NodeSeq.Empty
     val editSeq = if (application.isSavable(entityType)) <string name={"edit_" + layoutPrefix}>Edit {entityName}</string> else NodeSeq.Empty
-    <string name={layoutPrefix + "_list"}>{entityName} List</string> ++ addSeq ++ editSeq
+    val listSeq = if (application.isListable(entityType)) <string name={layoutPrefix + "_list"}>{entityName} List</string> else NodeSeq.Empty
+    listSeq ++ addSeq ++ editSeq
   }
 
   def attemptToEvaluate[T](f: => T): Option[T] =
@@ -211,9 +212,11 @@ object CrudUIGenerator extends Logging {
     println("Generating layout for " + entityTypeInfo.entityType)
     lazy val info = EntityTypeViewInfo(entityTypeInfo.entityType)
     val layoutPrefix = info.layoutPrefix
-    writeLayoutFile(layoutPrefix + "_list", listLayout(entityTypeInfo, childTypeInfos, application))
-    writeLayoutFile(layoutPrefix + "_header", headerLayout(info.displayableViewIdFieldInfos))
-    writeLayoutFile(layoutPrefix + "_row", rowLayout(info.displayableViewIdFieldInfos))
+    if (application.isListable(entityTypeInfo.entityType)) {
+      writeLayoutFile(layoutPrefix + "_list", listLayout(entityTypeInfo, childTypeInfos, application))
+      writeLayoutFile(layoutPrefix + "_header", headerLayout(info.displayableViewIdFieldInfos))
+      writeLayoutFile(layoutPrefix + "_row", rowLayout(info.displayableViewIdFieldInfos))
+    }
     if (info.isUpdateable) writeLayoutFile(layoutPrefix + "_entry", entryLayout(info.updateableViewIdFieldInfos))
   }
 }
