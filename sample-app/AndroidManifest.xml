@@ -2,19 +2,16 @@
 <manifest 
 android:versionCode="${versionCode}" android:versionName="${project.version}" package="com.github.scala.android.crud.sample" xmlns:android="http://schemas.android.com/apk/res/android">
   <application 
-  android:restoreAnyVersion="true" android:icon="@drawable/icon" android:label="@string/app_name" android:backupAgent="SampleBackupAgent" android:theme="@android:style/Theme.NoTitleBar" android:debuggable="true">
+  android:restoreAnyVersion="true" android:icon="@drawable/icon" android:label="@string/app_name" android:backupAgent="SampleBackupAgent" android:theme="@android:style/Theme.NoTitleBar" android:name="com.github.scala.android.crud.sample.SampleAndroidApplication" android:debuggable="true">
     <meta-data android:value="AEdPqrEAAAAIcxGGphfCAELViZfpCfJrCjBiiFRBWp29qg0Bag" android:name="com.google.android.backup.api_key"/>
-    <activity android:label="@string/app_name" android:name=".AuthorListActivity">
+    <activity 
+    android:label="@string/app_name" android:name="com.github.scala.android.crud.CrudListActivity">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
         <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
-    </activity>
-    <activity android:label="@string/app_name" android:name=".AuthorActivity"/>
-    <activity android:label="@string/app_name" android:name=".BookListActivity"/>
-    <activity android:label="@string/app_name" android:name=".BookActivity"/>
-    <activity android:label="@string/app_name" android:name=".PublisherListActivity"/>
-    <activity android:label="@string/app_name" android:name=".PublisherActivity"/>
+</activity>
+    <activity android:label="@string/app_name" android:name="com.github.scala.android.crud.CrudActivity"/>
 </application>
   <uses-sdk android:minSdkVersion="8"/>
 </manifest>
