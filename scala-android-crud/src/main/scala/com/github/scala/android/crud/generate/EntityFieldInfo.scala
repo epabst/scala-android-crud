@@ -14,18 +14,8 @@ case class EntityFieldInfo(field: BaseField, rIdClasses: Seq[Class[_]]) {
     case matchingField: ViewField[_] => matchingField
   }
 
-  lazy val viewIdFieldInfos: List[ViewIdFieldInfo] = {
-    val viewIdFields: List[ViewIdField[_]] = field.deepCollect[ViewIdField[_]] {
-      case matchingField: ViewIdField[_] => matchingField
-    }
-    val viewIdNameFields: List[ViewIdNameField[_]] = field.deepCollect[ViewIdNameField[_]] {
-      case matchingField: ViewIdNameField[_] => matchingField
-    }
-
-    viewIdNameFields.map(f => ViewIdFieldInfo(f.viewResourceIdName, f)) ++
-      viewIdFields.map { viewIdField =>
-        ViewIdFieldInfo(resourceFieldWithIntValue(rIdClasses, viewIdField.viewResourceId).getName, viewIdField)
-      }
+  lazy val viewIdFieldInfos: List[ViewIdFieldInfo] = field.deepCollect {
+    case viewIdField: ViewIdField[_] => ViewIdFieldInfo(viewIdField.viewRef.fieldName(rIdClasses), viewIdField)
   }
 
   lazy val isDisplayable: Boolean = !displayableViewIdFieldInfos.isEmpty
