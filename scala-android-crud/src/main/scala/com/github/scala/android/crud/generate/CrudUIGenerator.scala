@@ -131,7 +131,7 @@ object CrudUIGenerator extends Logging {
                 android:layout_height="wrap_content"
                 android:text="Empty List" android:textAppearance="?android:attr/textAppearanceLarge"/>
       { addableEntityTypeInfos.map(addableEntityTypeInfo =>
-        <Button android:id="@+id/add_record_button"
+        <Button android:id={"@+id/add_" + addableEntityTypeInfo.layoutPrefix + "_command"}
                 android:text={"@string/add_" + addableEntityTypeInfo.layoutPrefix}
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"

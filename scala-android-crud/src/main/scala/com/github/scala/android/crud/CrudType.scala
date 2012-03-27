@@ -17,7 +17,7 @@ import android.widget._
 import java.util.concurrent.CopyOnWriteArraySet
 import scala.collection.JavaConversions._
 import collection.mutable
-import view.{AdapterCachingStateListener, AdapterCaching, EntityAdapter}
+import view.{ViewRef, AdapterCachingStateListener, AdapterCaching, EntityAdapter}
 
 /** An entity configuration that provides all custom information needed to
   * implement CRUD on the entity.  This shouldn't depend on the platform (e.g. android).
@@ -35,6 +35,8 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
   private lazy val rLayoutClassesVal = rLayoutClasses
   def rStringClasses: Seq[Class[_]] = detectRStringClasses(this.getClass)
   private lazy val rStringClassesVal = rStringClasses
+  def rIdClasses: Seq[Class[_]] = detectRIdClasses(this.getClass)
+  private lazy val rIdClassesVal = rIdClasses
 
   protected def getLayoutKey(layoutName: String): LayoutKey =
     findResourceIdWithName(rLayoutClassesVal, layoutName).getOrElse {
@@ -72,11 +74,21 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
               rStringClassesVal.mkString("(string classes: ", ",", ")"))
     }
 
-  def listItemsString: Option[SKey] = findResourceIdWithName(rStringClassesVal, entityNameLayoutPrefix + "_list")
-  def addItemString: SKey = getStringKey("add_" + entityNameLayoutPrefix)
-  def editItemString: SKey = getStringKey("edit_" + entityNameLayoutPrefix)
-  def deleteItemString: SKey = res.R.string.delete_item
-  def cancelItemString: SKey = android.R.string.cancel
+  def commandToListItems: Command = Command(None,
+    findResourceIdWithName(rStringClassesVal, entityNameLayoutPrefix + "_list"), None)
+
+  def commandToDisplayItem: Command = Command(None, None, None)
+
+  def commandToAddItem: Command = Command(android.R.drawable.ic_menu_add,
+    getStringKey("add_" + entityNameLayoutPrefix),
+    Some(ViewRef("add_" + entityNameLayoutPrefix + "_command", rIdClassesVal)))
+
+  def commandToEditItem: Command = Command(android.R.drawable.ic_menu_edit,
+    getStringKey("edit_" + entityNameLayoutPrefix), None)
+
+  def commandToDeleteItem: Command = Command(android.R.drawable.ic_menu_delete, res.R.string.delete_item, None)
+
+  lazy val commandToUndoDelete = Command(None, Some(res.R.string.undo_delete), None)
 
   lazy val parentFields: List[ParentField] = entityType.deepCollect {
     case parentField: ParentField => parentField
@@ -106,32 +118,31 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
   @deprecated("use CrudApplication.actionToCreate")
   lazy val createAction: Option[Action] =
     if (isAddable)
-      Some(Action(Command(android.R.drawable.ic_menu_add, addItemString),
-        new StartEntityActivityOperation(entityType.entityName, CreateActionName, activityClass)))
+      Some(Action(commandToAddItem, new StartEntityActivityOperation(entityType.entityName, CreateActionName, activityClass)))
     else
       None
 
   /** Gets the action to display the list that matches the criteria copied from criteriaSource using entityType.copy. */
   @deprecated("use CrudApplication.actionToList.get")
-  lazy val listAction = Action(Command(None, listItemsString), new StartEntityActivityOperation(entityType.entityName, ListActionName, listActivityClass))
+  lazy val listAction = Action(commandToListItems, new StartEntityActivityOperation(entityType.entityName, ListActionName, listActivityClass))
 
   protected def entityOperation(action: String, activityClass: Class[_ <: Activity]) =
     new StartEntityIdActivityOperation(entityType.entityName, action, activityClass)
 
   /** Gets the action to display the entity given the id in the UriPath. */
   @deprecated("use CrudApplication.actionToDisplay.get")
-  lazy val displayAction = Action(Command(None, None), entityOperation(DisplayActionName, activityClass))
+  lazy val displayAction = Action(commandToDisplayItem, entityOperation(DisplayActionName, activityClass))
 
   /** Gets the action to display a UI for a user to edit data for an entity given its id in the UriPath. */
   @deprecated("use CrudApplication.actionToUpdate")
   lazy val updateAction: Option[Action] =
-    if (isUpdateable) Some(Action(Command(android.R.drawable.ic_menu_edit, editItemString), entityOperation(UpdateActionName, activityClass)))
+    if (isUpdateable) Some(Action(commandToEditItem, entityOperation(UpdateActionName, activityClass)))
     else None
 
   @deprecated("use CrudApplication.actionToDelete")
   lazy val deleteAction: Option[Action] =
     if (isDeletable) {
-      Some(Action(Command(android.R.drawable.ic_menu_delete, deleteItemString), new Operation {
+      Some(Action(commandToDeleteItem, new Operation {
         def invoke(uri: UriPath, activity: ActivityWithVars) {
           activity match {
             case crudActivity: BaseCrudActivity => startDelete(uri, crudActivity)
@@ -160,17 +171,18 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
     */
   @deprecated("use CrudApplication.actionsForList")
   def getListActions(application: CrudApplication): List[Action] =
-    getReadOnlyListActions(application) ::: createAction.toList
+    getReadOnlyListActions(application) ::: application.actionToCreate(entityType).toList
 
   protected def getReadOnlyListActions(application: CrudApplication): List[Action] = {
-    val thisEntity = this;
+    val thisEntity = this.entityType;
     (parentFields match {
       //exactly one parent w/o a display page
       case parentField :: Nil if !application.crudType(parentField.entityType).hasDisplayPage => {
-        val parentCrudType = application.crudType(parentField.entityType)
-        //the parent's updateAction should be shown since clicking on the parent entity brought the user
+        val parentEntityType = parentField.entityType
+        //the parent's actionToUpdate should be shown since clicking on the parent entity brought the user
         //to the list of child entities instead of to a display page for the parent entity.
-        parentCrudType.updateAction.toList ::: parentCrudType.childEntities(application).filter(_ != thisEntity).map(_.listAction)
+        application.actionToUpdate(parentEntityType).toList :::
+          application.childEntityTypes(parentEntityType).filter(_ != thisEntity).flatMap(application.actionToList(_))
       }
       case _ => Nil
     })
@@ -182,10 +194,12 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
     */
   @deprecated("use CrudApplication.actionsForEntity")
   def getEntityActions(application: CrudApplication): List[Action] =
-    getReadOnlyEntityActions(application) ::: updateAction.toList ::: deleteAction.toList
+    getReadOnlyEntityActions(application) ::: application.actionToUpdate(entityType).toList :::
+      application.actionToDelete(entityType).toList
 
   protected def getReadOnlyEntityActions(application: CrudApplication): List[Action] =
-    displayLayout.map(_ => displayAction).toList ::: childEntities(application).map(_.listAction)
+    displayLayout.flatMap(_ => application.actionToDisplay(entityType)).toList :::
+      application.childEntityTypes(entityType).flatMap(application.actionToList(_))
 
   /** Listeners that will listen to any EntityPersistence that is opened. */
   val persistenceListeners = new InitializedContextVar[mutable.Set[PersistenceListener]](new CopyOnWriteArraySet[PersistenceListener]())
@@ -281,11 +295,11 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
           persistence.save(id, writable)
         }
       }
-      //todo delete childEntities(application) recursively
+      //todo delete childEntities recursively
       val context = persistence.crudContext.context
       context match {
         case activity: BaseCrudActivity =>
-          activity.allowUndo(Undoable(Action(Command(None, Some(res.R.string.undo_delete)), undoDeleteOperation), None))
+          activity.allowUndo(Undoable(Action(commandToUndoDelete, undoDeleteOperation), None))
         case _ =>
       }
     }

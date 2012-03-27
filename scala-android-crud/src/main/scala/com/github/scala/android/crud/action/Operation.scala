@@ -8,16 +8,18 @@ import com.github.scala.android.crud.view.AndroidConversions._
 import android.view.View
 import com.github.triangle.Field
 import com.github.triangle.PortableField._
+import com.github.scala.android.crud.view.ViewRef
 
 /** Represents something that a user can initiate.
   * @author Eric Pabst (epabst@gmail.com)
   * @param icon  The optional icon to display.
   * @param title  The title to display.
+  * @param viewRef  The ViewKey (or equivalent) that represents the Command for the user to click on.  Optional.
   *   If the title is None, it can't be displayed in a context menu for a list item.
   *   If both title and icon are None,
   *   then it can't be displayed in the main options menu, but can still be triggered as a default.
   */
-case class Command(icon: Option[ImgKey], title: Option[SKey]) {
+case class Command(icon: Option[ImgKey], title: Option[SKey], viewRef: Option[ViewRef] = None) {
   /** A CommandID that can be used to identify if it's the same as another in a list.
     * It uses the title or else the icon or else the hash code.
     */
