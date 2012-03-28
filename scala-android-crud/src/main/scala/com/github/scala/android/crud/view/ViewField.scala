@@ -40,8 +40,11 @@ abstract class ViewField[T](val defaultLayout: FieldLayout) extends DelegatingPo
 }
 
 object ViewField {
+  def viewId[T](viewRef: ViewRef, childViewField: PortableField[T]): PortableField[T] =
+    new ViewIdField[T](viewRef, childViewField).withViewKeyMapField
+
   def viewId[T](viewResourceId: ViewKey, childViewField: PortableField[T]): PortableField[T] =
-    new ViewIdField[T](ViewRef(viewResourceId), childViewField).withViewKeyMapField
+    viewId(ViewRef(viewResourceId), childViewField)
 
   /** This should be used when R.id doesn't yet have the needed name, and used like this:
     * {{{viewId(classOf[R.id], "name", ...)}}}
@@ -49,7 +52,7 @@ object ViewField {
     * {{{viewId(R.id.name, ...)}}}.
     */
   def viewId[T](rIdClass: Class[_], viewResourceIdName: String, childViewField: PortableField[T]): PortableField[T] =
-    new ViewIdField[T](ViewRef(viewResourceIdName, detectRIdClasses(rIdClass)), childViewField).withViewKeyMapField
+    viewId(ViewRef(viewResourceIdName, detectRIdClasses(rIdClass)), childViewField)
 
   def apply[T](defaultLayout: FieldLayout, dataField: PortableField[T]): ViewField[T] = new ViewField[T](defaultLayout) {
     protected def delegate = dataField

@@ -37,6 +37,7 @@ class CrudActivity extends BaseCrudActivity { self =>
         entityType.copyFromItem(PortableField.UseDefaults :: contextItems, this)
       }
     }
+    bindNormalActionsToViews()
     if (crudType.maySpecifyEntityInstance(currentUriPath)) {
       crudContext.addCachedStateListener(new CachedStateListener {
         def onClearState(stayActive: Boolean) {
@@ -82,7 +83,7 @@ class CrudActivity extends BaseCrudActivity { self =>
     } catch { case e => logError("onPause: Unable to store " + writable, e) }
   }
 
-  protected def normalActions = crudApplication.actionsForEntity(entityType).filter {
+  protected lazy val normalActions = crudApplication.actionsForEntity(entityType).filter {
     case action: EntityOperation => action.entityName != entityType.entityName || action.action != currentAction
     case _ => true
   }

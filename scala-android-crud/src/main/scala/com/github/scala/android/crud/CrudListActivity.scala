@@ -25,6 +25,7 @@ class CrudListActivity extends ListActivity with BaseCrudActivity {
     val view = getListView;
 		view.setHeaderDividersEnabled(true);
 		view.addHeaderView(getLayoutInflater.inflate(crudType.headerLayout, null));
+    bindNormalActionsToViews()
     registerForContextMenu(getListView)
 
     crudType.setListAdapterUsingUri(crudContext, this)
@@ -80,7 +81,7 @@ class CrudListActivity extends ListActivity with BaseCrudActivity {
     }
   }
 
-  protected def normalActions = crudApplication.actionsForList(entityType)
+  protected lazy val normalActions = crudApplication.actionsForList(entityType)
 
   override def onListItemClick(l: ListView, v: View, position: Int, id: ID) {
     if (id >= 0) {

@@ -35,11 +35,9 @@ class CrudTypeSpec extends Spec with MustMatchers with CrudMockitoSugar {
     val crudType3 = new MyCrudType(new MyEntityType {
       override val valueFields = ParentField(entityType1) +: ParentField(entityType2) +: super.valueFields
     })
-    val application = mock[CrudApplication]
     val crudType1 = new MyCrudType(entityType1)
     val crudType2 = new MyCrudType(entityType2)
-    stub(application.crudType(entityType1)).toReturn(crudType1)
-    stub(application.crudType(entityType2)).toReturn(crudType2)
+    val application = MyCrudApplication(crudType1, crudType2, crudType3)
     crudType3.parentEntities(application) must be (List(crudType1, crudType2))
   }
 
@@ -51,27 +49,23 @@ class CrudTypeSpec extends Spec with MustMatchers with CrudMockitoSugar {
     })
     val crudType1 = new MyCrudType(entityType1)
     val crudType2 = new MyCrudType(entityType2)
-    val application = mock[CrudApplication]
-    stub(application.crudType(entityType1)).toReturn(crudType1)
-    stub(application.crudType(entityType2)).toReturn(crudType2)
+    val application = MyCrudApplication(crudType1, crudType2, crudType3)
     crudType3.parentEntities(application) must be (List(crudType1, crudType2))
   }
 
   it("must get the correct entity actions with child entities") {
-    val application = mock[CrudApplication]
     val parentEntityType = new MyEntityType()
     val childCrudType = new MyCrudType(new MyEntityType {
       override lazy val valueFields = ParentField(parentEntityType) :: super.valueFields
     })
     val parentCrudType = new MyCrudType(parentEntityType)
-    stub(application.allCrudTypes).toReturn(List(parentCrudType, childCrudType))
+    val application = MyCrudApplication(childCrudType, parentCrudType)
     childCrudType.getEntityActions(application) must be (List(childCrudType.updateAction.get, childCrudType.deleteAction.get))
     parentCrudType.getEntityActions(application) must be (
       List(childCrudType.listAction, parentCrudType.updateAction.get, parentCrudType.deleteAction.get))
   }
 
   it("must get the correct list actions with child entities") {
-    val application = mock[CrudApplication]
     val parentEntityType = new MyEntityType
     val childEntityType1 = new MyEntityType {
       override lazy val valueFields = ParentField(parentEntityType) :: super.valueFields
@@ -84,16 +78,12 @@ class CrudTypeSpec extends Spec with MustMatchers with CrudMockitoSugar {
     }
     val childCrudType1 = new MyCrudType(childEntityType1)
     val childCrudType2 = new MyCrudType(childEntityType2)
-    stub(application.allCrudTypes).toReturn(List(parentCrudType, childCrudType1, childCrudType2))
-    stub(application.crudType(parentEntityType)).toReturn(parentCrudType)
-    stub(application.crudType(childEntityType1)).toReturn(childCrudType1)
-    stub(application.crudType(childEntityType2)).toReturn(childCrudType2)
+    val application = MyCrudApplication(childCrudType1, childCrudType2, parentCrudType)
     parentCrudType.getListActions(application) must be (List(parentCrudType.createAction.get))
     childCrudType1.getListActions(application) must be (List(childCrudType1.createAction.get))
   }
 
   it("must get the correct list actions with child entities w/ no parent display") {
-    val application = mock[CrudApplication]
     val parentEntityType = new MyEntityType
     val childEntityType1 = new MyEntityType {
       override lazy val valueFields = ParentField(parentEntityType) :: super.valueFields
@@ -104,10 +94,7 @@ class CrudTypeSpec extends Spec with MustMatchers with CrudMockitoSugar {
     val parentCrudType = new MyCrudType(parentEntityType)
     val childCrudType1 = new MyCrudType(childEntityType1)
     val childCrudType2 = new MyCrudType(childEntityType2)
-    stub(application.allCrudTypes).toReturn(List(parentCrudType, childCrudType1, childCrudType2))
-    stub(application.crudType(parentEntityType)).toReturn(parentCrudType)
-    stub(application.crudType(childEntityType1)).toReturn(childCrudType1)
-    stub(application.crudType(childEntityType2)).toReturn(childCrudType2)
+    val application = MyCrudApplication(parentCrudType, childCrudType1, childCrudType2)
     parentCrudType.getListActions(application) must be (List(parentCrudType.createAction.get))
     childCrudType1.getListActions(application) must be (
       List(parentCrudType.updateAction.get, childCrudType2.listAction, childCrudType1.createAction.get))
